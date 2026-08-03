@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+numpy
+scipy
+sqlmodel
+python-jose[cryptography]
+passlib[bcrypt]
+# Épinglé : bug de compatibilité connu entre passlib (dernière release 1.7.4,
+# projet non maintenu depuis 2020) et bcrypt>=4.1 — passlib sonde
+# bcrypt.__about__.__version__, retiré dans bcrypt 4.1+, ce qui déclenche une
+# erreur trompeuse "password cannot be longer than 72 bytes" dès le premier
+# hash, sans rapport avec la longueur réelle du mot de passe.
+bcrypt==4.0.1
+python-multipart
+httpx
+stripe==15.4.0
