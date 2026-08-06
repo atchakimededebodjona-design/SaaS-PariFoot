@@ -1,12 +1,12 @@
 # Foot Prediction API — Dixon-Coles
 
-API FastAPI qui sert des prédictions 1X2 / Over-Under à partir de modèles
+API FastAPI qui sert des prédictions 1X2 / probabilité de plus-moins de buts à partir de modèles
 Dixon-Coles déjà entraînés (un par ligue). Elle ne dépend que de
 `numpy`/`scipy.stats` pour les prédictions — aucune optimisation
 (`scipy.optimize`) au moment de la requête, donc démarrage rapide et
 réponses en quelques millisecondes. Inclut aussi un système
-d'authentification JWT (inscription/connexion) et de facturation Stripe
-(abonnements), tous deux indépendants des prédictions — voir sections
+d'authentification JWT (inscription/connexion) et de facturation Chariow
+(licences), tous deux indépendants des prédictions — voir sections
 Authentification et Facturation plus bas.
 
 ## Architecture
@@ -25,16 +25,16 @@ api/app/                    # authentification + facturation (indépendantes des
   ├── core/
   │   ├── database.py           # moteur SQLAlchemy/SQLModel, SQLite par défaut
   │   ├── security_config.py    # SECRET_KEY, algorithme JWT, durée de vie du token
-  │   └── stripe_config.py      # clés Stripe, Price ID, URL frontend
+  │   └── chariow_config.py     # clés API Chariow, Product ID, secret des Pulses
   ├── models/
   │   ├── user.py                # modèle User + schémas Pydantic (register/read/token)
-  │   └── subscription.py        # modèle Subscription (aucune donnée bancaire stockée)
+  │   └── subscription.py        # modèle Subscription (licence) + ProcessedPulseDelivery
   ├── auth/
   │   ├── security.py           # hashing bcrypt, émission/vérification JWT
   │   └── router.py              # /auth/register, /auth/login, /auth/me
   └── billing/
-      ├── router.py              # /billing/checkout, /portal, /subscription, /webhook
-      └── dependencies.py        # require_active_subscription — pour un futur endpoint premium
+      ├── router.py              # /billing/checkout, /subscription, /pulse
+      └── dependencies.py        # require_active_subscription — protège les endpoints premium
 ```
 
 Rafraîchir les modèles (après chaque journée de championnat, ou via cron) :
@@ -68,9 +68,10 @@ Documentation interactive : http://localhost:8000/docs
 Lancer les tests (TestClient, pas de serveur réseau requis) :
 
 ```bash
-python api/test_main.py    # endpoints de prédiction
-python api/test_auth.py    # authentification (base SQLite isolée, jamais api/app.db)
-python api/test_billing.py # facturation Stripe (mocks + signatures webhook réelles, base isolée)
+python api/test_main.py             # endpoints de prédiction
+python api/test_auth.py             # authentification (base SQLite isolée, jamais api/app.db)
+python api/test_chariow_billing.py  # facturation Chariow (mocks + signatures Pulse réelles, base isolée)
+python api/test_premium.py          # protection des endpoints premium par require_active_subscription
 ```
 
 ## Résolution des noms d'équipes
@@ -126,7 +127,7 @@ données du modèle.
 
 ### `GET /predictions/{league}/{home_team}/{away_team}`
 
-Prédiction 1X2 + Over/Under 2.5 + scores exacts les plus probables pour un
+Prédiction 1X2 + probabilité de plus/moins de 2.5 buts + scores exacts les plus probables pour un
 seul match. `home_team`/`away_team` acceptent nom exact, alias, ou variante
 accents/casse (voir résolution ci-dessus).
 
@@ -272,89 +273,115 @@ Nécessite `Authorization: Bearer <token>`. Sans token ou token
 invalide/expiré → **401**. Avec un token valide → **200** avec les infos
 du compte (jamais `hashed_password`).
 
-## Facturation (Stripe)
+## Facturation (Chariow)
 
-Abonnements gérés via Stripe Checkout (hébergé) + Portail Client (hébergé)
-+ webhooks — **aucune donnée bancaire ne transite ni n'est stockée par ce
-backend** (zéro obligation de conformité PCI-DSS côté produit). La SEULE
-source de vérité sur l'état réel d'un abonnement est le webhook Stripe
-signé (`/billing/webhook`) — jamais ce qu'un client affirmerait de son
-propre statut.
+Licences gérées via un lien de checkout Chariow (hébergé) + Pulses
+(webhooks) — **aucune donnée de paiement (Mobile Money, carte...) ne
+transite ni n'est stockée par ce backend**. La SEULE source de vérité sur
+l'état réel d'une licence est le Pulse Chariow signé (`/billing/pulse`) —
+jamais ce qu'un client affirmerait de son propre statut.
 
-Tous les endpoints `/billing/*` sauf `/webhook` nécessitent
+Tous les endpoints `/billing/*` sauf `/pulse` nécessitent
 `Authorization: Bearer <token>` (obtenu via `/auth/login`).
+
+⚠️ **PAS de renouvellement automatique.** Contrairement à un abonnement
+Stripe classique, un produit Licence Chariow n'est **pas** prélevé
+automatiquement à échéance (confirmé via la documentation/interface
+Chariow — les produits sont créés en mode "Paiement unique", prix fixe ;
+le mode "Prix libre" est exclu de l'API de checkout). **Renouveler = repasser
+par `POST /billing/checkout` avec le même plan**, avant ou après expiration
+— c'est exactement le même appel qu'un premier achat, aucun endpoint séparé.
+Le champ `days_until_expiry` (voir plus bas) permet d'afficher un compte à
+rebours côté frontend pour inciter au renouvellement avant expiration.
 
 ### `POST /billing/checkout`
 
-**Requête :** `{"plan": "monthly"}` (ou `"yearly"`)
+**Requête :**
+```json
+{
+  "plan": "monthly",
+  "first_name": "Awa", "last_name": "Koné",
+  "phone_number": "0700000000", "phone_country_code": "+225"
+}
+```
+Contrairement à Stripe Checkout (qui ne demandait que le plan), Chariow a
+besoin des informations client dès la création du lien — à collecter côté
+frontend (page `/billing`, formulaire avant redirection).
 
-**Réponse (200) :** `{"checkout_url": "https://checkout.stripe.com/..."}`
-— rediriger l'utilisateur vers cette URL (page Stripe hébergée). Plan
-inconnu ou `Price ID` non configuré → **400**.
-
-### `POST /billing/portal`
-
-**Réponse (200) :** `{"portal_url": "https://billing.stripe.com/..."}` —
-portail Stripe où l'utilisateur gère/annule son abonnement ou met à jour
-sa carte, sans repasser par notre backend.
+**Réponse (200) :** `{"checkout_url": "https://chariow.com/checkout/..."}`
+— rediriger l'utilisateur vers cette URL (page Chariow hébergée, Mobile
+Money natif). Plan inconnu ou Product ID non configuré → **400**. Champ
+client manquant → **422**.
 
 ### `GET /billing/subscription`
 
 **Réponse (200) :**
 ```json
-{"status": "active", "plan": "monthly", "is_active": true, "current_period_end": "2026-09-02T20:23:24+00:00"}
+{"status": "active", "plan": "monthly", "is_active": true,
+ "current_period_end": "2026-09-02T20:23:24+00:00", "days_until_expiry": null}
 ```
-Avant tout paiement : `{"status": "none", "plan": null, "is_active": false, "current_period_end": null}`.
+Avant tout achat : `{"status": "none", "plan": null, "is_active": false, "current_period_end": null, "days_until_expiry": null}`.
+`days_until_expiry` reflète la dernière valeur reçue via le Pulse
+`license.nearing_expiry` — remis à `null` à chaque nouvel achat/renouvellement.
 
-### `POST /billing/webhook`
+### `POST /billing/pulse`
 
-Reçoit les événements Stripe (`checkout.session.completed`,
-`customer.subscription.updated`/`.created`/`.deleted`). Signature
-`Stripe-Signature` vérifiée à chaque requête (`stripe.Webhook.construct_event`)
-— signature absente/invalide → **400**, événement **jamais** traité. Ne
-nécessite PAS de token JWT (appelé par Stripe, pas par un utilisateur) mais
-la vérification de signature joue exactement ce rôle de sécurité.
+Reçoit les Pulses (webhooks) Chariow : `successful.sale` (achat ou
+renouvellement réussi — active la licence), `license.activated`
+(confirmation, complète `successful.sale`), `license.expired`,
+`license.revoked`, `license.nearing_expiry` (met à jour `days_until_expiry`).
 
-### Tester en local avec le CLI Stripe
+Signature `x-pulse-signature` (HMAC-SHA256 hex du corps brut avec
+`CHARIOW_PULSE_SECRET`) vérifiée à chaque requête — absente/invalide →
+**400**, événement **jamais** traité. Déduplication sur le header
+`x-pulse-delivery-id` : une delivery déjà vue est ignorée silencieusement
+(Chariow peut la renvoyer après un timeout/5xx). Ne nécessite PAS de token
+JWT (appelé par Chariow, pas par un utilisateur) mais la vérification de
+signature joue exactement ce rôle de sécurité.
 
-1. Installer le [CLI Stripe](https://stripe.com/docs/stripe-cli) et se
-   connecter : `stripe login`.
-2. Démarrer l'API (`cd api && uvicorn main:app --reload --port 8000 --env-file .env`).
-3. Dans un autre terminal, forwarder les webhooks vers l'API locale :
-   ```bash
-   stripe listen --forward-to localhost:8000/billing/webhook
-   ```
-   Cette commande affiche un secret temporaire `whsec_...` — le copier
-   dans `api/.env` (`STRIPE_WEBHOOK_SECRET=...`) et **redémarrer l'API**
-   (un nouveau secret est généré à chaque exécution de `stripe listen`).
-4. Déclencher un événement de test sans passer par un vrai paiement :
-   ```bash
-   stripe trigger checkout.session.completed
-   ```
-5. Vérifier dans les logs de l'API que l'événement a été reçu et traité,
-   et via `GET /billing/subscription` (avec un token) que le statut a
+### ⚠️ Point non vérifié en conditions réelles
+
+L'appel de création de lien de checkout
+(`app/billing/router.py::_create_chariow_checkout_link` — endpoint
+`POST /checkout`, structure `data.step`/`data.payment.checkout_url`) est
+confirmé via la doc officielle (chariow.dev/en/guides/checkout). Reste à
+lever avant de considérer l'intégration fiable pour de vrais clients :
+
+- **Mode test des clés API** — vérifier dans Paramètres → Clés API du
+  dashboard Chariow s'il existe des clés de test distinctes des clés live
+  avant de configurer une vraie clé en développement.
+
+### Tester en local
+
+1. Démarrer l'API (`cd api && uvicorn main:app --reload --port 8000 --env-file .env`).
+2. Créer un produit Licence de test dans le dashboard Chariow (mode
+   "Paiement unique", prix fixe) et un Pulse pointant vers l'API locale
+   exposée via un tunnel (ex. [ngrok](https://ngrok.com/) :
+   `ngrok http 8000`, puis `https://<sous-domaine>.ngrok.io/billing/pulse`).
+3. Renseigner `CHARIOW_PULSE_SECRET` dans `api/.env` avec le secret défini
+   au moment de créer le Pulse, et redémarrer l'API.
+4. Déclencher un vrai achat de test pour observer les événements reçus, ou
+   reproduire les scénarios sans réseau via `python api/test_chariow_billing.py`
+   (signatures HMAC réelles, appel de checkout mocké).
+5. Vérifier via `GET /billing/subscription` (avec un token) que le statut a
    changé.
 
-### Créer les 2 Price ID (mode TEST d'abord)
+### Créer les 2 Product ID
 
-1. Dashboard Stripe → **Développeurs → Clés API** : copier la clé secrète
-   de test (`sk_test_...`) dans `STRIPE_SECRET_KEY`.
-2. Dashboard Stripe → **Produits** → "+ Ajouter un produit" (rester en mode
-   Test, bascule en haut à droite du Dashboard).
-3. Créer UN produit (ex. "Abonnement Pari Foot Premium") avec **deux prix
-   récurrents** : un mensuel et un annuel — chaque prix génère son propre
-   `price_...`, à copier respectivement dans `STRIPE_PRICE_ID_MONTHLY` et
-   `STRIPE_PRICE_ID_YEARLY`.
-4. Une fois les tests validés en mode Test, répéter la création des Price
-   ID en mode **Live** avant la mise en production (les ID de test et de
-   prod sont toujours différents, même produit ou non).
+1. Dashboard Chariow → **Paramètres → Clés API** : copier la clé dans
+   `CHARIOW_API_KEY`.
+2. Dashboard Chariow → **Produits** → créer un produit Licence "mensuel"
+   et un produit Licence "annuel", chacun en mode **Paiement unique** avec
+   un **prix fixe** (le mode "Prix libre" n'est pas utilisable pour le
+   checkout via API) — copier leurs identifiants respectivement dans
+   `CHARIOW_PRODUCT_ID_MONTHLY` et `CHARIOW_PRODUCT_ID_YEARLY`.
 
 ## Codes d'erreur
 
 | Code | Cas |
 |---|---|
 | 200 | Prédiction résolue (via exact, normalisé, ou alias), ou requête auth/billing réussie |
-| 400 | Inscription avec un email déjà utilisé, plan de facturation inconnu, ou signature webhook invalide |
+| 400 | Inscription avec un email déjà utilisé, plan de facturation inconnu, ou signature de Pulse invalide |
 | 401 | Connexion avec email/mot de passe incorrect, ou endpoint protégé (`/auth/me`, `/billing/*`) sans token valide |
 | 402 | Accès à un endpoint premium (via `require_active_subscription`) sans abonnement actif |
 | 404 | Ligue inconnue, ou équipe non résolue avec confiance (fuzzy/aucune correspondance) — le corps inclut des suggestions si disponibles |

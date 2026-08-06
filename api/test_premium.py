@@ -8,15 +8,19 @@ précédente) :
      check d'abonnement — get_current_user échoue en premier)
   2. Authentifié, mais AUCUN abonnement             -> 402
   3. /ratings/{league} reste public, même sans abonnement -> 200
-  4. POST /billing/checkout (mocké) PUIS webhook checkout.session.completed
-     (dans CET ordre — un webhook seul ne suffit pas : sans checkout
-     préalable, aucun enregistrement Subscription n'existe encore pour que
-     le webhook puisse le faire passer à 'active', cf.
-     _handle_checkout_completed dans app/billing/router.py qui retourne
-     silencieusement si `sub is None`)
+  4. POST /billing/checkout (mocké) PUIS Pulse successful.sale (dans CET
+     ordre — un Pulse seul ne suffit pas : sans checkout préalable, aucun
+     enregistrement Subscription n'existe encore pour que le Pulse puisse
+     le faire passer à 'active', cf. _handle_successful_sale dans
+     app/billing/router.py qui retourne silencieusement si `sub is None`)
   5. Après ces deux étapes -> prédiction accessible -> 200
-  6. Webhook customer.subscription.deleted          -> retour à 402
+  6. Pulse license.revoked                          -> retour à 402
   7. Le endpoint batch suit la même logique (401/402/200)
+
+Note : require_active_subscription et sa logique (401/402, dépendance
+inchangée entre Stripe et Chariow) ne sont PAS le sujet de la migration —
+seule la façon de forger un événement brut ci-dessous (format Pulse,
+header x-pulse-signature, endpoint /billing/pulse) a dû être adaptée.
 
 Usage : python api/test_premium.py
 """
@@ -31,7 +35,7 @@ from _test_support import (
     register_and_login, activate_subscription, cancel_subscription,
 )
 
-WEBHOOK_SECRET = "whsec_test_secret_for_signature_verification"
+WEBHOOK_SECRET = "pulse_test_secret_for_signature_verification"
 DB_PATH = configure_test_env("test_premium.db", webhook_secret=WEBHOOK_SECRET)
 
 from fastapi.testclient import TestClient
@@ -39,7 +43,7 @@ from main import app
 
 EMAIL = "carla@example.com"
 PASSWORD = "correct-horse-battery-staple"
-STRIPE_SUBSCRIPTION_ID = "sub_test_premium_001"
+LICENSE_KEY = "lic_test_premium_001"
 
 BATCH_PAYLOAD = [{"league": "Ligue1", "home_team": "PSG", "away_team": "Marseille"}]
 
@@ -71,35 +75,34 @@ def test_ratings_public_even_without_subscription(client):
     print(f"  [OK] /ratings/Ligue1 reste accessible sans abonnement -> 200 ({len(r.json())} équipes)")
 
 
-def test_webhook_alone_without_prior_checkout_does_not_activate(client, user_id, token):
+def test_pulse_alone_without_prior_checkout_does_not_activate(client, user_id, token):
     """Vérifie explicitement la mise en garde du scénario : envoyer le
-    webhook checkout.session.completed SANS avoir appelé /billing/checkout
-    au préalable ne doit PAS activer l'abonnement (aucune Subscription à
-    mettre à jour), donc la prédiction doit rester en 402."""
-    obj = {
-        "id": "cs_test_premature",
-        "customer": "cus_never_created",
-        "subscription": STRIPE_SUBSCRIPTION_ID,
+    Pulse successful.sale SANS avoir appelé /billing/checkout au préalable
+    ne doit PAS activer l'abonnement (aucune Subscription à mettre à
+    jour), donc la prédiction doit rester en 402."""
+    data = {
+        "license_key": "lic_test_premature",
         "metadata": {"user_id": str(user_id), "plan": "monthly"},
     }
-    payload = make_event("checkout.session.completed", obj)
+    payload = make_event("successful.sale", data)
     sig = sign_payload(payload, WEBHOOK_SECRET)
-    r = client.post("/billing/webhook", content=payload,
-                     headers={"stripe-signature": sig, "content-type": "application/json"})
-    assert r.status_code == 200, r.text  # le webhook répond 200 (accusé de réception), mais n'active rien
+    r = client.post("/billing/pulse", content=payload,
+                     headers={"x-pulse-signature": sig, "x-pulse-delivery-id": "pulse_premature",
+                              "content-type": "application/json"})
+    assert r.status_code == 200, r.text  # le Pulse répond 200 (accusé de réception), mais n'active rien
 
     r_pred = client.get("/predictions/Ligue1/PSG/Marseille", headers={"Authorization": f"Bearer {token}"})
     assert r_pred.status_code == 402, (
-        f"le webhook seul n'aurait PAS dû activer l'abonnement (pas de /billing/checkout préalable) : {r_pred.text}"
+        f"le Pulse seul n'aurait PAS dû activer l'abonnement (pas de /billing/checkout préalable) : {r_pred.text}"
     )
-    print(f"  [OK] webhook checkout.session.completed SANS /billing/checkout préalable -> "
+    print(f"  [OK] Pulse successful.sale SANS /billing/checkout préalable -> "
           f"n'active rien, prédiction toujours 402")
 
 
-def test_checkout_then_webhook_activates_prediction_200(client, token, user_id):
+def test_checkout_then_pulse_activates_prediction_200(client, token, user_id):
     activate_subscription(client, token, user_id, webhook_secret=WEBHOOK_SECRET,
-                           stripe_subscription_id=STRIPE_SUBSCRIPTION_ID)
-    print(f"  [OK] /billing/checkout (mocké) PUIS webhook checkout.session.completed -> abonnement activé")
+                           stripe_subscription_id=LICENSE_KEY)
+    print(f"  [OK] /billing/checkout (mocké) PUIS Pulse successful.sale -> abonnement activé")
 
     headers = {"Authorization": f"Bearer {token}"}
     r = client.get("/predictions/Ligue1/PSG/Marseille", headers=headers)
@@ -114,18 +117,18 @@ def test_checkout_then_webhook_activates_prediction_200(client, token, user_id):
     print(f"  [OK] batch accessible après abonnement actif -> 200")
 
 
-def test_subscription_deleted_reverts_to_402(client, token):
-    cancel_subscription(client, STRIPE_SUBSCRIPTION_ID, webhook_secret=WEBHOOK_SECRET)
-    print(f"  [OK] webhook customer.subscription.deleted envoyé")
+def test_subscription_revoked_reverts_to_402(client, token):
+    cancel_subscription(client, LICENSE_KEY, webhook_secret=WEBHOOK_SECRET)
+    print(f"  [OK] Pulse license.revoked envoyé")
 
     headers = {"Authorization": f"Bearer {token}"}
     r = client.get("/predictions/Ligue1/PSG/Marseille", headers=headers)
     assert r.status_code == 402, r.text
-    print(f"  [OK] après annulation -> retour à 402")
+    print(f"  [OK] après révocation -> retour à 402")
 
     r_batch = client.post("/predictions/batch", json=BATCH_PAYLOAD, headers=headers)
     assert r_batch.status_code == 402, r_batch.text
-    print(f"  [OK] batch après annulation -> retour à 402")
+    print(f"  [OK] batch après révocation -> retour à 402")
 
 
 if __name__ == "__main__":
@@ -137,9 +140,9 @@ if __name__ == "__main__":
             ("test_prediction_no_auth_at_all_401", lambda: test_prediction_no_auth_at_all_401(client)),
             ("test_prediction_authenticated_no_subscription_402", lambda: test_prediction_authenticated_no_subscription_402(client, token)),
             ("test_ratings_public_even_without_subscription", lambda: test_ratings_public_even_without_subscription(client)),
-            ("test_webhook_alone_without_prior_checkout_does_not_activate", lambda: test_webhook_alone_without_prior_checkout_does_not_activate(client, user_id, token)),
-            ("test_checkout_then_webhook_activates_prediction_200", lambda: test_checkout_then_webhook_activates_prediction_200(client, token, user_id)),
-            ("test_subscription_deleted_reverts_to_402", lambda: test_subscription_deleted_reverts_to_402(client, token)),
+            ("test_pulse_alone_without_prior_checkout_does_not_activate", lambda: test_pulse_alone_without_prior_checkout_does_not_activate(client, user_id, token)),
+            ("test_checkout_then_pulse_activates_prediction_200", lambda: test_checkout_then_pulse_activates_prediction_200(client, token, user_id)),
+            ("test_subscription_revoked_reverts_to_402", lambda: test_subscription_revoked_reverts_to_402(client, token)),
         ]
         for name, fn in steps:
             print(f"\n=== {name} ===")

@@ -2,11 +2,11 @@
 Dixon-Coles Model — Implémentation professionnelle
 ====================================================
 
-Contexte : moteur de prédiction pour SaaS d'analytics football/paris sportifs.
+Contexte : moteur de prédiction pour SaaS d'analyse statistique football.
 
 Ce module implémente le modèle Dixon & Coles (1997) tel qu'utilisé en production
-par les traders/quants dans les maisons de paris, avec les 3 briques essentielles
-que les implémentations "jouet" oublient presque toujours :
+en analyse quantitative sportive, avec les 3 briques essentielles que les
+implémentations "jouet" oublient presque toujours :
 
 1. Pondération temporelle (xi/decay) — un match d'il y a 2 ans ne doit PAS peser
    autant qu'un match d'il y a 2 semaines. Sans ça, le modèle est structurellement
@@ -18,9 +18,9 @@ que les implémentations "jouet" oublient presque toujours :
    probabilités de nul.
 
 3. Calibration — un modèle qui a un bon "hit rate" mais n'est pas calibré (proba
-   annoncée à 60% qui ne se réalise que 45% du temps) fait perdre de l'argent sur
-   la durée. C'est LE point que les implémentations académiques ignorent et que
-   l'industrie des paris ne pardonne jamais.
+   annoncée à 60% qui ne se réalise que 45% du temps) est statistiquement peu
+   fiable, même s'il "devine" souvent juste. C'est LE point que les
+   implémentations académiques ignorent le plus souvent.
 
 4. Régularisation L2 (prior bayésien) — sans elle, une équipe avec peu de matchs
    pondérés par le decay temporel (ex : reléguée, ou juste montée) peut recevoir
@@ -29,7 +29,7 @@ que les implémentations "jouet" oublient presque toujours :
    ligue, proportionnellement à l'incertitude (peu de matchs pondérés => prior
    qui domine ; beaucoup de matchs => vraisemblance qui domine).
 
-Auteur : assistant technique — usage : projet SaaS pari foot (Aimé)
+Auteur : assistant technique — usage : projet SaaS d'analyse statistique football (Aimé)
 """
 
 from __future__ import annotations
@@ -269,7 +269,7 @@ class DixonColesModel:
 
     def predict_over_under(self, home_team: str, away_team: str, line: float = 2.5,
                             max_goals: int = 8) -> dict:
-        """Probabilités Over/Under sur le total de buts (ex: 2.5)."""
+        """Probabilité que le total de buts du match soit au-dessus / en-dessous d'un seuil donné (ex: 2.5)."""
         matrix = self.predict_score_matrix(home_team, away_team, max_goals)
         total_goals = np.add.outer(np.arange(max_goals + 1), np.arange(max_goals + 1))
         over = matrix[total_goals > line].sum()
@@ -311,10 +311,11 @@ def calibration_check(model: DixonColesModel, test_matches: pd.DataFrame, n_bins
     Vérifie que les probabilités prédites correspondent aux fréquences réelles.
 
     Un modèle "bien classé" (bon AUC) peut quand même être mal calibré.
-    En paris sportifs, c'est la calibration — pas le pouvoir discriminant —
-    qui détermine si le modèle est rentable : si tu prédis 60% de victoire
-    domicile et que ça n'arrive que 45% du temps, tu perds de l'argent même
-    si tu as raison plus souvent que le hasard.
+    C'est la calibration — pas le pouvoir discriminant seul — qui détermine
+    si les probabilités annoncées sont fiables : si le modèle prédit 60% de
+    victoire domicile et que ça n'arrive que 45% du temps, les probabilités
+    affichées sont trompeuses même si le modèle "devine" juste plus souvent
+    que le hasard.
 
     Retourne un tableau bin par bin : proba prédite moyenne vs fréquence réelle.
     """
@@ -361,7 +362,8 @@ def grid_search_l2(train_matches: pd.DataFrame, test_matches: pd.DataFrame,
     probabilités mal calibrées (ex: toujours 90% pour le favori). Le
     log-loss pénalise lourdement une probabilité annoncée haute sur l'issue
     qui ne se réalise pas — c'est la métrique qui reflète directement la
-    rentabilité en paris sportifs, comme pour calibration_check ci-dessus.
+    fiabilité statistique des probabilités, comme pour calibration_check
+    ci-dessus.
 
     train_matches, test_matches : DataFrames au format attendu par .fit()
                                    (typiquement df.iloc[:-100] / df.iloc[-100:])
@@ -442,7 +444,7 @@ if __name__ == "__main__":
 
     print("\n=== Exemple de prédiction : PSG (domicile) vs Marseille ===")
     print("1X2       :", model.predict_1x2("PSG", "Marseille"))
-    print("Over/Under 2.5 :", model.predict_over_under("PSG", "Marseille", line=2.5))
+    print("Plus/Moins de 2.5 buts :", model.predict_over_under("PSG", "Marseille", line=2.5))
 
     print("\n=== Vérification de calibration (sur données de test) ===")
     print(calibration_check(model, test, n_bins=5).to_string(index=False))

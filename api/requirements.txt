@@ -13,4 +13,3 @@ passlib[bcrypt]
 bcrypt==4.0.1
 python-multipart
 httpx
-stripe==15.4.0

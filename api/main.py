@@ -462,7 +462,7 @@ class BatchPredictionResult(BaseModel):
 
 app = FastAPI(
     title="Foot Prediction API — Dixon-Coles",
-    description="Prédictions 1X2 et Over/Under basées sur un modèle Dixon-Coles régularisé, par ligue.",
+    description="Analyse statistique football : probabilités 1X2 et probabilité de plus/moins de 2.5 buts, basées sur un modèle Dixon-Coles régularisé, par ligue.",
     version="1.0.0",
 )
 
