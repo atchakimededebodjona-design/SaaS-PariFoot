@@ -301,7 +301,7 @@ rebours côté frontend pour inciter au renouvellement avant expiration.
 {
   "plan": "monthly",
   "first_name": "Awa", "last_name": "Koné",
-  "phone_number": "0700000000", "phone_country_code": "+225"
+  "phone_number": "0700000000", "phone_country_code": "CI"
 }
 ```
 Contrairement à Stripe Checkout (qui ne demandait que le plan), Chariow a
@@ -327,13 +327,21 @@ Avant tout achat : `{"status": "none", "plan": null, "is_active": false, "curren
 ### `POST /billing/pulse`
 
 Reçoit les Pulses (webhooks) Chariow : `successful.sale` (achat ou
-renouvellement réussi — active la licence), `license.activated`
-(confirmation, complète `successful.sale`), `license.expired`,
-`license.revoked`, `license.nearing_expiry` (met à jour `days_until_expiry`).
+renouvellement réussi — active la licence via `sale.custom_metadata.user_id`,
+fixé par nous à la création du checkout), `license.activated` (fournit la
+clé de licence et la date d'expiration, absentes de `successful.sale` —
+relié via `customer.email`, pas de `custom_metadata` sur cet événement),
+`license.expired`, `license.revoked`, `license.nearing_expiry` (met à jour
+`days_until_expiry`, relié via `customer.email` comme les 3 précédents).
 
-Signature `x-pulse-signature` (HMAC-SHA256 hex du corps brut avec
-`CHARIOW_PULSE_SECRET`) vérifiée à chaque requête — absente/invalide →
-**400**, événement **jamais** traité. Déduplication sur le header
+Pas de wrapper `data` : chaque événement porte ses champs à la racine, sous
+des clés qui varient (`sale`, `license`, `customer`, ...) — confirmé via
+chariow.dev/en/guides/pulses.
+
+Signature `x-chariow-signature` (format `sha256=<hex hmac-sha256 du corps
+brut>` avec `CHARIOW_PULSE_SECRET`) vérifiée à chaque requête — absente/
+invalide → **401** (recommandation explicite de chariow.dev/en/guides/pulse-security),
+événement **jamais** traité. Déduplication sur le header
 `x-pulse-delivery-id` : une delivery déjà vue est ignorée silencieusement
 (Chariow peut la renvoyer après un timeout/5xx). Ne nécessite PAS de token
 JWT (appelé par Chariow, pas par un utilisateur) mais la vérification de
@@ -341,10 +349,13 @@ signature joue exactement ce rôle de sécurité.
 
 ### ⚠️ Point non vérifié en conditions réelles
 
-L'appel de création de lien de checkout
-(`app/billing/router.py::_create_chariow_checkout_link` — endpoint
-`POST /checkout`, structure `data.step`/`data.payment.checkout_url`) est
-confirmé via la doc officielle (chariow.dev/en/guides/checkout). Reste à
+Le reste (endpoint de checkout, forme du payload envoyé, forme des Pulses,
+schéma de signature) a été confirmé soit via la doc officielle
+(chariow.dev/en/guides/checkout, /pulses, /pulse-security), soit en testant
+contre un vrai compte — y compris un bug réel corrigé en cours de route :
+le champ de métadonnées personnalisées s'appelle `custom_metadata`, pas
+`metadata` (Chariow acceptait silencieusement l'ancien nom sans jamais
+l'attacher à la vente, donc jamais retrouvable dans le Pulse). Reste à
 lever avant de considérer l'intégration fiable pour de vrais clients :
 
 - **Mode test des clés API** — vérifier dans Paramètres → Clés API du
@@ -356,8 +367,12 @@ lever avant de considérer l'intégration fiable pour de vrais clients :
 1. Démarrer l'API (`cd api && uvicorn main:app --reload --port 8000 --env-file .env`).
 2. Créer un produit Licence de test dans le dashboard Chariow (mode
    "Paiement unique", prix fixe) et un Pulse pointant vers l'API locale
-   exposée via un tunnel (ex. [ngrok](https://ngrok.com/) :
-   `ngrok http 8000`, puis `https://<sous-domaine>.ngrok.io/billing/pulse`).
+   exposée via un tunnel — [ngrok](https://ngrok.com/) (compte gratuit requis) :
+   `ngrok http 8000`, puis `https://<sous-domaine>.ngrok.io/billing/pulse` ;
+   ou [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+   sans compte : `cloudflared tunnel --url http://localhost:8000`, puis
+   `https://<sous-domaine>.trycloudflare.com/billing/pulse` (URL temporaire,
+   change à chaque relance).
 3. Renseigner `CHARIOW_PULSE_SECRET` dans `api/.env` avec le secret défini
    au moment de créer le Pulse, et redémarrer l'API.
 4. Déclencher un vrai achat de test pour observer les événements reçus, ou

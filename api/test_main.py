@@ -170,7 +170,8 @@ if __name__ == "__main__":
     failures = 0
     with TestClient(app) as client:
         user_id, token = register_and_login(client, "resolution-tests@example.com", "correct-horse-battery-staple")
-        activate_subscription(client, token, user_id, webhook_secret="whsec_test_secret_for_signature_verification")
+        activate_subscription(client, token, user_id, email="resolution-tests@example.com",
+                               webhook_secret="whsec_test_secret_for_signature_verification")
         AUTH_HEADER["Authorization"] = f"Bearer {token}"
 
         tests = [

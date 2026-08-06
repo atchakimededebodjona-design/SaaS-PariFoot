@@ -5,10 +5,16 @@ vraies clés nécessaires).
 
 La vérification de signature des Pulses n'est PAS mockée : les payloads de
 test sont signés à la main avec un HMAC-SHA256 réel du corps brut (header
-x-pulse-signature) et le même CHARIOW_PULSE_SECRET de test que l'application
-utilise — si le code de vérification dans router.py était cassé, ces tests
-échoueraient pour de vraies raisons cryptographiques, pas parce qu'on aurait
-mocké la vérité.
+x-chariow-signature, format "sha256=<hex>") et le même CHARIOW_PULSE_SECRET
+de test que l'application utilise — si le code de vérification dans
+router.py était cassé, ces tests échoueraient pour de vraies raisons
+cryptographiques, pas parce qu'on aurait mocké la vérité.
+
+Forme des payloads Pulse confirmée via chariow.dev/en/guides/pulses (pas de
+wrapper "data" ; successful.sale porte sale.custom_metadata mais ni clé de
+licence ni date d'expiration ; license.activated porte license.key/expires_at
+mais pas de custom_metadata — la liaison à un utilisateur s'y fait via
+customer.email, cf. app/billing/router.py::_find_subscription_by_email).
 
 Remplace l'ancien test_billing.py (Stripe) — remplacé par Chariow (audience
 ouest-africaine, Mobile Money natif). Pas de test de portail client : Chariow
@@ -56,25 +62,25 @@ CHECKOUT_BODY = {
     "first_name": "Bob",
     "last_name": "Kouassi",
     "phone_number": "0700000000",
-    "phone_country_code": "+225",
+    "phone_country_code": "CI",
 }
 
 
 def sign_payload(payload_bytes: bytes, secret: str) -> str:
-    """Signature Pulse réelle : HMAC-SHA256 hex du corps brut — pas de mock,
-    c'est exactement ce qu'un vrai serveur Chariow calculerait."""
-    return hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
+    """Signature Pulse réelle : "sha256=" + HMAC-SHA256 hex du corps brut —
+    pas de mock, c'est exactement ce qu'un vrai serveur Chariow calculerait."""
+    return "sha256=" + hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
 
 
-def make_event(event_type: str, data: dict) -> bytes:
-    return json.dumps({"event": event_type, "data": data}).encode()
+def make_event(event_type: str, **fields) -> bytes:
+    return json.dumps({"event": event_type, **fields}).encode()
 
 
-def post_pulse(client, event_type: str, data: dict, delivery_id: str, secret: str = PULSE_SECRET):
-    payload = make_event(event_type, data)
+def post_pulse(client, event_type: str, delivery_id: str, secret: str = PULSE_SECRET, **fields):
+    payload = make_event(event_type, **fields)
     sig = sign_payload(payload, secret)
     return client.post("/billing/pulse", content=payload, headers={
-        "x-pulse-signature": sig, "x-pulse-delivery-id": delivery_id,
+        "x-chariow-signature": sig, "x-pulse-delivery-id": delivery_id,
         "content-type": "application/json",
     })
 
@@ -131,7 +137,7 @@ def test_checkout_session_creation(client, token):
     call_kwargs = m_checkout.call_args.kwargs
     assert call_kwargs["product_id"] == "prod_test_monthly"
     assert call_kwargs["first_name"] == "Bob"
-    assert call_kwargs["phone_country_code"] == "+225"
+    assert call_kwargs["phone_country_code"] == "CI"
     print(f"  [OK] création lien de checkout (_create_chariow_checkout_link mocké) "
           f"-> checkout_url={body['checkout_url']}")
 
@@ -139,17 +145,37 @@ def test_checkout_session_creation(client, token):
 # ---------------------------------------------------------------------------
 # _create_chariow_checkout_link elle-même — test_checkout_session_creation
 # ci-dessus mocke cette fonction en entier (au niveau de la route), donc
-# n'exerce jamais son analyse de la réponse Chariow. Les tests suivants
-# mockent httpx.post directement pour couvrir la vraie logique de parsing
-# (les 3 valeurs de "step", et la remontée d'erreur 401/404/422).
+# n'exerce jamais son analyse de la réponse Chariow ni la forme du payload
+# envoyé. Les tests suivants mockent httpx.post directement pour couvrir la
+# vraie logique de parsing (les 3 valeurs de "step", la remontée d'erreur
+# 401/404/422) et la forme réelle du payload envoyé.
 # ---------------------------------------------------------------------------
 
 CHECKOUT_LINK_KWARGS = dict(
     product_id="prod_test_monthly", email="a@b.com",
     first_name="A", last_name="B",
-    phone_number="0700000000", phone_country_code="+225",
+    phone_number="0700000000", phone_country_code="CI",
     metadata={"user_id": "1", "plan": "monthly"},
 )
+
+
+def test_create_checkout_link_sends_custom_metadata_key(client, token):
+    """Régression : le premier essai envoyait 'metadata' au lieu de
+    'custom_metadata' dans le payload — accepté silencieusement par Chariow
+    (200 OK) mais jamais rattaché à la vente, donc jamais retrouvable dans
+    le Pulse successful.sale. Découvert en testant contre la vraie API, pas
+    par ce test — ajouté après coup pour ne plus jamais régresser dessus."""
+    fake_response = MagicMock(status_code=200)
+    fake_response.json.return_value = {
+        "data": {"step": "payment", "payment": {"checkout_url": "https://chariow.com/pay/abc"}}
+    }
+    with patch("app.billing.router.httpx.post", return_value=fake_response) as m_post:
+        _create_chariow_checkout_link(**CHECKOUT_LINK_KWARGS)
+    sent_json = m_post.call_args.kwargs["json"]
+    assert "custom_metadata" in sent_json, "le payload doit utiliser 'custom_metadata', pas 'metadata'"
+    assert "metadata" not in sent_json
+    assert sent_json["custom_metadata"] == {"user_id": "1", "plan": "monthly"}
+    print(f"  [OK] payload envoyé à Chariow utilise bien 'custom_metadata' (pas 'metadata')")
 
 
 def test_create_checkout_link_step_payment_returns_url(client, token):
@@ -233,39 +259,42 @@ def test_create_checkout_link_404_maps_to_502(client, token):
 
 
 def test_pulse_successful_sale_activates(client, user_id):
-    data = {
-        "license_key": "lic_test_456",
-        "expires_at": "2026-09-02T20:23:24+00:00",
-        "metadata": {"user_id": str(user_id), "plan": "monthly"},
-    }
-    r = post_pulse(client, "successful.sale", data, delivery_id="pulse_sale_1")
+    r = post_pulse(client, "successful.sale", "pulse_sale_1",
+                    sale={"custom_metadata": {"user_id": str(user_id), "plan": "monthly"}},
+                    customer={"email": EMAIL})
     assert r.status_code == 200, r.text
 
     sub = get_subscription_row(user_id)
     assert sub is not None
     assert sub.status == "active"
-    assert sub.chariow_license_key == "lic_test_456"
     assert sub.plan == "monthly"
-    assert sub.current_period_end is not None
-    print(f"  [OK] Pulse successful.sale (signature réelle) -> status='active', "
-          f"chariow_license_key={sub.chariow_license_key}, expire le {sub.current_period_end.isoformat()}")
+    # Le sale ne porte ni clé de licence ni date d'expiration (elles arrivent
+    # avec license.activated juste après) — l'accès est déjà débloqué (is_active
+    # est True dès que current_period_end est None) mais ces deux champs restent vides.
+    assert sub.chariow_license_key is None
+    assert sub.current_period_end is None
+    assert sub.is_active is True
+    print(f"  [OK] Pulse successful.sale (signature réelle) -> status='active', is_active=True "
+          f"(clé de licence/expiration pas encore connues, en attente de license.activated)")
 
 
 def test_pulse_license_activated_updates_expiry(client, user_id):
-    data = {"license_key": "lic_test_456", "expires_at": "2026-10-02T20:23:24+00:00"}
-    r = post_pulse(client, "license.activated", data, delivery_id="pulse_activated_1")
+    r = post_pulse(client, "license.activated", "pulse_activated_1",
+                    license={"key": "lic_test_456", "expires_at": "2026-10-02T20:23:24+00:00"},
+                    customer={"email": EMAIL})
     assert r.status_code == 200, r.text
 
     sub = get_subscription_row(user_id)
     assert sub.status == "active"
+    assert sub.chariow_license_key == "lic_test_456"
     assert sub.current_period_end.isoformat().startswith("2026-10-02")
-    print(f"  [OK] Pulse license.activated (complément) -> current_period_end mis à jour "
-          f"({sub.current_period_end.isoformat()})")
+    print(f"  [OK] Pulse license.activated (complément, relié via customer.email) -> "
+          f"chariow_license_key={sub.chariow_license_key}, expire le {sub.current_period_end.isoformat()}")
 
 
 def test_pulse_nearing_expiry_sets_days_until_expiry(client, user_id, token):
-    data = {"license_key": "lic_test_456", "days_until_expiry": 7}
-    r = post_pulse(client, "license.nearing_expiry", data, delivery_id="pulse_nearing_1")
+    r = post_pulse(client, "license.nearing_expiry", "pulse_nearing_1",
+                    customer={"email": EMAIL}, days_until_expiry=7)
     assert r.status_code == 200, r.text
 
     r_status = client.get("/billing/subscription", headers={"Authorization": f"Bearer {token}"})
@@ -276,33 +305,38 @@ def test_pulse_nearing_expiry_sets_days_until_expiry(client, user_id, token):
 
 def test_manual_renewal_resets_days_until_expiry(client, user_id, token):
     """Simule un renouvellement manuel (re-achat via /billing/checkout, puis
-    nouveau Pulse successful.sale) : le compte à rebours précédent doit être
-    effacé, il n'a plus cours après un nouvel achat."""
+    nouveaux Pulses successful.sale + license.activated) : le compte à
+    rebours précédent doit être effacé dès le sale, la nouvelle expiration
+    n'arrive qu'avec le license.activated qui suit — exactement comme un
+    premier achat."""
     with patch("app.billing.router._create_chariow_checkout_link",
                return_value="https://chariow.com/checkout/renewal-link"):
         r = client.post("/billing/checkout", json=CHECKOUT_BODY,
                          headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200, r.text
 
-    data = {
-        "license_key": "lic_test_456",
-        "expires_at": "2026-11-02T20:23:24+00:00",
-        "metadata": {"user_id": str(user_id), "plan": "monthly"},
-    }
-    r = post_pulse(client, "successful.sale", data, delivery_id="pulse_sale_renewal")
+    r = post_pulse(client, "successful.sale", "pulse_sale_renewal",
+                    sale={"custom_metadata": {"user_id": str(user_id), "plan": "monthly"}},
+                    customer={"email": EMAIL})
+    assert r.status_code == 200, r.text
+
+    r_status = client.get("/billing/subscription", headers={"Authorization": f"Bearer {token}"})
+    assert r_status.json()["days_until_expiry"] is None
+    print(f"  [OK] renouvellement (re-checkout + successful.sale) -> days_until_expiry effacé")
+
+    r = post_pulse(client, "license.activated", "pulse_activated_renewal",
+                    license={"key": "lic_test_456", "expires_at": "2026-11-02T20:23:24+00:00"},
+                    customer={"email": EMAIL})
     assert r.status_code == 200, r.text
 
     r_status = client.get("/billing/subscription", headers={"Authorization": f"Bearer {token}"})
     body = r_status.json()
-    assert body["days_until_expiry"] is None
     assert body["current_period_end"].startswith("2026-11-02")
-    print(f"  [OK] renouvellement manuel (re-checkout + successful.sale) -> "
-          f"days_until_expiry effacé, nouvelle expiration 2026-11-02")
+    print(f"  [OK] license.activated du renouvellement -> nouvelle expiration 2026-11-02")
 
 
 def test_pulse_license_expired(client, user_id):
-    data = {"license_key": "lic_test_456"}
-    r = post_pulse(client, "license.expired", data, delivery_id="pulse_expired_1")
+    r = post_pulse(client, "license.expired", "pulse_expired_1", customer={"email": EMAIL})
     assert r.status_code == 200, r.text
 
     sub = get_subscription_row(user_id)
@@ -312,8 +346,7 @@ def test_pulse_license_expired(client, user_id):
 
 
 def test_pulse_license_revoked(client, user_id):
-    data = {"license_key": "lic_test_456"}
-    r = post_pulse(client, "license.revoked", data, delivery_id="pulse_revoked_1")
+    r = post_pulse(client, "license.revoked", "pulse_revoked_1", customer={"email": EMAIL})
     assert r.status_code == 200, r.text
 
     sub = get_subscription_row(user_id)
@@ -322,18 +355,17 @@ def test_pulse_license_revoked(client, user_id):
     print(f"  [OK] Pulse license.revoked -> status='revoked', is_active=False")
 
 
-def test_pulse_invalid_signature_400(client, user_id):
-    data = {"license_key": "lic_test_456"}
-    payload = make_event("license.activated", data)
+def test_pulse_invalid_signature_401(client, user_id):
+    payload = make_event("license.activated", license={"key": "lic_test_456"}, customer={"email": EMAIL})
     r = client.post("/billing/pulse", content=payload, headers={
-        "x-pulse-signature": "deadbeef" * 8, "x-pulse-delivery-id": "pulse_bad_sig",
+        "x-chariow-signature": "sha256=" + "deadbeef" * 8, "x-pulse-delivery-id": "pulse_bad_sig",
         "content-type": "application/json",
     })
-    assert r.status_code == 400, r.text
+    assert r.status_code == 401, r.text
 
     sub = get_subscription_row(user_id)
     assert sub.status == "revoked", "l'événement à signature invalide n'aurait JAMAIS dû être traité"
-    print(f"  [OK] signature invalide -> 400, statut resté inchangé ('revoked', événement non traité)")
+    print(f"  [OK] signature invalide -> 401, statut resté inchangé ('revoked', événement non traité)")
 
 
 def test_pulse_dedup_on_delivery_id(client, user_id):
@@ -341,12 +373,9 @@ def test_pulse_dedup_on_delivery_id(client, user_id):
     que test_pulse_successful_sale_activates) après la révocation : la
     déduplication doit empêcher tout retraitement, le statut doit rester
     'revoked' et non repasser à 'active'."""
-    data = {
-        "license_key": "lic_test_456",
-        "expires_at": "2026-09-02T20:23:24+00:00",
-        "metadata": {"user_id": str(user_id), "plan": "monthly"},
-    }
-    r = post_pulse(client, "successful.sale", data, delivery_id="pulse_sale_1")  # même delivery_id que la 1ère fois
+    r = post_pulse(client, "successful.sale", "pulse_sale_1",  # même delivery_id que la 1ère fois
+                    sale={"custom_metadata": {"user_id": str(user_id), "plan": "monthly"}},
+                    customer={"email": EMAIL})
     assert r.status_code == 200, r.text
     assert r.json().get("duplicate") is True
 
@@ -365,6 +394,7 @@ if __name__ == "__main__":
             ("test_checkout_missing_customer_fields_422", lambda: test_checkout_missing_customer_fields_422(client, token)),
             ("test_checkout_unknown_plan_400", lambda: test_checkout_unknown_plan_400(client, token)),
             ("test_checkout_session_creation", lambda: test_checkout_session_creation(client, token)),
+            ("test_create_checkout_link_sends_custom_metadata_key", lambda: test_create_checkout_link_sends_custom_metadata_key(client, token)),
             ("test_create_checkout_link_step_payment_returns_url", lambda: test_create_checkout_link_step_payment_returns_url(client, token)),
             ("test_create_checkout_link_step_already_purchased_logs_warning", lambda: test_create_checkout_link_step_already_purchased_logs_warning(client, token)),
             ("test_create_checkout_link_step_completed_returns_url", lambda: test_create_checkout_link_step_completed_returns_url(client, token)),
@@ -377,7 +407,7 @@ if __name__ == "__main__":
             ("test_manual_renewal_resets_days_until_expiry", lambda: test_manual_renewal_resets_days_until_expiry(client, user_id, token)),
             ("test_pulse_license_expired", lambda: test_pulse_license_expired(client, user_id)),
             ("test_pulse_license_revoked", lambda: test_pulse_license_revoked(client, user_id)),
-            ("test_pulse_invalid_signature_400", lambda: test_pulse_invalid_signature_400(client, user_id)),
+            ("test_pulse_invalid_signature_401", lambda: test_pulse_invalid_signature_401(client, user_id)),
             ("test_pulse_dedup_on_delivery_id", lambda: test_pulse_dedup_on_delivery_id(client, user_id)),
         ]
         for name, fn in steps:

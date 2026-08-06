@@ -9,6 +9,14 @@ premier import de `app.core.database` (le moteur SQLAlchemy est créé une
 fois pour toutes au chargement du module). Chaque script de test appelant
 `configure_test_env()` doit le faire tout en haut, avant `from main import app`.
 
+Forme des payloads Pulse confirmée via chariow.dev/en/guides/pulses (pas de
+wrapper "data" ; successful.sale porte sale.custom_metadata mais ni clé de
+licence ni date d'expiration ; license.activated porte license.key/expires_at
+mais pas de custom_metadata — la liaison à un utilisateur s'y fait via
+customer.email, cf. app/billing/router.py::_find_subscription_by_email).
+Signature réelle chariow.dev/en/guides/pulse-security : header
+x-chariow-signature, valeur "sha256=<hex hmac-sha256 du corps brut>".
+
 Note sur les noms de paramètres : `webhook_secret` et `stripe_subscription_id`
 sont conservés tels quels (plutôt que renommés en `pulse_secret`/`license_key`)
 pour que test_main.py et test_premium.py, qui les passent en kwargs, n'aient
@@ -54,14 +62,13 @@ def cleanup_db(db_path: Path) -> None:
 
 
 def sign_payload(payload_bytes: bytes, secret: str) -> str:
-    """Signature Pulse Chariow réelle : HMAC-SHA256 hex du corps brut,
-    envoyée dans le header x-pulse-signature — jamais mockée."""
-    return hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
+    """Signature Pulse Chariow réelle : "sha256=" + HMAC-SHA256 hex du corps
+    brut, envoyée dans le header x-chariow-signature — jamais mockée."""
+    return "sha256=" + hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
 
 
-def make_event(event_type: str, data: dict) -> bytes:
-    event = {"event": event_type, "data": data}
-    return json.dumps(event).encode()
+def make_event(event_type: str, **fields) -> bytes:
+    return json.dumps({"event": event_type, **fields}).encode()
 
 
 def register_and_login(client, email: str, password: str) -> tuple[int, str]:
@@ -74,14 +81,17 @@ def register_and_login(client, email: str, password: str) -> tuple[int, str]:
     return user_id, r.json()["access_token"]
 
 
-def activate_subscription(client, token: str, user_id: int, webhook_secret: str,
+def activate_subscription(client, token: str, user_id: int, email: str, webhook_secret: str,
                            stripe_subscription_id: str = "lic_test_premium_001",
-                           delivery_id: str = "pulse_test_activate") -> None:
+                           delivery_id_sale: str = "pulse_test_sale",
+                           delivery_id_license: str = "pulse_test_activate") -> None:
     """
     Reproduit le VRAI flux d'activation, dans l'ordre : POST /billing/checkout
     (lien de checkout Chariow mocké — aucun réseau) crée d'abord
     l'enregistrement Subscription (status='none'), PUIS le Pulse
-    successful.sale le fait passer à 'active'. Le Pulse seul, sans checkout
+    successful.sale le fait passer à 'active' (via sale.custom_metadata.user_id),
+    PUIS le Pulse license.activated fournit la clé de licence + l'expiration
+    (relié via customer.email, cf. router.py). Le Pulse seul, sans checkout
     préalable, ne suffit pas : aucun enregistrement Subscription où écrire
     (cf. _handle_successful_sale dans app/billing/router.py, qui retourne
     silencieusement si `sub is None`).
@@ -91,29 +101,40 @@ def activate_subscription(client, token: str, user_id: int, webhook_secret: str,
         r = client.post("/billing/checkout", json={
             "plan": "monthly",
             "first_name": "Test", "last_name": "User",
-            "phone_number": "0100000000", "phone_country_code": "+225",
+            "phone_number": "0100000000", "phone_country_code": "CI",
         }, headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200, f"checkout mocké échoué : {r.text}"
 
-    data = {
-        "license_key": stripe_subscription_id,
-        "metadata": {"user_id": str(user_id), "plan": "monthly"},
-    }
-    payload = make_event("successful.sale", data)
-    sig = sign_payload(payload, webhook_secret)
-    r = client.post("/billing/pulse", content=payload,
-                     headers={"x-pulse-signature": sig, "x-pulse-delivery-id": delivery_id,
+    sale_payload = make_event(
+        "successful.sale",
+        sale={"custom_metadata": {"user_id": str(user_id), "plan": "monthly"}},
+        customer={"email": email},
+    )
+    sig = sign_payload(sale_payload, webhook_secret)
+    r = client.post("/billing/pulse", content=sale_payload,
+                     headers={"x-chariow-signature": sig, "x-pulse-delivery-id": delivery_id_sale,
                               "content-type": "application/json"})
     assert r.status_code == 200, f"Pulse successful.sale échoué : {r.text}"
 
+    license_payload = make_event(
+        "license.activated",
+        license={"key": stripe_subscription_id, "expires_at": None},
+        customer={"email": email},
+    )
+    sig = sign_payload(license_payload, webhook_secret)
+    r = client.post("/billing/pulse", content=license_payload,
+                     headers={"x-chariow-signature": sig, "x-pulse-delivery-id": delivery_id_license,
+                              "content-type": "application/json"})
+    assert r.status_code == 200, f"Pulse license.activated échoué : {r.text}"
 
-def cancel_subscription(client, stripe_subscription_id: str, webhook_secret: str,
+
+def cancel_subscription(client, email: str, webhook_secret: str,
                          delivery_id: str = "pulse_test_revoke") -> None:
-    """Envoie un Pulse license.revoked réel (signature valide)."""
-    data = {"license_key": stripe_subscription_id}
-    payload = make_event("license.revoked", data)
+    """Envoie un Pulse license.revoked réel (signature valide), relié via
+    customer.email (pas de license_key nécessaire côté appelant)."""
+    payload = make_event("license.revoked", customer={"email": email})
     sig = sign_payload(payload, webhook_secret)
     r = client.post("/billing/pulse", content=payload,
-                     headers={"x-pulse-signature": sig, "x-pulse-delivery-id": delivery_id,
+                     headers={"x-chariow-signature": sig, "x-pulse-delivery-id": delivery_id,
                               "content-type": "application/json"})
     assert r.status_code == 200, f"Pulse license.revoked échoué : {r.text}"

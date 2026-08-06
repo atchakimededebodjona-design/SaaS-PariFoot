@@ -5,7 +5,7 @@ audience ouest-africaine, support Mobile Money natif).
 Flux complet :
   1. Utilisateur connecté -> POST /billing/checkout
      {"plan": "monthly", "first_name": ..., "last_name": ..., "phone_number": ...,
-      "phone_country_code": "+225"}
+      "phone_country_code": "CI"}  # code pays ISO 3166-1 alpha-2, pas un indicatif
      -> on crée un lien de checkout Chariow (hébergé, aucune donnée de
      paiement ne transite par notre backend) et on le renvoie
   2. Paiement réussi -> Chariow envoie le Pulse successful.sale, puis en
@@ -69,7 +69,7 @@ class CheckoutRequest(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
-    phone_country_code: str
+    phone_country_code: str  # code pays ISO 3166-1 alpha-2 (ex. "CI"), PAS un indicatif ("+225")
 
 
 class CheckoutResponse(BaseModel):
@@ -124,20 +124,25 @@ def _create_chariow_checkout_link(
                                    Licence (qui autorise toujours le rachat
                                    selon la doc) ; loggé en warning si ça
                                    arrive quand même
+
+    Forme du payload confirmée empiriquement contre la vraie API (le premier
+    essai avec un objet "customer" imbriqué a été rejeté en 422 listant les
+    champs manquants) : email/first_name/last_name à la racine, téléphone en
+    sous-objet "phone" avec "number"/"country_code" — pas de champ "customer".
     """
     response = httpx.post(
         f"{CHARIOW_API_BASE_URL}/checkout",
         headers={"Authorization": f"Bearer {CHARIOW_API_KEY}"},
         json={
             "product_id": product_id,
-            "customer": {
-                "email": email,
-                "first_name": first_name,
-                "last_name": last_name,
-                "phone_number": phone_number,
-                "phone_country_code": phone_country_code,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone": {
+                "number": phone_number,
+                "country_code": phone_country_code,
             },
-            "metadata": metadata,
+            "custom_metadata": metadata,
         },
         timeout=10.0,
     )
@@ -215,10 +220,16 @@ def get_subscription_status(
 # ---------------------------------------------------------------------------
 
 def _verify_pulse_signature(payload: bytes, signature_header: str | None) -> bool:
-    if not signature_header:
+    """
+    Contrat confirmé via chariow.dev/en/guides/pulse-security : header
+    x-chariow-signature, valeur "sha256=<hex hmac-sha256 du corps brut>".
+    Seul le corps brut est signé (méthode HTTP, URL, headers exclus).
+    """
+    if not signature_header or not signature_header.startswith("sha256="):
         return False
-    expected = hmac.new(CHARIOW_PULSE_SECRET.encode(), payload, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, signature_header)
+    received_hex = signature_header[len("sha256="):]
+    expected_hex = hmac.new(CHARIOW_PULSE_SECRET.encode(), payload, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected_hex, received_hex)
 
 
 def _already_processed(session: Session, delivery_id: str) -> bool:
@@ -238,24 +249,35 @@ def _parse_datetime(value) -> datetime | None:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def _find_by_license_key(session: Session, license_key: str | None) -> Subscription | None:
-    if not license_key:
+def _find_subscription_by_email(session: Session, email: str | None) -> Subscription | None:
+    """
+    Les Pulses license.* (activated/expired/revoked/nearing_expiry) ne
+    portent PAS notre custom_metadata (confirmé via chariow.dev/en/guides/pulses
+    — seul l'objet "customer" y figure, avec son email) : on ne peut donc pas
+    les relier à un utilisateur via chariow_license_key dès le premier
+    league.activated (la licence n'est pas encore connue de notre côté à ce
+    stade). On relie via l'email du client, identique à celui utilisé pour
+    /billing/checkout (current_user.email).
+    """
+    if not email:
         return None
-    return session.exec(
-        select(Subscription).where(Subscription.chariow_license_key == license_key)
-    ).first()
+    user = session.exec(select(User).where(User.email == email)).first()
+    if user is None:
+        return None
+    return session.exec(select(Subscription).where(Subscription.user_id == user.id)).first()
 
 
 @router.post("/pulse", status_code=status.HTTP_200_OK)
 async def chariow_pulse(request: Request, session: Session = Depends(get_session)):
     payload = await request.body()
-    signature = request.headers.get("x-pulse-signature")
+    signature = request.headers.get("x-chariow-signature")
 
     if not _verify_pulse_signature(payload, signature):
         # Signature invalide ou absente -> on rejette, ne JAMAIS traiter un
         # événement dont on n'a pas pu vérifier l'authenticité (sinon
-        # n'importe qui pourrait POST un faux "licence activée").
-        raise HTTPException(status_code=400, detail="Signature Pulse invalide")
+        # n'importe qui pourrait POST un faux "licence activée"). 401 :
+        # recommandation explicite de la doc Chariow (Pulse Security).
+        raise HTTPException(status_code=401, detail="Signature Pulse invalide")
 
     delivery_id = request.headers.get("x-pulse-delivery-id")
     if delivery_id and _already_processed(session, delivery_id):
@@ -263,20 +285,22 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
         # réseau) — on accuse réception sans retraiter.
         return {"received": True, "duplicate": True}
 
-    event = json.loads(payload)
-    event_type = event.get("event")
-    data = event.get("data", {})
+    # Pas de wrapper "data" : les champs sont à la racine, sous des clés qui
+    # varient par type d'événement ("sale", "license", "customer", ...) —
+    # confirmé via chariow.dev/en/guides/pulses.
+    body = json.loads(payload)
+    event_type = body.get("event")
 
     if event_type == "successful.sale":
-        _handle_successful_sale(session, data)
+        _handle_successful_sale(session, body)
     elif event_type == "license.activated":
-        _handle_license_activated(session, data)
+        _handle_license_activated(session, body)
     elif event_type == "license.expired":
-        _handle_license_status(session, data, new_status="expired")
+        _handle_license_status(session, body, new_status="expired")
     elif event_type == "license.revoked":
-        _handle_license_status(session, data, new_status="revoked")
+        _handle_license_status(session, body, new_status="revoked")
     elif event_type == "license.nearing_expiry":
-        _handle_license_nearing_expiry(session, data)
+        _handle_license_nearing_expiry(session, body)
     # Les autres types d'événements peuvent être ajoutés au besoin — ignorés
     # silencieusement pour l'instant plutôt que de lever une erreur
     # (Chariow réessaie sinon indéfiniment).
@@ -287,9 +311,17 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
     return {"received": True}
 
 
-def _handle_successful_sale(session: Session, data: dict):
-    metadata = data.get("metadata") or {}
-    user_id = metadata.get("user_id")
+def _handle_successful_sale(session: Session, body: dict):
+    """
+    Le sale ne porte PAS encore de clé de licence ni de date d'expiration
+    (ces informations arrivent avec le Pulse license.activated qui suit) —
+    on active l'accès dès maintenant sur la seule foi de custom_metadata
+    (notre user_id, fixé par nous à la création du checkout), et
+    license.activated affinera current_period_end juste après.
+    """
+    sale = body.get("sale") or {}
+    custom_metadata = sale.get("custom_metadata") or {}
+    user_id = custom_metadata.get("user_id")
     if user_id is None:
         return
     user_id = int(user_id)
@@ -298,10 +330,8 @@ def _handle_successful_sale(session: Session, data: dict):
     if sub is None:
         return  # ne devrait pas arriver (/billing/checkout crée toujours l'enregistrement avant la vente)
 
-    sub.chariow_license_key = data.get("license_key")
-    sub.plan = metadata.get("plan")
+    sub.plan = custom_metadata.get("plan")
     sub.status = "active"
-    sub.current_period_end = _parse_datetime(data.get("expires_at"))
     # Nouvel achat/renouvellement : le compte à rebours précédent n'a plus cours.
     sub.days_until_expiry = None
     sub.updated_at = datetime.now(timezone.utc)
@@ -309,14 +339,18 @@ def _handle_successful_sale(session: Session, data: dict):
     session.commit()
 
 
-def _handle_license_activated(session: Session, data: dict):
-    """Complément de successful.sale : confirme l'activation de la licence,
-    éventuellement avec une date d'expiration plus à jour."""
-    sub = _find_by_license_key(session, data.get("license_key"))
+def _handle_license_activated(session: Session, body: dict):
+    """Complément de successful.sale : fournit la clé de licence et la date
+    d'expiration, absentes du Pulse successful.sale. On relie via l'email du
+    client (pas de custom_metadata sur cet événement, cf. _find_subscription_by_email)."""
+    license_ = body.get("license") or {}
+    customer = body.get("customer") or {}
+    sub = _find_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
+    sub.chariow_license_key = license_.get("key")
     sub.status = "active"
-    expires_at = _parse_datetime(data.get("expires_at"))
+    expires_at = _parse_datetime(license_.get("expires_at"))
     if expires_at is not None:
         sub.current_period_end = expires_at
     sub.updated_at = datetime.now(timezone.utc)
@@ -324,8 +358,9 @@ def _handle_license_activated(session: Session, data: dict):
     session.commit()
 
 
-def _handle_license_status(session: Session, data: dict, *, new_status: str):
-    sub = _find_by_license_key(session, data.get("license_key"))
+def _handle_license_status(session: Session, body: dict, *, new_status: str):
+    customer = body.get("customer") or {}
+    sub = _find_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
     sub.status = new_status
@@ -334,11 +369,12 @@ def _handle_license_status(session: Session, data: dict, *, new_status: str):
     session.commit()
 
 
-def _handle_license_nearing_expiry(session: Session, data: dict):
-    sub = _find_by_license_key(session, data.get("license_key"))
+def _handle_license_nearing_expiry(session: Session, body: dict):
+    customer = body.get("customer") or {}
+    sub = _find_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
-    sub.days_until_expiry = data.get("days_until_expiry")
+    sub.days_until_expiry = body.get("days_until_expiry")
     sub.updated_at = datetime.now(timezone.utc)
     session.add(sub)
     session.commit()

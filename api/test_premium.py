@@ -20,7 +20,7 @@ précédente) :
 Note : require_active_subscription et sa logique (401/402, dépendance
 inchangée entre Stripe et Chariow) ne sont PAS le sujet de la migration —
 seule la façon de forger un événement brut ci-dessous (format Pulse,
-header x-pulse-signature, endpoint /billing/pulse) a dû être adaptée.
+header x-chariow-signature, endpoint /billing/pulse) a dû être adaptée.
 
 Usage : python api/test_premium.py
 """
@@ -80,14 +80,14 @@ def test_pulse_alone_without_prior_checkout_does_not_activate(client, user_id, t
     Pulse successful.sale SANS avoir appelé /billing/checkout au préalable
     ne doit PAS activer l'abonnement (aucune Subscription à mettre à
     jour), donc la prédiction doit rester en 402."""
-    data = {
-        "license_key": "lic_test_premature",
-        "metadata": {"user_id": str(user_id), "plan": "monthly"},
-    }
-    payload = make_event("successful.sale", data)
+    payload = make_event(
+        "successful.sale",
+        sale={"custom_metadata": {"user_id": str(user_id), "plan": "monthly"}},
+        customer={"email": EMAIL},
+    )
     sig = sign_payload(payload, WEBHOOK_SECRET)
     r = client.post("/billing/pulse", content=payload,
-                     headers={"x-pulse-signature": sig, "x-pulse-delivery-id": "pulse_premature",
+                     headers={"x-chariow-signature": sig, "x-pulse-delivery-id": "pulse_premature",
                               "content-type": "application/json"})
     assert r.status_code == 200, r.text  # le Pulse répond 200 (accusé de réception), mais n'active rien
 
@@ -100,7 +100,7 @@ def test_pulse_alone_without_prior_checkout_does_not_activate(client, user_id, t
 
 
 def test_checkout_then_pulse_activates_prediction_200(client, token, user_id):
-    activate_subscription(client, token, user_id, webhook_secret=WEBHOOK_SECRET,
+    activate_subscription(client, token, user_id, email=EMAIL, webhook_secret=WEBHOOK_SECRET,
                            stripe_subscription_id=LICENSE_KEY)
     print(f"  [OK] /billing/checkout (mocké) PUIS Pulse successful.sale -> abonnement activé")
 
@@ -118,7 +118,7 @@ def test_checkout_then_pulse_activates_prediction_200(client, token, user_id):
 
 
 def test_subscription_revoked_reverts_to_402(client, token):
-    cancel_subscription(client, LICENSE_KEY, webhook_secret=WEBHOOK_SECRET)
+    cancel_subscription(client, EMAIL, webhook_secret=WEBHOOK_SECRET)
     print(f"  [OK] Pulse license.revoked envoyé")
 
     headers = {"Authorization": f"Bearer {token}"}
