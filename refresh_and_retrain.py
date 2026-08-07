@@ -15,7 +15,7 @@ Enchaîne, avec logs clairs à chaque étape et arrêt propre en cas d'échec :
      (validate_artifacts.validate_artifact) — nombre d'équipes, home_advantage,
      rho, cohérence avec l'artefact précédent.
   d. Écriture atomique : chaque ligue qui passe la validation est écrite
-     dans model_artifacts/<league>.json.tmp puis renommée (os.replace,
+     dans api/model_artifacts/<league>.json.tmp puis renommée (os.replace,
      atomique y compris sous Windows) — jamais d'écrasement direct d'un
      artefact valide par un fichier possiblement incomplet. Une ligue qui
      ÉCHOUE la validation garde son ancien artefact tel quel.
@@ -25,7 +25,7 @@ Enchaîne, avec logs clairs à chaque étape et arrêt propre en cas d'échec :
 Codes de sortie :
   0 = succès complet (toutes les ligues mises à jour)
   1 = échec total (étape a ou b en échec — AUCUN artefact touché, tous
-      les anciens model_artifacts/*.json valides restent en place)
+      les anciens api/model_artifacts/*.json valides restent en place)
   2 = succès partiel (au moins une ligue a échoué la validation à l'étape
       c et a gardé son ancien artefact — les autres ont été mises à jour)
 
@@ -59,7 +59,7 @@ from validate_artifacts import validate_artifact
 logger = logging.getLogger("refresh_and_retrain")
 
 DEFAULT_RAW_FILE = "data/all_leagues_raw_with_stats.csv"
-DEFAULT_ARTIFACTS_DIR = Path("model_artifacts")
+DEFAULT_ARTIFACTS_DIR = Path("api/model_artifacts")
 DEFAULT_LOG_DIR = Path("logs")
 
 
@@ -194,7 +194,7 @@ def main():
     parser.add_argument("--raw-file", default=DEFAULT_RAW_FILE,
                          help="Chemin du CSV brut multi-ligues (défaut : data/all_leagues_raw_with_stats.csv)")
     parser.add_argument("--artifacts-dir", default=str(DEFAULT_ARTIFACTS_DIR),
-                         help="Dossier des artefacts JSON (défaut : model_artifacts/)")
+                         help="Dossier des artefacts JSON (défaut : api/model_artifacts/)")
     parser.add_argument("--skip-refresh", action="store_true",
                          help="Saute le téléchargement/fusion des données (étape a) — "
                               "ré-entraîne directement sur le fichier raw-file existant")

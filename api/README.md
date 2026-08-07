@@ -15,8 +15,10 @@ Authentification et Facturation plus bas.
 export_model_artifacts.py   # entraînement (scipy.optimize), à lancer périodiquement
         │
         ▼
-model_artifacts/<league>.json   # attack, defense, home_advantage, rho, teams...
-        │
+api/model_artifacts/<league>.json   # attack, defense, home_advantage, rho, teams...
+        │                            (dans api/, pas à la racine : doit être inclus
+        │                             dans le déploiement même quand seul api/ est
+        │                             utilisé comme racine de build, ex. Railway)
         ▼
 api/main.py                 # sert les prédictions, aucune dépendance à l'entraînement
         │

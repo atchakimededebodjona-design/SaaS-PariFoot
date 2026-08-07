@@ -41,7 +41,7 @@ from app.billing.router import router as billing_router
 from app.billing.dependencies import require_active_subscription
 from app.models.user import User
 
-ARTIFACTS_DIR = Path(__file__).parent.parent / "model_artifacts"
+ARTIFACTS_DIR = Path(__file__).parent / "model_artifacts"
 MAX_GOALS = 8  # troncature de la matrice de Poisson — au-delà, probabilité négligeable
 
 

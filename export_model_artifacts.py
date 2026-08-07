@@ -27,9 +27,12 @@ de chaque équipe de plusieurs unités log — un biais réel, pas un simple
 recentrage cosmétique. Ce script n'implémente donc volontairement qu'une
 seule contrainte.
 
-Usage : python3 export_model_artifacts.py
-Produit : model_artifacts/<league>.json pour chaque ligue présente dans
-          le CSV multi-ligues.
+Usage : python3 export_model_artifacts.py (depuis la racine du repo)
+Produit : api/model_artifacts/<league>.json pour chaque ligue présente
+          dans le CSV multi-ligues — dans api/ (pas à la racine) pour que
+          ces artefacts soient inclus dans le déploiement de l'API même
+          quand seul le sous-dossier api/ est utilisé comme racine de
+          build (ex. Railway avec Root Directory=api).
 """
 
 import json
@@ -44,7 +47,7 @@ from scipy.stats import poisson
 from scipy.optimize import minimize
 
 RAW_FEATURES_FILE = "data/all_leagues_raw_with_stats.csv"
-OUTPUT_DIR = Path("model_artifacts")
+OUTPUT_DIR = Path("api/model_artifacts")
 XI = 0.0018
 L2_REG = 0.05  # valeur validée précédemment (cf. grid search sur Ligue 1)
 

@@ -4,7 +4,7 @@ les artefacts existants ne doivent JAMAIS être altérés, et l'API doit
 continuer à fonctionner avec les anciennes données.
 
 Ne touche JAMAIS aux vrais fichiers du projet (data/all_leagues_raw_with_stats.csv,
-model_artifacts/*.json) — tout se passe dans un répertoire temporaire, via
+api/model_artifacts/*.json) — tout se passe dans un répertoire temporaire, via
 les options --raw-file/--artifacts-dir de refresh_and_retrain.run().
 
 Usage : python test_refresh_and_retrain.py
@@ -19,7 +19,7 @@ from pathlib import Path
 
 import refresh_and_retrain
 
-REAL_ARTIFACTS_DIR = Path("model_artifacts")
+REAL_ARTIFACTS_DIR = Path("api/model_artifacts")
 
 
 def _checksum_dir(d: Path) -> dict:
@@ -64,7 +64,7 @@ def test_corrupted_csv_does_not_touch_artifacts():
         sys.path.insert(0, str(Path("api")))
         import importlib
         import main as api_main
-        importlib.reload(api_main)  # force le rechargement depuis les vrais model_artifacts/
+        importlib.reload(api_main)  # force le rechargement depuis les vrais api/model_artifacts/
         assert len(api_main.LEAGUE_MODELS) == 5
         r = api_main._resolve_and_predict("Ligue1", "PSG", "Marseille")
         assert abs(r.home_win + r.draw + r.away_win - 1.0) < 1e-6

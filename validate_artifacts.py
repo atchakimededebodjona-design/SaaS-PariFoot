@@ -1,6 +1,6 @@
 """
 validate_artifacts.py — Vérifications automatiques minimales avant de
-remplacer un model_artifacts/<league>.json existant par une version
+remplacer un api/model_artifacts/<league>.json existant par une version
 fraîchement ré-entraînée.
 =============================================================================
 
@@ -11,7 +11,7 @@ complet (cf. audit_features_multileague.py pour ça), juste un garde-fou
 rapide et bon marché à faire tourner à chaque cycle de ré-entraînement.
 
 Seuils par défaut choisis à partir des valeurs RÉELLEMENT observées sur les
-5 ligues au moment d'écrire ce module (cf. model_artifacts/*.json) :
+5 ligues au moment d'écrire ce module (cf. api/model_artifacts/*.json) :
 
     Bundesliga      home_advantage=+0.166  rho=-0.128
     LaLiga          home_advantage=+0.241  rho=+0.018

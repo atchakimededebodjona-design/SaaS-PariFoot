@@ -147,7 +147,7 @@ surveillant `logs/refresh_and_retrain.log`).
   implausibles, chute suspecte du nombre d'équipes) : ces ligues gardent
   leur ancien artefact, les autres sont mises à jour, code 2. Le log
   détaille précisément la raison du rejet pour chaque ligue concernée.
-- Aucun scénario ne peut laisser un fichier `model_artifacts/<league>.json`
+- Aucun scénario ne peut laisser un fichier `api/model_artifacts/<league>.json`
   partiellement écrit ou corrompu (écriture atomique via fichier
   temporaire + renommage).
 
