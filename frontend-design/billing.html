@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Abonnement</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-container">
+        <!-- Floating footballs -->
+        <div class="football foot-1">⚽</div>
+        <div class="football foot-2">⚽</div>
+        <div class="football foot-3">⚽</div>
+        <div class="football foot-4">⚽</div>
+        <div class="football foot-5">⚽</div>
+        <div class="football foot-6">⚽</div>
+    </div>
+
+    <header class="header">
+        <div class="logo">
+            <span class="icon">⚽</span> xFoot
+        </div>
+        <div class="header-actions">
+            <a href="index.html" class="btn-outline" style="text-decoration: none;">Retour au dashboard</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="glass-panel">
+            <h1 class="title">Abonnement</h1>
+            <p class="subtitle" style="margin-bottom: 1rem;">Aucune licence active. Choisis un plan pour débloquer les prédictions.</p>
+            <p class="info-text">Chariow ne renouvelle pas automatiquement une licence : reviens sur cette page avant ou après expiration pour la prolonger, avec le même formulaire.</p>
+
+            <form class="prediction-form billing-form">
+                <div class="form-group full-width">
+                    <label>Plan</label>
+                    <div class="plan-selector">
+                        <label class="plan-option">
+                            <input type="radio" name="plan" value="monthly" checked>
+                            <div class="plan-card">
+                                <h4>Mensuel</h4>
+                                <div class="price">1000 FCFA<span>/mois</span></div>
+                            </div>
+                        </label>
+                        <label class="plan-option">
+                            <input type="radio" name="plan" value="annual">
+                            <div class="plan-card">
+                                <h4>Annuel</h4>
+                                <div class="price">10000 FCFA<span>/an</span></div>
+                                <div class="badge">Économisez 2 mois</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" class="form-control" placeholder="Entrez votre prénom">
+                </div>
+                
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" class="form-control" placeholder="Entrez votre nom">
+                </div>
+
+                <div class="form-group">
+                    <label>Pays</label>
+                    <select class="form-control">
+                        <option>Côte d'Ivoire (+225)</option>
+                        <option>Sénégal (+221)</option>
+                        <option>Mali (+223)</option>
+                        <option>Cameroun (+237)</option>
+                        <option>Togo (+228)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Numéro de téléphone (Mobile Money)</label>
+                    <input type="tel" class="form-control" placeholder="0700000000">
+                </div>
+
+                <div class="form-actions full-width">
+                    <button type="button" class="btn-primary btn-block">Continuer vers le paiement</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
