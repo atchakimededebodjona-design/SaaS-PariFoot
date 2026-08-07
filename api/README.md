@@ -488,3 +488,36 @@ dans `ALLOWED_ORIGINS` (séparées par des virgules) — par défaut
 le vrai domaine du frontend** (ex.
 `ALLOWED_ORIGINS=https://xfoot.vercel.app`), sinon le navigateur bloquera
 tous les appels du frontend réel vers l'API.
+
+## Déploiement (Railway)
+
+Le `Procfile` (`api/Procfile`) applique les migrations puis démarre le
+serveur : `alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT`.
+
+1. Nouveau projet Railway → **Deploy from GitHub repo** → sélectionner ce
+   repo → dans les paramètres du service, mettre **Root Directory** à `api`
+   (le code de l'API n'est pas à la racine du repo).
+2. Ajouter le plugin **Postgres** au projet (bouton "+ New" → Database →
+   PostgreSQL) — Railway expose ses identifiants automatiquement.
+3. Dans les variables du service API, référencer la base ajoutée avec
+   `DATABASE_URL=${{Postgres.DATABASE_URL}}` (autocomplétion Railway), puis
+   ajouter :
+   ```
+   ENV=production
+   JWT_SECRET_KEY=<généré via python -c "import secrets; print(secrets.token_hex(32))">
+   ALLOWED_ORIGINS=<URL Vercel du frontend, ex. https://xfoot.vercel.app>
+   CHARIOW_API_KEY=...
+   CHARIOW_PULSE_SECRET=...
+   CHARIOW_PRODUCT_ID_MONTHLY=...
+   CHARIOW_PRODUCT_ID_YEARLY=...
+   ```
+4. Déployer. Une fois l'URL publique Railway connue (ex.
+   `https://xfoot-api.up.railway.app`), mettre à jour dans le dashboard
+   Chariow (Automations → Pulses) l'URL du Pulse vers
+   `https://<url-railway>/billing/pulse`, et dans Vercel la variable
+   `NEXT_PUBLIC_API_URL` vers cette même URL.
+
+Chaque `git push` sur `main` redéploie automatiquement (intégration
+GitHub native de Railway) — les migrations Alembic tournent à chaque
+démarrage via le `Procfile`, donc toute nouvelle migration commitée
+s'applique automatiquement au prochain déploiement.
