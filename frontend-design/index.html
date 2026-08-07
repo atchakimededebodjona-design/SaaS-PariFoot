@@ -36,10 +36,11 @@
             <form class="prediction-form">
                 <div class="form-group">
                     <label>Championnat</label>
-                    <select class="form-control">
-                        <option>LaLiga</option>
-                        <option>Premier League</option>
-                        <option>Ligue 1</option>
+                    <select class="form-control" id="championnat-select">
+                        <option value="SerieA">SerieA</option>
+                        <option value="LaLiga">LaLiga</option>
+                        <option value="Premier League">Premier League</option>
+                        <option value="Ligue 1">Ligue 1</option>
                     </select>
                 </div>
                 
@@ -73,5 +74,34 @@
             </div>
         </div>
     </main>
+
+    <script>
+        const teamsByLeague = {
+            'LaLiga': ['Real Madrid', 'Barcelona', 'Atletico Madrid', 'Sevilla', 'Valencia', 'Betis'],
+            'Premier League': ['Arsenal', 'Man City', 'Liverpool', 'Chelsea', 'Man United', 'Spurs'],
+            'Ligue 1': ['PSG', 'Marseille', 'Lyon', 'Monaco', 'Lille', 'Lens'],
+            'SerieA': ['Juventus', 'Inter', 'AC Milan', 'Napoli', 'Roma', 'Lazio']
+        };
+
+        const select = document.getElementById('championnat-select');
+        const bgContainer = document.querySelector('.background-container');
+
+        function updateFloatingTeams(league) {
+            bgContainer.innerHTML = '';
+            const teams = teamsByLeague[league] || ['⚽', '⚽', '⚽', '⚽', '⚽', '⚽'];
+            
+            teams.forEach((team, index) => {
+                const div = document.createElement('div');
+                div.className = `football foot-${index + 1} floating-team`;
+                div.textContent = team;
+                bgContainer.appendChild(div);
+            });
+        }
+
+        select.addEventListener('change', (e) => updateFloatingTeams(e.target.value));
+
+        // Initialize with default select value
+        updateFloatingTeams(select.value);
+    </script>
 </body>
 </html>

@@ -59,6 +59,16 @@ body {
     100% { transform: translateY(-20vh) rotate(360deg) scale(1.2); }
 }
 
+.floating-team {
+    font-size: 1.5rem !important; /* adjust text size */
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
+}
+
 /* Header */
 .header {
     display: flex;
