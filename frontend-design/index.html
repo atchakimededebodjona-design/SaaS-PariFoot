@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Prédiction de match</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-container">
+        <!-- Floating footballs -->
+        <div class="football foot-1">⚽</div>
+        <div class="football foot-2">⚽</div>
+        <div class="football foot-3">⚽</div>
+        <div class="football foot-4">⚽</div>
+        <div class="football foot-5">⚽</div>
+        <div class="football foot-6">⚽</div>
+    </div>
+
+    <header class="header">
+        <div class="logo">
+            <span class="icon">⚽</span> xFoot
+        </div>
+        <div class="user-info">
+            <span class="email">vonaime@gmail.com</span>
+            <button class="btn-outline">Se déconnecter</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="glass-panel">
+            <h1 class="title">Prédiction de match</h1>
+            <p class="subtitle">Choisis un championnat et deux équipes pour voir les probabilités.</p>
+
+            <form class="prediction-form">
+                <div class="form-group">
+                    <label>Championnat</label>
+                    <select class="form-control">
+                        <option>LaLiga</option>
+                        <option>Premier League</option>
+                        <option>Ligue 1</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Équipe à domicile</label>
+                    <select class="form-control">
+                        <option>Almeria</option>
+                        <option>Real Madrid</option>
+                        <option>Barcelona</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Équipe à l'extérieur</label>
+                    <select class="form-control">
+                        <option>Alaves</option>
+                        <option>Sevilla</option>
+                        <option>Valencia</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-primary">Voir la prédiction</button>
+                </div>
+            </form>
+
+            <div class="premium-banner">
+                <h3>Abonnement requis pour voir cette prédiction</h3>
+                <p>Le classement des équipes reste gratuit — les probabilités de match détaillées sont réservées aux abonnés.</p>
+                <button class="btn-warning">Voir les abonnements</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
