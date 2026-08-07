@@ -46,6 +46,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 
 from app.core.database import get_session
+from app.core.rate_limit import limiter
 from app.core.chariow_config import (
     CHARIOW_API_KEY,
     CHARIOW_API_BASE_URL,
@@ -268,6 +269,7 @@ def _find_subscription_by_email(session: Session, email: str | None) -> Subscrip
 
 
 @router.post("/pulse", status_code=status.HTTP_200_OK)
+@limiter.limit("60/minute")
 async def chariow_pulse(request: Request, session: Session = Depends(get_session)):
     payload = await request.body()
     signature = request.headers.get("x-chariow-signature")

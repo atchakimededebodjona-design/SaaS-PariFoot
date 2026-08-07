@@ -19,6 +19,7 @@ Puis : http://localhost:8000/docs pour la documentation interactive.
 """
 
 import json
+import os
 import unicodedata
 import difflib
 from pathlib import Path
@@ -29,8 +30,11 @@ from scipy.stats import poisson
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 
 from app.core.database import init_db
+from app.core.rate_limit import limiter
 from app.auth.router import router as auth_router
 from app.auth.security import get_current_user
 from app.billing.router import router as billing_router
@@ -466,9 +470,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ALLOWED_ORIGINS : liste d'origines séparées par des virgules (ex.
+# "https://xfoot.vercel.app,https://xfoot.com"). Par défaut, seul le
+# serveur de dev Next.js local est autorisé — indispensable de la définir
+# en production, sinon le vrai frontend sera bloqué par le navigateur.
+_allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[o.strip() for o in _allowed_origins.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

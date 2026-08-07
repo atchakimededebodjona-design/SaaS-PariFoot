@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from typing import Optional
+from pydantic import EmailStr
 from sqlmodel import SQLModel, Field
 
 
@@ -16,8 +17,8 @@ class User(SQLModel, table=True):
 # --- Schémas Pydantic pour les requêtes/réponses API (jamais exposer hashed_password) ---
 
 class UserCreate(SQLModel):
-    email: str
-    password: str
+    email: EmailStr
+    password: str = Field(min_length=8)
 
 
 class UserRead(SQLModel):

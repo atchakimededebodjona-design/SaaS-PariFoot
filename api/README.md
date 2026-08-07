@@ -470,6 +470,21 @@ export DATABASE_URL="postgresql://user:password@host:5432/dbname"
 Avec Supabase spécifiquement : récupérer la "Connection string" (mode
 "Session" ou "Transaction" selon le pooling voulu) depuis Project Settings
 → Database, et l'utiliser telle quelle comme `DATABASE_URL`. Le driver
-PostgreSQL (`psycopg2-binary` ou `psycopg[binary]`) doit être ajouté à
-`api/requirements.txt` avant ce basculement — pas encore nécessaire pour le
-développement SQLite actuel.
+PostgreSQL (`psycopg2-binary`) est déjà dans `api/requirements.txt`.
+
+Les migrations de schéma passent par Alembic (voir `api/alembic/`) — après
+tout changement de modèle SQLModel, générer une migration avec
+`cd api && alembic revision --autogenerate -m "description"` puis
+l'appliquer avec `alembic upgrade head`. `SQLModel.metadata.create_all()`
+(toujours appelé au démarrage) ne crée que les tables absentes ; il
+n'altère jamais une table existante — les migrations sont indispensables
+dès la deuxième évolution de schéma sur une base déjà peuplée.
+
+## Configuration — ALLOWED_ORIGINS
+
+`CORSMiddleware` (`api/main.py`) autorise uniquement les origines listées
+dans `ALLOWED_ORIGINS` (séparées par des virgules) — par défaut
+`http://localhost:3000` seul. **En production, définir cette variable avec
+le vrai domaine du frontend** (ex.
+`ALLOWED_ORIGINS=https://xfoot.vercel.app`), sinon le navigateur bloquera
+tous les appels du frontend réel vers l'API.

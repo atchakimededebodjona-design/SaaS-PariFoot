@@ -13,3 +13,7 @@ passlib[bcrypt]
 bcrypt==4.0.1
 python-multipart
 httpx
+psycopg2-binary
+alembic
+slowapi
+email-validator

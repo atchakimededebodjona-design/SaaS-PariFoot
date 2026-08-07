@@ -1,10 +1,11 @@
 """Endpoints d'authentification."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 
 from app.core.database import get_session
+from app.core.rate_limit import limiter
 from app.models.user import User, UserCreate, UserRead, Token
 from app.auth.security import hash_password, authenticate_user, create_access_token, get_current_user
 
@@ -12,7 +13,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate, session: Session = Depends(get_session)):
+@limiter.limit("20/minute")
+def register(request: Request, user_in: UserCreate, session: Session = Depends(get_session)):
     existing = session.exec(select(User).where(User.email == user_in.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email")
@@ -25,12 +27,16 @@ def register(user_in: UserCreate, session: Session = Depends(get_session)):
 
 
 @router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+@limiter.limit("30/minute")
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
     """
     Utilise OAuth2PasswordRequestForm (standard FastAPI) : le champ
     s'appelle `username` dans le formulaire même si on y met un email —
     c'est la convention OAuth2, pas un choix arbitraire. Ça permet aussi
     de tester directement depuis /docs (bouton "Authorize").
+
+    Rate-limité à 30/minute par IP — assez pour un utilisateur qui se
+    trompe de mot de passe plusieurs fois, pas assez pour du brute force.
     """
     user = authenticate_user(session, form_data.username, form_data.password)
     if user is None:
