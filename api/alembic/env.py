@@ -19,6 +19,7 @@ from sqlmodel import SQLModel
 from app.models.user import User  # noqa: F401
 from app.models.subscription import Subscription, ProcessedPulseDelivery  # noqa: F401
 from app.models.model_artifact import ModelArtifact  # noqa: F401
+from app.models.match import Match, MatchStats  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
