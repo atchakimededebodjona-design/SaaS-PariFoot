@@ -1,4 +1,3 @@
-import os
 import sys
 from logging.config import fileConfig
 from pathlib import Path
@@ -13,6 +12,8 @@ from alembic import context
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from sqlmodel import SQLModel
+
+from app.core.database import resolve_database_url
 
 # Importés uniquement pour que leurs classes table=True s'enregistrent
 # dans SQLModel.metadata avant l'autogénération — jamais utilisés directement.
@@ -30,10 +31,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Même variable d'environnement que l'application (app/core/database.py) —
-# une seule source de vérité pour l'URL de connexion, jamais dupliquée dans
-# alembic.ini.
-db_url = os.environ.get("DATABASE_URL", "sqlite:///./app.db")
+# Même résolution que l'application (app/core/database.py::resolve_database_url)
+# — une seule source de vérité pour l'URL de connexion (normalisation
+# postgres:// -> postgresql://, fallback sur DATABASE_URL="" incluse),
+# jamais dupliquée dans alembic.ini.
+db_url = resolve_database_url()
 config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = SQLModel.metadata
