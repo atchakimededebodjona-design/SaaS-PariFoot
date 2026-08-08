@@ -19,6 +19,7 @@ Puis : http://localhost:8000/docs pour la documentation interactive.
 """
 
 import json
+import logging
 import os
 import unicodedata
 import difflib
@@ -32,14 +33,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
+from sqlmodel import Session, select
 
-from app.core.database import init_db
+from app.core.database import init_db, engine
 from app.core.rate_limit import limiter
 from app.auth.router import router as auth_router
 from app.auth.security import get_current_user
 from app.billing.router import router as billing_router
 from app.billing.dependencies import require_active_subscription
 from app.models.user import User
+from app.models.model_artifact import ModelArtifact
+
+logger = logging.getLogger("uvicorn.error")
 
 ARTIFACTS_DIR = Path(__file__).parent / "model_artifacts"
 MAX_GOALS = 8  # troncature de la matrice de Poisson — au-delà, probabilité négligeable
@@ -417,6 +422,31 @@ def _load_all_leagues() -> dict:
 LEAGUE_MODELS: dict[str, LeagueModel] = _load_all_leagues()
 
 
+def _load_leagues_from_db() -> dict[str, LeagueModel]:
+    """
+    Complète/actualise LEAGUE_MODELS depuis la table `model_artifact`, seule
+    source de vérité partagée avec le Cron Job Railway de ré-entraînement
+    (celui-ci tourne dans un service séparé, sans accès au système de
+    fichiers de ce service web — voir RAILWAY_CRON_SETUP.md).
+
+    Appelée au démarrage, APRÈS init_db() (la table peut ne pas encore
+    exister avant la première migration). Best-effort : toute erreur
+    (table absente, base injoignable) est loggée et on retombe silencieusement
+    sur les fichiers api/model_artifacts/*.json chargés par _load_all_leagues()
+    ci-dessus — jamais fatal pour le démarrage de l'API.
+    """
+    models: dict[str, LeagueModel] = {}
+    try:
+        with Session(engine) as session:
+            rows = session.exec(select(ModelArtifact)).all()
+        for row in rows:
+            artifact = json.loads(row.payload)
+            models[artifact["league"]] = LeagueModel(artifact)
+    except Exception as e:
+        logger.warning(f"Chargement des artefacts depuis la base impossible, fallback fichiers : {e}")
+    return models
+
+
 # ---------------------------------------------------------------------------
 # Schémas de réponse (Pydantic — documentation auto-générée par FastAPI)
 # ---------------------------------------------------------------------------
@@ -493,6 +523,10 @@ app.include_router(billing_router)
 @app.on_event("startup")
 def on_startup():
     init_db()
+    from_db = _load_leagues_from_db()
+    if from_db:
+        LEAGUE_MODELS.update(from_db)
+        logger.info(f"Artefacts chargés depuis la base pour : {sorted(from_db.keys())} (ligues restantes sur fichier : {sorted(set(LEAGUE_MODELS) - set(from_db))})")
 
 
 @app.get("/health")

@@ -48,6 +48,8 @@ tâches Windows) et la procédure de test manuel.
 import argparse
 import json
 import logging
+import os
+import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -61,6 +63,90 @@ logger = logging.getLogger("refresh_and_retrain")
 DEFAULT_RAW_FILE = "data/all_leagues_raw_with_stats.csv"
 DEFAULT_ARTIFACTS_DIR = Path("api/model_artifacts")
 DEFAULT_LOG_DIR = Path("logs")
+
+# Historique commité dans le dépôt — sert d'amorce pour --raw-file quand il
+# pointe vers un Volume Railway vide (premier déploiement du Cron Job, voir
+# RAILWAY_CRON_SETUP.md). Sans effet en local, où DEFAULT_RAW_FILE existe déjà.
+SEED_RAW_FILE = Path(__file__).parent / DEFAULT_RAW_FILE
+
+ALERT_WEBHOOK_URL = os.environ.get("ALERT_WEBHOOK_URL", "")
+
+
+def _ensure_raw_file_seeded(raw_file: Path) -> None:
+    """
+    Amorce raw_file avec l'historique du dépôt s'il n'existe pas encore —
+    cas d'un Volume Railway fraîchement monté, qui démarre vide. Sans effet
+    si raw_file existe déjà (cas normal en local, et cas normal sur Railway
+    à partir de la 2e exécution).
+    """
+    raw_file = Path(raw_file)
+    if raw_file.exists():
+        return
+    if not SEED_RAW_FILE.exists() or SEED_RAW_FILE.resolve() == raw_file.resolve():
+        return
+    raw_file.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(SEED_RAW_FILE, raw_file)
+    logger.info(f"Amorçage : {SEED_RAW_FILE} -> {raw_file} (fichier absent, probable premier démarrage sur volume vide)")
+
+
+def _write_artifact_to_db(league: str, artifact: dict) -> bool:
+    """
+    Écrit l'artefact validé dans la table `model_artifact` — seule source
+    que le service web (api/main.py) peut lire quand ce job tourne dans un
+    service Railway séparé (voir RAILWAY_CRON_SETUP.md, api/app/models/model_artifact.py).
+
+    Best-effort et non bloquant : l'écriture JSON atomique locale (étape d,
+    juste au-dessus dans run()) reste la référence pour l'usage local/tests ;
+    un échec ici (base injoignable, DATABASE_URL absente) est loggé mais ne
+    fait PAS échouer le job.
+    """
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "api"))
+        from sqlmodel import Session, select
+        from app.core.database import engine, init_db
+        from app.models.model_artifact import ModelArtifact
+
+        init_db()
+        with Session(engine) as session:
+            existing = session.exec(select(ModelArtifact).where(ModelArtifact.league == league)).first()
+            payload = json.dumps(artifact, ensure_ascii=False)
+            if existing is None:
+                existing = ModelArtifact(
+                    league=league, payload=payload,
+                    trained_at=artifact["trained_at"], data_up_to=artifact["data_up_to"],
+                )
+            else:
+                existing.payload = payload
+                existing.trained_at = artifact["trained_at"]
+                existing.data_up_to = artifact["data_up_to"]
+                existing.updated_at = datetime.now(timezone.utc)
+            session.add(existing)
+            session.commit()
+        return True
+    except Exception as e:
+        logger.error(f"    [{league}] Écriture en base ÉCHOUÉE (l'artefact JSON local reste la référence) : {e}")
+        return False
+
+
+def _send_alert(message: str) -> None:
+    """
+    Notification best-effort en cas d'échec — n'ajoute aucune dépendance
+    nouvelle (httpx est déjà utilisé par api/app/billing/router.py). Sans
+    effet si ALERT_WEBHOOK_URL n'est pas défini (aucune notification
+    externe configurée) ; le log ERROR/WARNING juste avant reste dans tous
+    les cas visible dans Railway (Cron Job -> Deployments -> Logs).
+
+    Compatible webhook entrant Slack ({"text": ...}) et Discord
+    ({"content": ...}) sans configuration supplémentaire : les deux
+    ignorent la clé qu'ils ne reconnaissent pas.
+    """
+    if not ALERT_WEBHOOK_URL:
+        return
+    try:
+        import httpx
+        httpx.post(ALERT_WEBHOOK_URL, json={"text": message, "content": message}, timeout=10.0)
+    except Exception as e:
+        logger.warning(f"Envoi de l'alerte webhook impossible (non bloquant) : {e}")
 
 
 def _setup_logging(log_dir: Path) -> Path:
@@ -112,12 +198,15 @@ def run(raw_file: str = DEFAULT_RAW_FILE,
         logger.info("[a] Mise à jour des données — SAUTÉE (--skip-refresh)")
         refresh_summary = None
     else:
+        _ensure_raw_file_seeded(Path(raw_file))
         logger.info("[a] Mise à jour des données brutes...")
         try:
             refresh_summary = update_raw_data.update_raw_data_file(raw_file=raw_file, reference_date=reference_date)
         except Exception as e:
             logger.error(f"[a] ÉCHEC de la mise à jour des données : {e}")
             logger.error("Job arrêté — aucun artefact touché, les modèles existants restent en service.")
+            logger.error("XFOOT_RETRAIN_JOB_FAILED")
+            _send_alert(f"[Xfoot] Échec du ré-entraînement — étape (a) mise à jour des données : {e}")
             return 1
         logger.info(f"[a] OK — {refresh_summary['n_before_total']} -> {refresh_summary['n_after_total']} lignes "
                     f"({refresh_summary['n_added_total']:+d})")
@@ -131,6 +220,8 @@ def run(raw_file: str = DEFAULT_RAW_FILE,
     except Exception as e:
         logger.error(f"[b] ÉCHEC du ré-entraînement : {e}")
         logger.error("Job arrêté — aucun artefact touché, les modèles existants restent en service.")
+        logger.error("XFOOT_RETRAIN_JOB_FAILED")
+        _send_alert(f"[Xfoot] Échec du ré-entraînement — étape (b) entraînement : {e}")
         return 1
     logger.info(f"[b] OK — {len(new_artifacts)} ligues entraînées : {sorted(new_artifacts.keys())}")
 
@@ -164,7 +255,8 @@ def run(raw_file: str = DEFAULT_RAW_FILE,
     for league, artifact in to_write.items():
         out_path = artifacts_dir / f"{league}.json"
         _atomic_write_json(out_path, artifact)
-        logger.info(f"    [{league}] -> {out_path}")
+        db_ok = _write_artifact_to_db(league, artifact)
+        logger.info(f"    [{league}] -> {out_path}{' + base' if db_ok else ' (base non mise à jour, voir erreur ci-dessus)'}")
 
     # --- Étape e : log récapitulatif ---
     finished_at = datetime.now(timezone.utc)
@@ -184,6 +276,8 @@ def run(raw_file: str = DEFAULT_RAW_FILE,
 
     if kept_old:
         logger.warning(f"JOB TERMINÉ EN SUCCÈS PARTIEL — {len(kept_old)} ligue(s) conservée(s) sans mise à jour.")
+        logger.warning("XFOOT_RETRAIN_JOB_PARTIAL")
+        _send_alert(f"[Xfoot] Ré-entraînement en succès partiel — ligue(s) conservée(s) sans mise à jour : {sorted(kept_old)}")
         return 2
     logger.info("JOB TERMINÉ AVEC SUCCÈS COMPLET.")
     return 0
