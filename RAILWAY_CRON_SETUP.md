@@ -77,14 +77,16 @@ facturation.
 Dans l'onglet **Volumes** de ce service : créer un volume, **Mount Path**
 = `/app/data_persisted`.
 
-⚠️ Je n'ai pas pu vérifier depuis cet environnement le répertoire de travail
-exact que Railway utilise pour exécuter `startCommand` sur ce type de
-build (généralement `/app` pour un build Nixpacks Python, ce qui rendrait
-le chemin relatif `data_persisted/...` du `startCommand` cohérent avec ce
-Mount Path) — **à confirmer au premier déploiement** : si le job échoue
-immédiatement avec une erreur de chemin introuvable, vérifier le
-répertoire de travail réel dans les logs de build et ajuster le Mount Path
-(ou passer un chemin absolu à `--raw-file`) en conséquence.
+Confirmé par la documentation officielle Railway (pas par un déploiement
+réel, auquel je n'ai pas accès) : sans Dockerfile, Railway construit avec
+Nixpacks, dont le `WORKDIR` de l'image est `/app` — c'est le répertoire de
+travail depuis lequel `startCommand` s'exécute. Un Volume monté sur
+`/app/data_persisted` est donc bien ce que voit le script à l'exécution
+via le chemin relatif `data_persisted/...` utilisé dans `startCommand`.
+Source : [docs.railway.com/volumes](https://docs.railway.com/volumes) —
+*« if you are using nixpacks the default project directory would be
+`/app` so your mount point would be `/app/temp_files` »* (exemple donné
+par Railway lui-même, transposé ici à `data_persisted`).
 
 ### 6. Premier déploiement — amorçage automatique
 
