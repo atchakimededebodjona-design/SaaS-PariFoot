@@ -39,6 +39,14 @@ Dans **Settings** du nouveau service : laisser **Root Directory** vide (ou
 (`refresh_and_retrain.py`, `update_raw_data.py`, ...) et de `data/`, absents
 du sous-dossier `api/`.
 
+> **Dépannage** — erreur `python: can't open file '/app/refresh_and_retrain.py':
+> [Errno 2] No such file or directory` : Root Directory est resté sur `api`
+> (copié depuis la config du service web) au lieu d'être vide. Railway ne
+> récupère depuis GitHub QUE le sous-dossier indiqué en Root Directory —
+> avec `api`, `refresh_and_retrain.py` (à la racine du dépôt) n'est jamais
+> présent dans le conteneur, quelle que soit la Start Command. Aucun chemin
+> relatif/absolu ne corrige ça : il faut vider le champ Root Directory.
+
 ### 3. Fichier de config = `railway.cron.json`
 
 Toujours dans **Settings** : renseigner **Config-as-code file path** =
