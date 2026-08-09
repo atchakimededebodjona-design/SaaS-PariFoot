@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "api"))
 
 from sqlmodel import Session  # noqa: E402
 from app.core.database import engine, init_db  # noqa: E402
-from app.models.team_rating import ModelVersion, TeamRating  # noqa: E402
+from app.models.team_rating import ModelVersion, TeamRating, next_version_name, deactivate_other_versions  # noqa: E402
 from app.ai.engine.dixon_coles import train_all_leagues_from_db  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -115,18 +115,24 @@ def compare_to_production(db_artifacts: dict) -> dict:
 
 def persist_ratings(db_artifacts: dict, comparison_ok: bool) -> int:
     """
-    Crée une nouvelle ModelVersion ("xfoot-dixon-coles-v1", dixon_coles) et
-    ses TeamRating associées. is_active = True SEULEMENT si la comparison
-    de non-régression est passée intégralement — sinon la version est
-    persistée à titre d'audit (traçabilité) mais marquée inactive, pour ne
-    jamais laisser une divergence non expliquée passer inaperçue.
+    Crée une NOUVELLE ModelVersion ("xfoot-dixon-coles-vN", dixon_coles —
+    voir next_version_name) et ses TeamRating associées, à chaque run.
+    is_active = True SEULEMENT si la comparaison de non-régression est
+    passée intégralement — sinon la version est persistée à titre d'audit
+    (traçabilité) mais marquée inactive, pour ne jamais laisser une
+    divergence non expliquée passer inaperçue. Si elle est active, toute
+    autre version dixon_coles existante est désactivée (une seule version
+    active par type de modèle à la fois).
     """
     from datetime import datetime, timezone
 
     init_db()
     with Session(engine) as session:
+        if comparison_ok:
+            deactivate_other_versions(session, "dixon_coles")
+
         version = ModelVersion(
-            name="xfoot-dixon-coles-v1",
+            name=next_version_name(session, "xfoot-dixon-coles"),
             model_type="dixon_coles",
             trained_at=datetime.now(timezone.utc),
             is_active=comparison_ok,

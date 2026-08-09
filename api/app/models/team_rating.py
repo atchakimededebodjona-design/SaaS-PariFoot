@@ -13,7 +13,7 @@ de renommer `match`/`match_stats` sans qu'on me l'ait demandé.
 from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import UniqueConstraint
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Session, select
 
 
 class ModelVersion(SQLModel, table=True):
@@ -49,3 +49,44 @@ class TeamRating(SQLModel, table=True):
     defense: float
     model_version_id: int = Field(foreign_key="model_versions.id", index=True)
     computed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+def next_version_name(session: Session, base_name: str) -> str:
+    """
+    Prochain nom de version disponible pour `base_name` (ex.
+    "xfoot-dixon-coles") — "xfoot-dixon-coles-v1" si aucune version
+    n'existe encore, "xfoot-dixon-coles-v2" si "v1" existe déjà, etc.
+
+    Corrige un plantage réel : les scripts de persistance (Phase 3)
+    utilisaient un nom fixe ("xfoot-dixon-coles-v1") — un run interrompu
+    après avoir écrit la ligne model_versions (mais avant team_ratings, ex.
+    crash sur un bug non lié) laissait cette version en place, et tout run
+    suivant échouait sur la contrainte UNIQUE de `name`. Chaque run crée
+    maintenant une NOUVELLE version au lieu d'entrer en conflit — cohérent
+    avec l'objet même de model_versions : garder un historique des
+    versions successives du modèle, jamais écraser une version existante.
+    """
+    existing_names = session.exec(
+        select(ModelVersion.name).where(ModelVersion.name.like(f"{base_name}-v%"))
+    ).all()
+    max_n = 0
+    prefix_len = len(base_name) + 2  # +2 pour "-v"
+    for name in existing_names:
+        suffix = name[prefix_len:]
+        if suffix.isdigit():
+            max_n = max(max_n, int(suffix))
+    return f"{base_name}-v{max_n + 1}"
+
+
+def deactivate_other_versions(session: Session, model_type: str) -> None:
+    """
+    Désactive toutes les ModelVersion existantes du même model_type, avant
+    qu'une nouvelle version ne soit potentiellement marquée active — au
+    plus UNE version active par type de modèle à la fois, sinon
+    `is_active` ne veut plus rien dire dès qu'une deuxième version existe.
+    Ne commit pas elle-même (laisse l'appelant grouper dans sa transaction).
+    """
+    others = session.exec(select(ModelVersion).where(ModelVersion.model_type == model_type)).all()
+    for other in others:
+        other.is_active = False
+        session.add(other)

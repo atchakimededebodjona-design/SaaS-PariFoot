@@ -16,8 +16,9 @@ scripts/backtest_elo.py — Phase 3, tâches 3-4.
    contre Brier score Dixon-Coles (entraîné sur la MÊME fenêtre train,
    avec le moteur de production _FastDixonColesL2 via export_league) sur
    EXACTEMENT le même test set — comparaison strictement à armes égales.
-4. Persiste team_ratings + model_versions ("xfoot-elo-v1"), avec
-   is_active = True SEULEMENT si le Brier score Elo est réellement
+4. Persiste team_ratings + model_versions ("xfoot-elo-vN", une nouvelle
+   version à chaque run — voir app.models.team_rating.next_version_name),
+   avec is_active = True SEULEMENT si le Brier score Elo est réellement
    meilleur (ou à parité) que celui de Dixon-Coles sur ce test set — sinon
    marqué inactif, avec le même degré d'honnêteté que le verdict déjà
    rendu sur XGBoost en son temps (« pas de gain » est un résultat valide).
@@ -37,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "api"))
 
 from sqlmodel import Session  # noqa: E402
 from app.core.database import engine, init_db  # noqa: E402
-from app.models.team_rating import ModelVersion, TeamRating  # noqa: E402
+from app.models.team_rating import ModelVersion, TeamRating, next_version_name, deactivate_other_versions  # noqa: E402
 from app.ai.engine.dixon_coles import load_matches_from_db, export_league  # noqa: E402
 from app.ai.engine.elo import EloEngine  # noqa: E402
 from dixon_coles import DixonColesModel  # noqa: E402  (repo root déjà sur sys.path via l'import ci-dessus)
@@ -172,8 +173,11 @@ def main():
     # --- 4. Persistance ---
     init_db()
     with Session(engine) as session:
+        if elo_ready:
+            deactivate_other_versions(session, "elo")
+
         version = ModelVersion(
-            name="xfoot-elo-v1", model_type="elo",
+            name=next_version_name(session, "xfoot-elo"), model_type="elo",
             trained_at=datetime.now(timezone.utc), is_active=elo_ready,
             notes=(f"K={best['k']}, home_advantage={best['home_advantage']} (choisis par grille, Brier moyen test="
                    f"{best['mean_brier']:.4f}). Brier moyen final Elo={mean_elo:.4f} vs Dixon-Coles={mean_dc:.4f} "
