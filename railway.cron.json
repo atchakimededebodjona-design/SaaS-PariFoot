@@ -1,7 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "startCommand": "python scripts/load_historical_matches.py",
+    "startCommand": "python refresh_and_retrain.py --raw-file data_persisted/all_leagues_raw_with_stats.csv",
     "cronSchedule": "0 4 * * 1"
   }
 }
