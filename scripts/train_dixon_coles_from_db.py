@@ -85,8 +85,16 @@ def compare_to_production(db_artifacts: dict) -> dict:
         max_diff = max(diffs["home_advantage"], diffs["rho"], max_attack_diff, max_defense_diff)
         max_diff_overall = max(max_diff_overall, max_diff)
 
-        ok = (not missing and not extra and max_diff <= TOLERANCE
-              and db_artifact["trained_on_matches"] == prod["trained_on_matches"])
+        # bool(...) explicite : max_diff/TOLERANCE sont des numpy.float64 (issus
+        # de result.x de scipy.optimize), donc `max_diff <= TOLERANCE` est un
+        # numpy.bool_ — psycopg2 échoue à l'adapter (`can't adapt type
+        # 'numpy.bool'`), contrairement à un bool Python natif. Sans effet ici
+        # (l'enchaînement `and` renvoyait déjà un bool natif par chance, via le
+        # dernier opérande), mais explicite plutôt que fragile — voir le même
+        # correctif sur `attack`/`defense` juste en dessous et sur `elo_ready`
+        # dans backtest_elo.py.
+        ok = bool(not missing and not extra and max_diff <= TOLERANCE
+                  and db_artifact["trained_on_matches"] == prod["trained_on_matches"])
 
         results[league] = {
             "ok": ok,
@@ -133,9 +141,17 @@ def persist_ratings(db_artifacts: dict, comparison_ok: bool) -> int:
         n_ratings = 0
         for league, artifact in db_artifacts.items():
             for team in artifact["teams"]:
+                # float() explicite : artifact["attack"]/["defense"] viennent de
+                # result.x (scipy.optimize, un ndarray numpy) via
+                # dict(zip(teams, result.x[...])) dans _FastDixonColesL2.fit()
+                # — chaque valeur est donc un numpy.float64, pas un float
+                # natif. psycopg2 ne sait adapter que le float natif ; passé
+                # tel quel, un numpy.float64 est rendu en littéral SQL invalide
+                # (repr() donne "np.float64(...)", que Postgres interprète
+                # comme une référence de schéma — cause du bug corrigé ici).
                 session.add(TeamRating(
                     team=team, league=league,
-                    attack=artifact["attack"][team], defense=artifact["defense"][team],
+                    attack=float(artifact["attack"][team]), defense=float(artifact["defense"][team]),
                     model_version_id=version_id,
                 ))
                 n_ratings += 1

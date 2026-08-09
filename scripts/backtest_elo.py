@@ -157,7 +157,15 @@ def main():
     mean_dc = sum(c["dc_brier"] for c in comparison.values()) / len(comparison)
     logger.info(f"  MOYENNE — Elo={mean_elo:.4f}  Dixon-Coles={mean_dc:.4f}")
 
-    elo_ready = mean_elo <= mean_dc
+    # bool() explicite : mean_elo/mean_dc sont des numpy.float64 (moyennes de
+    # Brier scores eux-mêmes numpy, cf. DixonColesModel.predict_1x2 qui
+    # renvoie des sommes numpy), donc la comparaison est un numpy.bool_ —
+    # psycopg2 échoue même à l'ADAPTER ("can't adapt type 'numpy.bool'",
+    # contrairement au numpy.float64 qui produit un littéral SQL corrompu
+    # mais sans lever d'erreur à l'adaptation). Même correctif que
+    # attack/defense ci-dessous et que compare_to_production() dans
+    # train_dixon_coles_from_db.py.
+    elo_ready = bool(mean_elo <= mean_dc)
     logger.info(f"VERDICT : Elo {'PRÊT (Brier moyen <= Dixon-Coles)' if elo_ready else 'PAS DE GAIN (Brier moyen > Dixon-Coles) — reste inactif'}")
     logger.info("=" * 80)
 
@@ -180,7 +188,12 @@ def main():
         n_ratings = 0
         for lg, eng in final_engines.items():
             for team, rating in eng.ratings_.items():
-                session.add(TeamRating(team=team, league=lg, attack=rating, defense=0.0, model_version_id=version_id))
+                # float() explicite : `rating` est déjà un float natif dans
+                # l'implémentation actuelle du walk-forward (arithmétique
+                # Python pure, vérifié empiriquement) — mais explicite plutôt
+                # que de compter sur ce détail d'implémentation, même
+                # discipline qu'attack/defense dans train_dixon_coles_from_db.py.
+                session.add(TeamRating(team=team, league=lg, attack=float(rating), defense=0.0, model_version_id=version_id))
                 n_ratings += 1
         session.commit()
 
