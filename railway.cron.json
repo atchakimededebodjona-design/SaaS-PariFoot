@@ -1,7 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "startCommand": "python scripts/train_dixon_coles_from_db.py && python scripts/backtest_elo.py",
+    "startCommand": "python refresh_and_retrain.py --raw-file data_persisted/all_leagues_raw_with_stats.csv",
     "cronSchedule": "0 4 * * 1"
   }
 }
