@@ -1,11 +1,24 @@
 // api.js — couche d'accès à l'API xFoot, partagée par login.html/index.html/billing.html.
 //
-// API_BASE_URL dérivée de window.location.hostname (jamais codée en dur sur
-// "localhost") : la même page fonctionne qu'elle soit ouverte depuis ce PC
-// (http://localhost:5500) ou depuis un téléphone sur le réseau local
-// (http://<IP-LAN>:5500) — l'API tourne toujours sur le port 8000 de la
-// même machine que celle qui sert cette page.
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+// API en production (Railway, projet "luminous-adventure", domaine custom
+// api.xfoot.site — voir HOSTINGER_DEPLOY.md).
+const PRODUCTION_API_URL = "https://api.xfoot.site";
+
+// Adresses privées (dev local sur ce PC, ou accès depuis un téléphone sur le
+// même réseau) : localhost, boucle locale, et les 3 plages RFC1918.
+const _LOCAL_HOSTNAME_RE = /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/;
+
+// En dev (page servie depuis ce PC ou son IP LAN), l'API tourne sur le port
+// 8000 de la MÊME machine que celle qui sert cette page — dérivé de
+// window.location.hostname, jamais codé en dur sur "localhost", pour
+// marcher aussi bien en local qu'en accès mobile LAN.
+//
+// Une fois la page hébergée sur un vrai domaine (Hostinger), l'API n'est
+// PLUS sur le même hôte (elle reste sur Railway) : impossible de la
+// dériver de window.location, il faut PRODUCTION_API_URL ci-dessus.
+const API_BASE_URL = _LOCAL_HOSTNAME_RE.test(window.location.hostname)
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : PRODUCTION_API_URL;
 
 const TOKEN_KEY = "xfoot_token";
 
