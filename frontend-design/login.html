@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Connexion</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-container">
+        <div class="football foot-1">⚽</div>
+        <div class="football foot-2">⚽</div>
+        <div class="football foot-3">⚽</div>
+        <div class="football foot-4">⚽</div>
+        <div class="football foot-5">⚽</div>
+        <div class="football foot-6">⚽</div>
+    </div>
+
+    <header class="header">
+        <div class="logo">
+            <span class="icon">⚽</span> xFoot
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="glass-panel" style="max-width: 420px;">
+            <h1 class="title" id="form-title">Connexion</h1>
+            <p class="subtitle">Connecte-toi pour voir les prédictions.</p>
+
+            <form class="prediction-form" id="auth-form" style="grid-template-columns: 1fr;">
+                <div class="form-group full-width">
+                    <label>Email</label>
+                    <input type="email" class="form-control" id="email" required autocomplete="email">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Mot de passe</label>
+                    <input type="password" class="form-control" id="password" required minlength="8" autocomplete="current-password">
+                </div>
+
+                <div class="form-actions full-width">
+                    <button type="submit" class="btn-primary btn-block" id="submit-btn">Se connecter</button>
+                </div>
+            </form>
+
+            <p id="error-message" style="color: var(--accent-warning); margin-top: 1rem; display: none;"></p>
+
+            <p class="info-text" style="margin-top: 1.5rem; text-align: center;">
+                <a href="#" id="toggle-mode" style="color: var(--accent-green); text-decoration: none;">Pas de compte ? Créer un compte</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        // Déjà connecté -> pas besoin de repasser par cette page.
+        if (getToken()) {
+            window.location.href = "index.html";
+        }
+
+        let mode = "login"; // "login" | "register"
+
+        const form = document.getElementById("auth-form");
+        const title = document.getElementById("form-title");
+        const submitBtn = document.getElementById("submit-btn");
+        const toggleLink = document.getElementById("toggle-mode");
+        const errorMessage = document.getElementById("error-message");
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = "block";
+        }
+
+        function hideError() {
+            errorMessage.style.display = "none";
+        }
+
+        toggleLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            hideError();
+            if (mode === "login") {
+                mode = "register";
+                title.textContent = "Créer un compte";
+                submitBtn.textContent = "Créer mon compte";
+                toggleLink.textContent = "Déjà un compte ? Se connecter";
+            } else {
+                mode = "login";
+                title.textContent = "Connexion";
+                submitBtn.textContent = "Se connecter";
+                toggleLink.textContent = "Pas de compte ? Créer un compte";
+            }
+        });
+
+        async function login(email, password) {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ username: email, password }),
+            });
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({}));
+                throw new Error(body.detail || "Email ou mot de passe incorrect");
+            }
+            const data = await response.json();
+            setToken(data.access_token);
+        }
+
+        async function register(email, password) {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({}));
+                throw new Error(body.detail || "Inscription impossible");
+            }
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideError();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            submitBtn.disabled = true;
+            try {
+                if (mode === "register") {
+                    await register(email, password);
+                }
+                await login(email, password);
+                window.location.href = "index.html";
+            } catch (err) {
+                showError(err.message);
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

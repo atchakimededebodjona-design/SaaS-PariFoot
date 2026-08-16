@@ -23,8 +23,8 @@
             <span class="icon">⚽</span> xFoot
         </div>
         <div class="user-info">
-            <span class="email">vonaime@gmail.com</span>
-            <button class="btn-outline">Se déconnecter</button>
+            <span class="email" id="user-email">…</span>
+            <button class="btn-outline" id="logout-btn">Se déconnecter</button>
         </div>
     </header>
 
@@ -33,63 +33,79 @@
             <h1 class="title">Prédiction de match</h1>
             <p class="subtitle">Choisis un championnat et deux équipes pour voir les probabilités.</p>
 
-            <form class="prediction-form">
+            <form class="prediction-form" id="prediction-form">
                 <div class="form-group">
                     <label>Championnat</label>
-                    <select class="form-control" id="championnat-select">
-                        <option value="SerieA">SerieA</option>
-                        <option value="LaLiga">LaLiga</option>
-                        <option value="Premier League">Premier League</option>
-                        <option value="Ligue 1">Ligue 1</option>
-                    </select>
+                    <select class="form-control" id="championnat-select"></select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Équipe à domicile</label>
-                    <select class="form-control">
-                        <option>Almeria</option>
-                        <option>Real Madrid</option>
-                        <option>Barcelona</option>
-                    </select>
+                    <select class="form-control" id="home-team-select"></select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Équipe à l'extérieur</label>
-                    <select class="form-control">
-                        <option>Alaves</option>
-                        <option>Sevilla</option>
-                        <option>Valencia</option>
-                    </select>
+                    <select class="form-control" id="away-team-select"></select>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-primary">Voir la prédiction</button>
+                    <button type="submit" class="btn-primary" id="predict-btn">Voir la prédiction</button>
                 </div>
             </form>
 
-            <div class="premium-banner">
+            <p id="prediction-error" style="color: var(--accent-warning); margin-top: 1rem; display: none;"></p>
+
+            <div id="prediction-result" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                <h3 id="result-title" style="margin-bottom: 1rem; font-size: 1.2rem;"></h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;">
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Domicile</div>
+                        <div id="result-home-win" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);"></div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Nul</div>
+                        <div id="result-draw" style="font-size: 1.5rem; font-weight: 700;"></div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Extérieur</div>
+                        <div id="result-away-win" style="font-size: 1.5rem; font-weight: 700;"></div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem;">+2,5 buts</div>
+                        <div id="result-over" style="font-size: 1.5rem; font-weight: 700;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-banner" id="premium-banner" style="display: none;">
                 <h3>Abonnement requis pour voir cette prédiction</h3>
                 <p>Le classement des équipes reste gratuit — les probabilités de match détaillées sont réservées aux abonnés.</p>
-                <button class="btn-warning">Voir les abonnements</button>
+                <button class="btn-warning" id="see-plans-btn">Voir les abonnements</button>
             </div>
         </div>
     </main>
 
+    <script src="api.js"></script>
     <script>
-        const teamsByLeague = {
-            'LaLiga': ['Real Madrid', 'Barcelona', 'Atletico Madrid', 'Sevilla', 'Valencia', 'Betis'],
-            'Premier League': ['Arsenal', 'Man City', 'Liverpool', 'Chelsea', 'Man United', 'Spurs'],
-            'Ligue 1': ['PSG', 'Marseille', 'Lyon', 'Monaco', 'Lille', 'Lens'],
-            'SerieA': ['Juventus', 'Inter', 'AC Milan', 'Napoli', 'Roma', 'Lazio']
-        };
+        requireAuth();
 
-        const select = document.getElementById('championnat-select');
+        let teamsByLeague = {};
+
+        const championnatSelect = document.getElementById('championnat-select');
+        const homeSelect = document.getElementById('home-team-select');
+        const awaySelect = document.getElementById('away-team-select');
         const bgContainer = document.querySelector('.background-container');
+        const predictionForm = document.getElementById('prediction-form');
+        const predictBtn = document.getElementById('predict-btn');
+        const errorEl = document.getElementById('prediction-error');
+        const resultEl = document.getElementById('prediction-result');
+        const premiumBanner = document.getElementById('premium-banner');
 
         function updateFloatingTeams(league) {
             bgContainer.innerHTML = '';
             const teams = teamsByLeague[league] || ['⚽', '⚽', '⚽', '⚽', '⚽', '⚽'];
-            
+
             teams.forEach((team, index) => {
                 const div = document.createElement('div');
                 div.className = `football foot-${index + 1} floating-team`;
@@ -98,10 +114,109 @@
             });
         }
 
-        select.addEventListener('change', (e) => updateFloatingTeams(e.target.value));
+        // Recharge les deux dropdowns d'équipes avec les équipes du championnat
+        // sélectionné (venues de /leagues, pas codées en dur) — sinon "Équipe à
+        // domicile/extérieur" restaient figés sur un seul championnat.
+        function populateTeamSelects(league) {
+            const teams = teamsByLeague[league] || [];
+            const optionsHtml = teams.map(team => `<option>${team}</option>`).join('');
+            homeSelect.innerHTML = optionsHtml;
+            awaySelect.innerHTML = optionsHtml;
+            if (teams.length > 1) {
+                awaySelect.selectedIndex = 1; // domicile/extérieur différents par défaut
+            }
+        }
 
-        // Initialize with default select value
-        updateFloatingTeams(select.value);
+        function onLeagueChange(league) {
+            updateFloatingTeams(league);
+            populateTeamSelects(league);
+        }
+
+        championnatSelect.addEventListener('change', (e) => onLeagueChange(e.target.value));
+
+        function hideError() {
+            errorEl.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        async function loadLeagues() {
+            const response = await apiFetch('/leagues');
+            const data = await response.json();
+            teamsByLeague = Object.fromEntries(
+                Object.entries(data).map(([league, info]) => [league, info.teams])
+            );
+
+            championnatSelect.innerHTML = Object.keys(teamsByLeague)
+                .map(league => `<option value="${league}">${league}</option>`)
+                .join('');
+
+            onLeagueChange(championnatSelect.value);
+        }
+
+        async function loadCurrentUser() {
+            const response = await apiFetch('/auth/me');
+            const user = await response.json();
+            document.getElementById('user-email').textContent = user.email;
+        }
+
+        function pct(value) {
+            return `${(value * 100).toFixed(1)}%`;
+        }
+
+        predictionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+            resultEl.style.display = 'none';
+            premiumBanner.style.display = 'none';
+
+            const league = championnatSelect.value;
+            const home = homeSelect.value;
+            const away = awaySelect.value;
+
+            predictBtn.disabled = true;
+            try {
+                const response = await apiFetch(
+                    `/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}`
+                );
+
+                if (response.status === 402) {
+                    premiumBanner.style.display = 'block';
+                    return;
+                }
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    showError(body.detail || `Erreur (${response.status})`);
+                    return;
+                }
+
+                const prediction = await response.json();
+                document.getElementById('result-title').textContent =
+                    `${prediction.home_team} vs ${prediction.away_team}`;
+                document.getElementById('result-home-win').textContent = pct(prediction.home_win);
+                document.getElementById('result-draw').textContent = pct(prediction.draw);
+                document.getElementById('result-away-win').textContent = pct(prediction.away_win);
+                document.getElementById('result-over').textContent = pct(prediction.over_2_5);
+                resultEl.style.display = 'block';
+            } finally {
+                predictBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        document.getElementById('see-plans-btn').addEventListener('click', () => {
+            window.location.href = 'billing.html';
+        });
+
+        loadCurrentUser();
+        loadLeagues();
     </script>
 </body>
 </html>

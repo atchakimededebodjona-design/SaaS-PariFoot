@@ -30,10 +30,10 @@
     <main class="main-content">
         <div class="glass-panel">
             <h1 class="title">Abonnement</h1>
-            <p class="subtitle" style="margin-bottom: 1rem;">Aucune licence active. Choisis un plan pour débloquer les prédictions.</p>
+            <p class="subtitle" id="subscription-status" style="margin-bottom: 1rem;">Chargement du statut…</p>
             <p class="info-text">Chariow ne renouvelle pas automatiquement une licence : reviens sur cette page avant ou après expiration pour la prolonger, avec le même formulaire.</p>
 
-            <form class="prediction-form billing-form">
+            <form class="prediction-form billing-form" id="checkout-form">
                 <div class="form-group full-width">
                     <label>Plan</label>
                     <div class="plan-selector">
@@ -45,7 +45,7 @@
                             </div>
                         </label>
                         <label class="plan-option">
-                            <input type="radio" name="plan" value="annual">
+                            <input type="radio" name="plan" value="yearly">
                             <div class="plan-card">
                                 <h4>Annuel</h4>
                                 <div class="price">10000 FCFA<span>/an</span></div>
@@ -57,35 +57,94 @@
 
                 <div class="form-group">
                     <label>Prénom</label>
-                    <input type="text" class="form-control" placeholder="Entrez votre prénom">
+                    <input type="text" class="form-control" id="first-name" placeholder="Entrez votre prénom" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Nom</label>
-                    <input type="text" class="form-control" placeholder="Entrez votre nom">
+                    <input type="text" class="form-control" id="last-name" placeholder="Entrez votre nom" required>
                 </div>
 
                 <div class="form-group">
                     <label>Pays</label>
-                    <select class="form-control">
-                        <option>Côte d'Ivoire (+225)</option>
-                        <option>Sénégal (+221)</option>
-                        <option>Mali (+223)</option>
-                        <option>Cameroun (+237)</option>
-                        <option>Togo (+228)</option>
+                    <select class="form-control" id="country">
+                        <option value="CI">Côte d'Ivoire (+225)</option>
+                        <option value="SN">Sénégal (+221)</option>
+                        <option value="ML">Mali (+223)</option>
+                        <option value="CM">Cameroun (+237)</option>
+                        <option value="TG">Togo (+228)</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Numéro de téléphone (Mobile Money)</label>
-                    <input type="tel" class="form-control" placeholder="0700000000">
+                    <input type="tel" class="form-control" id="phone-number" placeholder="0700000000" required>
                 </div>
 
+                <p id="checkout-error" style="color: var(--accent-warning); display: none;" class="full-width"></p>
+
                 <div class="form-actions full-width">
-                    <button type="button" class="btn-primary btn-block">Continuer vers le paiement</button>
+                    <button type="submit" class="btn-primary btn-block" id="checkout-btn">Continuer vers le paiement</button>
                 </div>
             </form>
         </div>
     </main>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const statusEl = document.getElementById('subscription-status');
+        const errorEl = document.getElementById('checkout-error');
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        async function loadSubscriptionStatus() {
+            const response = await apiFetch('/billing/subscription');
+            const sub = await response.json();
+            if (sub.is_active) {
+                const expiry = sub.current_period_end
+                    ? ` (expire le ${new Date(sub.current_period_end).toLocaleDateString('fr-FR')})`
+                    : '';
+                statusEl.textContent = `Abonnement actif — plan ${sub.plan}${expiry}. Renouvelle ou change de plan ci-dessous.`;
+            } else {
+                statusEl.textContent = 'Aucune licence active. Choisis un plan pour débloquer les prédictions.';
+            }
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorEl.style.display = 'none';
+            checkoutBtn.disabled = true;
+
+            const plan = document.querySelector('input[name="plan"]:checked').value;
+            const body = {
+                plan,
+                first_name: document.getElementById('first-name').value,
+                last_name: document.getElementById('last-name').value,
+                phone_number: document.getElementById('phone-number').value,
+                phone_country_code: document.getElementById('country').value,
+            };
+
+            try {
+                const response = await apiFetch('/billing/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.detail || `Erreur (${response.status})`);
+                }
+                // Redirection réelle vers la page de paiement Chariow hébergée.
+                window.location.href = data.checkout_url;
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.style.display = 'block';
+                checkoutBtn.disabled = false;
+            }
+        });
+
+        loadSubscriptionStatus();
+    </script>
 </body>
 </html>
