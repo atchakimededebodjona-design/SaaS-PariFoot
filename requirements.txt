@@ -17,3 +17,5 @@ scipy
 sqlmodel
 psycopg2-binary
 httpx
+xgboost
+lightgbm
