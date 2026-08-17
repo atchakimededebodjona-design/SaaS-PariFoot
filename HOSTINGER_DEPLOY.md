@@ -40,9 +40,17 @@ hpanel.hostinger.com/domain/xfoot.site/domain-overview).
 Dans le dashboard Hostinger → **Fichiers → Gestionnaire de fichiers** (ou
 FTP) → dossier `public_html/` de **xfoot.site** → uploader tout le contenu
 de `frontend-design/` (`index.html`, `login.html`, `billing.html`,
-`styles.css`, `api.js`) **à la racine de `public_html/`**, pas dans un
-sous-dossier — sinon `https://xfoot.site/` ne trouvera pas `index.html`
-directement.
+`history.html`, `live.html`, `styles.css`, `api.js`) **à la racine de
+`public_html/`**, pas dans un sous-dossier — sinon `https://xfoot.site/` ne
+trouvera pas `index.html` directement.
+
+**Mise à jour ultérieure (historique, live, nav commune, palette verte)** :
+tous les fichiers `.html` ont changé, ainsi que `styles.css` — réuploader
+les 6 fichiers `.html` + `styles.css` écrase les anciennes versions sans
+rien casser côté Hostinger (site statique, pas de cache serveur à vider).
+Le paramètre `?v=5` sur le lien `styles.css` dans chaque page force les
+navigateurs déjà visités à retélécharger la nouvelle feuille de style —
+sans ça, un visiteur récurrent aurait pu garder l'ancien CSS en cache.
 
 ## 4. Brancher le frontend sur l'API — déjà fait ✅
 

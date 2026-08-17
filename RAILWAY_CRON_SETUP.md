@@ -173,3 +173,88 @@ ré-entraînés visibles par l'API.
 service web pour un déploiement sans base peuplée (fallback fichiers
 inchangé), la planification Windows existante (reste utilisable en parallèle
 tant que le Cron Job Railway n'est pas validé en conditions réelles).
+
+---
+
+## Résultats quotidiens (3ᵉ service) — fetch_daily_results.py
+
+Même projet Railway, **3ᵉ service séparé** (ni le service web, ni le Cron
+Job hebdomadaire ci-dessus) : rapproche chaque jour les prédictions loguées
+la veille (table `prediction_log`, remplie par le service web à chaque
+prédiction demandée) avec les scores réels via API-Football, pour la page
+Historique & Performance du frontend. Voir le docstring de
+`fetch_daily_results.py` pour le détail du fonctionnement (dont deux
+comportements d'API-Football découverts uniquement en conditions réelles,
+absents de leur documentation officielle).
+
+### 1. Créer le service
+
+Même projet Railway : **New → GitHub Repo** → même dépôt. 3ᵉ service dans
+le projet, les deux autres ne sont pas touchés.
+
+### 2. Root Directory = racine du dépôt
+
+Vide (ou `/`) — comme le Cron Job hebdomadaire, **pas** `api/`. Le script
+`fetch_daily_results.py` est à la racine du dépôt.
+
+### 3. Fichier de config = `railway.cron.json` → `railway.cron.results.json`
+
+Dans **Settings** de ce service : **Config-as-code file path** =
+`railway.cron.results.json` (racine du dépôt, ajouté par ce ticket) — nom
+distinct des deux autres fichiers de config pour ne jamais entrer en
+conflit. Fixe `cronSchedule: "30 6 * * *"` (6h30 UTC tous les jours — les
+résultats de la veille sont normalement tous connus à cette heure ; ajuster
+si besoin selon ton fuseau, Railway évalue tous les cron en UTC) et
+`startCommand: "python fetch_daily_results.py"`.
+
+### 4. Variables d'environnement
+
+| Variable | Valeur | Nécessaire ? |
+|---|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` | **Oui** — lecture/écriture directe dans `prediction_log` |
+| `API_FOOTBALL_KEY` | ta clé du dashboard API-Football | **Oui** — sans elle le job s'arrête immédiatement (code de sortie 1, voir `run()`) |
+| `ALERT_WEBHOOK_URL` | webhook Slack/Discord | Optionnel — mêmes notifications d'échec que le Cron Job hebdomadaire |
+
+**Pas de Volume nécessaire** ici (contrairement au Cron Job hebdomadaire) —
+ce job ne lit/écrit que la base Postgres, jamais de fichier local.
+
+### 5. `API_FOOTBALL_KEY` va AUSSI sur le service web
+
+Point facile à manquer : `GET /live-scores` (scores en direct) tourne dans
+le **service web** lui-même, pas dans un cron séparé — `API_FOOTBALL_KEY`
+doit donc être ajoutée **aux Variables du service web existant** en plus de
+ce 3ᵉ service. Sans elle, `/live-scores` répond toujours (jamais d'erreur
+visible côté utilisateur) mais renvoie systématiquement une liste vide —
+échec silencieux, à vérifier explicitement.
+
+### 6. Test manuel
+
+**Je n'ai pas pu déclencher ni observer cette exécution moi-même** (pas
+d'accès Railway) — comme pour le Cron Job hebdomadaire, utiliser
+**Deploy → Run Now** sur ce service une fois configuré, sans attendre le
+lendemain matin. Logs à vérifier :
+
+1. `X prédiction(s) en attente sur Y ligue(s)` — ou `Aucune prédiction en
+   attente... Rien à faire.` si personne n'a généré de prédiction la veille
+   (cas normal juste après la mise en service).
+2. `[Ligue] N match(s) terminé(s) reçu(s) d'API-Football`
+3. `RÉCAPITULATIF` puis `JOB TERMINÉ AVEC SUCCÈS COMPLET.` (ou succès
+   partiel — voir `Non rapprochés`/`Ligues en erreur` dans les logs, pas
+   forcément un vrai problème selon le contexte, ex. équipe non reconnue
+   à ajouter dans `API_FOOTBALL_TEAM_ALIASES`).
+
+## Ce que ce ticket-ci a changé (déjà fait, testé localement)
+
+- `api/app/models/prediction_log.py` + migration Alembic associée —
+  nouvelle table `prediction_log`.
+- `api/app/core/api_football_config.py` (nouveau) — clé/URL/ids de ligues
+  API-Football, partagé par le service web et ce nouveau service.
+- `fetch_daily_results.py` (nouveau, racine) — le job lui-même.
+- `railway.cron.results.json` (nouveau, racine) — config de ce 3ᵉ service.
+- `api/main.py` — log automatique de chaque prédiction (`_log_prediction`),
+  endpoints `GET /predictions/history` et `GET /live-scores`.
+
+Testé en local : `api/test_prediction_history.py`,
+`test_fetch_daily_results.py` et `api/test_live_scores.py` tous au vert,
+plus une exécution réelle de `fetch_daily_results.py` contre le vrai
+API-Football (clé de test), résultat vérifié en base.

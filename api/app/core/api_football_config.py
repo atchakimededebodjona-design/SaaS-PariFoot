@@ -1,19 +1,26 @@
 """
-Configuration API-Football (api-football.com) — source des résultats réels
-utilisée par fetch_daily_results.py pour rapprocher les prédictions loguées
-(app/models/prediction_log.py) des scores finaux.
+Configuration API-Football (api-football.com) — utilisée par :
+  - fetch_daily_results.py (cron séparé) pour rapprocher les prédictions
+    loguées (app/models/prediction_log.py) des scores finaux.
+  - api/main.py (service web) pour GET /live-scores — scores en direct,
+    appelés directement depuis le process web (voir _get_live_scores),
+    contrairement aux résultats quotidiens qui restent dans le cron séparé.
 
 Variables d'environnement requises (voir .env.example) :
     API_FOOTBALL_KEY — clé du dashboard https://dashboard.api-football.com/
 
-Ce module n'est importé QUE par fetch_daily_results.py (le service web
-api/main.py n'a jamais besoin d'appeler API-Football directement) — pas de
-vérification RuntimeError au démarrage de l'API, contrairement à
-chariow_config.py qui est bien utilisé par le service web.
+IMPORTANT DÉPLOIEMENT : API_FOOTBALL_KEY doit être définie SUR LES DEUX
+services Railway — le service web (pour /live-scores) ET le service cron
+fetch_daily_results.py (voir RAILWAY_CRON_SETUP.md, section "Résultats
+quotidiens"). Contrairement à CHARIOW_API_KEY, ce module ne lève PAS de
+RuntimeError si la clé est absente en production — un service qui en a
+besoin échoue simplement silencieusement (voir best-effort dans
+_get_live_scores et fetch_daily_results.run()) plutôt que de bloquer le
+démarrage de tout le service web pour une fonctionnalité annexe.
 
-API_FOOTBALL_LEAGUE_IDS — NON VÉRIFIÉ : ids v3 usuels (Premier League 39,
-LaLiga 140, Serie A 135, Bundesliga 78, Ligue 1 61), à confirmer dans le
-dashboard API-Football avant la première exécution en production.
+API_FOOTBALL_LEAGUE_IDS — vérifiés dans le dashboard API-Football
+(Football → Ids → recherche par nom de championnat, filtré sur Current=True) :
+Premier League 39, LaLiga 140, Serie A 135, Bundesliga 78, Ligue 1 61.
 """
 
 import os
