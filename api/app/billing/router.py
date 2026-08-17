@@ -52,6 +52,7 @@ from app.core.chariow_config import (
     CHARIOW_API_BASE_URL,
     CHARIOW_PULSE_SECRET,
     PRODUCT_IDS,
+    FRONTEND_URL,
 )
 from app.auth.security import get_current_user
 from app.models.user import User
@@ -130,6 +131,14 @@ def _create_chariow_checkout_link(
     essai avec un objet "customer" imbriqué a été rejeté en 422 listant les
     champs manquants) : email/first_name/last_name à la racine, téléphone en
     sous-objet "phone" avec "number"/"country_code" — pas de champ "customer".
+
+    redirect_url (chariow.dev/en/guides/checkout) : sans ce champ, Chariow
+    laisse le client sur SA page de post-achat par défaut au lieu de le
+    ramener vers le frontend — c'est le bug rapporté ("après le paiement,
+    la page reste sur Chariow"). FRONTEND_URL était déjà défini dans
+    chariow_config.py mais jamais branché nulle part. Redirige vers
+    billing.html, qui recharge déjà GET /billing/subscription au chargement
+    (aucun code supplémentaire nécessaire pour afficher le nouveau statut).
     """
     response = httpx.post(
         f"{CHARIOW_API_BASE_URL}/checkout",
@@ -144,6 +153,7 @@ def _create_chariow_checkout_link(
                 "country_code": phone_country_code,
             },
             "custom_metadata": metadata,
+            "redirect_url": f"{FRONTEND_URL}/billing.html",
         },
         timeout=10.0,
     )
