@@ -23,6 +23,7 @@
             <span class="icon">⚽</span> xFoot
         </div>
         <div class="header-actions">
+            <span class="email" id="user-email">…</span>
             <a href="index.html" class="btn-outline" style="text-decoration: none;">Retour au dashboard</a>
         </div>
     </header>
@@ -90,7 +91,7 @@
 
             <div class="premium-banner" style="margin-top: 3rem; text-align: left;">
                 <h3>Tu as déjà payé mais rien ne s'est passé ?</h3>
-                <p>Si la page ne t'a pas ramené automatiquement ici après le paiement, colle la clé de licence reçue par email de Chariow pour débloquer ton accès manuellement.</p>
+                <p>Si la page ne t'a pas ramené automatiquement ici après le paiement, colle la clé de licence reçue par email de Chariow pour débloquer ton accès manuellement. Elle sera associée au compte actuellement connecté (<span id="license-target-email">…</span>) — vérifie que c'est bien le bon avant de valider.</p>
                 <form id="activate-license-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                     <input type="text" class="form-control" id="license-key" placeholder="Clé de licence (ex. lic_xxxxxxxx)" required style="flex: 1; min-width: 220px;">
                     <button type="submit" class="btn-warning" id="activate-license-btn" style="flex-shrink: 0;">Activer avec ma clé</button>
@@ -108,16 +109,30 @@
         const errorEl = document.getElementById('checkout-error');
         const checkoutBtn = document.getElementById('checkout-btn');
 
+        // Rempli par loadCurrentUser() avant tout affichage de statut/activation —
+        // toute licence collée sur cette page se lie au compte actuellement connecté
+        // (metadata.user_id côté API, voir activate_license), donc l'utilisateur doit
+        // pouvoir vérifier facilement quel compte c'est avant de coller sa clé.
+        let currentUserEmail = null;
+
+        async function loadCurrentUser() {
+            const response = await apiFetch('/auth/me');
+            const user = await response.json();
+            currentUserEmail = user.email;
+            document.getElementById('user-email').textContent = user.email;
+        }
+
         async function loadSubscriptionStatus() {
             const response = await apiFetch('/billing/subscription');
             const sub = await response.json();
+            const account = currentUserEmail ? ` (compte ${currentUserEmail})` : '';
             if (sub.is_active) {
                 const expiry = sub.current_period_end
                     ? ` (expire le ${new Date(sub.current_period_end).toLocaleDateString('fr-FR')})`
                     : '';
-                statusEl.textContent = `Abonnement actif — plan ${sub.plan}${expiry}. Renouvelle ou change de plan ci-dessous.`;
+                statusEl.textContent = `Abonnement actif${account} — plan ${sub.plan}${expiry}. Renouvelle ou change de plan ci-dessous.`;
             } else {
-                statusEl.textContent = 'Aucune licence active. Choisis un plan pour débloquer les prédictions.';
+                statusEl.textContent = `Aucune licence active${account}. Choisis un plan pour débloquer les prédictions.`;
             }
         }
 
@@ -176,7 +191,7 @@
                     throw new Error(data.detail || `Erreur (${response.status})`);
                 }
                 activateMessage.style.color = 'var(--accent-green)';
-                activateMessage.textContent = 'Licence activée — ton abonnement est maintenant actif.';
+                activateMessage.textContent = `Licence activée pour ${currentUserEmail} — ton abonnement est maintenant actif.`;
                 activateMessage.style.display = 'block';
                 document.getElementById('license-key').value = '';
                 await loadSubscriptionStatus();
@@ -189,7 +204,10 @@
             }
         });
 
-        loadSubscriptionStatus();
+        loadCurrentUser().then(() => {
+            document.getElementById('license-target-email').textContent = currentUserEmail;
+            loadSubscriptionStatus();
+        });
     </script>
 </body>
 </html>
