@@ -54,6 +54,34 @@ def test_resolution_exact(client):
     print(f"  [OK] resolution exacte Paris SG vs Marseille -> {body['home_win']=} {body['draw']=} {body['away_win']=}")
 
 
+def test_extended_prediction_markets(client):
+    """BTTS, double chance, lignes over/under multiples — tous dérivés de
+    la même matrice de score Dixon-Coles, aucun nouveau paramètre appris."""
+    r = client.get("/predictions/Ligue1/Paris SG/Marseille", headers=AUTH_HEADER)
+    assert r.status_code == 200
+    body = r.json()
+
+    assert abs(body["btts_yes"] + body["btts_no"] - 1.0) < 1e-6
+    print(f"  [OK] BTTS -> yes={body['btts_yes']} no={body['btts_no']} (somme=1)")
+
+    dc_1x = body["double_chance_1x"]
+    dc_12 = body["double_chance_12"]
+    dc_x2 = body["double_chance_x2"]
+    assert abs(dc_1x - (body["home_win"] + body["draw"])) < 1e-6
+    assert abs(dc_12 - (body["home_win"] + body["away_win"])) < 1e-6
+    assert abs(dc_x2 - (body["draw"] + body["away_win"])) < 1e-6
+    print(f"  [OK] Double chance -> 1X={dc_1x} 12={dc_12} X2={dc_x2} (cohérents avec 1X2)")
+
+    lines = body["over_under_lines"]
+    assert [l["line"] for l in lines] == [0.5, 1.5, 2.5, 3.5]
+    for l in lines:
+        assert abs(l["over"] + l["under"] - 1.0) < 1e-6
+    overs = [l["over"] for l in lines]
+    assert overs == sorted(overs, reverse=True), "P(over) doit décroître strictement quand la ligne augmente"
+    assert abs(lines[2]["over"] - body["over_2_5"]) < 1e-6, "la ligne 2.5 doit rester cohérente avec over_2_5"
+    print(f"  [OK] Lignes over/under {[l['line'] for l in lines]} -> P(over) strictement décroissante : {overs}")
+
+
 def test_resolution_alias(client):
     r = client.get("/predictions/Ligue1/PSG/OM", headers=AUTH_HEADER)
     assert r.status_code == 200
@@ -177,6 +205,7 @@ if __name__ == "__main__":
         tests = [
             test_health,
             test_resolution_exact,
+            test_extended_prediction_markets,
             test_resolution_alias,
             test_resolution_normalized,
             test_resolution_typo_returns_404_with_suggestion,

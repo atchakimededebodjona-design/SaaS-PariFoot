@@ -390,6 +390,25 @@ class LeagueModel:
             "under": round(float(m[total < line].sum()), 4),
         }
 
+    def predict_btts(self, home_team: str, away_team: str) -> dict:
+        """Both Teams To Score — dérivé de la même matrice de score que
+        predict_1x2/predict_over_under, aucun nouveau paramètre appris
+        nécessaire : "oui" = P(buts domicile >= 1 ET buts extérieur >= 1)."""
+        m = self.score_matrix(home_team, away_team)
+        yes = float(m[1:, 1:].sum())
+        return {"yes": round(yes, 4), "no": round(1 - yes, 4)}
+
+    def predict_double_chance(self, home_team: str, away_team: str) -> dict:
+        """Simple recombinaison des probabilités 1X2 déjà calculées — pas
+        un nouveau marché au sens statistique, juste une autre façon de
+        lire les mêmes probabilités (1X = domicile ou nul, etc.)."""
+        probs = self.predict_1x2(home_team, away_team)
+        return {
+            "home_or_draw": round(probs["home_win"] + probs["draw"], 4),
+            "home_or_away": round(probs["home_win"] + probs["away_win"], 4),
+            "draw_or_away": round(probs["draw"] + probs["away_win"], 4),
+        }
+
     def most_likely_scores(self, home_team: str, away_team: str, top_n: int = 5) -> list:
         m = self.score_matrix(home_team, away_team)
         flat_idx = np.argsort(m.ravel())[::-1][:top_n]
@@ -451,6 +470,12 @@ def _load_leagues_from_db() -> dict[str, LeagueModel]:
 # Schémas de réponse (Pydantic — documentation auto-générée par FastAPI)
 # ---------------------------------------------------------------------------
 
+class OverUnderLine(BaseModel):
+    line: float
+    over: float
+    under: float
+
+
 class MatchPrediction(BaseModel):
     league: str
     home_team: str
@@ -460,6 +485,14 @@ class MatchPrediction(BaseModel):
     away_win: float
     over_2_5: float
     under_2_5: float
+    btts_yes: float = Field(..., description="Both Teams To Score — probabilité que les deux équipes marquent")
+    btts_no: float
+    double_chance_1x: float = Field(..., description="Probabilité domicile OU nul")
+    double_chance_12: float = Field(..., description="Probabilité domicile OU extérieur (pas de nul)")
+    double_chance_x2: float = Field(..., description="Probabilité nul OU extérieur")
+    over_under_lines: list[OverUnderLine] = Field(
+        ..., description="Probabilités +/- pour plusieurs lignes de buts (0.5, 1.5, 2.5, 3.5) — over_2_5/under_2_5 ci-dessus restent la ligne de référence"
+    )
     most_likely_scores: list
     model_trained_at: str
     model_data_up_to: str
@@ -581,6 +614,12 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
 
     probs_1x2 = model.predict_1x2(home_team, away_team)
     probs_ou = model.predict_over_under(home_team, away_team, line=2.5)
+    probs_btts = model.predict_btts(home_team, away_team)
+    probs_dc = model.predict_double_chance(home_team, away_team)
+    # Autres lignes que 2.5, mêmes probabilités déjà exposées sous un autre
+    # découpage — over_2_5/under_2_5 ci-dessus restent calculées séparément
+    # pour ne pas casser les clients existants qui les lisent directement.
+    over_under_lines = [model.predict_over_under(home_team, away_team, line=l) for l in (0.5, 1.5, 2.5, 3.5)]
     scores = model.most_likely_scores(home_team, away_team)
 
     return MatchPrediction(
@@ -592,6 +631,12 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
         away_win=probs_1x2["away_win"],
         over_2_5=probs_ou["over"],
         under_2_5=probs_ou["under"],
+        btts_yes=probs_btts["yes"],
+        btts_no=probs_btts["no"],
+        double_chance_1x=probs_dc["home_or_draw"],
+        double_chance_12=probs_dc["home_or_away"],
+        double_chance_x2=probs_dc["draw_or_away"],
+        over_under_lines=over_under_lines,
         most_likely_scores=scores,
         model_trained_at=model.trained_at,
         model_data_up_to=model.data_up_to,
