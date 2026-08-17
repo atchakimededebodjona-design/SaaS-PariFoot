@@ -239,12 +239,16 @@ def _fetch_chariow_license(license_key: str) -> dict:
 
     GET {CHARIOW_API_BASE_URL}/licenses/{license_key} (chariow.dev/api-
     reference/licenses/get-license) : renvoie status
-    (active/expired/revoked/pending_activation), expires_at, product, et
-    surtout metadata — le custom_metadata qu'on envoie déjà à POST
-    /checkout ({"user_id": ..., "plan": ...}). Pas de champ email dans
-    cette réponse, contrairement aux Pulses license.* — c'est le
-    metadata.user_id qui sert à vérifier l'appartenance de la clé
-    (voir activate_license ci-dessous), pas l'email.
+    (active/expired/revoked/pending_activation), expires_at, product,
+    metadata (le custom_metadata envoyé à POST /checkout — {"user_id":
+    ..., "plan": ...}) ET customer.email (vérifié empiriquement contre une
+    vraie clé — présent malgré la doc Chariow qui prétendait ce champ
+    absent). Les deux servent de vérification d'appartenance dans
+    activate_license ci-dessous : metadata.user_id en priorité, email en
+    secours pour les achats antérieurs à la correction du bug
+    metadata/custom_metadata (voir test_create_checkout_link_sends_custom_metadata_key)
+    — ces licences-là n'ont AUCUNE metadata (null), pas juste un user_id
+    manquant, donc aucune correction rétroactive possible côté Chariow.
 
     quote() : la clé de licence est fournie par l'utilisateur (collée
     depuis un email Chariow), jamais garanti sans caractères spéciaux au
@@ -272,6 +276,40 @@ def _fetch_chariow_license(license_key: str) -> dict:
     return response.json()["data"]
 
 
+def _activate_chariow_license(license_key: str) -> dict:
+    """
+    POST {CHARIOW_API_BASE_URL}/licenses/{license_key}/activate
+    (chariow.dev/api-reference/licenses/activate-license).
+
+    Découvert en diagnostiquant une vraie clé de licence en prod : un
+    achat NE rend PAS automatiquement une licence "active" côté Chariow,
+    sauf si le produit est configuré avec requires_activation=false dans
+    le dashboard Chariow (mode recommandé pour un SaaS, pas activé sur nos
+    produits au moment d'écrire ceci) — sans ce réglage, une licence reste
+    "pending_activation" tant que rien n'appelle cette route. La doc
+    Chariow désigne "l'app/l'appareil du client" comme appelant normal ;
+    pour un SaaS web sans notion d'appareil, c'est notre backend qui joue
+    ce rôle au nom du client, une fois son appartenance déjà vérifiée
+    (jamais appelée sur une licence dont on n'a pas confirmé le
+    propriétaire, voir activate_license).
+
+    Pas de device_identifier envoyé (champ optionnel, pensé pour du
+    logiciel desktop avec empreinte machine — aucun sens pour ce service).
+    """
+    _require_chariow_api_key()
+    response = httpx.post(
+        f"{CHARIOW_API_BASE_URL}/licenses/{quote(license_key, safe='')}/activate",
+        headers={"Authorization": f"Bearer {CHARIOW_API_KEY}"},
+        json={},
+        timeout=10.0,
+    )
+    if response.status_code >= 400:
+        body = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
+        message = body.get("message", f"Erreur Chariow ({response.status_code})")
+        raise HTTPException(status_code=502, detail=f"Chariow: activation impossible ({message})")
+    return response.json()["data"]
+
+
 @router.post("/activate-license", response_model=SubscriptionStatus)
 @limiter.limit("10/minute")
 def activate_license(
@@ -286,38 +324,67 @@ def activate_license(
     jamais, ex. email différent entre Chariow et le compte xfoot) :
     l'utilisateur colle la clé de licence reçue par email de Chariow.
 
-    Vérification d'appartenance via metadata.user_id (fixé par NOUS à
-    l'achat, voir create_checkout_session) plutôt que par email — jamais
-    activer sur la seule confiance du texte collé par le client, sinon
-    n'importe qui pourrait coller la clé de quelqu'un d'autre pour
-    débloquer son propre compte.
+    Vérification d'appartenance en deux temps, jamais sur la seule
+    confiance du texte collé par le client :
+      1. metadata.user_id (fixé par NOUS à l'achat, voir
+         create_checkout_session) — le cas normal.
+      2. Repli sur customer.email si aucune metadata n'existe DU TOUT
+         (achats antérieurs à la correction du bug metadata/custom_metadata,
+         voir _fetch_chariow_license — pas juste user_id manquant, la
+         licence entière n'a jamais reçu de metadata, rien à corriger
+         rétroactivement côté Chariow) — même modèle de confiance que
+         _find_subscription_by_email pour les Pulses license.*.
+
+    Active elle-même la licence côté Chariow si nécessaire (voir
+    _activate_chariow_license) : un achat ne suffit pas toujours à rendre
+    une licence "active" chez Chariow (découvert en diagnostiquant une
+    vraie clé bloquée en pending_activation malgré un paiement réel) —
+    seulement APRÈS avoir confirmé l'appartenance ci-dessus, jamais avant.
     """
     license_data = _fetch_chariow_license(body.license_key)
 
     metadata = license_data.get("metadata") or {}
     license_user_id = metadata.get("user_id")
-    if license_user_id is None or str(license_user_id) != str(current_user.id):
+    if license_user_id is not None:
+        owns_license = str(license_user_id) == str(current_user.id)
+    else:
+        customer_email = (license_data.get("customer") or {}).get("email")
+        owns_license = customer_email is not None and customer_email.lower() == current_user.email.lower()
+
+    if not owns_license:
         raise HTTPException(
             status_code=403,
             detail="Cette clé de licence n'est pas associée à ton compte.",
         )
 
     license_status = license_data.get("status")
+    if license_status == "pending_activation":
+        license_data = _activate_chariow_license(body.license_key)
+        license_status = license_data.get("status")
+        metadata = license_data.get("metadata") or metadata  # inchangée par l'activation, mais robuste si Chariow la renvoie
+
     if license_status != "active":
         messages = {
             "expired": "Cette licence a expiré — repasse par un nouvel achat pour la renouveler.",
             "revoked": "Cette licence a été révoquée.",
-            "pending_activation": "Cette licence n'est pas encore activée côté Chariow — réessaie dans quelques instants.",
         }
         raise HTTPException(
             status_code=400,
             detail=messages.get(license_status, f"Licence non active (statut : {license_status})."),
         )
 
+    plan = metadata.get("plan")
+    if plan is None:
+        # Metadata absente (achat pré-correctif, cf. ci-dessus) -> déduit du
+        # product_id Chariow plutôt que laissé vide, en comparant aux
+        # Product ID monthly/yearly déjà configurés (PRODUCT_IDS).
+        product_id = (license_data.get("product") or {}).get("id")
+        plan = next((p for p, pid in PRODUCT_IDS.items() if pid == product_id), None)
+
     sub = _get_or_create_subscription(session, current_user)
     sub.status = "active"
     sub.chariow_license_key = body.license_key
-    sub.plan = metadata.get("plan")
+    sub.plan = plan
     expires_at = _parse_datetime(license_data.get("expires_at"))
     if expires_at is not None:
         sub.current_period_end = expires_at

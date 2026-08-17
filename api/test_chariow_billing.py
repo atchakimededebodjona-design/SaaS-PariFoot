@@ -401,6 +401,22 @@ def _fake_license(*, user_id, plan="monthly", status="active", expires_at="2027-
     }
 
 
+def _fake_license_no_metadata(*, customer_email, status="active",
+                               expires_at="2027-01-01T00:00:00+00:00", product_id=None):
+    """Simule une licence achetée AVANT la correction du bug metadata/
+    custom_metadata (voir test_create_checkout_link_sends_custom_metadata_key)
+    — metadata=None, pas juste user_id manquant. Découvert en diagnostiquant
+    une vraie clé de licence en prod."""
+    return {
+        "license_key": "lic_legacy_test",
+        "status": status,
+        "expires_at": expires_at,
+        "metadata": None,
+        "customer": {"email": customer_email},
+        "product": {"id": product_id} if product_id else {},
+    }
+
+
 def test_activate_license_active_matches_user(client, user_id, token):
     with patch("app.billing.router._fetch_chariow_license",
                return_value=_fake_license(user_id=user_id)) as m_fetch:
@@ -501,6 +517,63 @@ def test_activate_license_empty_api_key_returns_502_not_crash(client, token):
     print(f"  [OK] CHARIOW_API_KEY vide -> HTTPException(502) propre, jamais httpx.LocalProtocolError non gérée")
 
 
+def test_activate_license_email_fallback_when_no_metadata(client, user_id, token):
+    """Licence sans metadata DU TOUT (achat pré-correctif) — repli sur
+    customer.email, qui correspond au compte connecté (EMAIL)."""
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license_no_metadata(customer_email=EMAIL)):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_legacy_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200, r.text
+    sub = get_subscription_row(user_id)
+    assert sub.chariow_license_key == "lic_legacy_test"
+    print(f"  [OK] metadata absente + customer.email correspondant -> 200, repli email accepté")
+
+
+def test_activate_license_email_fallback_mismatch_403(client, token):
+    """Licence sans metadata ET dont l'email Chariow ne correspond à aucun
+    des deux comptes connus — 403, jamais activé sur une simple absence de
+    contre-preuve."""
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license_no_metadata(customer_email="quelquun.dautre@example.com")):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_legacy_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 403, r.text
+    print(f"  [OK] metadata absente + customer.email différent -> 403, pas activé par défaut")
+
+
+def test_activate_license_pending_activation_gets_activated(client, user_id, token):
+    """Licence achetée mais jamais activée côté Chariow (produit sans
+    requires_activation=false) — le backend l'active lui-même après avoir
+    confirmé l'appartenance, plutôt que de bloquer un client qui a
+    réellement payé."""
+    pending = _fake_license(user_id=user_id, status="pending_activation", expires_at=None)
+    activated = _fake_license(user_id=user_id, status="active", expires_at="2027-02-02T00:00:00+00:00")
+    with patch("app.billing.router._fetch_chariow_license", return_value=pending), \
+         patch("app.billing.router._activate_chariow_license", return_value=activated) as m_activate:
+        r = client.post("/billing/activate-license", json={"license_key": "lic_manual_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200, r.text
+    m_activate.assert_called_once_with("lic_manual_test")
+    sub = get_subscription_row(user_id)
+    assert sub.status == "active"
+    assert sub.current_period_end.isoformat().startswith("2027-02-02")
+    print(f"  [OK] pending_activation -> le backend active lui-même la licence, abonnement activé "
+          f"(expire le {sub.current_period_end.isoformat()})")
+
+
+def test_activate_license_plan_inferred_from_product_id_when_metadata_missing(client, token):
+    """Metadata absente -> le plan doit être déduit du product_id Chariow
+    (comparé à PRODUCT_IDS) plutôt que laissé vide."""
+    license_data = _fake_license_no_metadata(customer_email=EMAIL, product_id="prod_test_yearly")
+    with patch("app.billing.router._fetch_chariow_license", return_value=license_data):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_legacy_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200, r.text
+    assert r.json()["plan"] == "yearly", r.json()
+    print(f"  [OK] metadata absente -> plan déduit du product_id ('yearly')")
+
+
 if __name__ == "__main__":
     failures = 0
     with TestClient(app) as client:
@@ -533,6 +606,10 @@ if __name__ == "__main__":
             ("test_activate_license_not_found_404", lambda: test_activate_license_not_found_404(client, token)),
             ("test_activate_license_chariow_401_maps_to_502", lambda: test_activate_license_chariow_401_maps_to_502(client, token)),
             ("test_activate_license_empty_api_key_returns_502_not_crash", lambda: test_activate_license_empty_api_key_returns_502_not_crash(client, token)),
+            ("test_activate_license_email_fallback_when_no_metadata", lambda: test_activate_license_email_fallback_when_no_metadata(client, user_id, token)),
+            ("test_activate_license_email_fallback_mismatch_403", lambda: test_activate_license_email_fallback_mismatch_403(client, token)),
+            ("test_activate_license_pending_activation_gets_activated", lambda: test_activate_license_pending_activation_gets_activated(client, user_id, token)),
+            ("test_activate_license_plan_inferred_from_product_id_when_metadata_missing", lambda: test_activate_license_plan_inferred_from_product_id_when_metadata_missing(client, token)),
         ]
         for name, fn in steps:
             print(f"\n=== {name} ===")
