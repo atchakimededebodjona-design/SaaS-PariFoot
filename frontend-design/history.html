@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>xFoot - Historique</title>
+    <link rel="stylesheet" href="styles.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-title">
+                <span>📊</span>
+                <span>Historique</span>
+            </div>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content">
+
+            <h2 class="section-title">Performance de xFoot</h2>
+
+            <div id="history-loading" class="stat-row">Chargement de l'historique…</div>
+            <div id="history-error" class="error-msg hidden"></div>
+
+            <div id="history-content" class="hidden">
+                <div class="accuracy-hero">
+                    <div class="accuracy-main">
+                        <span class="accuracy-value" id="accuracy-main-value">--%</span>
+                        <span class="accuracy-label">Réussite 1X2</span>
+                    </div>
+                    <div class="accuracy-sub-grid">
+                        <div class="accuracy-sub">
+                            <span class="stat-label">Les 2 marquent (BTTS)</span>
+                            <span class="stat-val" id="accuracy-btts">--%</span>
+                        </div>
+                        <div class="accuracy-sub">
+                            <span class="stat-label">Plus/Moins 2.5 buts</span>
+                            <span class="stat-val" id="accuracy-ou">--%</span>
+                        </div>
+                    </div>
+                    <p class="accuracy-sample" id="accuracy-sample">Basé sur 0 prédiction(s) résolue(s)</p>
+                </div>
+
+                <div id="history-empty" class="error-msg hidden" style="background: rgba(142,147,166,0.08); border-color: var(--border-color); color: var(--text-secondary);">
+                    Aucune prédiction historisée pour l'instant — reviens après avoir généré quelques analyses depuis le dashboard.
+                </div>
+
+                <div id="history-days"></div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="history.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span>Historique</span>
+            </a>
+            <a href="live.html" class="nav-item">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Social</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const PICK_1X2_LABELS = { home: 'Domicile', draw: 'Nul', away: 'Extérieur' };
+        const PICK_BTTS_LABELS = { yes: 'Oui', no: 'Non' };
+        const PICK_OU_LABELS = { over: 'Plus de 2.5', under: 'Moins de 2.5' };
+        const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+        function formatDay(isoDate) {
+            const [year, month, day] = isoDate.split('-').map(Number);
+            return `${day} ${MONTHS_FR[month - 1]} ${year}`;
+        }
+
+        function pct(value) {
+            return value === null || value === undefined ? '—' : `${(value * 100).toFixed(0)}%`;
+        }
+
+        function outcomeBadge(correct) {
+            if (correct === null || correct === undefined) return '<span class="result-badge pending">⏳ En attente</span>';
+            return correct
+                ? '<span class="result-badge correct">✅ Correct</span>'
+                : '<span class="result-badge incorrect">❌ Incorrect</span>';
+        }
+
+        function marketMark(correct) {
+            if (correct === null || correct === undefined) return '';
+            return correct ? ' ✅' : ' ❌';
+        }
+
+        function getInitials(name) {
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function renderMatch(m) {
+            const resultText = m.result ? `${m.result.home_goals} - ${m.result.away_goals}` : 'À venir';
+            return `
+                <div class="match-card">
+                    <div class="match-card-header">
+                        <div class="league-info">🏆 <span>${m.league}</span></div>
+                        ${outcomeBadge(m.correct_1x2)}
+                    </div>
+                    <div class="teams-container">
+                        <div class="team">
+                            <div class="team-logo">${getInitials(m.home_team)}</div>
+                            <div class="team-name">${m.home_team}</div>
+                        </div>
+                        <div class="vs-badge">${resultText}</div>
+                        <div class="team">
+                            <div class="team-logo">${getInitials(m.away_team)}</div>
+                            <div class="team-name">${m.away_team}</div>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-row">
+                            <span class="stat-label">Prédiction 1X2</span>
+                            <span class="stat-val">${PICK_1X2_LABELS[m.pick_1x2] || m.pick_1x2}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">BTTS</span>
+                            <span class="stat-val">${PICK_BTTS_LABELS[m.pick_btts] || m.pick_btts}${marketMark(m.correct_btts)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">+/- 2.5 buts</span>
+                            <span class="stat-val">${PICK_OU_LABELS[m.pick_over_2_5] || m.pick_over_2_5}${marketMark(m.correct_over_2_5)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDay(day) {
+            return `
+                <div class="day-group">
+                    <div class="day-header">${formatDay(day.date)}</div>
+                    ${day.matches.map(renderMatch).join('')}
+                </div>
+            `;
+        }
+
+        async function loadHistory() {
+            const loadingEl = document.getElementById('history-loading');
+            const errorEl = document.getElementById('history-error');
+            const contentEl = document.getElementById('history-content');
+
+            try {
+                const response = await apiFetch('/predictions/history?days=14');
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    throw new Error(body.detail || `Erreur (${response.status})`);
+                }
+                const data = await response.json();
+
+                document.getElementById('accuracy-main-value').textContent = pct(data.accuracy.overall_1x2);
+                document.getElementById('accuracy-btts').textContent = pct(data.accuracy.btts);
+                document.getElementById('accuracy-ou').textContent = pct(data.accuracy.over_under_2_5);
+                document.getElementById('accuracy-sample').textContent =
+                    `Basé sur ${data.accuracy.sample_size} prédiction(s) résolue(s)`;
+
+                const daysContainer = document.getElementById('history-days');
+                const emptyEl = document.getElementById('history-empty');
+                if (data.days.length === 0) {
+                    emptyEl.classList.remove('hidden');
+                    daysContainer.innerHTML = '';
+                } else {
+                    emptyEl.classList.add('hidden');
+                    daysContainer.innerHTML = data.days.map(renderDay).join('');
+                }
+
+                loadingEl.classList.add('hidden');
+                contentEl.classList.remove('hidden');
+            } catch (e) {
+                loadingEl.classList.add('hidden');
+                errorEl.textContent = e.message || "Erreur lors du chargement de l'historique.";
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.email.split('@')[0];
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        loadCurrentUser();
+        loadHistory();
+    </script>
+</body>
+</html>

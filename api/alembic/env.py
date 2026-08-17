@@ -22,6 +22,7 @@ from app.models.subscription import Subscription, ProcessedPulseDelivery  # noqa
 from app.models.model_artifact import ModelArtifact  # noqa: F401
 from app.models.match import Match, MatchStats  # noqa: F401
 from app.models.team_rating import ModelVersion, TeamRating  # noqa: F401
+from app.models.prediction_log import PredictionLog  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xFoot - Abonnement</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -28,7 +28,7 @@
         </div>
     </header>
 
-    <main class="main-content">
+    <main class="main-content with-nav">
         <div class="glass-panel">
             <h1 class="title">Abonnement</h1>
             <p class="subtitle" id="subscription-status" style="margin-bottom: 1rem;">Chargement du statut…</p>
@@ -100,6 +100,30 @@
             </div>
         </div>
     </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="history.html" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>Historique</span>
+        </a>
+        <a href="live.html" class="nav-item">
+            <span class="nav-icon">⏱️</span>
+            <span>Live x3</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>Social</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">✨</span>
+            <span>AI Analysis</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">👑</span>
+            <span>VIP</span>
+        </a>
+    </nav>
 
     <script src="api.js"></script>
     <script>

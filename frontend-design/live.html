@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>xFoot - Live</title>
+    <link rel="stylesheet" href="styles.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-title">
+                <span>⚽</span>
+                <span>xFoot</span>
+                <span class="pro-badge">SITE</span>
+            </div>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content">
+
+            <h2 class="section-title">Matchs en direct</h2>
+
+            <div id="live-loading" class="stat-row">Chargement…</div>
+            <div id="live-error" class="error-msg hidden"></div>
+
+            <div id="live-empty" class="empty-state hidden">
+                <span class="empty-icon">⏱️</span>
+                Aucun match en direct pour le moment.<br>Reviens pendant une journée de championnat.
+            </div>
+
+            <div id="live-matches"></div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="history.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Historique</span>
+            </a>
+            <a href="live.html" class="nav-item active">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Social</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const STATUS_LABELS = {
+            '1H': '1ère mi-temps',
+            'HT': 'Mi-temps',
+            '2H': '2ème mi-temps',
+            'ET': 'Prolongation',
+            'BT': 'Pause',
+            'P': 'Tirs au but',
+            'SUSP': 'Suspendu',
+            'INT': 'Interrompu',
+        };
+
+        function formatStatus(statusShort, elapsed) {
+            const label = STATUS_LABELS[statusShort] || 'En direct';
+            return elapsed !== null && elapsed !== undefined ? `${label} · ${elapsed}'` : label;
+        }
+
+        function getInitials(name) {
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function renderMatch(m) {
+            return `
+                <div class="match-card">
+                    <div class="match-card-header">
+                        <div class="league-info">🏆 <span>${m.league}</span></div>
+                        <div class="badge-live"><span class="live-dot"></span>LIVE</div>
+                    </div>
+                    <div class="teams-container">
+                        <div class="team">
+                            <div class="team-logo">${getInitials(m.home_team)}</div>
+                            <div class="team-name">${m.home_team}</div>
+                        </div>
+                        <div class="vs-badge score">${m.home_goals} - ${m.away_goals}</div>
+                        <div class="team">
+                            <div class="team-logo">${getInitials(m.away_team)}</div>
+                            <div class="team-name">${m.away_team}</div>
+                        </div>
+                    </div>
+                    <div class="live-minute" style="text-align: center;">${formatStatus(m.status_short, m.elapsed)}</div>
+                </div>
+            `;
+        }
+
+        async function loadLiveScores() {
+            const loadingEl = document.getElementById('live-loading');
+            const errorEl = document.getElementById('live-error');
+            const emptyEl = document.getElementById('live-empty');
+            const matchesEl = document.getElementById('live-matches');
+
+            try {
+                const response = await apiFetch('/live-scores');
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    throw new Error(body.detail || `Erreur (${response.status})`);
+                }
+                const matches = await response.json();
+
+                loadingEl.classList.add('hidden');
+                errorEl.classList.add('hidden');
+
+                if (matches.length === 0) {
+                    emptyEl.classList.remove('hidden');
+                    matchesEl.innerHTML = '';
+                } else {
+                    emptyEl.classList.add('hidden');
+                    matchesEl.innerHTML = matches.map(renderMatch).join('');
+                }
+            } catch (e) {
+                loadingEl.classList.add('hidden');
+                errorEl.textContent = e.message || "Erreur lors du chargement des scores en direct.";
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.email.split('@')[0];
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        loadCurrentUser();
+        loadLiveScores();
+
+        // Rafraîchi pendant que la page reste ouverte — le cache serveur
+        // (voir _get_live_scores dans api/main.py) absorbe le coût réel,
+        // ce setInterval ne déclenche pas un appel API-Football à chaque fois.
+        const refreshInterval = setInterval(loadLiveScores, 60000);
+        window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
+    </script>
+</body>
+</html>

@@ -24,8 +24,9 @@ import os
 import unicodedata
 import difflib
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
+import httpx
 import numpy as np
 from scipy.stats import poisson
 from fastapi import FastAPI, HTTPException, Depends
@@ -43,6 +44,8 @@ from app.billing.router import router as billing_router
 from app.billing.dependencies import require_active_subscription
 from app.models.user import User
 from app.models.model_artifact import ModelArtifact
+from app.models.prediction_log import PredictionLog
+from app.core.api_football_config import API_FOOTBALL_KEY, API_FOOTBALL_BASE_URL, API_FOOTBALL_LEAGUE_IDS
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -580,6 +583,51 @@ def list_leagues():
     }
 
 
+def _pick_1x2(prediction: "MatchPrediction") -> str:
+    if prediction.home_win >= prediction.draw and prediction.home_win >= prediction.away_win:
+        return "home"
+    if prediction.away_win >= prediction.draw:
+        return "away"
+    return "draw"
+
+
+def _log_prediction(prediction: "MatchPrediction") -> None:
+    """
+    Enregistre la prédiction pour la page Historique & Performance (voir
+    app/models/prediction_log.py) — best effort, ne doit jamais faire
+    échouer la réponse de prédiction elle-même (même philosophie que
+    _write_artifact_to_db dans refresh_and_retrain.py). Un seul
+    enregistrement par (league, jour, home_team, away_team) : les relances
+    du même match le même jour sont ignorées silencieusement.
+    """
+    try:
+        today = datetime.now(timezone.utc).date()
+        with Session(engine) as session:
+            existing = session.exec(
+                select(PredictionLog).where(
+                    PredictionLog.league == prediction.league,
+                    PredictionLog.match_date == today,
+                    PredictionLog.home_team == prediction.home_team,
+                    PredictionLog.away_team == prediction.away_team,
+                )
+            ).first()
+            if existing is not None:
+                return
+            session.add(PredictionLog(
+                league=prediction.league,
+                match_date=today,
+                home_team=prediction.home_team,
+                away_team=prediction.away_team,
+                payload=prediction.model_dump_json(),
+                pick_1x2=_pick_1x2(prediction),
+                pick_btts="yes" if prediction.btts_yes >= prediction.btts_no else "no",
+                pick_over_2_5="over" if prediction.over_2_5 >= prediction.under_2_5 else "under",
+            ))
+            session.commit()
+    except Exception as e:
+        logger.warning(f"Enregistrement de l'historique de prédiction impossible (non bloquant) : {e}")
+
+
 def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str) -> MatchPrediction:
     """
     Résout les noms d'équipes (exact -> normalisé -> alias) puis calcule la
@@ -622,7 +670,7 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
     over_under_lines = [model.predict_over_under(home_team, away_team, line=l) for l in (0.5, 1.5, 2.5, 3.5)]
     scores = model.most_likely_scores(home_team, away_team)
 
-    return MatchPrediction(
+    prediction = MatchPrediction(
         league=league,
         home_team=home_team,
         away_team=away_team,
@@ -643,6 +691,8 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
         home_team_resolution=home_res["method"],
         away_team_resolution=away_res["method"],
     )
+    _log_prediction(prediction)
+    return prediction
 
 
 @app.get("/predictions/{league}/{home_team}/{away_team}", response_model=MatchPrediction)
@@ -687,6 +737,183 @@ def get_predictions_batch(matches: list[BatchMatchRequest],
                 ok=False, error=error_msg, suggestions=suggestions,
             ))
     return results
+
+
+class PredictionHistoryResult(BaseModel):
+    home_goals: int
+    away_goals: int
+
+
+class PredictionHistoryMatch(BaseModel):
+    league: str
+    home_team: str
+    away_team: str
+    pick_1x2: str
+    pick_btts: str
+    pick_over_2_5: str
+    result: PredictionHistoryResult | None = None
+    correct_1x2: bool | None = None
+    correct_btts: bool | None = None
+    correct_over_2_5: bool | None = None
+
+
+class PredictionHistoryDay(BaseModel):
+    date: str
+    matches: list[PredictionHistoryMatch]
+
+
+class PredictionHistoryAccuracy(BaseModel):
+    sample_size: int
+    overall_1x2: float | None = None
+    btts: float | None = None
+    over_under_2_5: float | None = None
+
+
+class PredictionHistoryResponse(BaseModel):
+    accuracy: PredictionHistoryAccuracy
+    days: list[PredictionHistoryDay]
+
+
+@app.get("/predictions/history", response_model=PredictionHistoryResponse)
+def get_predictions_history(days: int = 14, user: User = Depends(get_current_user)):
+    """
+    Historique des prédictions loguées (voir _log_prediction) et de leur
+    résultat une fois connu (rempli par fetch_daily_results.py, séparé de
+    ce service web — voir app/core/api_football_config.py). Accessible à
+    tout compte connecté (pas réservé aux abonnés) : sert de preuve
+    sociale du taux de réussite du modèle.
+
+    `accuracy` est calculée uniquement sur les prédictions déjà résolues
+    (result_fetched_at renseigné) — les matchs sans résultat encore connu
+    apparaissent dans `days` avec result=null mais ne comptent pas dans le
+    pourcentage.
+    """
+    since = datetime.now(timezone.utc).date() - timedelta(days=max(days, 0))
+    with Session(engine) as session:
+        logs = session.exec(
+            select(PredictionLog)
+            .where(PredictionLog.match_date >= since)
+            .order_by(PredictionLog.match_date.desc(), PredictionLog.id.desc())
+        ).all()
+
+    resolved = [log for log in logs if log.result_fetched_at is not None]
+    accuracy = PredictionHistoryAccuracy(
+        sample_size=len(resolved),
+        overall_1x2=(sum(1 for log in resolved if log.correct_1x2) / len(resolved)) if resolved else None,
+        btts=(sum(1 for log in resolved if log.correct_btts) / len(resolved)) if resolved else None,
+        over_under_2_5=(sum(1 for log in resolved if log.correct_over_2_5) / len(resolved)) if resolved else None,
+    )
+
+    days_map: dict[str, list[PredictionHistoryMatch]] = {}
+    for log in logs:
+        result = None
+        if log.result_home_goals is not None and log.result_away_goals is not None:
+            result = PredictionHistoryResult(home_goals=log.result_home_goals, away_goals=log.result_away_goals)
+        match = PredictionHistoryMatch(
+            league=log.league,
+            home_team=log.home_team,
+            away_team=log.away_team,
+            pick_1x2=log.pick_1x2,
+            pick_btts=log.pick_btts,
+            pick_over_2_5=log.pick_over_2_5,
+            result=result,
+            correct_1x2=log.correct_1x2,
+            correct_btts=log.correct_btts,
+            correct_over_2_5=log.correct_over_2_5,
+        )
+        days_map.setdefault(log.match_date.isoformat(), []).append(match)
+
+    return PredictionHistoryResponse(
+        accuracy=accuracy,
+        days=[PredictionHistoryDay(date=d, matches=m) for d, m in days_map.items()],
+    )
+
+
+class LiveMatch(BaseModel):
+    league: str
+    home_team: str
+    away_team: str
+    home_goals: int
+    away_goals: int
+    status_short: str
+    elapsed: int | None = None
+
+
+# Cache en mémoire, PARTAGÉ entre tous les utilisateurs — pas une table,
+# même philosophie que LEAGUE_MODELS (état du process, pas de
+# persistance nécessaire). Indispensable : le plan Free d'API-Football
+# est limité à 100 requêtes/jour au total sur la clé (déjà partagée avec
+# fetch_daily_results.py) — sans ce cache, chaque visite de /live-scores
+# viderait le quota en quelques minutes un jour de match.
+_live_scores_cache: dict = {"matches": [], "next_fetch_at": None}
+
+_LIVE_SCORES_LEAGUE_IDS_TO_NAME = {v: k for k, v in API_FOOTBALL_LEAGUE_IDS.items()}
+
+# TTL adaptatif : court quand il y a effectivement des matchs en cours
+# dans nos ligues (l'utilisateur veut du frais), long sinon (pas la peine
+# de rappeler l'API toutes les 3 minutes un jour sans match — les
+# fenêtres de matchs en direct sont limitées dans le temps, pas 24h/24).
+_LIVE_TTL_WITH_MATCHES = timedelta(seconds=180)
+_LIVE_TTL_NO_MATCHES = timedelta(seconds=300)
+
+
+def _get_live_scores() -> list[LiveMatch]:
+    now = datetime.now(timezone.utc)
+    next_fetch_at = _live_scores_cache["next_fetch_at"]
+    if next_fetch_at is not None and now < next_fetch_at:
+        return _live_scores_cache["matches"]
+
+    try:
+        resp = httpx.get(
+            f"{API_FOOTBALL_BASE_URL}/fixtures",
+            params={"live": "all"},
+            headers={"x-apisports-key": API_FOOTBALL_KEY},
+            timeout=15.0,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("errors"):
+            raise RuntimeError(f"réponse API-Football en erreur : {data['errors']}")
+
+        matches = []
+        for fixture in data.get("response", []):
+            league_id = fixture.get("league", {}).get("id")
+            league_name = _LIVE_SCORES_LEAGUE_IDS_TO_NAME.get(league_id)
+            if league_name is None:
+                continue
+            matches.append(LiveMatch(
+                league=league_name,
+                home_team=fixture.get("teams", {}).get("home", {}).get("name", "?"),
+                away_team=fixture.get("teams", {}).get("away", {}).get("name", "?"),
+                home_goals=fixture.get("goals", {}).get("home") or 0,
+                away_goals=fixture.get("goals", {}).get("away") or 0,
+                status_short=fixture.get("fixture", {}).get("status", {}).get("short", "?"),
+                elapsed=fixture.get("fixture", {}).get("status", {}).get("elapsed"),
+            ))
+
+        _live_scores_cache["matches"] = matches
+        _live_scores_cache["next_fetch_at"] = now + (
+            _LIVE_TTL_WITH_MATCHES if matches else _LIVE_TTL_NO_MATCHES
+        )
+    except Exception as e:
+        logger.warning(f"Rafraîchissement des scores en direct impossible (cache précédent conservé) : {e}")
+        # Best effort : on ne remonte jamais l'erreur à l'utilisateur, on
+        # garde le dernier cache connu (vide au tout premier appel) — et on
+        # évite de retenter à chaque requête tant que l'erreur persiste.
+        _live_scores_cache["next_fetch_at"] = now + _LIVE_TTL_NO_MATCHES
+
+    return _live_scores_cache["matches"]
+
+
+@app.get("/live-scores", response_model=list[LiveMatch])
+def get_live_scores(user: User = Depends(get_current_user)):
+    """
+    Scores en direct des matchs en cours sur nos 5 championnats, sans
+    prédiction associée (contrairement à /predictions/*) — accessible à
+    tout compte connecté. Voir _get_live_scores pour le cache serveur
+    partagé, obligatoire vu le quota du plan API-Football Free.
+    """
+    return _get_live_scores()
 
 
 @app.get("/ratings/{league}", response_model=list[TeamRating])
