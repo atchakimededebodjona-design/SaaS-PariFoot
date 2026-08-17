@@ -2,113 +2,155 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>xFoot - Prédiction de match</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI ScoreCast</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="background-container">
-        <!-- Floating footballs -->
-        <div class="football foot-1">⚽</div>
-        <div class="football foot-2">⚽</div>
-        <div class="football foot-3">⚽</div>
-        <div class="football foot-4">⚽</div>
-        <div class="football foot-5">⚽</div>
-        <div class="football foot-6">⚽</div>
-    </div>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-title">
+                <span>⚽</span>
+                <span>AI ScoreCast</span>
+                <span class="pro-badge">PRO</span>
+            </div>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
 
-    <header class="header">
-        <div class="logo">
-            <span class="icon">⚽</span> xFoot
-        </div>
-        <div class="user-info">
-            <span class="email" id="user-email">…</span>
-            <button class="btn-outline" id="logout-btn">Se déconnecter</button>
-        </div>
-    </header>
+        <!-- Main Content -->
+        <main class="app-content">
+            
+            <h2 class="section-title">Analyse IA</h2>
 
-    <main class="main-content">
-        <div class="glass-panel">
-            <h1 class="title">Prédiction de match</h1>
-            <p class="subtitle">Choisis un championnat et deux équipes pour voir les probabilités.</p>
+            <!-- Form -->
+            <form id="prediction-form" class="filter-group">
+                <select class="custom-select" id="championnat-select">
+                    <option>Chargement des ligues...</option>
+                </select>
 
-            <form class="prediction-form" id="prediction-form">
-                <div class="form-group">
-                    <label>Championnat</label>
-                    <select class="form-control" id="championnat-select"></select>
-                </div>
+                <select class="custom-select" id="home-team-select">
+                    <option>Équipe Domicile</option>
+                </select>
 
-                <div class="form-group">
-                    <label>Équipe à domicile</label>
-                    <select class="form-control" id="home-team-select"></select>
-                </div>
+                <select class="custom-select" id="away-team-select">
+                    <option>Équipe Extérieur</option>
+                </select>
 
-                <div class="form-group">
-                    <label>Équipe à l'extérieur</label>
-                    <select class="form-control" id="away-team-select"></select>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary" id="predict-btn">Voir la prédiction</button>
-                </div>
+                <button type="submit" class="btn-predict" id="predict-btn">Générer l'Analyse IA</button>
             </form>
 
-            <p id="prediction-error" style="color: var(--accent-warning); margin-top: 1rem; display: none;"></p>
+            <div id="prediction-error" class="error-msg hidden"></div>
 
-            <div id="prediction-result" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
-                <h3 id="result-title" style="margin-bottom: 1rem; font-size: 1.2rem;"></h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;">
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Domicile</div>
-                        <div id="result-home-win" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-green);"></div>
+            <!-- Prediction Result Card -->
+            <div id="prediction-result" class="hidden">
+                
+                <div class="match-card gold-border">
+                    <div class="match-card-header">
+                        <div class="league-info">
+                            🏆 <span id="res-league-name">Ligue 1</span>
+                        </div>
+                        <div class="badge-ai">
+                            ✨ Analyse IA
+                        </div>
                     </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Nul</div>
-                        <div id="result-draw" style="font-size: 1.5rem; font-weight: 700;"></div>
+
+                    <div class="teams-container">
+                        <div class="team">
+                            <div class="team-logo" id="res-home-icon">🏠</div>
+                            <div class="team-name" id="res-home-name">Domicile</div>
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div class="team">
+                            <div class="team-logo" id="res-away-icon">✈️</div>
+                            <div class="team-name" id="res-away-name">Extérieur</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Extérieur</div>
-                        <div id="result-away-win" style="font-size: 1.5rem; font-weight: 700;"></div>
+
+                    <div class="prob-section-title">Probabilités de victoire</div>
+                    <div class="probabilities">
+                        <div class="prob-box" id="box-home">
+                            <span class="prob-label">1</span>
+                            <span class="prob-value" id="res-home-win">-</span>
+                        </div>
+                        <div class="prob-box" id="box-draw">
+                            <span class="prob-label">X</span>
+                            <span class="prob-value" id="res-draw">-</span>
+                        </div>
+                        <div class="prob-box" id="box-away">
+                            <span class="prob-label">2</span>
+                            <span class="prob-value" id="res-away-win">-</span>
+                        </div>
                     </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">+2,5 buts</div>
-                        <div id="result-over" style="font-size: 1.5rem; font-weight: 700;"></div>
+
+                    <div class="prob-section-title">Statistiques Avancées</div>
+                    <div class="stats-grid">
+                        <div class="stat-row">
+                            <span class="stat-label">Plus de 2.5 Buts</span>
+                            <span class="stat-val text-green" id="res-over">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Les 2 marquent</span>
+                            <span class="stat-val text-gold" id="res-btts">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Double Chance 1X</span>
+                            <span class="stat-val" id="res-dc-1x">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Double Chance X2</span>
+                            <span class="stat-val" id="res-dc-x2">-</span>
+                        </div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center; margin-top: 1.5rem;">
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Les 2 marquent</div>
-                        <div id="result-btts-yes" style="font-size: 1.5rem; font-weight: 700;"></div>
-                    </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Double chance 1X</div>
-                        <div id="result-dc-1x" style="font-size: 1.5rem; font-weight: 700;"></div>
-                    </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Double chance 12</div>
-                        <div id="result-dc-12" style="font-size: 1.5rem; font-weight: 700;"></div>
-                    </div>
-                    <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem;">Double chance X2</div>
-                        <div id="result-dc-x2" style="font-size: 1.5rem; font-weight: 700;"></div>
-                    </div>
+                <div id="result-ou-lines" class="stats-grid" style="margin-top: 1rem;">
+                    <!-- OU Lines injected here -->
                 </div>
 
-                <div style="margin-top: 1.5rem;">
-                    <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">Plus/moins de buts, par ligne</div>
-                    <div id="result-ou-lines" style="display: flex; gap: 0.75rem; flex-wrap: wrap;"></div>
-                </div>
             </div>
 
-            <div class="premium-banner" id="premium-banner" style="display: none;">
-                <h3>Abonnement requis pour voir cette prédiction</h3>
-                <p>Le classement des équipes reste gratuit — les probabilités de match détaillées sont réservées aux abonnés.</p>
-                <button class="btn-warning" id="see-plans-btn">Voir les abonnements</button>
+            <!-- Premium Banner -->
+            <div class="premium-banner hidden" id="premium-banner">
+                <h3>Analyse IA Détaillée</h3>
+                <p>Débloquez les probabilités précises et les recommandations de paris générées par notre algorithme avancé.</p>
+                <button class="btn-outline-gold" id="see-plans-btn">Voir les abonnements VIP</button>
             </div>
-        </div>
-    </main>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item">
+                <span class="nav-icon">🏆</span>
+                <span>Discover</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Social</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
 
     <script src="api.js"></script>
     <script>
@@ -119,96 +161,93 @@
         const championnatSelect = document.getElementById('championnat-select');
         const homeSelect = document.getElementById('home-team-select');
         const awaySelect = document.getElementById('away-team-select');
-        const bgContainer = document.querySelector('.background-container');
         const predictionForm = document.getElementById('prediction-form');
         const predictBtn = document.getElementById('predict-btn');
         const errorEl = document.getElementById('prediction-error');
         const resultEl = document.getElementById('prediction-result');
         const premiumBanner = document.getElementById('premium-banner');
 
-        function updateFloatingTeams(league) {
-            bgContainer.innerHTML = '';
-            const teams = teamsByLeague[league] || ['⚽', '⚽', '⚽', '⚽', '⚽', '⚽'];
-
-            teams.forEach((team, index) => {
-                const div = document.createElement('div');
-                div.className = `football foot-${index + 1} floating-team`;
-                div.textContent = team;
-                bgContainer.appendChild(div);
-            });
-        }
-
-        // Recharge les deux dropdowns d'équipes avec les équipes du championnat
-        // sélectionné (venues de /leagues, pas codées en dur) — sinon "Équipe à
-        // domicile/extérieur" restaient figés sur un seul championnat.
         function populateTeamSelects(league) {
             const teams = teamsByLeague[league] || [];
-            const optionsHtml = teams.map(team => `<option>${team}</option>`).join('');
+            const optionsHtml = teams.map(team => `<option value="${team}">${team}</option>`).join('');
             homeSelect.innerHTML = optionsHtml;
             awaySelect.innerHTML = optionsHtml;
             if (teams.length > 1) {
-                awaySelect.selectedIndex = 1; // domicile/extérieur différents par défaut
+                awaySelect.selectedIndex = 1;
             }
         }
 
         function onLeagueChange(league) {
-            updateFloatingTeams(league);
             populateTeamSelects(league);
         }
 
         championnatSelect.addEventListener('change', (e) => onLeagueChange(e.target.value));
 
         function hideError() {
-            errorEl.style.display = 'none';
+            errorEl.classList.add('hidden');
         }
 
         function showError(message) {
             errorEl.textContent = message;
-            errorEl.style.display = 'block';
+            errorEl.classList.remove('hidden');
         }
 
         async function loadLeagues() {
-            const response = await apiFetch('/leagues');
-            const data = await response.json();
-            teamsByLeague = Object.fromEntries(
-                Object.entries(data).map(([league, info]) => [league, info.teams])
-            );
+            try {
+                const response = await apiFetch('/leagues');
+                const data = await response.json();
+                teamsByLeague = Object.fromEntries(
+                    Object.entries(data).map(([league, info]) => [league, info.teams])
+                );
 
-            championnatSelect.innerHTML = Object.keys(teamsByLeague)
-                .map(league => `<option value="${league}">${league}</option>`)
-                .join('');
+                championnatSelect.innerHTML = Object.keys(teamsByLeague)
+                    .map(league => `<option value="${league}">${league}</option>`)
+                    .join('');
 
-            onLeagueChange(championnatSelect.value);
+                onLeagueChange(championnatSelect.value);
+            } catch (e) {
+                showError("Erreur lors du chargement des ligues.");
+            }
         }
 
         async function loadCurrentUser() {
-            const response = await apiFetch('/auth/me');
-            const user = await response.json();
-            document.getElementById('user-email').textContent = user.email;
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.email.split('@')[0];
+            } catch (e) {
+                console.error("Auth error", e);
+            }
         }
 
         function pct(value) {
             return `${(value * 100).toFixed(1)}%`;
         }
+        
+        function getInitials(name) {
+            return name.substring(0, 2).toUpperCase();
+        }
 
         predictionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideError();
-            resultEl.style.display = 'none';
-            premiumBanner.style.display = 'none';
+            resultEl.classList.add('hidden');
+            premiumBanner.classList.add('hidden');
 
             const league = championnatSelect.value;
             const home = homeSelect.value;
             const away = awaySelect.value;
 
             predictBtn.disabled = true;
+            predictBtn.textContent = 'Analyse en cours...';
+            
             try {
                 const response = await apiFetch(
                     `/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}`
                 );
 
                 if (response.status === 402) {
-                    premiumBanner.style.display = 'block';
+                    premiumBanner.classList.remove('hidden');
                     return;
                 }
                 if (!response.ok) {
@@ -218,28 +257,52 @@
                 }
 
                 const prediction = await response.json();
-                document.getElementById('result-title').textContent =
-                    `${prediction.home_team} vs ${prediction.away_team}`;
-                document.getElementById('result-home-win').textContent = pct(prediction.home_win);
-                document.getElementById('result-draw').textContent = pct(prediction.draw);
-                document.getElementById('result-away-win').textContent = pct(prediction.away_win);
-                document.getElementById('result-over').textContent = pct(prediction.over_2_5);
-                document.getElementById('result-btts-yes').textContent = pct(prediction.btts_yes);
-                document.getElementById('result-dc-1x').textContent = pct(prediction.double_chance_1x);
-                document.getElementById('result-dc-12').textContent = pct(prediction.double_chance_12);
-                document.getElementById('result-dc-x2').textContent = pct(prediction.double_chance_x2);
+                
+                // Update UI
+                document.getElementById('res-league-name').textContent = league;
+                document.getElementById('res-home-name').textContent = prediction.home_team;
+                document.getElementById('res-away-name').textContent = prediction.away_team;
+                
+                document.getElementById('res-home-icon').textContent = getInitials(prediction.home_team);
+                document.getElementById('res-away-icon').textContent = getInitials(prediction.away_team);
+
+                const hWin = prediction.home_win;
+                const draw = prediction.draw;
+                const aWin = prediction.away_win;
+
+                document.getElementById('res-home-win').textContent = pct(hWin);
+                document.getElementById('res-draw').textContent = pct(draw);
+                document.getElementById('res-away-win').textContent = pct(aWin);
+                
+                // Highlight highest probability
+                document.getElementById('box-home').classList.remove('highlight');
+                document.getElementById('box-draw').classList.remove('highlight');
+                document.getElementById('box-away').classList.remove('highlight');
+                
+                if (hWin > draw && hWin > aWin) document.getElementById('box-home').classList.add('highlight');
+                else if (aWin > hWin && aWin > draw) document.getElementById('box-away').classList.add('highlight');
+                else document.getElementById('box-draw').classList.add('highlight');
+
+                document.getElementById('res-over').textContent = pct(prediction.over_2_5);
+                document.getElementById('res-btts').textContent = pct(prediction.btts_yes);
+                document.getElementById('res-dc-1x').textContent = pct(prediction.double_chance_1x);
+                document.getElementById('res-dc-x2').textContent = pct(prediction.double_chance_x2);
 
                 const ouContainer = document.getElementById('result-ou-lines');
                 ouContainer.innerHTML = prediction.over_under_lines.map(l => `
-                    <div style="background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.6rem 1rem; text-align: center;">
-                        <div style="color: var(--text-secondary); font-size: 0.8rem;">Ligne ${l.line}</div>
-                        <div style="font-weight: 700;">+${pct(l.over)} / -${pct(l.under)}</div>
+                    <div class="stat-row" style="flex-direction: column; text-align: center; gap: 0.5rem;">
+                        <span class="stat-label">O/U ${l.line}</span>
+                        <div style="display:flex; justify-content:space-around; width: 100%;">
+                            <span class="text-green">+${pct(l.over)}</span>
+                            <span class="text-gold">-${pct(l.under)}</span>
+                        </div>
                     </div>
                 `).join('');
 
-                resultEl.style.display = 'block';
+                resultEl.classList.remove('hidden');
             } finally {
                 predictBtn.disabled = false;
+                predictBtn.textContent = 'Générer l\'Analyse IA';
             }
         });
 
