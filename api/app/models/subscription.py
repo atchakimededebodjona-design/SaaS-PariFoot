@@ -3,8 +3,12 @@ Modèle d'abonnement (licence Chariow).
 
 Ne stocke JAMAIS de donnée de paiement (numéro Mobile Money, carte...) —
 Chariow héberge tout le flux de paiement, notre backend ne voit qu'une clé
-de licence et un statut, reçus via les Pulses (webhooks Chariow) sur
-POST /billing/pulse.
+de licence et un statut. Reçus normalement via les Pulses (webhooks
+Chariow) sur POST /billing/pulse ; en secours, si la redirection post-
+paiement échoue/tarde ou qu'un Pulse est manqué, l'utilisateur peut aussi
+coller sa clé de licence sur POST /billing/activate-license (voir
+app/billing/router.py), vérifiée via metadata.user_id plutôt que par
+email.
 
 IMPORTANT — modèle de renouvellement : un produit Licence Chariow n'a PAS
 de renouvellement automatique (pas d'abonnement récurrent prélevé côté

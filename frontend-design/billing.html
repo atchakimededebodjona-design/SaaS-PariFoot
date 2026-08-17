@@ -87,6 +87,16 @@
                     <button type="submit" class="btn-primary btn-block" id="checkout-btn">Continuer vers le paiement</button>
                 </div>
             </form>
+
+            <div class="premium-banner" style="margin-top: 3rem; text-align: left;">
+                <h3>Tu as déjà payé mais rien ne s'est passé ?</h3>
+                <p>Si la page ne t'a pas ramené automatiquement ici après le paiement, colle la clé de licence reçue par email de Chariow pour débloquer ton accès manuellement.</p>
+                <form id="activate-license-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <input type="text" class="form-control" id="license-key" placeholder="Clé de licence (ex. lic_xxxxxxxx)" required style="flex: 1; min-width: 220px;">
+                    <button type="submit" class="btn-warning" id="activate-license-btn" style="flex-shrink: 0;">Activer avec ma clé</button>
+                </form>
+                <p id="activate-license-message" style="margin-top: 1rem; margin-bottom: 0; display: none;"></p>
+            </div>
         </div>
     </main>
 
@@ -141,6 +151,41 @@
                 errorEl.textContent = err.message;
                 errorEl.style.display = 'block';
                 checkoutBtn.disabled = false;
+            }
+        });
+
+        const activateForm = document.getElementById('activate-license-form');
+        const activateBtn = document.getElementById('activate-license-btn');
+        const activateMessage = document.getElementById('activate-license-message');
+
+        activateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            activateMessage.style.display = 'none';
+            activateBtn.disabled = true;
+
+            const licenseKey = document.getElementById('license-key').value.trim();
+
+            try {
+                const response = await apiFetch('/billing/activate-license', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ license_key: licenseKey }),
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.detail || `Erreur (${response.status})`);
+                }
+                activateMessage.style.color = 'var(--accent-green)';
+                activateMessage.textContent = 'Licence activée — ton abonnement est maintenant actif.';
+                activateMessage.style.display = 'block';
+                document.getElementById('license-key').value = '';
+                await loadSubscriptionStatus();
+            } catch (err) {
+                activateMessage.style.color = 'var(--accent-warning)';
+                activateMessage.textContent = err.message;
+                activateMessage.style.display = 'block';
+            } finally {
+                activateBtn.disabled = false;
             }
         });
 

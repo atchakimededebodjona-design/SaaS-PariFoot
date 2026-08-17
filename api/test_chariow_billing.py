@@ -52,7 +52,7 @@ from sqlmodel import Session, select
 from main import app
 from app.core.database import engine
 from app.models.subscription import Subscription
-from app.billing.router import _create_chariow_checkout_link
+from app.billing.router import _create_chariow_checkout_link, _fetch_chariow_license
 
 PULSE_SECRET = os.environ["CHARIOW_PULSE_SECRET"]
 EMAIL = "bob@example.com"
@@ -384,6 +384,123 @@ def test_pulse_dedup_on_delivery_id(client, user_id):
     print(f"  [OK] delivery rejouée (x-pulse-delivery-id déjà vu) -> ignorée, statut resté 'revoked'")
 
 
+# ---------------------------------------------------------------------------
+# POST /billing/activate-license — filet de secours si la redirection
+# post-paiement échoue/tarde ou qu'un Pulse est manqué (voir
+# app/billing/router.py::activate_license). Insérés en fin de chaîne pour ne
+# pas perturber l'état séquentiel des tests Pulse ci-dessus (qui se terminent
+# sur status='revoked', vérifié par test_pulse_dedup_on_delivery_id).
+# ---------------------------------------------------------------------------
+
+def _fake_license(*, user_id, plan="monthly", status="active", expires_at="2027-01-01T00:00:00+00:00"):
+    return {
+        "license_key": "lic_manual_test",
+        "status": status,
+        "expires_at": expires_at,
+        "metadata": {"user_id": str(user_id), "plan": plan},
+    }
+
+
+def test_activate_license_active_matches_user(client, user_id, token):
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license(user_id=user_id)) as m_fetch:
+        r = client.post("/billing/activate-license", json={"license_key": "lic_manual_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200, r.text
+    m_fetch.assert_called_once_with("lic_manual_test")
+
+    body = r.json()
+    assert body["status"] == "active"
+    assert body["is_active"] is True
+    assert body["plan"] == "monthly"
+
+    sub = get_subscription_row(user_id)
+    assert sub.chariow_license_key == "lic_manual_test"
+    assert sub.current_period_end.isoformat().startswith("2027-01-01")
+    print(f"  [OK] clé active + metadata.user_id correspondant -> 200, abonnement activé "
+          f"(chariow_license_key={sub.chariow_license_key})")
+
+
+def test_activate_license_user_mismatch_403(client, token):
+    """La clé appartient à un AUTRE utilisateur (metadata.user_id différent
+    du current_user) — ne doit jamais activer sur la seule foi du texte
+    collé par le client."""
+    other_email = "eve@example.com"
+    client.post("/auth/register", json={"email": other_email, "password": PASSWORD})
+    r_login = client.post("/auth/login", data={"username": other_email, "password": PASSWORD})
+    other_token = r_login.json()["access_token"]
+    other_user_id = client.get("/auth/me", headers={"Authorization": f"Bearer {other_token}"}).json()["id"]
+
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license(user_id=other_user_id)):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_someone_else"},
+                         headers={"Authorization": f"Bearer {token}"})  # token du PREMIER utilisateur
+    assert r.status_code == 403, r.text
+    assert "associée à ton compte" in r.json()["detail"]
+    print(f"  [OK] metadata.user_id d'un autre compte -> 403, rien activé sur simple confiance du texte collé")
+
+
+def test_activate_license_expired_400(client, user_id, token):
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license(user_id=user_id, status="expired")):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_manual_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 400, r.text
+    assert "expiré" in r.json()["detail"]
+    print(f"  [OK] licence status='expired' -> 400, message explicite (rien activé)")
+
+
+def test_activate_license_revoked_400(client, user_id, token):
+    with patch("app.billing.router._fetch_chariow_license",
+               return_value=_fake_license(user_id=user_id, status="revoked")):
+        r = client.post("/billing/activate-license", json={"license_key": "lic_manual_test"},
+                         headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 400, r.text
+    assert "révoquée" in r.json()["detail"]
+    print(f"  [OK] licence status='revoked' -> 400, message explicite (rien activé)")
+
+
+def test_activate_license_not_found_404(client, token):
+    fake_response = MagicMock(status_code=404)
+    with patch("app.billing.router.httpx.get", return_value=fake_response):
+        try:
+            _fetch_chariow_license("cle_inexistante")
+            assert False, "aurait dû lever HTTPException"
+        except HTTPException as exc:
+            assert exc.status_code == 404
+    print(f"  [OK] _fetch_chariow_license : 404 Chariow -> HTTPException(404), pas une 500 générique")
+
+
+def test_activate_license_chariow_401_maps_to_502(client, token):
+    """Clé API Chariow invalide côté nous (401) — jamais la faute de la clé
+    de licence collée par l'utilisateur, donc jamais une 500 opaque."""
+    fake_response = MagicMock(status_code=401, headers={"content-type": "application/json"})
+    fake_response.json.return_value = {"message": "Clé API invalide"}
+    with patch("app.billing.router.httpx.get", return_value=fake_response):
+        try:
+            _fetch_chariow_license("lic_manual_test")
+            assert False, "aurait dû lever HTTPException"
+        except HTTPException as exc:
+            assert exc.status_code == 502
+            assert "Clé API invalide" in exc.detail
+    print(f"  [OK] _fetch_chariow_license : 401 Chariow -> HTTPException(502), pas une 500 générique")
+
+
+def test_activate_license_empty_api_key_returns_502_not_crash(client, token):
+    """Régression : httpx refuse d'envoyer "Authorization: Bearer " avec une
+    clé vide (httpx.LocalProtocolError, non catchée avant ce correctif) —
+    découvert en testant manuellement sans CHARIOW_API_KEY chargée. Doit
+    renvoyer une 502 exploitable, jamais planter la requête."""
+    with patch("app.billing.router.CHARIOW_API_KEY", ""):
+        try:
+            _fetch_chariow_license("lic_manual_test")
+            assert False, "aurait dû lever HTTPException"
+        except HTTPException as exc:
+            assert exc.status_code == 502
+            assert "CHARIOW_API_KEY" in exc.detail
+    print(f"  [OK] CHARIOW_API_KEY vide -> HTTPException(502) propre, jamais httpx.LocalProtocolError non gérée")
+
+
 if __name__ == "__main__":
     failures = 0
     with TestClient(app) as client:
@@ -409,6 +526,13 @@ if __name__ == "__main__":
             ("test_pulse_license_revoked", lambda: test_pulse_license_revoked(client, user_id)),
             ("test_pulse_invalid_signature_401", lambda: test_pulse_invalid_signature_401(client, user_id)),
             ("test_pulse_dedup_on_delivery_id", lambda: test_pulse_dedup_on_delivery_id(client, user_id)),
+            ("test_activate_license_active_matches_user", lambda: test_activate_license_active_matches_user(client, user_id, token)),
+            ("test_activate_license_user_mismatch_403", lambda: test_activate_license_user_mismatch_403(client, token)),
+            ("test_activate_license_expired_400", lambda: test_activate_license_expired_400(client, user_id, token)),
+            ("test_activate_license_revoked_400", lambda: test_activate_license_revoked_400(client, user_id, token)),
+            ("test_activate_license_not_found_404", lambda: test_activate_license_not_found_404(client, token)),
+            ("test_activate_license_chariow_401_maps_to_502", lambda: test_activate_license_chariow_401_maps_to_502(client, token)),
+            ("test_activate_license_empty_api_key_returns_502_not_crash", lambda: test_activate_license_empty_api_key_returns_502_not_crash(client, token)),
         ]
         for name, fn in steps:
             print(f"\n=== {name} ===")

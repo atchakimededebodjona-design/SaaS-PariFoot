@@ -39,6 +39,7 @@ import hmac
 import json
 import logging
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -86,6 +87,10 @@ class SubscriptionStatus(BaseModel):
     days_until_expiry: int | None
 
 
+class ActivateLicenseRequest(BaseModel):
+    license_key: str
+
+
 def _get_or_create_subscription(session: Session, user: User) -> Subscription:
     """Récupère l'enregistrement Subscription de l'utilisateur, ou en crée
     un vide (status='none') s'il n'existe pas encore. Contrairement à
@@ -98,6 +103,22 @@ def _get_or_create_subscription(session: Session, user: User) -> Subscription:
         session.commit()
         session.refresh(sub)
     return sub
+
+
+def _require_chariow_api_key() -> None:
+    """
+    httpx refuse purement et simplement d'envoyer un en-tête
+    "Authorization: Bearer " avec une clé vide (httpx.LocalProtocolError:
+    Illegal header value) — sans cette garde, un CHARIOW_API_KEY vide/non
+    configuré fait planter la requête avec une exception non gérée (500
+    opaque, connexion coupée côté client) plutôt qu'une erreur exploitable.
+    Découvert en testant _fetch_chariow_license en local sans avoir chargé
+    api/.env dans l'environnement du process — un CHARIOW_API_KEY manquant
+    reste possible en dehors de ce cas précis (mauvaise config), d'où une
+    garde partagée plutôt qu'un correctif ponctuel.
+    """
+    if not CHARIOW_API_KEY:
+        raise HTTPException(status_code=502, detail="Chariow: CHARIOW_API_KEY non configurée côté serveur.")
 
 
 def _create_chariow_checkout_link(
@@ -140,6 +161,7 @@ def _create_chariow_checkout_link(
     billing.html, qui recharge déjà GET /billing/subscription au chargement
     (aucun code supplémentaire nécessaire pour afficher le nouveau statut).
     """
+    _require_chariow_api_key()
     response = httpx.post(
         f"{CHARIOW_API_BASE_URL}/checkout",
         headers={"Authorization": f"Bearer {CHARIOW_API_KEY}"},
@@ -207,6 +229,108 @@ def create_checkout_session(
         metadata={"user_id": str(current_user.id), "plan": body.plan},
     )
     return CheckoutResponse(checkout_url=checkout_url)
+
+
+def _fetch_chariow_license(license_key: str) -> dict:
+    """
+    Isolée dans sa propre fonction pour rester patchable dans les tests
+    (même discipline que _create_chariow_checkout_link) — aucun appel
+    réseau réel n'y est jamais fait en test.
+
+    GET {CHARIOW_API_BASE_URL}/licenses/{license_key} (chariow.dev/api-
+    reference/licenses/get-license) : renvoie status
+    (active/expired/revoked/pending_activation), expires_at, product, et
+    surtout metadata — le custom_metadata qu'on envoie déjà à POST
+    /checkout ({"user_id": ..., "plan": ...}). Pas de champ email dans
+    cette réponse, contrairement aux Pulses license.* — c'est le
+    metadata.user_id qui sert à vérifier l'appartenance de la clé
+    (voir activate_license ci-dessous), pas l'email.
+
+    quote() : la clé de licence est fournie par l'utilisateur (collée
+    depuis un email Chariow), jamais garanti sans caractères spéciaux au
+    moment de la placer dans le chemin de l'URL.
+
+    Gestion d'erreur alignée sur _create_chariow_checkout_link : 404 (clé
+    inexistante) est une erreur normale côté appelant, remontée telle
+    quelle ; tout autre code d'erreur (401 clé API invalide, 5xx Chariow,
+    etc.) est une panne de configuration/service, jamais la faute de la
+    clé collée par l'utilisateur -> 502 plutôt que de laisser
+    raise_for_status() produire une 500 générique et opaque.
+    """
+    _require_chariow_api_key()
+    response = httpx.get(
+        f"{CHARIOW_API_BASE_URL}/licenses/{quote(license_key, safe='')}",
+        headers={"Authorization": f"Bearer {CHARIOW_API_KEY}"},
+        timeout=10.0,
+    )
+    if response.status_code == 404:
+        raise HTTPException(status_code=404, detail="Clé de licence introuvable.")
+    if response.status_code >= 400:
+        body = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
+        message = body.get("message", f"Erreur Chariow ({response.status_code})")
+        raise HTTPException(status_code=502, detail=f"Chariow: {message}")
+    return response.json()["data"]
+
+
+@router.post("/activate-license", response_model=SubscriptionStatus)
+@limiter.limit("10/minute")
+def activate_license(
+    request: Request,
+    body: ActivateLicenseRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Filet de sécurité si la redirection post-paiement échoue/tarde et que
+    le Pulse successful.sale/license.activated n'est pas encore arrivé (ou
+    jamais, ex. email différent entre Chariow et le compte xfoot) :
+    l'utilisateur colle la clé de licence reçue par email de Chariow.
+
+    Vérification d'appartenance via metadata.user_id (fixé par NOUS à
+    l'achat, voir create_checkout_session) plutôt que par email — jamais
+    activer sur la seule confiance du texte collé par le client, sinon
+    n'importe qui pourrait coller la clé de quelqu'un d'autre pour
+    débloquer son propre compte.
+    """
+    license_data = _fetch_chariow_license(body.license_key)
+
+    metadata = license_data.get("metadata") or {}
+    license_user_id = metadata.get("user_id")
+    if license_user_id is None or str(license_user_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=403,
+            detail="Cette clé de licence n'est pas associée à ton compte.",
+        )
+
+    license_status = license_data.get("status")
+    if license_status != "active":
+        messages = {
+            "expired": "Cette licence a expiré — repasse par un nouvel achat pour la renouveler.",
+            "revoked": "Cette licence a été révoquée.",
+            "pending_activation": "Cette licence n'est pas encore activée côté Chariow — réessaie dans quelques instants.",
+        }
+        raise HTTPException(
+            status_code=400,
+            detail=messages.get(license_status, f"Licence non active (statut : {license_status})."),
+        )
+
+    sub = _get_or_create_subscription(session, current_user)
+    sub.status = "active"
+    sub.chariow_license_key = body.license_key
+    sub.plan = metadata.get("plan")
+    expires_at = _parse_datetime(license_data.get("expires_at"))
+    if expires_at is not None:
+        sub.current_period_end = expires_at
+    sub.days_until_expiry = None  # confirmation d'achat, même convention que _handle_successful_sale
+    sub.updated_at = datetime.now(timezone.utc)
+    session.add(sub)
+    session.commit()
+    session.refresh(sub)
+
+    return SubscriptionStatus(
+        status=sub.status, plan=sub.plan, is_active=sub.is_active,
+        current_period_end=sub.current_period_end, days_until_expiry=sub.days_until_expiry,
+    )
 
 
 @router.get("/subscription", response_model=SubscriptionStatus)
