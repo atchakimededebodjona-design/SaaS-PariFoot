@@ -24,7 +24,7 @@ import os
 import unicodedata
 import difflib
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 
 import httpx
 import numpy as np
@@ -46,6 +46,30 @@ from app.models.user import User
 from app.models.model_artifact import ModelArtifact
 from app.models.prediction_log import PredictionLog
 from app.core.api_football_config import API_FOOTBALL_KEY, API_FOOTBALL_BASE_URL, API_FOOTBALL_LEAGUE_IDS
+from app.ai.arena.schemas import (
+    ArenaPerformanceResponse,
+    ArenaBenchmarkResponse,
+    ModelPerformanceEntry,
+    ModelPredictionRead,
+    ModelPredictionListResponse,
+)
+from app.ai.arena.service import (
+    get_models_performance,
+    get_models_benchmark,
+    get_model_version_detail,
+    list_model_predictions,
+    get_model_prediction,
+    MARKETS as ARENA_MARKETS,
+)
+from app.ai.arena.prediction_logging import (
+    PredictionRecord,
+    get_or_create_active_model_version,
+    log_prediction,
+)
+from app.ai.arena.models_common import MatchContext
+from app.ai.arena.orchestrator import ModelOrchestrator, default_models
+from app.ai.arena.ensemble import build_live_ensemble, WEIGHT_STRATEGIES, DEFAULT_STRATEGY
+from app.ai.arena.availability import compute_model_availability
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -443,6 +467,16 @@ def _load_all_leagues() -> dict:
 
 LEAGUE_MODELS: dict[str, LeagueModel] = _load_all_leagues()
 
+# Instances de PredictionModel construites UNE SEULE FOIS au chargement du
+# module (Phase 8, §31) — jamais reconstruites par requête : XGBoostPredictionModel/
+# LightGBMPredictionModel mettent en cache leur dernier booster désérialisé
+# PAR INSTANCE (voir models_common.py::_MLPredictionModel._get_booster), un
+# cache reconstruit à chaque appel serait sans effet. Chaque instance garde
+# une RÉFÉRENCE vers LEAGUE_MODELS (pas une copie) : la mise à jour en place
+# faite par on_startup() (LEAGUE_MODELS.update(...)) reste donc visible sans
+# avoir à reconstruire ces instances.
+_PREDICTION_MODELS = default_models(LEAGUE_MODELS)
+
 
 def _load_leagues_from_db() -> dict[str, LeagueModel]:
     """
@@ -628,6 +662,46 @@ def _log_prediction(prediction: "MatchPrediction") -> None:
         logger.warning(f"Enregistrement de l'historique de prédiction impossible (non bloquant) : {e}")
 
 
+def _log_model_prediction(prediction: "MatchPrediction") -> None:
+    """
+    Dual-write vers model_predictions (Phase 6, source de vérité
+    multi-modèles pour Xfoot AI Arena) — EN PLUS de _log_prediction
+    (prediction_log, ci-dessus, totalement inchangée). Best-effort comme
+    elle : ne doit jamais faire échouer la réponse de prédiction.
+
+    Les métriques Dixon-Coles de l'Arena continuent de se calculer depuis
+    prediction_log uniquement (voir app/ai/arena/service.py) — cette
+    écriture-ci sert à faire passer Dixon-Coles par le même mécanisme
+    commun que Elo/XGBoost/LightGBM (voir prediction_logging.py), pas à
+    doubler le calcul des métriques.
+    """
+    try:
+        with Session(engine) as session:
+            version = get_or_create_active_model_version(
+                session, "dixon_coles", "xfoot-dixon-coles",
+                notes="Version de production — auto-créée au premier appel loggué via le logger commun (Phase 6).",
+            )
+            record = PredictionRecord(
+                league=prediction.league,
+                match_date=datetime.now(timezone.utc).date(),
+                home_team=prediction.home_team,
+                away_team=prediction.away_team,
+                model_type="dixon_coles",
+                prob_home=prediction.home_win,
+                prob_draw=prediction.draw,
+                prob_away=prediction.away_win,
+                prob_btts_yes=prediction.btts_yes,
+                prob_btts_no=prediction.btts_no,
+                prob_over_2_5=prediction.over_2_5,
+                prob_under_2_5=prediction.under_2_5,
+                source="live",
+            )
+            log_prediction(session, record, version.id)
+            session.commit()
+    except Exception as e:
+        logger.warning(f"Enregistrement model_predictions impossible (non bloquant) : {e}")
+
+
 def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str) -> MatchPrediction:
     """
     Résout les noms d'équipes (exact -> normalisé -> alias) puis calcule la
@@ -692,6 +766,7 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
         away_team_resolution=away_res["method"],
     )
     _log_prediction(prediction)
+    _log_model_prediction(prediction)
     return prediction
 
 
@@ -924,3 +999,289 @@ def get_ratings(league: str):
             detail=f"Ligue inconnue : '{league}'. Ligues disponibles : {list(LEAGUE_MODELS.keys())}",
         )
     return LEAGUE_MODELS[league].ratings()
+
+
+# ---------------------------------------------------------------------------
+# Xfoot AI Arena (Phase 5) — voir app/ai/arena/service.py pour le détail.
+# Public comme /health et /ratings : données de mesure, jamais de secrets/PII.
+# /models/performance et /models/benchmark déclarés AVANT /models/{model_version_id} :
+# les chemins littéraux doivent être essayés en premier, sinon "performance"/
+# "benchmark" seraient tentés comme model_version_id.
+# ---------------------------------------------------------------------------
+
+def _validate_arena_filters(league: str | None, market: str | None = None, prediction_source: str | None = None) -> None:
+    if league is not None and league not in LEAGUE_MODELS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Ligue inconnue : '{league}'. Ligues disponibles : {list(LEAGUE_MODELS.keys())}",
+        )
+    if market is not None and market not in ARENA_MARKETS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Marché inconnu : '{market}'. Marchés disponibles : {list(ARENA_MARKETS)}",
+        )
+    if prediction_source is not None and prediction_source not in ("live", "backtest"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"prediction_source inconnu : '{prediction_source}'. Valeurs possibles : live, backtest.",
+        )
+
+
+@app.get("/models/performance", response_model=ArenaPerformanceResponse)
+def get_models_performance_endpoint(
+    league: str | None = None,
+    since: date | None = None,
+    until: date | None = None,
+    prediction_source: str | None = None,
+):
+    """
+    Filtres optionnels appliqués aux métriques par marché : `league`
+    restreint à une ligue, `since`/`until` (dates ISO) restreignent la
+    période. Sans filtre : all_time, toutes ligues confondues (comportement
+    V1 inchangé). `prediction_source` (Phase 8, §21) : "live" ou "backtest"
+    pour ne JAMAIS mélanger silencieusement les deux à l'affichage — omis
+    (défaut), les deux restent confondues (comportement Phase 5/6/7 inchangé).
+    """
+    _validate_arena_filters(league, prediction_source=prediction_source)
+    with Session(engine) as session:
+        return get_models_performance(session, LEAGUE_MODELS, league=league, since=since, until=until,
+                                       prediction_source=prediction_source)
+
+
+@app.get("/models/benchmark", response_model=ArenaBenchmarkResponse)
+def get_models_benchmark_endpoint(
+    market: str | None = None,
+    league: str | None = None,
+    since: date | None = None,
+    until: date | None = None,
+    prediction_source: str | None = None,
+):
+    """
+    Comparaison croisée des modèles, marché par marché — ne désigne un
+    "meilleur modèle" (`best_model.status="ok"`) que lorsqu'au moins 2
+    modèles ont, sur le même marché, la même métrique disponible avec un
+    échantillon suffisant (voir app/ai/arena/service.py::_pick_best_model).
+    `market` limite la réponse à un seul marché parmi 1X2/BTTS/OVER_UNDER_2_5 ;
+    `league`/`since`/`until`/`prediction_source` mêmes filtres que GET
+    /models/performance.
+    """
+    _validate_arena_filters(league, market, prediction_source=prediction_source)
+    with Session(engine) as session:
+        return get_models_benchmark(session, LEAGUE_MODELS, market=market, league=league, since=since, until=until,
+                                     prediction_source=prediction_source)
+
+
+@app.get("/models/predictions", response_model=ModelPredictionListResponse)
+def list_model_predictions_endpoint(
+    model_type: str | None = None,
+    status: str | None = None,
+    league: str | None = None,
+    limit: int = 100,
+):
+    """
+    Consultation brute des prédictions individuelles multi-modèles (Phase
+    6, table model_predictions) — observabilité/audit, distincte des vues
+    agrégées de GET /models/performance|benchmark. Plus récentes d'abord,
+    plafonnée à `limit` (défaut 100, max 500) pour rester légère.
+    """
+    if status is not None and status not in ("pending", "resolved", "invalid"):
+        raise HTTPException(status_code=400, detail=f"Statut inconnu : '{status}'. Valeurs possibles : pending, resolved, invalid")
+    _validate_arena_filters(league)
+    limit = max(1, min(limit, 500))
+    with Session(engine) as session:
+        predictions, total = list_model_predictions(session, model_type=model_type, status=status, league=league, limit=limit)
+    return ModelPredictionListResponse(predictions=predictions, count=total, limit=limit)
+
+
+@app.get("/models/predictions/{prediction_id}", response_model=ModelPredictionRead)
+def get_model_prediction_endpoint(prediction_id: int):
+    with Session(engine) as session:
+        prediction = get_model_prediction(session, prediction_id)
+    if prediction is None:
+        raise HTTPException(status_code=404, detail=f"Aucune prédiction avec id={prediction_id}.")
+    return prediction
+
+
+class EnsemblePredictRequest(BaseModel):
+    league: str
+    home_team: str
+    away_team: str
+    # Phase 8, §14 : stratégie de pondération (voir GET /models/ensemble/strategies
+    # pour la liste). None (défaut) = InverseLogLossStrategy, la baseline Phase 7.
+    strategy: str | None = None
+
+
+def _model_outcome_response(outcome) -> dict:
+    if outcome.status == "ok":
+        r = outcome.record
+        return {
+            "status": "ok",
+            "model_version_id": outcome.model_version_id,
+            "markets": {
+                "1X2": {"home": r.prob_home, "draw": r.prob_draw, "away": r.prob_away},
+                "BTTS": {"yes": r.prob_btts_yes, "no": r.prob_btts_no} if r.prob_btts_yes is not None else None,
+                "OVER_UNDER_2_5": (
+                    {"over": r.prob_over_2_5, "under": r.prob_under_2_5} if r.prob_over_2_5 is not None else None
+                ),
+            },
+        }
+    return {"status": outcome.status, "model_version_id": outcome.model_version_id, "reason": outcome.reason}
+
+
+def _ensemble_market_response(market_result) -> dict:
+    if market_result.status != "ok":
+        return {"status": "not_available", "reason": market_result.reason}
+    c = market_result.combined
+    return {
+        "status": "ok",
+        "probabilities": c.probs,
+        "weights": c.weights_used,
+        "models_used": c.models_used,
+        "degraded": c.degraded,
+    }
+
+
+@app.post("/models/ensemble/predict")
+def post_ensemble_predict(payload: EnsemblePredictRequest, user: User = Depends(require_active_subscription)):
+    """
+    Prédiction LIVE multi-modèles (Phase 7) : appelle chaque modèle connu
+    (Dixon-Coles, Elo, XGBoost, LightGBM) via ModelOrchestrator — un modèle
+    indisponible (voir app/ai/arena/models_common.py) n'empêche jamais les
+    autres de répondre —, journalise chaque prédiction individuelle réussie
+    dans model_predictions (source="live", même mécanisme commun que
+    Phase 6), puis combine les prédictions disponibles via EnsembleEngine
+    (poids dérivés du log_loss historique par marché, jamais arbitraires —
+    voir app/ai/arena/ensemble.py) et journalise l'Ensemble lui-même
+    (model_type="ensemble"). Réutilise la résolution de noms d'équipes déjà
+    en place pour /predictions/* (resolve_team_name, via l'artefact
+    Dixon-Coles) : aucun modèle ne reçoit jamais un nom d'équipe non résolu.
+    """
+    if payload.league not in LEAGUE_MODELS:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Ligue inconnue : '{payload.league}'. Ligues disponibles : {list(LEAGUE_MODELS.keys())}",
+        )
+    if payload.strategy is not None and payload.strategy not in WEIGHT_STRATEGIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stratégie inconnue : '{payload.strategy}'. Voir GET /models/ensemble/strategies. "
+                    f"Valeurs possibles : {list(WEIGHT_STRATEGIES.keys())}",
+        )
+    strategy = WEIGHT_STRATEGIES[payload.strategy] if payload.strategy else DEFAULT_STRATEGY
+
+    dc_model = LEAGUE_MODELS[payload.league]
+    home_res = resolve_team_name(payload.home_team, dc_model.teams)
+    away_res = resolve_team_name(payload.away_team, dc_model.teams)
+
+    if home_res["resolved"] is None:
+        msg = f"Équipe domicile non reconnue : '{payload.home_team}'."
+        if home_res["suggestions"]:
+            msg += f" Vouliez-vous dire : {home_res['suggestions']} ?"
+        raise HTTPException(status_code=404, detail=msg)
+    if away_res["resolved"] is None:
+        msg = f"Équipe extérieure non reconnue : '{payload.away_team}'."
+        if away_res["suggestions"]:
+            msg += f" Vouliez-vous dire : {away_res['suggestions']} ?"
+        raise HTTPException(status_code=404, detail=msg)
+
+    home_team, away_team = home_res["resolved"], away_res["resolved"]
+    match_date = datetime.now(timezone.utc).date()
+    ctx = MatchContext(league=payload.league, home_team=home_team, away_team=away_team, match_date=match_date)
+
+    with Session(engine) as session:
+        orchestrator = ModelOrchestrator(_PREDICTION_MODELS)
+        outcomes = orchestrator.predict_all(session, ctx)
+
+        model_records = {mt: o.record for mt, o in outcomes.items() if o.status == "ok" and o.record is not None}
+        ensemble_result = build_live_ensemble(
+            session, model_records, payload.league, home_team, away_team, match_date, strategy=strategy,
+        )
+
+    return {
+        "status": "ok",
+        "match": {
+            "league": payload.league, "home_team": home_team, "away_team": away_team,
+            "match_date": match_date.isoformat(),
+        },
+        "models": {mt: _model_outcome_response(o) for mt, o in outcomes.items()},
+        "ensemble": {
+            "model_version_id": ensemble_result.model_version_id,
+            "markets": {m: _ensemble_market_response(r) for m, r in ensemble_result.markets.items()},
+            "confidence": ensemble_result.confidence,
+            "weighting_metric": strategy.name,
+        },
+    }
+
+
+@app.get("/models/ensemble/strategies")
+def get_ensemble_strategies():
+    """
+    Liste les stratégies de pondération disponibles pour POST
+    /models/ensemble/predict (§14-§18, §34 : ajouté car réellement utile —
+    évite de coder en dur cette liste côté frontend). InverseLogLossStrategy
+    reste la valeur par défaut si `strategy` est omis.
+    """
+    return {
+        "default": DEFAULT_STRATEGY.name,
+        "strategies": [
+            {
+                "name": s.name,
+                "params": {k: v for k, v in vars(s).items() if not k.startswith("_")},
+            }
+            for s in WEIGHT_STRATEGIES.values()
+        ],
+    }
+
+
+@app.get("/models/availability")
+def get_models_availability_endpoint():
+    """
+    Matrice de disponibilité par model_type — `active` (version déployée),
+    `live_available` (peut réellement prédire maintenant), et par marché
+    `benchmark_eligible`/`ensemble_eligible` (§12-§13 du ticket Phase 8).
+    Public comme /models/performance : données de mesure, jamais de
+    secrets/PII.
+    """
+    with Session(engine) as session:
+        availability = compute_model_availability(session, _PREDICTION_MODELS)
+
+    return {
+        model_type: {
+            "active": a.active,
+            "model_version_id": a.model_version_id,
+            "version_name": a.version_name,
+            "live_available": a.live_available,
+            "live_reason": a.live_reason,
+            "markets": {
+                market: {
+                    "benchmark_eligible": ma.benchmark_eligible,
+                    "ensemble_eligible": ma.ensemble_eligible,
+                    "sample_size": ma.sample_size,
+                    "reason": ma.reason,
+                }
+                for market, ma in a.markets.items()
+            },
+        }
+        for model_type, a in availability.items()
+    }
+
+
+@app.get("/models/{model_version_id}", response_model=ModelPerformanceEntry)
+def get_model_version_detail_endpoint(model_version_id: int):
+    """
+    Détail d'une version de modèle BACKTESTÉE (ligne réelle de
+    `model_versions`, id auto-incrémenté — jamais de schéma d'id fabriqué).
+    Le modèle de production Dixon-Coles n'a pas de ModelVersion associée :
+    voir GET /models/performance, entrée source="model_artifact".
+    """
+    with Session(engine) as session:
+        entry = get_model_version_detail(session, model_version_id)
+    if entry is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucune version de modèle backtestée avec id={model_version_id}. "
+                "Le modèle de production Dixon-Coles n'a pas d'id ici — voir GET /models/performance."
+            ),
+        )
+    return entry

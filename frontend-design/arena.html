@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>xFoot - AI Arena</title>
+    <link rel="stylesheet" href="styles.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Scoped à cette page — pas de nouvelle identité visuelle, juste un
+           tableau, absent de styles.css (aucune page n'en avait besoin avant),
+           construit avec les mêmes variables de couleur que le reste du site. */
+        .arena-table-wrap { overflow-x: auto; margin-bottom: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); }
+        .arena-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap; }
+        .arena-table th, .arena-table td { padding: 0.7rem 0.9rem; text-align: left; }
+        .arena-table thead th { background: rgba(0,0,0,0.25); color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
+        .arena-table tbody tr { border-top: 1px solid var(--border-color); }
+        .arena-table tbody tr.active-row { background: rgba(44, 217, 165, 0.06); }
+        .arena-table td.num { font-weight: 700; }
+        .arena-table td.na { color: var(--text-secondary); font-weight: 400; }
+        .market-block { margin-bottom: 1.5rem; }
+        .market-block-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .best-model-card { background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.03) 100%); border: 1px solid var(--border-gold); border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 0.8rem; }
+        .best-model-card.unavailable { background: rgba(142,147,166,0.06); border-color: var(--border-color); }
+        .best-model-title { font-weight: 700; margin-bottom: 0.3rem; }
+        .best-model-detail, .best-model-reason { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4; }
+
+        /* Section Ensemble (Phase 7) — même vocabulaire visuel que le reste
+           de la page (arena-table/best-model-card), rien de nouveau inventé. */
+        .ensemble-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .ensemble-probs { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
+        .ensemble-prob-box { flex: 1; text-align: center; padding: 0.8rem 0.4rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); }
+        .ensemble-prob-box.top-pick { border-color: var(--border-gold); background: rgba(212, 175, 55, 0.08); }
+        .ensemble-prob-value { font-size: 1.3rem; font-weight: 800; }
+        .ensemble-prob-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+        .ensemble-weight-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-top: 1px solid var(--border-color); font-size: 0.82rem; }
+        .ensemble-weight-row:first-child { border-top: none; }
+        .ensemble-degraded-note { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.6rem; line-height: 1.4; }
+        .ensemble-meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 1rem; line-height: 1.5; }
+        .ensemble-market-block { margin-bottom: 1.25rem; }
+
+        /* Section "LIVE MODEL STATUS" (Phase 8, §33) — statuts distincts,
+           jamais un backtest présenté comme une prédiction live. */
+        .status-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .status-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.7rem; }
+        .status-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .status-badge { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.25rem 0.6rem; border-radius: 999px; }
+        .status-badge.live { background: rgba(44, 217, 165, 0.15); color: #2cd9a5; }
+        .status-badge.backtest { background: rgba(212, 175, 55, 0.15); color: #d4af37; }
+        .status-badge.unavailable { background: rgba(142,147,166,0.12); color: var(--text-secondary); }
+        .status-markets { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
+        .status-market-chip { font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); }
+        .status-market-chip.eligible { border-color: rgba(44, 217, 165, 0.4); color: #2cd9a5; }
+        .status-market-chip.excluded { color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-title">
+                <span>🏟️</span>
+                <span>AI Arena</span>
+            </div>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content">
+
+            <h2 class="section-title">Xfoot AI Arena</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.5rem;">
+                Mesure, pas marketing : chaque modèle est affiché tel qu'il performe réellement, sans classement inventé.
+            </p>
+
+            <div id="arena-loading" class="stat-row">Chargement des modèles…</div>
+            <div id="arena-error" class="error-msg hidden"></div>
+
+            <div id="arena-content" class="hidden"></div>
+
+            <!-- LIVE MODEL STATUS (Phase 8) -->
+            <div class="status-section">
+                <h3 class="market-block-title" style="margin-top: 0;">📡 Statut des modèles</h3>
+                <p style="color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 1rem;">
+                    LIVE = peut prédire un match en ce moment. BACKTEST ONLY = déployé mais pas encore servable en
+                    direct. Par marché : éligible à l'Ensemble seulement si assez d'historique résolu ET live.
+                </p>
+                <div id="status-loading" class="stat-row">Chargement…</div>
+                <div id="status-error" class="error-msg hidden"></div>
+                <div id="status-content" class="hidden"></div>
+            </div>
+
+            <!-- ENSEMBLE MODEL (Phase 7) -->
+            <div class="ensemble-section">
+                <h3 class="market-block-title" style="margin-top: 0;">🧬 XFOOT Ensemble — prédiction live</h3>
+                <p style="color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 1rem;">
+                    Combine les modèles réellement disponibles EN DIRECT sur ce match (poids dérivés de leur
+                    log_loss historique, jamais fixés à la main) — pas une moyenne systématique.
+                </p>
+
+                <form id="ensemble-form" class="filter-group">
+                    <select class="custom-select" id="ensemble-league-select">
+                        <option>Chargement des ligues...</option>
+                    </select>
+                    <select class="custom-select" id="ensemble-home-select">
+                        <option>Équipe Domicile</option>
+                    </select>
+                    <select class="custom-select" id="ensemble-away-select">
+                        <option>Équipe Extérieur</option>
+                    </select>
+                    <button type="submit" class="btn-predict" id="ensemble-predict-btn">Prédire avec l'Ensemble</button>
+                </form>
+
+                <div id="ensemble-error" class="error-msg hidden"></div>
+
+                <div class="premium-banner hidden" id="ensemble-premium-banner">
+                    <h3>Ensemble XFOOT</h3>
+                    <p>Débloquez la prédiction combinée multi-modèles, pondérée par performance réelle.</p>
+                    <button class="btn-outline-gold" id="ensemble-see-plans-btn">Voir les abonnements VIP</button>
+                </div>
+
+                <div id="ensemble-result" class="hidden"></div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="history.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Historique</span>
+            </a>
+            <a href="live.html" class="nav-item">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Social</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const MARKET_LABELS = { '1X2': '1X2', 'BTTS': 'BTTS (les 2 marquent)', 'OVER_UNDER_2_5': 'Plus/Moins 2.5 buts' };
+        const METRIC_LABELS = { accuracy: 'accuracy', log_loss: 'log loss', brier_score: 'Brier score' };
+
+        function pct(value) {
+            return value === null || value === undefined ? '—' : `${(value * 100).toFixed(1)}%`;
+        }
+        function num(value, digits = 4) {
+            return value === null || value === undefined ? '—' : value.toFixed(digits);
+        }
+        function na(cellHtml, isNa) {
+            return isNa ? '<td class="na">NOT AVAILABLE</td>' : `<td class="num">${cellHtml}</td>`;
+        }
+
+        function statusBadge(isActive) {
+            return isActive
+                ? '<span class="result-badge correct">✅ ACTIF</span>'
+                : '<span class="result-badge pending">⏸️ INACTIF</span>';
+        }
+
+        // ---- Section "MODEL PERFORMANCE" : tableau comparatif sur le marché 1X2 ----
+        function renderModelPerformanceTable(models1x2) {
+            const rows = models1x2.map(m => `
+                <tr class="${m.is_active ? 'active-row' : ''}">
+                    <td>${m.model_type}<br><span style="color: var(--text-secondary); font-size: 0.72rem;">${m.version}</span></td>
+                    ${na(pct(m.accuracy), m.accuracy === null)}
+                    ${na(num(m.log_loss), m.log_loss === null)}
+                    ${na(num(m.brier_score), m.brier_score === null)}
+                    <td>${m.sample_size}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <h3 class="market-block-title" style="margin-top: 0;">Model Performance — 1X2</h3>
+                <div class="arena-table-wrap">
+                    <table class="arena-table">
+                        <thead>
+                            <tr><th>Model</th><th>1X2 Accuracy</th><th>Log Loss</th><th>Brier</th><th>Sample</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ---- Section "MARKET PERFORMANCE" : même tableau, répété par marché ----
+        function renderMarketBlock(marketKey, marketData) {
+            const rows = marketData.models.map(m => `
+                <tr class="${m.is_active ? 'active-row' : ''}">
+                    <td>${m.model_type}</td>
+                    ${na(pct(m.accuracy), m.accuracy === null)}
+                    ${na(num(m.log_loss), m.log_loss === null)}
+                    ${na(num(m.brier_score), m.brier_score === null)}
+                    <td>${m.sample_size}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="market-block">
+                    <h4 class="market-block-title">${MARKET_LABELS[marketKey] || marketKey}</h4>
+                    <div class="arena-table-wrap">
+                        <table class="arena-table">
+                            <thead>
+                                <tr><th>Model</th><th>Accuracy</th><th>Log Loss</th><th>Brier</th><th>Sample</th></tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ---- Section "BEST MODEL" : uniquement si statistiquement supporté (§18) ----
+        function renderBestModel(marketKey, best) {
+            if (best.status !== 'ok') {
+                return `
+                    <div class="best-model-card unavailable">
+                        <div class="best-model-title">🔍 ${MARKET_LABELS[marketKey] || marketKey} — pas encore de meilleur modèle déterminable</div>
+                        <div class="best-model-reason">${best.reason || 'Données insuffisantes.'}</div>
+                    </div>
+                `;
+            }
+            return `
+                <div class="best-model-card">
+                    <div class="best-model-title">🏆 ${MARKET_LABELS[marketKey] || marketKey} — ${best.best_model} (${best.version})</div>
+                    <div class="best-model-detail">
+                        Meilleur sur <strong>${METRIC_LABELS[best.metric] || best.metric}</strong>
+                        (valeur = ${num(best.value)}), basé sur ${best.sample_size} prédiction(s) résolue(s).
+                    </div>
+                </div>
+            `;
+        }
+
+        // ---- Détail par modèle (V1, conservé) ----
+        function renderModelDetailCard(model) {
+            const subtitle = model.source === 'model_artifact'
+                ? `Production — ${model.leagues.length} ligue(s) entraînée(s) séparément`
+                : `Version backtestée — ${model.trained_at ? new Date(model.trained_at).toLocaleDateString('fr-FR') : '?'}`;
+
+            return `
+                <div class="match-card${model.is_active ? ' gold-border' : ''}">
+                    <div class="match-card-header">
+                        <div class="league-info">🤖 <span>${model.model_type} — ${model.version}</span></div>
+                        ${statusBadge(model.is_active)}
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">${subtitle}</p>
+                    ${model.notes ? `<p style="color: var(--text-secondary); font-size: 0.78rem; line-height: 1.4;">${model.notes}</p>` : ''}
+                </div>
+            `;
+        }
+
+        async function loadArena() {
+            const loadingEl = document.getElementById('arena-loading');
+            const errorEl = document.getElementById('arena-error');
+            const contentEl = document.getElementById('arena-content');
+
+            try {
+                const [perfResponse, benchResponse] = await Promise.all([
+                    apiFetch('/models/performance'),
+                    apiFetch('/models/benchmark'),
+                ]);
+                if (!perfResponse.ok) {
+                    const body = await perfResponse.json().catch(() => ({}));
+                    throw new Error(body.detail || `Erreur /models/performance (${perfResponse.status})`);
+                }
+                if (!benchResponse.ok) {
+                    const body = await benchResponse.json().catch(() => ({}));
+                    throw new Error(body.detail || `Erreur /models/benchmark (${benchResponse.status})`);
+                }
+                const perf = await perfResponse.json();
+                const bench = await benchResponse.json();
+
+                const activeLabel = perf.active_model_type === 'ambiguous'
+                    ? '⚠️ Plusieurs modèles marqués actifs à la fois — à vérifier'
+                    : `Modèle actif : ${perf.active_model_type}`;
+                const periodLabel = perf.filters.period === 'all_time' ? 'toutes périodes' : `${perf.filters.since || '…'} → ${perf.filters.until || '…'}`;
+                const leagueLabel = perf.filters.league || 'toutes ligues';
+
+                const marketOrder = ['1X2', 'BTTS', 'OVER_UNDER_2_5'];
+
+                contentEl.innerHTML = `
+                    <div class="stat-row" style="margin-bottom: 0.6rem;">
+                        <span class="stat-label">${activeLabel}</span>
+                        <span class="stat-val"></span>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 1.5rem;">
+                        Période : ${periodLabel} · Ligue(s) : ${leagueLabel} · seuil minimum pour désigner un
+                        meilleur modèle : ${bench.min_benchmark_sample_size} prédictions résolues.
+                    </p>
+
+                    ${renderModelPerformanceTable(bench.markets['1X2'].models)}
+
+                    <h3 class="market-block-title">Market Performance</h3>
+                    ${marketOrder.map(k => renderMarketBlock(k, bench.markets[k])).join('')}
+
+                    <h3 class="market-block-title">Best Model</h3>
+                    ${marketOrder.map(k => renderBestModel(k, bench.markets[k].best_model)).join('')}
+
+                    <h3 class="market-block-title" style="margin-top: 1.5rem;">Détail par modèle</h3>
+                    ${perf.models.map(renderModelDetailCard).join('')}
+                `;
+
+                loadingEl.classList.add('hidden');
+                contentEl.classList.remove('hidden');
+            } catch (e) {
+                loadingEl.classList.add('hidden');
+                errorEl.textContent = e.message || "Erreur lors du chargement de l'Arena.";
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        async function loadCurrentUser() {
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.email.split('@')[0];
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        // ---- Section "ENSEMBLE MODEL" (Phase 7) : match-picker + POST /models/ensemble/predict ----
+
+        const MODEL_LABELS = { dixon_coles: 'Dixon-Coles', elo: 'Elo', xgboost: 'XGBoost', lightgbm: 'LightGBM' };
+        const ENSEMBLE_MARKET_LABELS = { '1X2': '1X2', 'BTTS': 'BTTS (les 2 marquent)', 'OVER_UNDER_2_5': 'Plus/Moins 2.5 buts' };
+
+        let ensembleTeamsByLeague = {};
+        const ensLeagueSelect = document.getElementById('ensemble-league-select');
+        const ensHomeSelect = document.getElementById('ensemble-home-select');
+        const ensAwaySelect = document.getElementById('ensemble-away-select');
+        const ensForm = document.getElementById('ensemble-form');
+        const ensBtn = document.getElementById('ensemble-predict-btn');
+        const ensErrorEl = document.getElementById('ensemble-error');
+        const ensResultEl = document.getElementById('ensemble-result');
+        const ensPremiumBanner = document.getElementById('ensemble-premium-banner');
+
+        function populateEnsembleTeamSelects(league) {
+            const teams = ensembleTeamsByLeague[league] || [];
+            const optionsHtml = teams.map(t => `<option value="${t}">${t}</option>`).join('');
+            ensHomeSelect.innerHTML = optionsHtml;
+            ensAwaySelect.innerHTML = optionsHtml;
+            if (teams.length > 1) {
+                ensAwaySelect.selectedIndex = 1;
+            }
+        }
+
+        ensLeagueSelect.addEventListener('change', (e) => populateEnsembleTeamSelects(e.target.value));
+
+        async function loadEnsembleLeagues() {
+            try {
+                const response = await apiFetch('/leagues');
+                const data = await response.json();
+                ensembleTeamsByLeague = Object.fromEntries(
+                    Object.entries(data).map(([league, info]) => [league, info.teams])
+                );
+                ensLeagueSelect.innerHTML = Object.keys(ensembleTeamsByLeague)
+                    .map(league => `<option value="${league}">${league}</option>`)
+                    .join('');
+                populateEnsembleTeamSelects(ensLeagueSelect.value);
+            } catch (e) {
+                ensErrorEl.textContent = "Erreur lors du chargement des ligues.";
+                ensErrorEl.classList.remove('hidden');
+            }
+        }
+
+        // Chaque modèle interrogé, "ok" (probabilités 1X2 réellement produites) ou
+        // honnêtement indisponible/en erreur — jamais un modèle passé sous silence.
+        function renderModelStatusRow(modelType, model) {
+            const label = MODEL_LABELS[modelType] || modelType;
+            if (model.status === 'ok') {
+                const m1x2 = model.markets['1X2'];
+                return `
+                    <div class="ensemble-weight-row">
+                        <span>${label} <span style="color: var(--text-secondary); font-size: 0.72rem;">(#${model.model_version_id})</span></span>
+                        <span>domicile ${pct(m1x2.home)} · nul ${pct(m1x2.draw)} · ext ${pct(m1x2.away)}</span>
+                    </div>
+                `;
+            }
+            return `
+                <div class="ensemble-weight-row">
+                    <span>${label}</span>
+                    <span class="na">${model.status === 'unavailable' ? 'NOT AVAILABLE' : 'ERREUR'}</span>
+                </div>
+            `;
+        }
+
+        // Un marché par bloc (§15) : NOT_AVAILABLE reste possible même si le
+        // 1X2, lui, a pu être combiné — jamais une valeur fabriquée pour combler.
+        function renderEnsembleMarket(marketKey, marketResult) {
+            const label = ENSEMBLE_MARKET_LABELS[marketKey] || marketKey;
+            if (marketResult.status !== 'ok') {
+                return `
+                    <div class="ensemble-market-block">
+                        <div class="market-block-title">${label}</div>
+                        <p class="best-model-reason">${marketResult.reason || 'Aucun modèle éligible pour ce marché.'}</p>
+                    </div>
+                `;
+            }
+            const probs = marketResult.probabilities;
+            const keys = Object.keys(probs);
+            const top = keys.reduce((a, b) => (probs[a] >= probs[b] ? a : b));
+            const boxes = keys.map(k => `
+                <div class="ensemble-prob-box${k === top ? ' top-pick' : ''}">
+                    <div class="ensemble-prob-value">${pct(probs[k])}</div>
+                    <div class="ensemble-prob-label">${k}</div>
+                </div>
+            `).join('');
+            const weightRows = Object.entries(marketResult.weights)
+                .sort((a, b) => b[1] - a[1])
+                .map(([mt, w]) => `
+                    <div class="ensemble-weight-row">
+                        <span>${MODEL_LABELS[mt] || mt}</span>
+                        <span class="num">${pct(w)}</span>
+                    </div>
+                `).join('');
+            const degradedNote = marketResult.degraded
+                ? `<p class="ensemble-degraded-note">⚠️ Un seul modèle disponible pour ce marché en ce moment — l'Ensemble
+                     équivaut à ce modèle seul, pas encore une vraie combinaison multi-modèles.</p>`
+                : '';
+            return `
+                <div class="ensemble-market-block">
+                    <div class="market-block-title">${label} — ${marketResult.models_used} modèle(s) utilisé(s)</div>
+                    <div class="ensemble-probs">${boxes}</div>
+                    <div class="arena-table-wrap" style="padding: 0.2rem 0.7rem;">${weightRows}</div>
+                    ${degradedNote}
+                </div>
+            `;
+        }
+
+        ensForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            ensErrorEl.classList.add('hidden');
+            ensPremiumBanner.classList.add('hidden');
+            ensResultEl.classList.add('hidden');
+
+            const league = ensLeagueSelect.value;
+            const home_team = ensHomeSelect.value;
+            const away_team = ensAwaySelect.value;
+
+            ensBtn.disabled = true;
+            ensBtn.textContent = 'Calcul en cours...';
+
+            try {
+                const response = await apiFetch('/models/ensemble/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ league, home_team, away_team }),
+                });
+
+                if (response.status === 402) {
+                    ensPremiumBanner.classList.remove('hidden');
+                    return;
+                }
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    ensErrorEl.textContent = body.detail || `Erreur (${response.status})`;
+                    ensErrorEl.classList.remove('hidden');
+                    return;
+                }
+
+                const data = await response.json();
+                const marketsHtml = ['1X2', 'BTTS', 'OVER_UNDER_2_5']
+                    .map(k => renderEnsembleMarket(k, data.ensemble.markets[k]))
+                    .join('');
+                const modelsHtml = Object.entries(data.models).map(([mt, m]) => renderModelStatusRow(mt, m)).join('');
+                const availableCount = Object.values(data.models).filter(m => m.status === 'ok').length;
+                const confidenceLabel = (data.ensemble.confidence === null || data.ensemble.confidence === undefined)
+                    ? '—' : pct(data.ensemble.confidence);
+
+                ensResultEl.innerHTML = `
+                    <div class="match-card gold-border">
+                        <div class="match-card-header">
+                            <div class="league-info">🧬 <span>${data.match.home_team} vs ${data.match.away_team}</span></div>
+                            <span class="result-badge correct">${data.match.league}</span>
+                        </div>
+                        ${marketsHtml}
+                        <h4 class="market-block-title">Modèles interrogés (${availableCount}/4 disponibles)</h4>
+                        ${modelsHtml}
+                        <p class="ensemble-meta">
+                            Métrique de pondération : <strong>${data.ensemble.weighting_metric}</strong> ·
+                            Confiance (écart 1re/2e probabilité 1X2, pas une probabilité de victoire) :
+                            <strong>${confidenceLabel}</strong> ·
+                            ModelVersion Ensemble : ${data.ensemble.model_version_id !== null ? '#' + data.ensemble.model_version_id : '—'}
+                        </p>
+                    </div>
+                `;
+                ensResultEl.classList.remove('hidden');
+            } catch (e) {
+                ensErrorEl.textContent = e.message || "Erreur lors du calcul de l'Ensemble.";
+                ensErrorEl.classList.remove('hidden');
+            } finally {
+                ensBtn.disabled = false;
+                ensBtn.textContent = "Prédire avec l'Ensemble";
+            }
+        });
+
+        document.getElementById('ensemble-see-plans-btn').addEventListener('click', () => {
+            window.location.href = 'billing.html';
+        });
+
+        // ---- Section "Statut des modèles" (Phase 8) : GET /models/availability ----
+
+        function renderModelStatusCard(modelType, info) {
+            let badgeClass, badgeLabel;
+            if (info.live_available) {
+                badgeClass = 'live';
+                badgeLabel = 'LIVE';
+            } else if (info.active) {
+                badgeClass = 'backtest';
+                badgeLabel = 'BACKTEST ONLY';
+            } else {
+                badgeClass = 'unavailable';
+                badgeLabel = 'UNAVAILABLE';
+            }
+
+            const marketChips = Object.entries(info.markets).map(([market, m]) => {
+                const label = MARKET_LABELS[market] || market;
+                if (m.ensemble_eligible) {
+                    return `<span class="status-market-chip eligible">✓ ${label} (n=${m.sample_size})</span>`;
+                }
+                if (m.benchmark_eligible) {
+                    return `<span class="status-market-chip excluded">${label} : exclu de l'Ensemble (pas live)</span>`;
+                }
+                return `<span class="status-market-chip excluded">${label} : INSUFFICIENT DATA (n=${m.sample_size})</span>`;
+            }).join('');
+
+            return `
+                <div class="status-card">
+                    <div class="status-card-header">
+                        <strong>${MODEL_LABELS[modelType] || modelType}</strong>
+                        <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.76rem;">
+                        ${info.active ? `Version déployée : ${info.version_name || '—'}` : 'Aucune version active'}
+                        ${info.live_available ? '' : ` · ${info.live_reason || ''}`}
+                    </p>
+                    <div class="status-markets">${marketChips}</div>
+                </div>
+            `;
+        }
+
+        async function loadModelStatus() {
+            const loadingEl = document.getElementById('status-loading');
+            const errorEl = document.getElementById('status-error');
+            const contentEl = document.getElementById('status-content');
+            try {
+                const response = await apiFetch('/models/availability');
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    throw new Error(body.detail || `Erreur /models/availability (${response.status})`);
+                }
+                const data = await response.json();
+                const order = ['dixon_coles', 'elo', 'xgboost', 'lightgbm'];
+                contentEl.innerHTML = order.map(mt => renderModelStatusCard(mt, data[mt])).join('');
+                loadingEl.classList.add('hidden');
+                contentEl.classList.remove('hidden');
+            } catch (e) {
+                loadingEl.classList.add('hidden');
+                errorEl.textContent = e.message || "Erreur lors du chargement du statut des modèles.";
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        loadCurrentUser();
+        loadArena();
+        loadModelStatus();
+        loadEnsembleLeagues();
+    </script>
+</body>
+</html>

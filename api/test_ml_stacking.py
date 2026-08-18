@@ -201,7 +201,18 @@ def test_load_matches_with_stats_join_matches_row_count():
     print(f"  [OK] Jointure match/match_stats : {len(df)} lignes, {n_with_stats} avec stats renseignées")
 
 
-def test_persist_model_version_never_activates_and_no_team_rating():
+def test_persist_model_version_always_activates_and_no_team_rating():
+    """
+    Politique révisée en Phase 8 (§13 : « ne pas désactiver un modèle à
+    cause d'un petit échantillon ») — is_active=True INCONDITIONNELLEMENT
+    sur un entraînement réussi, que le verdict ponctuel vs Dixon-Coles soit
+    positif ou non (même politique que Dixon-Coles/Elo désormais) : c'est
+    ensemble_eligible (historique résolu réel, voir
+    app/ai/arena/availability.py), jamais ce verdict, qui décide de la
+    participation à l'Ensemble. Sans artifact/config (appel de test, comme
+    ici), la version reste honnêtement non live_available malgré
+    is_active=True — voir api/test_ml_live_serving.py::test_check_availability_active_without_artifact.
+    """
     fake_metrics = {
         "model_logloss": 1.05, "dc_logloss": 1.02, "model_acc": 0.5, "dc_acc": 0.52,
         "frac_better": 0.6, "delta": -0.03, "gain": False, "delta_ci95": (-0.06, 0.01),
@@ -212,20 +223,29 @@ def test_persist_model_version_never_activates_and_no_team_rating():
         version = session.get(ModelVersion, version_id)
         assert version is not None
         assert version.model_type == "xgboost"
-        assert version.is_active is False, "ne doit JAMAIS s'auto-activer dans ce ticket, quel que soit le verdict"
+        assert version.is_active is True, "doit désormais s'activer inconditionnellement (Phase 8, §13)"
         assert "PAS DE GAIN" in version.notes
+        assert version.artifact is None and version.config is None, "aucun artefact réel dans cet appel de test (métriques fabriquées)"
 
         ratings = session.exec(select(TeamRating).where(TeamRating.model_version_id == version_id)).all()
         assert ratings == [], "aucune TeamRating ne doit être créée pour un modèle à features (pas de rating par équipe)"
 
-    # Verdict positif -- doit quand même rester is_active=False (contrainte explicite du ticket).
+    # Verdict positif -- reste is_active=True (le verdict lui-même n'a plus d'effet sur l'activation).
     fake_metrics_gain = {**fake_metrics, "model_logloss": 0.90, "delta": 0.12, "frac_better": 0.95, "gain": True}
     version_id_2 = persist_model_version("lightgbm", fake_metrics_gain, ["dc_home_win"])
     with Session(engine) as session:
         version2 = session.get(ModelVersion, version_id_2)
-        assert version2.is_active is False, "même avec un gain crédible, is_active doit rester False dans ce ticket"
+        assert version2.is_active is True
 
-    print("  [OK] ModelVersion créée avec is_active=False dans les deux cas (gain ou non), aucune TeamRating")
+    # Un second entraînement du MÊME model_type désactive le précédent (une seule version active à la fois).
+    version_id_3 = persist_model_version("lightgbm", fake_metrics, ["dc_home_win"])
+    with Session(engine) as session:
+        v2_after = session.get(ModelVersion, version_id_2)
+        v3 = session.get(ModelVersion, version_id_3)
+        assert v2_after.is_active is False, "un nouvel entraînement du même model_type doit désactiver le précédent"
+        assert v3.is_active is True
+
+    print("  [OK] ModelVersion is_active=True inconditionnellement (gain ou non) ; entraînement suivant désactive le précédent ; aucune TeamRating")
 
 
 if __name__ == "__main__":
@@ -236,7 +256,7 @@ if __name__ == "__main__":
         test_shot_stats_features_window_drops_oldest,
         test_streak_features_all_transitions,
         test_load_matches_with_stats_join_matches_row_count,
-        test_persist_model_version_never_activates_and_no_team_rating,
+        test_persist_model_version_always_activates_and_no_team_rating,
     ]
     passed = 0
     for test in tests:

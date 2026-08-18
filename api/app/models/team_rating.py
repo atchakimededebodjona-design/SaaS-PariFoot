@@ -25,6 +25,28 @@ class ModelVersion(SQLModel, table=True):
     trained_at: datetime
     is_active: bool = Field(default=False)
     notes: Optional[str] = None
+    # JSON structuré (Phase 7), distinct de `notes` (texte libre jamais
+    # reparsé — voir app/ai/arena/service.py) : paramètres nécessaires pour
+    # SERVIR ce modèle en direct, quand ses ratings seuls ne suffisent pas.
+    # Utilisé aujourd'hui par Elo (voir scripts/backtest_elo.py) pour la
+    # calibration (c, scale) et home_advantage PAR LIGUE, choisis une seule
+    # fois à l'entraînement/backtest et jamais recalculés en ligne — jamais
+    # un nouveau système de stockage parallèle, juste un champ optionnel sur
+    # la table de versionnage déjà existante, générique pour tout futur
+    # modèle qui en aurait besoin. None pour les modèles qui n'en ont pas
+    # besoin (dixon_coles, dont les paramètres complets vivent déjà dans
+    # model_artifact) ou pour une ModelVersion créée avant ce champ.
+    config: Optional[str] = None
+    # Modèle entraîné SÉRIALISÉ (Phase 8, §5/§10) — mécanisme natif de chaque
+    # librairie, jamais un format inventé : LightGBM (booster.model_to_string())
+    # produit déjà une chaîne texte ; XGBoost (booster.save_raw(raw_format="json")
+    # décodé en texte) aussi — les deux tiennent donc dans ce même champ TEXT,
+    # comme `config`/`notes`. Stocké en base (jamais sur disque local) pour la
+    # même raison que model_artifact.payload : le service web et le job
+    # d'entraînement ne partagent pas de système de fichiers (voir
+    # app/models/model_artifact.py). None pour les modèles qui n'en ont pas
+    # besoin (dixon_coles : model_artifact ; elo : ratings + config suffisent).
+    artifact: Optional[str] = None
 
 
 class TeamRating(SQLModel, table=True):

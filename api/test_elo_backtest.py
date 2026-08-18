@@ -50,7 +50,7 @@ def test_elo_brier_not_regressed():
     briers = []
     for league in LEAGUES:
         matches = load_matches_from_db(league).sort_values("date").reset_index(drop=True)
-        elo_brier, _ = elo_test_brier(matches, BEST_K, BEST_HOME_ADVANTAGE)
+        elo_brier, _, _, _ = elo_test_brier(matches, BEST_K, BEST_HOME_ADVANTAGE)
         briers.append(elo_brier)
 
     mean_brier = sum(briers) / len(briers)
@@ -70,7 +70,7 @@ def test_elo_vs_dixon_coles_comparable():
     classes)."""
     for league in LEAGUES:
         matches = load_matches_from_db(league).sort_values("date").reset_index(drop=True)
-        elo_brier, _ = elo_test_brier(matches, BEST_K, BEST_HOME_ADVANTAGE)
+        elo_brier, _, _, _ = elo_test_brier(matches, BEST_K, BEST_HOME_ADVANTAGE)
         dc_brier, n = dc_test_brier(league, matches)
         assert n > 0, f"[{league}] aucune prédiction Dixon-Coles calculable sur le test set"
         assert 0.0 <= elo_brier <= 2.0, f"[{league}] Brier Elo hors bornes : {elo_brier}"

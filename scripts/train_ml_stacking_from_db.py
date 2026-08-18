@@ -31,21 +31,34 @@ Ce qui change ici :
   3. Modèle : XGBoost (hyperparamètres IDENTIQUES aux tentatives passées,
      pour isoler l'effet des nouvelles features) ET LightGBM (config
      équivalente), tous deux comparés à Dixon-Coles sur le même test set.
-  4. Persistance : ModelVersion créée pour chaque modèle entraîné
-     (model_type="xgboost"/"lightgbm"), is_active=False INCONDITIONNELLEMENT
-     dans ce ticket (l'activation reste une décision humaine ultérieure,
-     même avec un gain démontré). Aucune TeamRating créée — n'a pas de sens
-     pour un modèle à features (pas de rating par équipe), contrairement à
-     Dixon-Coles/Elo. Le modèle entraîné lui-même (arbres/poids) n'est PAS
-     sérialisé/stocké : aucun mécanisme d'artefact générique n'existe
-     aujourd'hui pour ce type de modèle (model_artifact est réservé, 1 ligne
-     par ligue, au JSON Dixon-Coles de production) — à traiter dans un
-     ticket séparé si un vrai gain est un jour démontré.
+  4. Persistance (Phase 4, RÉVISÉE Phase 8 — §5/§10/§13 du ticket) : ModelVersion
+     créée pour chaque modèle entraîné (model_type="xgboost"/"lightgbm"), avec
+     désormais un artefact RÉELLEMENT sérialisé (`booster.save_raw("json")`
+     pour XGBoost, `booster.model_to_string()` pour LightGBM — mécanismes
+     natifs de chaque librairie, jamais un format inventé) et une `config`
+     JSON reproduisant tout le contexte nécessaire pour SERVIR ce modèle en
+     direct (feature_columns, league_categories, class_order — voir
+     app/ai/arena/models_common.py::_MLPredictionModel, qui consomme ce
+     contrat exact).
+     Politique d'activation CHANGÉE (Phase 8, §13 : « ne pas désactiver un
+     modèle à cause d'un petit échantillon ») : `is_active=True`
+     INCONDITIONNELLEMENT à chaque entraînement réussi, comme Dixon-Coles/Elo
+     — `is_active` ne représente plus qu'un état OPÉRATIONNEL (« ceci est la
+     version actuellement servie en direct »), jamais un jugement de
+     performance face à Dixon-Coles. La comparaison au log-loss/bootstrap
+     Dixon-Coles ci-dessous reste calculée et journalisée dans `notes` À TITRE
+     INFORMATIF UNIQUEMENT — c'est désormais EnsembleEngine (via
+     `ensemble_eligible`, seuil MIN_BENCHMARK_SAMPLE_SIZE sur un historique
+     résolu réel, voir app/ai/arena/availability.py) qui décide si ce modèle
+     doit peser dans l'Ensemble, jamais ce script.
+     Aucune TeamRating créée — n'a pas de sens pour un modèle à features (pas
+     de rating par équipe), contrairement à Dixon-Coles/Elo.
 
 Usage (depuis la racine du dépôt) :
     DATABASE_URL="sqlite:///./api/app.db" python scripts/train_ml_stacking_from_db.py
 """
 
+import json
 import sys
 import logging
 from datetime import datetime, timezone
@@ -61,7 +74,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "api"))
 
 from sqlmodel import Session  # noqa: E402
 from app.core.database import engine, init_db  # noqa: E402
-from app.models.team_rating import ModelVersion, next_version_name  # noqa: E402
+from app.models.team_rating import ModelVersion, next_version_name, deactivate_other_versions  # noqa: E402
+# Import EN TÊTE (pas paresseux) : ModelPrediction doit être enregistrée dans
+# SQLModel.metadata AVANT tout appel à init_db() plus bas (même raison que
+# scripts/backtest_elo.py), sinon create_all() ne crée jamais la table.
+from app.ai.arena.prediction_logging import PredictionRecord, log_prediction, resolve_prediction  # noqa: E402
 from app.ai.engine.features import (  # noqa: E402
     build_ml_features_from_db, FEATURE_COLUMNS, CATEGORICAL_COLUMNS,
     EXISTING_FEATURE_COLUMNS, NEW_FEATURE_COLUMNS,
@@ -299,14 +316,23 @@ def feature_importance(name, gain_dict, feature_names):
     return table, new_pct
 
 
-def persist_model_version(model_type: str, metrics: dict, top_features: list[str]) -> int:
+def persist_model_version(
+    model_type: str, metrics: dict, top_features: list[str],
+    artifact: str | None = None, config: dict | None = None,
+) -> int:
     """
-    Crée une NOUVELLE ModelVersion à chaque run (voir next_version_name),
-    is_active=False INCONDITIONNELLEMENT dans ce ticket — même avec un gain
-    démontré, l'activation reste une décision humaine ultérieure (contrainte
-    explicite du ticket, différente de Dixon-Coles/Elo qui s'auto-activent
-    sur verdict positif). Aucune TeamRating : n'a pas de sens pour un modèle
-    à features (pas de rating par équipe à stocker).
+    Crée une NOUVELLE ModelVersion à chaque run (voir next_version_name).
+
+    Phase 8 (§13) : is_active=True INCONDITIONNELLEMENT sur un entraînement
+    réussi (déactive les autres versions du même model_type au préalable,
+    même politique que Dixon-Coles/Elo) — la comparaison à Dixon-Coles
+    ci-dessous reste calculée et journalisée dans `notes`, mais NE GATE PLUS
+    l'activation (voir docstring module). `artifact`/`config` : None pour un
+    appel de test sans entraînement réel (voir test_ml_stacking.py) — une
+    ModelVersion sans artefact reste alors honnêtement NOT live_available
+    (voir app/ai/arena/models_common.py::_MLPredictionModel), jamais un demi-
+    état fabriqué. Aucune TeamRating : n'a pas de sens pour un modèle à
+    features (pas de rating par équipe à stocker).
     """
     init_db()
     notes = (
@@ -316,21 +342,60 @@ def persist_model_version(model_type: str, metrics: dict, top_features: list[str
         f"IC95%=[{metrics['delta_ci95'][0]:+.4f}, {metrics['delta_ci95'][1]:+.4f}] ; "
         f"{len(EXISTING_FEATURE_COLUMNS)} features existantes + {len(NEW_FEATURE_COLUMNS)} nouvelles "
         f"(voir api/app/ai/engine/features.py) ; top features : {', '.join(top_features[:5])} ; "
-        f"verdict : {'GAIN CRÉDIBLE' if metrics['gain'] else 'PAS DE GAIN CLAIR'} — "
-        "is_active=False (activation = décision humaine, hors scope de ce ticket)."
+        f"verdict vs Dixon-Coles : {'GAIN CRÉDIBLE' if metrics['gain'] else 'PAS DE GAIN CLAIR'} "
+        "(informatif — n'affecte plus is_active depuis la Phase 8 ; voir ensemble_eligible pour "
+        "le critère réel d'inclusion dans l'Ensemble)."
     )
     with Session(engine) as session:
+        deactivate_other_versions(session, model_type)
         version = ModelVersion(
             name=next_version_name(session, f"xfoot-{model_type}"),
             model_type=model_type,
             trained_at=datetime.now(timezone.utc),
-            is_active=False,
+            is_active=True,
             notes=notes,
+            artifact=artifact,
+            config=json.dumps(config) if config is not None else None,
         )
         session.add(version)
         session.commit()
         session.refresh(version)
         return version.id
+
+
+def _log_ml_test_predictions(model_type: str, df_test: pd.DataFrame, proba: np.ndarray, model_version_id: int) -> int:
+    """
+    Journalise (Phase 6) chaque prédiction INDIVIDUELLE du test-set final
+    (déjà un split temporel, jamais entraîné dessus — sans fuite) via le
+    logger commun, puis la résout IMMÉDIATEMENT : le match est déjà dans le
+    passé et son résultat déjà connu de ce script (même discipline que
+    scripts/backtest_elo.py::_log_elo_test_predictions).
+
+    `proba` est ordonnée selon CLASS_LABELS=[0,1,2]=[draw,home,away] (voir
+    _reorder_proba) — XGBoost/LightGBM ne modélisent QUE le 1X2 (vérifié :
+    aucune cible BTTS/over-under n'est jamais construite dans ce script),
+    donc prob_btts_*/prob_over_2_5/prob_under_2_5 restent None, jamais
+    fabriquées.
+    """
+    n = 0
+    with Session(engine) as session:
+        for row, p in zip(df_test.itertuples(), proba):
+            record = PredictionRecord(
+                league=row.league,
+                match_date=row.date.date(),
+                home_team=row.home_team,
+                away_team=row.away_team,
+                model_type=model_type,
+                prob_draw=float(p[0]), prob_home=float(p[1]), prob_away=float(p[2]),
+                source="backtest",
+            )
+            pred_row = log_prediction(session, record, model_version_id)
+            if pred_row.status != "resolved":
+                resolve_prediction(pred_row, int(row.home_goals), int(row.away_goals))
+                session.add(pred_row)
+            n += 1
+        session.commit()
+    return n
 
 
 def main():
@@ -350,23 +415,53 @@ def main():
 
     results = {}
 
+    # Config partagée par les deux modèles (Phase 8, §10) — league_categories
+    # est LE MÊME ordre pour XGBoost (catégorie string native) et LightGBM
+    # (converti en codes entiers dans train_lightgbm, sur ce même ordre) :
+    # une seule source de vérité, jamais deux listes qui pourraient diverger.
+    league_categories = X_fit["league"].cat.categories.tolist()
+    base_config = {
+        "feature_columns": FEATURE_COLUMNS,
+        "league_categories": league_categories,
+        "feature_version": "phase8-v1",
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "training_window": {"n_fit": len(X_fit), "n_val": len(X_val), "n_test": len(X_test)},
+        "markets": ["1X2"],
+    }
+
     xgb_model = train_xgboost(X_fit, y_fit, X_val, y_val)
     proba_xgb = _reorder_proba(xgb_model.predict_proba(X_test), list(xgb_model.classes_))
     xgb_metrics = evaluate_model("XGBoost", proba_xgb, df_test, y_test, dc_logloss, dc_acc, proba_dc)
     xgb_gain = xgb_model.get_booster().get_score(importance_type="gain")
     xgb_table, xgb_new_pct = feature_importance("XGBoost", xgb_gain, list(X_fit.columns))
-    xgb_version_id = persist_model_version("xgboost", xgb_metrics, xgb_table["feature"].tolist())
+    # Sérialisation native (§5) : booster.save_raw("json"), jamais un format inventé —
+    # roundtrip identique vérifié en test (api/test_ml_live_serving.py).
+    xgb_artifact = xgb_model.get_booster().save_raw(raw_format="json").decode("utf-8")
+    xgb_config = {**base_config, "class_order": [int(c) for c in xgb_model.classes_]}
+    xgb_version_id = persist_model_version("xgboost", xgb_metrics, xgb_table["feature"].tolist(),
+                                            artifact=xgb_artifact, config=xgb_config)
+    n_xgb_logged = _log_ml_test_predictions("xgboost", df_test, proba_xgb, xgb_version_id)
+    print(f"  {n_xgb_logged} prédiction(s) individuelle(s) journalisées dans model_predictions (ModelVersion #{xgb_version_id}).\n")
     results["xgboost"] = {**xgb_metrics, "new_features_gain_pct": xgb_new_pct, "model_version_id": xgb_version_id}
 
-    lgb_model, league_categories = train_lightgbm(X_fit, y_fit, X_val, y_val)
+    lgb_model, lgb_league_categories = train_lightgbm(X_fit, y_fit, X_val, y_val)
     X_test_lgb = X_test.copy()
-    X_test_lgb["league"] = pd.Categorical(X_test_lgb["league"], categories=league_categories).codes
+    X_test_lgb["league"] = pd.Categorical(X_test_lgb["league"], categories=lgb_league_categories).codes
     X_test_lgb["league"] = X_test_lgb["league"].astype("category")
     proba_lgb = _reorder_proba(lgb_model.predict_proba(X_test_lgb), list(lgb_model.classes_))
     lgb_metrics = evaluate_model("LightGBM", proba_lgb, df_test, y_test, dc_logloss, dc_acc, proba_dc)
     lgb_gain = dict(zip(lgb_model.feature_name_, lgb_model.booster_.feature_importance(importance_type="gain")))
     lgb_table, lgb_new_pct = feature_importance("LightGBM", lgb_gain, list(X_fit.columns))
-    lgb_version_id = persist_model_version("lightgbm", lgb_metrics, lgb_table["feature"].tolist())
+    # model_to_string() : sérialisation texte native LightGBM (§5) — roundtrip
+    # identique vérifié en test. class_order ici correspond aux CODES 0/1/2
+    # (déjà la convention CLASS_LABELS, `league` mise à part) — inchangé par
+    # la conversion cat.codes appliquée UNIQUEMENT à la colonne "league".
+    lgb_artifact = lgb_model.booster_.model_to_string()
+    lgb_config = {**base_config, "class_order": [int(c) for c in lgb_model.classes_]}
+    lgb_version_id = persist_model_version("lightgbm", lgb_metrics, lgb_table["feature"].tolist(),
+                                            artifact=lgb_artifact, config=lgb_config)
+    n_lgb_logged = _log_ml_test_predictions("lightgbm", df_test, proba_lgb, lgb_version_id)
+    print(f"  {n_lgb_logged} prédiction(s) individuelle(s) journalisées dans model_predictions (ModelVersion #{lgb_version_id}).\n")
     results["lightgbm"] = {**lgb_metrics, "new_features_gain_pct": lgb_new_pct, "model_version_id": lgb_version_id}
 
     print("=" * 80)
@@ -374,10 +469,12 @@ def main():
     print("=" * 80)
     for name, r in results.items():
         print(f"  {name:<10} log-loss={r['model_logloss']:.4f} (DC={r['dc_logloss']:.4f})  "
-              f"gain crédible={r['gain']}  ModelVersion #{r['model_version_id']} (is_active=False)")
+              f"gain crédible vs DC={r['gain']}  ModelVersion #{r['model_version_id']} (is_active=True, live-servable)")
     any_gain = any(r["gain"] for r in results.values())
-    print(f"\n>>> VERDICT GLOBAL PHASE 4 : "
-          f"{'au moins un modèle montre un gain crédible — voir détail ci-dessus, activation à décider par l’utilisateur.' if any_gain else 'AUCUN GAIN CLAIR — Dixon-Coles reste seul en production, comme après les deux tentatives XGBoost précédentes et le backtest Elo.'}")
+    print(f"\n>>> VERDICT GLOBAL (log-loss vs Dixon-Coles, informatif — Phase 8) : "
+          f"{'au moins un modèle montre un gain crédible vs Dixon-Coles.' if any_gain else 'AUCUN GAIN CLAIR vs Dixon-Coles sur ce test set.'} "
+          "Les deux modèles sont désormais LIVE-SERVABLES et évalués en continu par l'Ensemble "
+          "(ensemble_eligible, voir app/ai/arena/availability.py) — ce verdict ponctuel ne détermine plus leur activation.")
 
     return results
 

@@ -112,20 +112,6 @@ def _names_match(api_football_name: str, canonical_name: str, cutoff: float = 0.
     return difflib.SequenceMatcher(None, na, nb).ratio() >= cutoff
 
 
-def _compute_correctness(pick_1x2: str, pick_btts: str, pick_over_2_5: str,
-                          home_goals: int, away_goals: int) -> tuple[bool, bool, bool]:
-    if home_goals > away_goals:
-        actual_1x2 = "home"
-    elif away_goals > home_goals:
-        actual_1x2 = "away"
-    else:
-        actual_1x2 = "draw"
-    actual_btts = "yes" if home_goals > 0 and away_goals > 0 else "no"
-    actual_over_2_5 = "over" if (home_goals + away_goals) > 2.5 else "under"
-
-    return pick_1x2 == actual_1x2, pick_btts == actual_btts, pick_over_2_5 == actual_over_2_5
-
-
 def _fetch_fixtures_by_league(target_date: date, base_url: str, api_key: str,
                                league_ids_to_name: dict[int, str]) -> dict[str, list[dict]]:
     """
@@ -203,6 +189,8 @@ def run(target_date: date | None = None) -> int:
     from sqlmodel import Session, select
     from app.core.database import engine, init_db
     from app.models.prediction_log import PredictionLog
+    from app.models.model_prediction import ModelPrediction
+    from app.ai.arena.prediction_logging import compute_correctness, resolve_prediction
     from app.core.api_football_config import API_FOOTBALL_KEY, API_FOOTBALL_BASE_URL, API_FOOTBALL_LEAGUE_IDS
 
     target_date = target_date or (datetime.now(timezone.utc).date() - timedelta(days=1))
@@ -223,13 +211,25 @@ def run(target_date: date | None = None) -> int:
                 PredictionLog.result_fetched_at.is_(None),
             )
         ).all()
+        # Phase 6 : prédictions multi-modèles "live" en attente (Dixon-Coles
+        # dual-write, et tout futur modèle servi en direct) — les prédictions
+        # "backtest" (Elo/XGBoost/LightGBM) sont résolues immédiatement à
+        # leur insertion par leur script, jamais "pending" ici.
+        pending_model_predictions = session.exec(
+            select(ModelPrediction).where(
+                ModelPrediction.match_date == target_date,
+                ModelPrediction.status == "pending",
+            )
+        ).all()
 
-    if not pending:
+    if not pending and not pending_model_predictions:
         logger.info("Aucune prédiction en attente de résultat pour cette date. Rien à faire.")
         return 0
 
-    leagues_needed = sorted({log.league for log in pending})
-    logger.info(f"{len(pending)} prédiction(s) en attente sur {len(leagues_needed)} ligue(s) : {leagues_needed}")
+    leagues_needed = sorted({log.league for log in pending} | {p.league for p in pending_model_predictions})
+    total_pending = len(pending) + len(pending_model_predictions)
+    logger.info(f"{total_pending} prédiction(s) en attente sur {len(leagues_needed)} ligue(s) : {leagues_needed} "
+                f"(prediction_log={len(pending)}, model_predictions={len(pending_model_predictions)})")
 
     league_ids_to_name = {v: k for k, v in API_FOOTBALL_LEAGUE_IDS.items()}
     try:
@@ -247,27 +247,30 @@ def run(target_date: date | None = None) -> int:
     for league in league_errors:
         logger.warning(f"[{league}] pas d'id API-Football connu (voir api_football_config.py) — ignoré.")
 
+    def _find_fixture(league: str, home_team: str, away_team: str) -> dict | None:
+        fixtures = fixtures_by_league.get(league, [])
+        return next(
+            (f for f in fixtures
+             if _names_match(f.get("teams", {}).get("home", {}).get("name", ""), home_team)
+             and _names_match(f.get("teams", {}).get("away", {}).get("name", ""), away_team)),
+            None,
+        )
+
     matched, unmatched = 0, []
     with Session(engine) as session:
         for log in pending:
-            fixtures = fixtures_by_league.get(log.league, [])
-            fixture = next(
-                (f for f in fixtures
-                 if _names_match(f.get("teams", {}).get("home", {}).get("name", ""), log.home_team)
-                 and _names_match(f.get("teams", {}).get("away", {}).get("name", ""), log.away_team)),
-                None,
-            )
+            fixture = _find_fixture(log.league, log.home_team, log.away_team)
             if fixture is None:
-                unmatched.append(f"[{log.league}] {log.home_team} vs {log.away_team}")
+                unmatched.append(f"[prediction_log][{log.league}] {log.home_team} vs {log.away_team}")
                 continue
 
             home_goals = fixture.get("goals", {}).get("home")
             away_goals = fixture.get("goals", {}).get("away")
             if home_goals is None or away_goals is None:
-                unmatched.append(f"[{log.league}] {log.home_team} vs {log.away_team} (score absent de la fixture)")
+                unmatched.append(f"[prediction_log][{log.league}] {log.home_team} vs {log.away_team} (score absent de la fixture)")
                 continue
 
-            correct_1x2, correct_btts, correct_over_2_5 = _compute_correctness(
+            correct_1x2, correct_btts, correct_over_2_5 = compute_correctness(
                 log.pick_1x2, log.pick_btts, log.pick_over_2_5, home_goals, away_goals,
             )
 
@@ -282,9 +285,31 @@ def run(target_date: date | None = None) -> int:
             session.commit()
             matched += 1
 
+        # Phase 6 : même rapprochement, même fixtures déjà récupérées (aucun
+        # appel réseau supplémentaire), résolution via le moteur commun
+        # (resolve_prediction/compute_correctness — voir prediction_logging.py,
+        # même fonction que ci-dessus, source unique de vérité §7).
+        for pred in pending_model_predictions:
+            fixture = _find_fixture(pred.league, pred.home_team, pred.away_team)
+            if fixture is None:
+                unmatched.append(f"[model_predictions/{pred.model_type}][{pred.league}] {pred.home_team} vs {pred.away_team}")
+                continue
+
+            home_goals = fixture.get("goals", {}).get("home")
+            away_goals = fixture.get("goals", {}).get("away")
+            if home_goals is None or away_goals is None:
+                unmatched.append(f"[model_predictions/{pred.model_type}][{pred.league}] {pred.home_team} vs {pred.away_team} (score absent de la fixture)")
+                continue
+
+            db_pred = session.get(ModelPrediction, pred.id)
+            resolve_prediction(db_pred, home_goals, away_goals)
+            session.add(db_pred)
+            session.commit()
+            matched += 1
+
     logger.info("=" * 80)
     logger.info("RÉCAPITULATIF")
-    logger.info(f"  Rapprochés  : {matched}/{len(pending)}")
+    logger.info(f"  Rapprochés  : {matched}/{total_pending}")
     if unmatched:
         logger.warning(f"  Non rapprochés ({len(unmatched)}) :")
         for m in unmatched:
