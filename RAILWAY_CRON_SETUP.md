@@ -258,3 +258,102 @@ Testé en local : `api/test_prediction_history.py`,
 `test_fetch_daily_results.py` et `api/test_live_scores.py` tous au vert,
 plus une exécution réelle de `fetch_daily_results.py` contre le vrai
 API-Football (clé de test), résultat vérifié en base.
+
+---
+
+## Évaluation périodique des candidats à la promotion (nouveau service) — scripts/evaluate_live_models.py
+
+Même projet Railway, **nouveau service séparé** (ni le service web, ni les
+cron déjà en place) — ajouté par la Phase 10 : évalue périodiquement les
+`ModelVersion` en `status="shadow"`/`"candidate"` face à la version active
+de leur `model_type`, sur leurs performances LIVE réelles
+(`app/ai/arena/promotion.py::evaluate_live_promotion`), et journalise
+chaque décision dans `model_promotion_events` — **sans jamais promouvoir
+automatiquement** (`AUTO_PROMOTION_ENABLED=false` par défaut, voir §17
+`RAPPORT_PHASE10.md`). À planifier **après** le cron de résolution des
+résultats (`railway.cron.results.json`, 06:30 UTC), pour que les
+prédictions de la veille aient déjà une chance d'être résolues avant
+l'évaluation.
+
+Comme pour les services précédents : **je n'ai pas accès à ton compte
+Railway** — étapes à exécuter par toi, le code est prêt.
+
+### 1. Créer le service
+
+Dans le projet Railway existant : **New → GitHub Repo** → même dépôt.
+Nouveau service, les autres ne sont pas touchés.
+
+### 2. Root Directory = racine du dépôt
+
+Vide (ou `/`) — comme les cron `refresh_and_retrain.py`/
+`fetch_daily_results.py`, **pas** `api/`. `scripts/evaluate_live_models.py`
+insère lui-même `api/` dans `sys.path` au démarrage (même mécanisme que
+`scripts/retrain_ml_models.py`/`scripts/generate_live_predictions.py`) —
+il a donc besoin de voir à la fois `scripts/` et `api/` à la racine du
+conteneur.
+
+### 3. Fichier de config = `railway.cron.evaluate_models.json`
+
+Dans **Settings** de ce service : **Config-as-code file path** =
+`railway.cron.evaluate_models.json` (racine du dépôt, ajouté par la
+Phase 10). Fixe `cronSchedule: "0 7 * * *"` (07:00 UTC quotidien) et
+`startCommand: "python scripts/evaluate_live_models.py"`.
+
+### 4. Variables d'environnement
+
+| Variable | Valeur | Nécessaire ? |
+|---|---|---|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` | **Oui** — lecture des `model_predictions`/`model_versions`, écriture dans `model_promotion_events` |
+| `AUTO_PROMOTION_ENABLED` | `false` | Optionnel — **laisser `false` (ou absente) tant qu'aucun cycle shadow réel n'a été observé et validé manuellement** (voir §17-18 `RAPPORT_PHASE10.md`/`RAPPORT_PHASE11.md`). Ne passer à `true` qu'après une décision humaine explicite. |
+| `LIVE_MIN_SAMPLE_SIZE` / `PROMOTION_MIN_IMPROVEMENT` | (défauts : `100` / `0.01`) | Optionnel — seuils "bootstrap", voir `app/ai/arena/promotion.py`, à ajuster seulement une fois des données LIVE réelles accumulées |
+
+**Pas de Volume nécessaire** (aucun fichier local lu/écrit) — comme le
+service de résultats quotidiens. **Pas de `ALERT_WEBHOOK_URL`** géré par ce
+script pour l'instant : contrairement à `fetch_daily_results.py`/
+`refresh_and_retrain.py`, `evaluate_live_models.py` n'envoie aucune alerte
+webhook en cas d'échec — seul le code de sortie (2 en cas d'exception) et
+les logs Railway du service signalent un problème. À ajouter dans une
+Phase ultérieure si ce mode de surveillance s'avère insuffisant en
+pratique.
+
+### 5. Test manuel
+
+**Je n'ai pas pu déclencher ni observer cette exécution moi-même** — comme
+pour les autres services, utiliser **Deploy → Run Now** une fois configuré.
+Logs à vérifier :
+
+1. `Aucune version candidate/shadow à évaluer — rien à faire.` — résultat
+   attendu tant qu'aucune `ModelVersion` n'est en `status="shadow"`/
+   `"candidate"` (état réel au moment des Phases 10-11, voir les deux
+   rapports).
+2. Une fois au moins un modèle en shadow : des lignes
+   `[MODEL_EVALUATION_COMPLETED]`/`[MODEL_PROMOTION_ELIGIBLE]`/
+   `[MODEL_PROMOTION_REJECTED]`/`[MODEL_PROMOTION_INSUFFICIENT_DATA]` par
+   version évaluée.
+3. `Résumé : N version(s) évaluée(s), ...` en fin d'exécution.
+
+### Rappel — activer réellement le Shadow Mode
+
+Ce cron n'a rien à évaluer tant qu'aucune `ModelVersion` n'est en
+`status="shadow"` sur la base de production. C'est la seule étape encore
+manuelle du pipeline Phase 9-11 : depuis un shell avec `DATABASE_URL`
+pointé vers la base Railway (ex. `railway run python` si la CLI est
+installée, ou un script ponctuel équivalent), appeler
+`app.ai.arena.promotion.set_shadow(session, model_version_id)` sur la
+`ModelVersion` XGBoost/LightGBM candidate, puis `session.commit()` — voir
+§20 de `RAPPORT_PHASE11.md` pour le contexte complet.
+
+## Ce que la Phase 10 a changé pour ce service (déjà fait, testé localement)
+
+- `scripts/evaluate_live_models.py` (nouveau, racine) — le job lui-même.
+- `railway.cron.evaluate_models.json` (nouveau, racine) — config de ce
+  service.
+- `api/app/ai/arena/promotion.py` — `evaluate_live_promotion`,
+  `AUTO_PROMOTION_ENABLED`, `LIVE_MIN_SAMPLE_SIZE`, `PROMOTION_MIN_
+  IMPROVEMENT`.
+- `api/app/models/model_promotion_event.py` + migration Alembic associée —
+  table `model_promotion_events`.
+
+Testé en local : `api/test_live_promotion.py`, `api/test_promotion_api.py`
+(dont l'idempotence d'une promotion manuelle via l'API), et l'ensemble de
+la suite `api/test_*.py` en régression (voir `RAPPORT_PHASE10.md` §14).
