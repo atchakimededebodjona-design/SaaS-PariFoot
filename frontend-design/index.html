@@ -132,11 +132,31 @@
         requireAuth();
 
         const LEAGUE_META = {
-            LaLiga: { name: 'LaLiga', flag: '🇪🇸', logo: 'assets/laliga.svg' },
-            PremierLeague: { name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', logo: 'assets/premier-league.svg' },
-            Ligue1: { name: 'Ligue 1', flag: '🇫🇷', logo: 'assets/ligue1.svg' },
-            Bundesliga: { name: 'Bundesliga', flag: '🇩🇪', logo: 'assets/bundesliga.svg' },
-            SerieA: { name: 'Serie A', flag: '🇮🇹', logo: 'assets/seriea.svg' }
+            LaLiga: { 
+                name: 'LaLiga', 
+                flag: '🇪🇸', 
+                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M22 62 L42 16 L54 16 L34 62 Z" fill="#FF4D4D"/><path d="M46 90 L88 6 L76 6 L34 90 Z" fill="#FF3333"/></svg>` 
+            },
+            PremierLeague: { 
+                name: 'Premier League', 
+                flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 
+                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 4 L59 18 L70 9 L72 23 L85 20 L80 34 C91 45 93 64 82 78 C74 90 57 96 42 92 C27 88 16 73 18 57 C20 42 32 32 38 30 L33 19 L47 22 L49 9 L59 18 Z" fill="#FFFFFF"/><path d="M50 26 C57 26 63 32 63 41 C63 50 57 57 50 57 C43 57 37 50 37 41 C37 32 43 26 50 26 Z" fill="#38003C"/><circle cx="44" cy="38" r="3.5" fill="#FFFFFF"/><circle cx="56" cy="38" r="3.5" fill="#FFFFFF"/><path d="M45 47 Q50 51 55 47" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>` 
+            },
+            Ligue1: { 
+                name: 'Ligue 1', 
+                flag: '🇫🇷', 
+                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M36 8 L72 8 L72 22 L52 22 L40 76 L68 76 L68 92 L22 92 L36 8 Z" fill="#FFFFFF"/><path d="M58 22 L80 22 L62 92 L44 92 Z" fill="#00E5FF"/></svg>` 
+            },
+            Bundesliga: { 
+                name: 'Bundesliga', 
+                flag: '🇩🇪', 
+                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="92" height="92" rx="14" fill="#E30613"/><circle cx="82" cy="34" r="8" fill="#FFFFFF"/><path d="M42 14 C37 14 33 19 33 24 C33 27 35 30 37 32 L18 38 L23 45 L37 39 L41 51 L26 74 L35 80 L52 57 L65 46 L79 49 L81 40 L65 36 L52 32 L50 21 C48 16 45 14 42 14 Z" fill="#FFFFFF"/></svg>` 
+            },
+            SerieA: { 
+                name: 'Serie A', 
+                flag: '🇮🇹', 
+                svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,6 86,64 14,64" fill="#0088FF"/><polygon points="50,6 76,64 50,48" fill="#33B5FF"/><polygon points="50,48 50,88 14,64" fill="#0055CC"/><polygon points="50,48 50,88 86,64" fill="#0066EE"/><rect x="22" y="91" width="18" height="6" fill="#00B050"/><rect x="41" y="91" width="18" height="6" fill="#FFFFFF"/><rect x="60" y="91" width="18" height="6" fill="#FF3333"/></svg>` 
+            }
         };
 
         let currentSelectedLeague = 'LaLiga';
@@ -228,13 +248,13 @@
 
         function renderWeeklyFixtures(league) {
             if (league === 'custom') return;
-            const meta = LEAGUE_META[league] || { name: league, flag: '⚽', logo: '' };
+            const meta = LEAGUE_META[league] || { name: league, flag: '⚽', svg: '' };
             if (currentLeagueFlag) currentLeagueFlag.textContent = meta.flag;
             if (currentLeagueTitle) currentLeagueTitle.textContent = `Matchs de la semaine — ${meta.name}`;
             
             const sectionWatermark = document.getElementById('section-watermark');
-            if (sectionWatermark && meta.logo) {
-                sectionWatermark.style.backgroundImage = `url('${meta.logo}')`;
+            if (sectionWatermark) {
+                sectionWatermark.innerHTML = meta.svg || '';
             }
 
             const list = weeklyFixturesByLeague[league] || [];
@@ -257,7 +277,7 @@
 
                 return `
                     <div class="fixture-card" id="card-${idx}">
-                        <div class="fixture-bg-watermark" style="background-image: url('${meta.logo}');"></div>
+                        <div class="fixture-bg-watermark">${meta.svg || ''}</div>
 
                         <div class="fixture-top">
                             <div class="fixture-date-badge">
