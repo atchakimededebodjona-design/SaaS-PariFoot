@@ -2,6 +2,19 @@ fastapi
 uvicorn[standard]
 numpy
 scipy
+# pandas/scikit-learn/xgboost/lightgbm : nécessaires pour SERVIR réellement
+# une prédiction XGBoost/LightGBM depuis le service web (POST /models/
+# ensemble/predict, et la passe shadow de generate_live_predictions -> voir
+# app/ai/arena/models_common.py::XGBoostPredictionModel/LightGBMPredictionModel,
+# imports paresseux à l'intérieur des fonctions de prédiction/disponibilité,
+# jamais au niveau module — voir app/ai/arena/retraining.py pour le contre-
+# exemple qui a causé un crash au démarrage, corrigé). Sans ces paquets,
+# ces deux modèles restent honnêtement "indisponibles" (jamais un crash,
+# voir check_availability) plutôt que de réellement prédire.
+pandas
+scikit-learn
+xgboost
+lightgbm
 sqlmodel
 python-jose[cryptography]
 passlib[bcrypt]

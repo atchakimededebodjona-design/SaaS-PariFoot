@@ -42,8 +42,6 @@ from datetime import date, datetime, timezone
 from typing import Optional
 
 import numpy as np
-import pandas as pd
-from sklearn.metrics import accuracy_score, log_loss
 
 from sqlmodel import Session, select
 
@@ -237,6 +235,7 @@ class FitResult:
 
 
 def _build_target(df: pd.DataFrame) -> pd.Series:
+    import pandas as pd
     conditions = [df["home_goals"] > df["away_goals"], df["home_goals"] == df["away_goals"]]
     choices = [1, 0]
     y = np.select(conditions, choices, default=2)
@@ -250,6 +249,7 @@ def _multiclass_metrics(y_true, proba: np.ndarray) -> dict:
     somme des carrés (proba - indicatrice), même formule que
     service.py::_compute_market_metrics, adaptée ici à un tableau numpy
     (CLASS_LABELS) plutôt qu'un dict de marché nommé."""
+    from sklearn.metrics import accuracy_score, log_loss
     y_arr = np.asarray(y_true)
     pred = np.array(CLASS_LABELS)[np.argmax(proba, axis=1)]
     n = len(y_arr)
@@ -285,6 +285,8 @@ def fit_ml_model(
     dernier n'est ici QUE pour audit (voir app/ai/arena/promotion.py, qui ne
     lit jamais "test").
     """
+    import pandas as pd
+
     if model_type not in SUPPORTED_MODEL_TYPES:
         raise ValueError(f"model_type non supporté pour le réentraînement continu : {model_type}")
 
