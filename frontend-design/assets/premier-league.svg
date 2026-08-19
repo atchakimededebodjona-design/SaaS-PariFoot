@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Premier League Lion Head Logo -->
-  <path d="M50 8 L58 20 L68 12 L70 24 L82 22 L78 35 C88 45 90 62 80 76 C72 88 56 94 42 90 C28 86 18 72 20 58 C21 44 32 34 38 32 L34 22 L46 24 L48 12 L58 20 Z" fill="#38003C"/>
-  <path d="M50 28 C56 28 62 34 62 42 C62 50 56 56 50 56 C44 56 38 50 38 42 C38 34 44 28 50 28 Z" fill="#FFFFFF"/>
-  <circle cx="45" cy="40" r="3" fill="#38003C"/>
-  <circle cx="55" cy="40" r="3" fill="#38003C"/>
-  <path d="M46 48 Q50 52 54 48" stroke="#38003C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M50 4 L59 18 L70 9 L72 23 L85 20 L80 34 C91 45 93 64 82 78 C74 90 57 96 42 92 C27 88 16 73 18 57 C20 42 32 32 38 30 L33 19 L47 22 L49 9 L59 18 Z" fill="#FFFFFF"/>
+  <path d="M50 26 C57 26 63 32 63 41 C63 50 57 57 50 57 C43 57 37 50 37 41 C37 32 43 26 50 26 Z" fill="#38003C"/>
+  <circle cx="44" cy="38" r="3.5" fill="#FFFFFF"/>
+  <circle cx="56" cy="38" r="3.5" fill="#FFFFFF"/>
+  <path d="M45 47 Q50 51 55 47" stroke="#FFFFFF" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 </svg>

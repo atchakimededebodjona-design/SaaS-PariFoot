@@ -73,6 +73,8 @@
 
             <!-- Weekly Fixtures Container -->
             <div id="weekly-fixtures-section">
+                <div class="section-bg-watermark" id="section-watermark"></div>
+
                 <div class="league-section-header">
                     <div class="league-section-title">
                         <span id="current-league-flag">🇪🇸</span>
@@ -229,6 +231,11 @@
             const meta = LEAGUE_META[league] || { name: league, flag: '⚽', logo: '' };
             if (currentLeagueFlag) currentLeagueFlag.textContent = meta.flag;
             if (currentLeagueTitle) currentLeagueTitle.textContent = `Matchs de la semaine — ${meta.name}`;
+            
+            const sectionWatermark = document.getElementById('section-watermark');
+            if (sectionWatermark && meta.logo) {
+                sectionWatermark.style.backgroundImage = `url('${meta.logo}')`;
+            }
 
             const list = weeklyFixturesByLeague[league] || [];
             if (currentLeagueCount) currentLeagueCount.textContent = `${list.length} match${list.length > 1 ? 's' : ''}`;
