@@ -36,23 +36,23 @@
             <!-- League Navigation Pills -->
             <div class="league-nav-container" id="league-nav">
                 <button class="league-pill active" data-league="LaLiga">
-                    <img src="assets/laliga.svg" class="league-logo-img" alt="LaLiga">
+                    <span class="league-flag">🇪🇸</span>
                     <span>LaLiga</span>
                 </button>
                 <button class="league-pill" data-league="PremierLeague">
-                    <img src="assets/premier-league.svg" class="league-logo-img" alt="Premier League">
+                    <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
                     <span>Premier League</span>
                 </button>
                 <button class="league-pill" data-league="Ligue1">
-                    <img src="assets/ligue1.svg" class="league-logo-img" alt="Ligue 1">
+                    <span class="league-flag">🇫🇷</span>
                     <span>Ligue 1</span>
                 </button>
                 <button class="league-pill" data-league="Bundesliga">
-                    <img src="assets/bundesliga.svg" class="league-logo-img" alt="Bundesliga">
+                    <span class="league-flag">🇩🇪</span>
                     <span>Bundesliga</span>
                 </button>
                 <button class="league-pill" data-league="SerieA">
-                    <img src="assets/seriea.svg" class="league-logo-img" alt="Serie A">
+                    <span class="league-flag">🇮🇹</span>
                     <span>Serie A</span>
                 </button>
                 <button class="league-pill" data-league="custom">
@@ -71,19 +71,14 @@
                 <button class="btn-outline-gold" id="see-plans-btn">Voir les abonnements VIP</button>
             </div>
 
-            <!-- Weekly Fixtures Container with League Hero Banner -->
+            <!-- Weekly Fixtures Container -->
             <div id="weekly-fixtures-section">
-                <div class="league-hero-banner">
-                    <div class="league-hero-logo-box">
-                        <img id="current-league-hero-logo" src="assets/laliga.svg" alt="Logo Ligue">
+                <div class="league-section-header">
+                    <div class="league-section-title">
+                        <span id="current-league-flag">🇪🇸</span>
+                        <span id="current-league-title">Matchs de la semaine — LaLiga</span>
                     </div>
-                    <div class="league-hero-text">
-                        <div class="league-hero-title-row">
-                            <h3 id="current-league-title">LaLiga</h3>
-                            <span class="match-count-badge" id="current-league-count">10 matchs</span>
-                        </div>
-                        <p class="league-hero-subtitle" id="current-league-subtitle">Matchs officiels de la semaine (17 au 23 Août 2026)</p>
-                    </div>
+                    <span class="match-count-badge" id="current-league-count">... matchs</span>
                 </div>
 
                 <div id="fixtures-loading" class="stat-row">Chargement des matchs officiels…</div>
@@ -151,7 +146,7 @@
         const customSection = document.getElementById('custom-match-section');
         const fixturesContainer = document.getElementById('fixtures-container');
         const fixturesLoading = document.getElementById('fixtures-loading');
-        const currentLeagueIcon = document.getElementById('current-league-icon');
+        const currentLeagueFlag = document.getElementById('current-league-flag');
         const currentLeagueTitle = document.getElementById('current-league-title');
         const currentLeagueCount = document.getElementById('current-league-count');
         const errorEl = document.getElementById('prediction-error');
@@ -232,14 +227,11 @@
         function renderWeeklyFixtures(league) {
             if (league === 'custom') return;
             const meta = LEAGUE_META[league] || { name: league, flag: '⚽', logo: '' };
-            const heroLogo = document.getElementById('current-league-hero-logo');
-            if (heroLogo && meta.logo) {
-                heroLogo.src = meta.logo;
-            }
-            currentLeagueTitle.textContent = meta.name;
+            if (currentLeagueFlag) currentLeagueFlag.textContent = meta.flag;
+            if (currentLeagueTitle) currentLeagueTitle.textContent = `Matchs de la semaine — ${meta.name}`;
 
             const list = weeklyFixturesByLeague[league] || [];
-            currentLeagueCount.textContent = `${list.length} match${list.length > 1 ? 's' : ''}`;
+            if (currentLeagueCount) currentLeagueCount.textContent = `${list.length} match${list.length > 1 ? 's' : ''}`;
 
             if (list.length === 0) {
                 fixturesContainer.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0;">Aucun match programmé pour ${meta.name} cette semaine.</p>`;
@@ -258,6 +250,8 @@
 
                 return `
                     <div class="fixture-card" id="card-${idx}">
+                        <div class="fixture-bg-watermark" style="background-image: url('${meta.logo}');"></div>
+
                         <div class="fixture-top">
                             <div class="fixture-date-badge">
                                 <span>📅</span>

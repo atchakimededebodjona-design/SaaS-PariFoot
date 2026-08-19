@@ -866,72 +866,17 @@ body {
     box-shadow: 0 4px 12px rgba(44, 217, 165, 0.15);
 }
 
-.league-pill .league-logo-img {
-    width: 18px;
-    height: 18px;
-    object-fit: contain;
-    border-radius: 4px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
 .league-pill .league-flag {
     font-size: 1rem;
     line-height: 1;
 }
 
-/* League Hero Banner */
-.league-hero-banner {
+/* Match Section Header */
+.league-section-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(21, 25, 37, 0.95) 100%);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-
-.league-hero-logo-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px;
-    flex-shrink: 0;
-}
-
-.league-hero-logo-box img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.league-hero-text {
-    flex: 1;
-}
-
-.league-hero-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.2rem;
-}
-
-.league-hero-title-row h3 {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--text-primary);
-}
-
-.league-hero-subtitle {
-    font-size: 0.76rem;
-    color: var(--text-secondary);
+    margin-bottom: 1rem;
 }
 
 .league-section-title {
@@ -964,9 +909,29 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
+}
+
+.fixture-bg-watermark {
+    position: absolute;
+    right: -10px;
+    bottom: -15px;
+    width: 115px;
+    height: 115px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fixture-card:hover .fixture-bg-watermark {
+    opacity: 0.12;
+    transform: scale(1.06) rotate(-3deg);
 }
 
 .fixture-card:hover {
@@ -977,6 +942,11 @@ body {
 .fixture-card.expanded {
     border-color: var(--border-gold);
     background: linear-gradient(180deg, var(--bg-card) 0%, #111520 100%);
+}
+
+.fixture-top, .fixture-matchup, .btn-fixture-predict, .fixture-prediction-detail {
+    position: relative;
+    z-index: 1;
 }
 
 .fixture-top {
