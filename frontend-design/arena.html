@@ -277,11 +277,12 @@
     <script>
         requireAuth();
         
-        // Sécurité frontend : réservé aux administrateurs
-        (async function checkAdminAccess() {
-            const user = await syncAdminElements();
-            if (user && !user.is_admin) {
-                window.location.href = "index.html";
+        let currentUser = null;
+        (async function initUser() {
+            currentUser = await getCurrentUser();
+            if (currentUser && currentUser.is_admin) {
+                const badge = document.querySelector('.badge-ai');
+                if (badge) badge.textContent = '🛡️ Admin Cockpit';
             }
         })();
 
@@ -890,10 +891,24 @@
             `;
         }
 
-        function renderPromotionCard(candidate) {
+        function renderPromotionCard(candidate, isAdmin = false) {
             const icon = DECISION_ICONS[candidate.status] || '⚪';
             const label = DECISION_LABELS[candidate.status] || candidate.status;
             const canPromote = candidate.status === 'eligible';
+            
+            const actionsHtml = isAdmin
+                ? `
+                    <div class="promotion-actions">
+                        <button class="promotion-btn secondary" onclick="triggerPromotionEvaluate(${candidate.model_version_id})">Lancer une évaluation</button>
+                        <button class="promotion-btn" ${canPromote ? '' : 'disabled'} onclick="triggerPromotionPromote(${candidate.model_version_id})">Promouvoir</button>
+                    </div>
+                `
+                : `
+                    <div style="margin-top: 0.6rem; font-size: 0.72rem; color: var(--text-secondary); font-style: italic;">
+                        🔒 Mode consultation (Actions de promotion réservées à l'administrateur)
+                    </div>
+                `;
+
             return `
                 <div class="promotion-card" data-version-id="${candidate.model_version_id}">
                     <div class="promotion-card-header">
@@ -903,10 +918,7 @@
                     ${renderPromotionMetrics('Candidat', candidate.candidate_metrics)}
                     ${renderPromotionMetrics('Version active', candidate.baseline_metrics)}
                     <div class="promotion-reason">${candidate.reason}</div>
-                    <div class="promotion-actions">
-                        <button class="promotion-btn secondary" onclick="triggerPromotionEvaluate(${candidate.model_version_id})">Lancer une évaluation</button>
-                        <button class="promotion-btn" ${canPromote ? '' : 'disabled'} onclick="triggerPromotionPromote(${candidate.model_version_id})">Promouvoir</button>
-                    </div>
+                    ${actionsHtml}
                 </div>
             `;
         }
@@ -916,6 +928,11 @@
             const errorEl = document.getElementById('promotion-error');
             const contentEl = document.getElementById('promotion-content');
             try {
+                if (!currentUser) {
+                    currentUser = await getCurrentUser();
+                }
+                const isAdmin = !!(currentUser && currentUser.is_admin);
+
                 const response = await apiFetch('/models/promotion/status');
                 if (!response.ok) {
                     const body = await response.json().catch(() => ({}));
@@ -924,7 +941,7 @@
                 const data = await response.json();
                 contentEl.innerHTML = data.candidates.length === 0
                     ? `<p style="color: var(--text-secondary); font-size: 0.82rem;">Aucune version SHADOW/CANDIDATE en attente d'évaluation pour l'instant.</p>`
-                    : data.candidates.map(renderPromotionCard).join('');
+                    : data.candidates.map(c => renderPromotionCard(c, isAdmin)).join('');
                 loadingEl.classList.add('hidden');
                 contentEl.classList.remove('hidden');
             } catch (e) {
