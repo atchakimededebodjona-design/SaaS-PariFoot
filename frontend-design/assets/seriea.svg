@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Serie A 3D Diamond 'A' Logo with Italian Tricolor -->
+  <polygon points="50,10 82,62 18,62" fill="#003399"/>
+  <polygon points="50,10 74,62 50,48" fill="#0066CC"/>
+  <polygon points="50,48 50,85 18,62" fill="#002266"/>
+  <polygon points="50,48 50,85 82,62" fill="#0044AA"/>
+  <!-- Italian Flag Bar -->
+  <rect x="25" y="88" width="16" height="5" fill="#009246"/>
+  <rect x="42" y="88" width="16" height="5" fill="#F1F2F1"/>
+  <rect x="59" y="88" width="16" height="5" fill="#CE2B37"/>
+</svg>
