@@ -896,37 +896,12 @@ body {
     font-weight: 600;
 }
 
-#weekly-fixtures-section {
-    position: relative;
-}
-
-.section-bg-watermark {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 220px;
-    height: 220px;
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 0;
-    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.05));
-    transition: all 0.3s ease;
-}
-
-.section-bg-watermark svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
 /* Weekly Fixture Cards List */
 .fixtures-list {
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
     margin-bottom: 2rem;
-    position: relative;
-    z-index: 1;
 }
 
 .fixture-card {
@@ -934,37 +909,8 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     position: relative;
-    overflow: hidden;
-}
-
-.fixture-bg-watermark {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 130px;
-    height: 130px;
-    opacity: 0.25;
-    pointer-events: none;
-    z-index: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.05));
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.fixture-bg-watermark svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.fixture-card:hover .fixture-bg-watermark {
-    opacity: 0.40;
-    transform: translateY(-50%) scale(1.08) rotate(-3deg);
 }
 
 .fixture-card:hover {
