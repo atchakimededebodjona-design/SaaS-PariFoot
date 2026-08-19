@@ -65,3 +65,49 @@ async function apiFetch(path, options = {}) {
 
     return response;
 }
+
+// Synchronise l'affichage des éléments d'administration (ex: AI Arena)
+async function syncAdminElements() {
+    const isArenaPage = window.location.pathname.endsWith("arena.html");
+    const adminNavLinks = document.querySelectorAll('.nav-item-admin, a[href="arena.html"]');
+
+    if (!getToken()) {
+        adminNavLinks.forEach(el => el.style.display = "none");
+        if (isArenaPage) window.location.href = "login.html";
+        return null;
+    }
+
+    try {
+        const res = await apiFetch("/auth/me");
+        if (res && res.ok) {
+            const user = await res.json();
+            if (user.is_admin) {
+                adminNavLinks.forEach(el => el.style.display = "");
+                return user;
+            } else {
+                adminNavLinks.forEach(el => el.style.display = "none");
+                if (isArenaPage) {
+                    window.location.href = "index.html";
+                }
+                return user;
+            }
+        }
+    } catch (e) {
+        console.error("Erreur sync admin:", e);
+    }
+    return null;
+}
+
+// Initialisation automatique dès que le DOM est prêt
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+        // Masque immédiatement par défaut avant vérification serveur
+        document.querySelectorAll('.nav-item-admin, a[href="arena.html"]').forEach(el => {
+            el.style.display = "none";
+        });
+        if (getToken()) {
+            syncAdminElements();
+        }
+    });
+}
+

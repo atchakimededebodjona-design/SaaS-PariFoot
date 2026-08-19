@@ -25,6 +25,7 @@ class UserRead(SQLModel):
     id: int
     email: str
     is_active: bool
+    is_admin: bool = False
     created_at: datetime
 
 

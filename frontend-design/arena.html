@@ -276,6 +276,14 @@
     <script src="api.js"></script>
     <script>
         requireAuth();
+        
+        // Sécurité frontend : réservé aux administrateurs
+        (async function checkAdminAccess() {
+            const user = await syncAdminElements();
+            if (user && !user.is_admin) {
+                window.location.href = "index.html";
+            }
+        })();
 
         const MARKET_LABELS = { '1X2': '1X2', 'BTTS': 'BTTS (les 2 marquent)', 'OVER_UNDER_2_5': 'Plus/Moins 2.5 buts' };
         const METRIC_LABELS = { accuracy: 'accuracy', log_loss: 'log loss', brier_score: 'Brier score' };
