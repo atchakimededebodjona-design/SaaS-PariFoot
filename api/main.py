@@ -454,6 +454,89 @@ class LeagueModel:
             results.append({"home_goals": int(x), "away_goals": int(y), "probability": round(float(m[x, y]), 4)})
         return results
 
+    def predict_match_stats(self, home_team: str, away_team: str) -> dict:
+        """Estime les statistiques de match (corners, fautes, pénaltys,
+        cartons jaunes/rouges) à partir de la force relative des équipes.
+
+        Le modèle Dixon-Coles fournit les intensités offensives/défensives
+        (lambda_home, mu_away). On s'en sert comme facteurs de pondération
+        par rapport aux moyennes typiques de ligue :
+        - Plus l'intensité offensive est élevée → plus de corners, plus de
+          cartons défensifs adverses, plus de pénaltys potentiels.
+        - Plus l'intensité défensive adversaire est élevée → plus de fautes.
+
+        Ce n'est pas un modèle séparé entraîné sur ces statistiques, mais
+        une estimation cohérente et intelligente dérivée du même socle.
+        """
+        lam = np.exp(self.attack[home_team] - self.defense[away_team] + self.home_advantage)
+        mu = np.exp(self.attack[away_team] - self.defense[home_team])
+        total_intensity = lam + mu  # intensité totale du match (~2.5 en moyenne)
+
+        # Moyennes typiques de ligue européenne par match
+        AVG_CORNERS = 10.2
+        AVG_FOULS = 22.0
+        AVG_YELLOW = 3.8
+        AVG_RED = 0.18
+        AVG_PENALTIES = 0.22
+        AVG_GOALS = 2.65  # moyenne typique buts/match
+
+        # Facteur d'intensité (1.0 = match moyen)
+        intensity_factor = total_intensity / AVG_GOALS
+
+        # Corners : corrélés positivement avec l'intensité offensive
+        corners_home = round(AVG_CORNERS * 0.53 * (lam / (AVG_GOALS / 2)), 1)
+        corners_away = round(AVG_CORNERS * 0.47 * (mu / (AVG_GOALS / 2)), 1)
+        corners_total = round(corners_home + corners_away, 1)
+
+        # Fautes : plus de fautes dans les matchs intenses / défensifs
+        defensive_factor = 1 + 0.15 * (intensity_factor - 1)
+        fouls_home = round(AVG_FOULS * 0.48 * defensive_factor, 1)
+        fouls_away = round(AVG_FOULS * 0.52 * defensive_factor, 1)
+        fouls_total = round(fouls_home + fouls_away, 1)
+
+        # Cartons jaunes : corrélés aux fautes
+        yellows_home = round(AVG_YELLOW * 0.47 * defensive_factor, 1)
+        yellows_away = round(AVG_YELLOW * 0.53 * defensive_factor, 1)
+        yellows_total = round(yellows_home + yellows_away, 1)
+
+        # Cartons rouges : très rares, léger biais dans les matchs tendus
+        red_factor = min(intensity_factor * 1.1, 2.0)  # plafonné
+        reds_total = round(AVG_RED * red_factor, 2)
+
+        # Pénaltys : corrélés avec les occasions offensives
+        penalties_prob = round(min(AVG_PENALTIES * intensity_factor, 0.55), 2)
+
+        # Over/Under pour corners et cartons
+        from scipy.stats import poisson as poisson_dist
+        corners_over_8_5 = round(1 - float(poisson_dist.cdf(8, corners_total)), 4)
+        corners_over_10_5 = round(1 - float(poisson_dist.cdf(10, corners_total)), 4)
+        yellows_over_3_5 = round(1 - float(poisson_dist.cdf(3, yellows_total)), 4)
+
+        return {
+            "corners": {
+                "home": corners_home,
+                "away": corners_away,
+                "total": corners_total,
+                "over_8_5": corners_over_8_5,
+                "over_10_5": corners_over_10_5,
+            },
+            "fouls": {
+                "home": fouls_home,
+                "away": fouls_away,
+                "total": fouls_total,
+            },
+            "cards": {
+                "yellow_home": yellows_home,
+                "yellow_away": yellows_away,
+                "yellow_total": yellows_total,
+                "red_total": reds_total,
+                "over_3_5_yellows": yellows_over_3_5,
+            },
+            "penalties": {
+                "probability": penalties_prob,
+            },
+        }
+
     def ratings(self) -> list:
         rows = [
             {"team": t, "attack": round(self.attack[t], 4), "defense": round(self.defense[t], 4),
@@ -539,6 +622,40 @@ class OverUnderLine(BaseModel):
     under: float
 
 
+class CornersStats(BaseModel):
+    home: float = Field(..., description="Corners estimés pour l'équipe à domicile")
+    away: float = Field(..., description="Corners estimés pour l'équipe extérieure")
+    total: float = Field(..., description="Total corners estimés dans le match")
+    over_8_5: float = Field(..., description="Probabilité de plus de 8.5 corners")
+    over_10_5: float = Field(..., description="Probabilité de plus de 10.5 corners")
+
+
+class FoulsStats(BaseModel):
+    home: float = Field(..., description="Fautes estimées pour l'équipe à domicile")
+    away: float = Field(..., description="Fautes estimées pour l'équipe extérieure")
+    total: float = Field(..., description="Total fautes estimées dans le match")
+
+
+class CardsStats(BaseModel):
+    yellow_home: float = Field(..., description="Cartons jaunes estimés — domicile")
+    yellow_away: float = Field(..., description="Cartons jaunes estimés — extérieur")
+    yellow_total: float = Field(..., description="Total cartons jaunes estimés")
+    red_total: float = Field(..., description="Estimation cartons rouges dans le match")
+    over_3_5_yellows: float = Field(..., description="Probabilité de plus de 3.5 cartons jaunes")
+
+
+class PenaltiesStats(BaseModel):
+    probability: float = Field(..., description="Probabilité qu'au moins un pénalty soit sifflé")
+
+
+class MatchStats(BaseModel):
+    """Statistiques prédites du match : corners, fautes, cartons, pénaltys."""
+    corners: CornersStats
+    fouls: FoulsStats
+    cards: CardsStats
+    penalties: PenaltiesStats
+
+
 class MatchPrediction(BaseModel):
     league: str
     home_team: str
@@ -556,6 +673,7 @@ class MatchPrediction(BaseModel):
     over_under_lines: list[OverUnderLine] = Field(
         ..., description="Probabilités +/- pour plusieurs lignes de buts (0.5, 1.5, 2.5, 3.5) — over_2_5/under_2_5 ci-dessus restent la ligne de référence"
     )
+    match_stats: MatchStats = Field(..., description="Statistiques estimées : corners, fautes, cartons, pénaltys")
     most_likely_scores: list
     model_trained_at: str
     model_data_up_to: str
@@ -769,6 +887,7 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
     # pour ne pas casser les clients existants qui les lisent directement.
     over_under_lines = [model.predict_over_under(home_team, away_team, line=l) for l in (0.5, 1.5, 2.5, 3.5)]
     scores = model.most_likely_scores(home_team, away_team)
+    match_stats = model.predict_match_stats(home_team, away_team)
 
     prediction = MatchPrediction(
         league=league,
@@ -785,6 +904,7 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
         double_chance_12=probs_dc["home_or_away"],
         double_chance_x2=probs_dc["draw_or_away"],
         over_under_lines=over_under_lines,
+        match_stats=match_stats,
         most_likely_scores=scores,
         model_trained_at=model.trained_at,
         model_data_up_to=model.data_up_to,

@@ -366,6 +366,80 @@
                             `).join('')}
                         </div>
                     ` : ''}
+
+                    ${p.match_stats ? `
+                        <div class="prob-section-title" style="margin-top: 0.8rem;">🚩 Corners estimés</div>
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <span class="stat-label">🏠 ${home.substring(0, 10)}</span>
+                                <span class="stat-val">${p.match_stats.corners.home}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">✈️ ${away.substring(0, 10)}</span>
+                                <span class="stat-val">${p.match_stats.corners.away}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Total corners</span>
+                                <span class="stat-val text-green">${p.match_stats.corners.total}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">+8.5 corners</span>
+                                <span class="stat-val text-gold">${pct(p.match_stats.corners.over_8_5)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">+10.5 corners</span>
+                                <span class="stat-val">${pct(p.match_stats.corners.over_10_5)}</span>
+                            </div>
+                        </div>
+
+                        <div class="prob-section-title" style="margin-top: 0.8rem;">⚠️ Fautes estimées</div>
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <span class="stat-label">🏠 ${home.substring(0, 10)}</span>
+                                <span class="stat-val">${p.match_stats.fouls.home}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">✈️ ${away.substring(0, 10)}</span>
+                                <span class="stat-val">${p.match_stats.fouls.away}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Total fautes</span>
+                                <span class="stat-val text-gold">${p.match_stats.fouls.total}</span>
+                            </div>
+                        </div>
+
+                        <div class="prob-section-title" style="margin-top: 0.8rem;">🟨🟥 Cartons estimés</div>
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <span class="stat-label">🟨 Jaunes domicile</span>
+                                <span class="stat-val">${p.match_stats.cards.yellow_home}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🟨 Jaunes extérieur</span>
+                                <span class="stat-val">${p.match_stats.cards.yellow_away}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🟨 Total jaunes</span>
+                                <span class="stat-val text-gold">${p.match_stats.cards.yellow_total}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">+3.5 jaunes</span>
+                                <span class="stat-val text-green">${pct(p.match_stats.cards.over_3_5_yellows)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">🟥 Rouges estimés</span>
+                                <span class="stat-val" style="color: #ff4444;">${p.match_stats.cards.red_total}</span>
+                            </div>
+                        </div>
+
+                        <div class="prob-section-title" style="margin-top: 0.8rem;">⚽ Pénalty estimé</div>
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <span class="stat-label">Probabilité d'un pénalty</span>
+                                <span class="stat-val text-green">${pct(p.match_stats.penalties.probability)}</span>
+                            </div>
+                        </div>
+                    ` : ''}
                 `;
             } catch (err) {
                 box.innerHTML = `<p style="color: var(--accent-warning); font-size: 0.8rem;">Erreur de connexion</p>`;
