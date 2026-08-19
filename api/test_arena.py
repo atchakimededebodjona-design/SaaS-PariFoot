@@ -179,6 +179,74 @@ def test_team_ratings_count_reflects_real_rows(client):
     print(f"  [OK] team_ratings_count reflète les 3 lignes réellement écrites (version #{version_id})")
 
 
+# ---------------------------------------------------------------------------
+# Phase 9 — GET /models/live-performance, /models/health, /models/versions,
+# /models/training/status (retrain/promote/shadow restent CLI-only)
+# ---------------------------------------------------------------------------
+
+def test_live_performance_endpoint_insufficient_data_when_empty(client):
+    r = client.get("/models/live-performance", params={"model_type": "xgboost", "market": "1X2"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["xgboost"]["markets"]["1X2"]["ALL_TIME"]["status"] == "INSUFFICIENT_DATA"
+    assert body["xgboost"]["markets"]["1X2"]["ALL_TIME"]["metrics"] is None
+    assert body["xgboost"]["summary"]["predictions_total"] == 0
+    assert body["xgboost"]["summary"]["last_prediction_at"] is None
+    print("  [OK] GET /models/live-performance sans données -> INSUFFICIENT_DATA honnête, jamais une métrique inventée")
+
+
+def test_live_performance_endpoint_rejects_unknown_model_type(client):
+    r = client.get("/models/live-performance", params={"model_type": "not_a_model"})
+    assert r.status_code == 400, r.text
+    print("  [OK] GET /models/live-performance model_type inconnu -> 400")
+
+
+def test_health_endpoint_unavailable_when_no_active_version(client):
+    r = client.get("/models/health", params={"model_type": "xgboost", "market": "1X2"})
+    assert r.status_code == 200, r.text
+    body = r.json()["xgboost"]["1X2"]
+    assert body["status"] == "UNAVAILABLE"
+    assert body["delta"] is None
+    print("  [OK] GET /models/health sans version active -> UNAVAILABLE, jamais HEALTHY par défaut")
+
+
+def test_versions_endpoint_lists_new_phase9_fields_and_filters_by_status(client):
+    version_id = _create_model_version_with_ratings("xfoot-elo-versions-test")
+
+    r = client.get("/models/versions", params={"model_type": "elo"})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    entry = next(v for v in body["versions"] if v["id"] == version_id)
+    assert entry["status"] == "active"  # défaut du champ Phase 9, cohérent avec is_active=False ici -> voir ci-dessous
+    assert "training_period" in entry and "feature_version" in entry and "metrics" in entry
+    print(f"  [OK] GET /models/versions expose les champs Phase 9 pour la version #{version_id}")
+
+    r2 = client.get("/models/versions", params={"status": "shadow"})
+    assert r2.status_code == 200, r2.text
+    assert all(v["status"] == "shadow" for v in r2.json()["versions"])
+    print("  [OK] GET /models/versions?status=shadow ne retourne que des versions shadow")
+
+    r3 = client.get("/models/versions", params={"status": "bogus"})
+    assert r3.status_code == 400, r3.text
+    print("  [OK] GET /models/versions?status=bogus -> 400")
+
+
+def test_training_status_endpoint_reports_data_not_ready_and_never_writes(client):
+    r = client.get("/models/training/status", params={"model_type": "xgboost"})
+    assert r.status_code == 200, r.text
+    body = r.json()["xgboost"]
+    assert body["status"] == "data_not_ready"
+    assert body["readiness"]["ready"] is False
+
+    with Session(engine) as session:
+        count_before = len(session.exec(select(ModelVersion).where(ModelVersion.model_type == "xgboost")).all())
+    r2 = client.get("/models/training/status", params={"model_type": "xgboost"})
+    with Session(engine) as session:
+        count_after = len(session.exec(select(ModelVersion).where(ModelVersion.model_type == "xgboost")).all())
+    assert count_before == count_after, "GET /models/training/status (lecture seule) a écrit en base"
+    print("  [OK] GET /models/training/status : lecture seule, aucune ModelVersion créée")
+
+
 def test_model_detail_endpoint(client):
     version_id = _create_model_version_with_ratings("xfoot-elo-v3")
 
@@ -210,6 +278,11 @@ if __name__ == "__main__":
             test_two_active_entries_reported_as_ambiguous,
             test_accuracy_available_once_predictions_resolved,
             test_team_ratings_count_reflects_real_rows,
+            test_live_performance_endpoint_insufficient_data_when_empty,
+            test_live_performance_endpoint_rejects_unknown_model_type,
+            test_health_endpoint_unavailable_when_no_active_version,
+            test_versions_endpoint_lists_new_phase9_fields_and_filters_by_status,
+            test_training_status_endpoint_reports_data_not_ready_and_never_writes,
             test_model_detail_endpoint,
         ]
         for t in tests:

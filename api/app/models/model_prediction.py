@@ -65,6 +65,17 @@ class ModelPrediction(SQLModel, table=True):
     #   split temporel déjà en place avant ce ticket).
     source: str = Field(index=True)
 
+    # "active" : prédiction du modèle réellement servi (is_active=True au
+    #   moment de la génération) — c'est ce que voient les endpoints publics
+    #   et ce qu'agrège le monitoring/l'ensemble PAR DÉFAUT.
+    # "shadow" : prédiction d'une ModelVersion en mode SHADOW (Phase 9 §24-25)
+    #   — jamais utilisée dans l'Ensemble ni dans les décisions, seulement
+    #   accumulée pour comparer v_shadow à v_active sur les mêmes matchs
+    #   avant une éventuelle promotion. Axe ORTHOGONAL à `source` (live/
+    #   backtest) — jamais fusionné avec lui, une prédiction shadow reste
+    #   "live" au sens source, juste avec role="shadow".
+    role: str = Field(default="active", index=True)
+
     # --- Probabilités RÉELLEMENT produites par le modèle avant le match ---
     prob_home: float
     prob_draw: float

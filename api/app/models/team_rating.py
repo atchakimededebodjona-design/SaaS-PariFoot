@@ -10,7 +10,7 @@ Incohérence mineure entre les deux phases, gardée telle quelle plutôt que
 de renommer `match`/`match_stats` sans qu'on me l'ait demandé.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Optional
 from sqlalchemy import UniqueConstraint
 from sqlmodel import SQLModel, Field, Session, select
@@ -47,6 +47,49 @@ class ModelVersion(SQLModel, table=True):
     # app/models/model_artifact.py). None pour les modèles qui n'en ont pas
     # besoin (dixon_coles : model_artifact ; elo : ratings + config suffisent).
     artifact: Optional[str] = None
+
+    # --- Phase 9 : versioning/cycle de vie, en plus de `is_active` --------
+    # `is_active` (ci-dessus) reste INCHANGÉ : le flag opérationnel "servi en
+    # direct maintenant" déjà utilisé par tout le code Phase 5-8
+    # (get_or_create_active_model_version, deactivate_other_versions,
+    # availability.py, default_models). `status` est une couche supplémentaire
+    # de cycle de vie ("active" | "shadow" | "candidate" | "retired"),
+    # orthogonale à `is_active` — une version "shadow" ou "candidate" a
+    # TOUJOURS is_active=False, donc n'entre jamais dans un chemin Phase 5-8
+    # existant sans modification de ces fonctions. Défaut "active" (via
+    # server_default côté migration) pour que toute ligne créée par du code
+    # qui ignore ce champ (tous les scripts Phase 3-8 non modifiés) reste
+    # cohérente : une version insérée par l'ancien code, sans state explicite,
+    # est bien "active" par défaut — la migration corrige ensuite les lignes
+    # historiques dont is_active=False vers status="retired" (backfill, voir
+    # la migration Alembic).
+    status: str = Field(default="active", index=True)
+    activated_at: Optional[datetime] = None
+    deactivated_at: Optional[datetime] = None
+
+    # Fenêtres temporelles de l'entraînement/validation/test — distinctes
+    # pour que la décision de promotion (Phase 9 §22-23) ne lise jamais le
+    # test set (audit uniquement, voir app/ai/arena/promotion.py).
+    training_period_start: Optional[date] = None
+    training_period_end: Optional[date] = None
+    validation_period_start: Optional[date] = None
+    validation_period_end: Optional[date] = None
+    test_period_start: Optional[date] = None
+    test_period_end: Optional[date] = None
+
+    sample_size: Optional[int] = None  # taille de l'échantillon de VALIDATION (gate de promotion)
+    # JSON structuré {"validation": {...}, "test": {...}} — même convention
+    # texte libre que `config`/`notes` ci-dessus, jamais reparsé ailleurs
+    # qu'à l'endroit qui le lit explicitement.
+    metrics: Optional[str] = None
+    # Miroir en première classe de la valeur déjà présente dans `config` JSON
+    # pour XGBoost/LightGBM (ex. "phase8-v1") — permet de filtrer/comparer
+    # sans reparser `config`.
+    feature_version: Optional[str] = None
+    # Version utilisée comme référence de comparaison lors de l'évaluation de
+    # promotion de CETTE version (voir promotion.py::evaluate_promotion) —
+    # None si aucune baseline n'existait encore (bootstrap du model_type).
+    baseline_version_id: Optional[int] = Field(default=None, foreign_key="model_versions.id")
 
 
 class TeamRating(SQLModel, table=True):

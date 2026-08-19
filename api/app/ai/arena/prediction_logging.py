@@ -79,6 +79,7 @@ class PredictionRecord:
     confidence: Optional[float] = None
     features_version: Optional[str] = None
     source: str = "live"  # "live" | "backtest"
+    role: str = "active"  # "active" | "shadow" (Phase 9 — voir ModelPrediction.role)
 
 
 def _pick_1x2(r: PredictionRecord) -> str:
@@ -170,6 +171,7 @@ def log_prediction(session: Session, record: PredictionRecord, model_version_id:
         model_type=record.model_type,
         model_version_id=model_version_id,
         source=record.source,
+        role=record.role,
         prob_home=record.prob_home,
         prob_draw=record.prob_draw,
         prob_away=record.prob_away,

@@ -68,8 +68,11 @@ from app.ai.arena.prediction_logging import (
 )
 from app.ai.arena.models_common import MatchContext
 from app.ai.arena.orchestrator import ModelOrchestrator, default_models
-from app.ai.arena.ensemble import build_live_ensemble, WEIGHT_STRATEGIES, DEFAULT_STRATEGY
+from app.ai.arena.ensemble import build_live_ensemble, WEIGHT_STRATEGIES, DEFAULT_STRATEGY, KNOWN_MODEL_TYPES
 from app.ai.arena.availability import compute_model_availability
+from app.ai.arena import monitoring as arena_monitoring
+from app.ai.arena import retraining as arena_retraining
+from app.models.team_rating import ModelVersion as ArenaModelVersion
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -500,6 +503,23 @@ def _load_leagues_from_db() -> dict[str, LeagueModel]:
             models[artifact["league"]] = LeagueModel(artifact)
     except Exception as e:
         logger.warning(f"Chargement des artefacts depuis la base impossible, fallback fichiers : {e}")
+    return models
+
+
+def load_league_models() -> dict[str, "LeagueModel"]:
+    """
+    Reconstruit un LEAGUE_MODELS complet (fichiers PUIS écrasés par la table
+    `model_artifact` si elle contient des lignes plus fraîches — mêmes deux
+    sources, même ordre que le démarrage FastAPI ci-dessous) pour un
+    contexte HORS service web (Phase 9, scripts/generate_live_predictions.py)
+    qui ne passe jamais par `on_startup()` (jamais servi par uvicorn/
+    TestClient). Fonction pure, ne touche jamais au LEAGUE_MODELS du module
+    web — n'existe QUE pour être appelée depuis un script séparé.
+    """
+    models = _load_all_leagues()
+    from_db = _load_leagues_from_db()
+    if from_db:
+        models.update(from_db)
     return models
 
 
@@ -1264,6 +1284,204 @@ def get_models_availability_endpoint():
         }
         for model_type, a in availability.items()
     }
+
+
+# ---------------------------------------------------------------------------
+# Phase 9 — LIVE monitoring / model health / versioning / training status
+# (GET uniquement — retrain/promote/shadow restent CLI-only, voir
+# scripts/retrain_ml_models.py : ce dépôt n'a pas de palier d'autorisation
+# "admin" distinct de get_current_user/require_active_subscription, et
+# inventer ce palier était hors du périmètre décidé pour cette phase).
+# ---------------------------------------------------------------------------
+
+_LIVE_MONITORING_MODEL_TYPES = (*KNOWN_MODEL_TYPES, "ensemble")
+
+
+def _window_stats_response(ws) -> dict:
+    return {
+        "status": ws.status,
+        "sample_size": ws.sample_size,
+        "metrics": (
+            None if ws.metrics is None else {
+                "accuracy": ws.metrics.accuracy, "log_loss": ws.metrics.log_loss,
+                "brier_score": ws.metrics.brier_score, "sample_size": ws.metrics.sample_size,
+                "correct_predictions": ws.metrics.correct_predictions,
+            }
+        ),
+    }
+
+
+@app.get("/models/live-performance")
+def get_models_live_performance_endpoint(
+    model_type: str | None = None, market: str | None = None, window: str | None = None,
+):
+    """
+    Métriques LIVE (source="live", role="active" par défaut — jamais BACKTEST
+    ni SHADOW mélangés silencieusement, Phase 9 §12-13), par fenêtre
+    (ALL_TIME/LAST_100/LAST_50/LAST_30_DAYS), chacune honnêtement
+    INSUFFICIENT_DATA si trop peu de lignes résolues. Sans filtre : tous les
+    model_type connus (dixon_coles/elo/xgboost/lightgbm/ensemble) et les 3
+    marchés.
+    """
+    if model_type is not None and model_type not in _LIVE_MONITORING_MODEL_TYPES:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(_LIVE_MONITORING_MODEL_TYPES)}")
+    if market is not None and market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+    if window is not None and window not in arena_monitoring.DEFAULT_WINDOWS:
+        raise HTTPException(status_code=400, detail=f"Fenêtre inconnue : '{window}'. Valeurs possibles : {list(arena_monitoring.DEFAULT_WINDOWS)}")
+
+    model_types = [model_type] if model_type else list(_LIVE_MONITORING_MODEL_TYPES)
+    markets = [market] if market else list(ARENA_MARKETS)
+    windows = (window,) if window else arena_monitoring.DEFAULT_WINDOWS
+
+    result: dict = {}
+    with Session(engine) as session:
+        for mt in model_types:
+            summary = arena_monitoring.get_live_summary(session, mt)
+            result[mt] = {
+                "summary": {
+                    "predictions_total": summary.predictions_total,
+                    "predictions_resolved": summary.predictions_resolved,
+                    "predictions_pending": summary.predictions_pending,
+                    "last_prediction_at": summary.last_prediction_at.isoformat() if summary.last_prediction_at else None,
+                    "last_resolved_at": summary.last_resolved_at.isoformat() if summary.last_resolved_at else None,
+                },
+                "markets": {},
+            }
+            for mk in markets:
+                stats = arena_monitoring.get_live_monitoring(session, mt, mk, windows=windows)
+                result[mt]["markets"][mk] = {w: _window_stats_response(ws) for w, ws in stats.items()}
+
+        # §33-35 : Ensemble vs meilleur modèle individuel, sur données LIVE
+        # uniquement — inclus systématiquement (coût négligeable, quelques
+        # requêtes de plus), jamais "Ensemble meilleur" affirmé sur un petit
+        # échantillon (voir monitoring.py::compute_ensemble_delta).
+        result["ensemble_delta"] = {}
+        for mk in markets:
+            d = arena_monitoring.compute_ensemble_delta(session, mk)
+            result["ensemble_delta"][mk] = {
+                "benchmark_status": d.benchmark_status, "sample_size": d.sample_size,
+                "ensemble_log_loss": d.ensemble_log_loss,
+                "best_individual_model": d.best_individual_model, "best_individual_log_loss": d.best_individual_log_loss,
+                "delta_log_loss": d.delta_log_loss, "delta_brier": d.delta_brier, "delta_accuracy": d.delta_accuracy,
+                "reason": d.reason,
+            }
+    return result
+
+
+@app.get("/models/health")
+def get_models_health_endpoint(model_type: str | None = None, market: str | None = None):
+    """
+    État de santé LIVE par model_type/marché (§16-18) — HEALTHY/WARNING/
+    DEGRADED/INSUFFICIENT_DATA/UNAVAILABLE, jamais un simple booléen. Compare
+    la fenêtre ALL_TIME (baseline) à LAST_30_DAYS (récente) ; jamais de
+    désactivation automatique, purement informatif.
+    """
+    if model_type is not None and model_type not in KNOWN_MODEL_TYPES:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(KNOWN_MODEL_TYPES)}")
+    if market is not None and market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+
+    model_types = [model_type] if model_type else list(KNOWN_MODEL_TYPES)
+    markets = [market] if market else list(ARENA_MARKETS)
+
+    result: dict = {}
+    with Session(engine) as session:
+        for mt in model_types:
+            result[mt] = {}
+            for mk in markets:
+                health = arena_monitoring.compute_model_health(session, mt, mk, models=_PREDICTION_MODELS)
+                result[mt][mk] = {
+                    "status": health.status, "reason": health.reason,
+                    "baseline_window": health.baseline_window, "recent_window": health.recent_window,
+                    "baseline_log_loss": health.baseline_log_loss, "recent_log_loss": health.recent_log_loss,
+                    "delta": health.delta, "min_monitoring_sample": health.min_monitoring_sample,
+                    "warning_delta": health.warning_delta, "critical_delta": health.critical_delta,
+                }
+    return result
+
+
+@app.get("/models/versions")
+def list_model_versions_endpoint(model_type: str | None = None, status: str | None = None):
+    """
+    Historique des ModelVersion avec les champs de versioning Phase 9
+    (status/activated_at/deactivated_at/périodes/feature_version/sample_size)
+    — permet de comparer v1/v2/v3 (§19). `status` filtre sur
+    active/shadow/candidate/retired.
+    """
+    if status is not None and status not in ("active", "shadow", "candidate", "retired"):
+        raise HTTPException(status_code=400, detail=f"status inconnu : '{status}'. Valeurs possibles : active, shadow, candidate, retired.")
+
+    with Session(engine) as session:
+        stmt = select(ArenaModelVersion)
+        if model_type is not None:
+            stmt = stmt.where(ArenaModelVersion.model_type == model_type)
+        if status is not None:
+            stmt = stmt.where(ArenaModelVersion.status == status)
+        versions = session.exec(stmt.order_by(ArenaModelVersion.model_type, ArenaModelVersion.id)).all()
+
+    return {
+        "versions": [
+            {
+                "id": v.id, "name": v.name, "model_type": v.model_type,
+                "is_active": v.is_active, "status": v.status,
+                "trained_at": v.trained_at.isoformat(), "activated_at": v.activated_at.isoformat() if v.activated_at else None,
+                "deactivated_at": v.deactivated_at.isoformat() if v.deactivated_at else None,
+                "training_period": (
+                    {"start": v.training_period_start.isoformat(), "end": v.training_period_end.isoformat()}
+                    if v.training_period_start and v.training_period_end else None
+                ),
+                "validation_period": (
+                    {"start": v.validation_period_start.isoformat(), "end": v.validation_period_end.isoformat()}
+                    if v.validation_period_start and v.validation_period_end else None
+                ),
+                "test_period": (
+                    {"start": v.test_period_start.isoformat(), "end": v.test_period_end.isoformat()}
+                    if v.test_period_start and v.test_period_end else None
+                ),
+                "sample_size": v.sample_size,
+                "feature_version": v.feature_version,
+                "metrics": json.loads(v.metrics) if v.metrics else None,
+                "baseline_version_id": v.baseline_version_id,
+                "notes": v.notes,
+            }
+            for v in versions
+        ],
+        "count": len(versions),
+    }
+
+
+@app.get("/models/training/status")
+def get_models_training_status_endpoint(model_type: str | None = None):
+    """
+    Aperçu en LECTURE SEULE de la disponibilité des données d'entraînement
+    (§28) et de ce qu'un `python scripts/retrain_ml_models.py --model ... --dry-run`
+    afficherait — jamais un déclenchement d'entraînement (voir Partie F du
+    rapport final Phase 9 : retrain/promote/shadow restent CLI-only).
+    """
+    supported = arena_retraining.SUPPORTED_MODEL_TYPES
+    if model_type is not None and model_type not in supported:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(supported)}")
+
+    model_types = [model_type] if model_type else list(supported)
+    result: dict = {}
+    with Session(engine) as session:
+        for mt in model_types:
+            r = arena_retraining.run_retrain(session, mt, dry_run=True)
+            result[mt] = {
+                "status": r.status,
+                "message": r.message,
+                "readiness": None if r.readiness is None else {
+                    "ready": r.readiness.ready, "reason": r.readiness.reason,
+                    "match_count": r.readiness.match_count, "league_count": r.readiness.league_count,
+                    "duplicate_count": r.readiness.duplicate_count,
+                    "missing_value_columns": r.readiness.missing_value_columns,
+                    "period_start": r.readiness.period_start.isoformat() if r.readiness.period_start else None,
+                    "period_end": r.readiness.period_end.isoformat() if r.readiness.period_end else None,
+                    "leakage_detected": r.readiness.leakage_detected,
+                },
+            }
+    return result
 
 
 @app.get("/models/{model_version_id}", response_model=ModelPerformanceEntry)

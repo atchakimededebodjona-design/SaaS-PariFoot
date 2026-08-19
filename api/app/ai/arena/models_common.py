@@ -413,7 +413,31 @@ class _MLPredictionModel(PredictionModel):
             return PredictionOutcome(self.model_type, "unavailable", reason=reason)
         if reason is not None:
             return PredictionOutcome(self.model_type, "unavailable", model_version_id=version.id, reason=reason)
+        return self._predict_with_version(session, ctx, version)
 
+    def predict_for_shadow(self, session: Session, ctx: MatchContext, version: ModelVersion) -> PredictionOutcome:
+        """
+        Variante Phase 9 (§24-25) : produit une inférence pour une
+        ModelVersion SPÉCIFIQUE (typiquement `status="shadow"`), jamais
+        forcément celle activement servie — réutilise EXACTEMENT la même
+        logique d'inférence que predict() (_predict_with_version ci-dessous),
+        jamais une seconde implémentation qui pourrait diverger.
+
+        Le PredictionRecord produit a `role="active"` par défaut (valeur par
+        défaut de PredictionRecord, inchangée) — c'est la responsabilité de
+        l'APPELANT (app/ai/arena/scheduler.py) de reconstruire un record
+        avec `role="shadow"` avant de le loguer ; cette méthode se contente
+        de l'inférence pour la version demandée, jamais de la décision
+        d'étiquetage.
+        """
+        if not version.artifact or not version.config:
+            return PredictionOutcome(
+                self.model_type, "unavailable", model_version_id=version.id,
+                reason=f"Version {self.model_type} '{version.name}' sans artefact/configuration exploitable.",
+            )
+        return self._predict_with_version(session, ctx, version)
+
+    def _predict_with_version(self, session: Session, ctx: MatchContext, version: ModelVersion) -> PredictionOutcome:
         try:
             config = json.loads(version.config)
             feature_columns = config["feature_columns"]
