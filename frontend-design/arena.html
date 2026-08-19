@@ -112,6 +112,14 @@
         .shadow-side-metric { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.15rem 0; }
         .shadow-delta-row { margin-top: 0.6rem; font-size: 0.76rem; color: var(--text-secondary); }
         .shadow-insufficient { color: var(--text-secondary); font-size: 0.82rem; padding: 0.6rem 0; }
+
+        /* Role Banners & Badges */
+        .arena-role-banner { border-radius: 12px; padding: 0.85rem 1.1rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; line-height: 1.4; }
+        .arena-role-banner.admin { background: linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(44, 217, 165, 0.08) 100%); border: 1px solid var(--border-gold); }
+        .arena-role-banner.subscriber { background: linear-gradient(135deg, rgba(120, 140, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%); border: 1px solid rgba(120, 140, 255, 0.3); }
+        .badge-role { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.25rem 0.6rem; border-radius: 999px; }
+        .badge-role.admin { background: rgba(212, 175, 55, 0.2); color: #d4af37; border: 1px solid var(--border-gold); }
+        .badge-role.subscriber { background: rgba(120, 140, 255, 0.15); color: #9cb0ff; border: 1px solid rgba(120, 140, 255, 0.3); }
     </style>
 </head>
 <body>
@@ -124,6 +132,7 @@
                 <span>AI Arena</span>
             </div>
             <div class="header-actions">
+                <span id="user-role-badge" class="badge-role subscriber">...</span>
                 <span class="user-email" id="user-email">...</span>
                 <button class="icon-btn" id="logout-btn" title="Déconnexion">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -135,9 +144,13 @@
         <main class="app-content">
 
             <h2 class="section-title">Xfoot AI Arena</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.5rem;">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1rem;">
                 Mesure, pas marketing : chaque modèle est affiché tel qu'il performe réellement, sans classement inventé.
             </p>
+
+            <div id="arena-role-banner" class="arena-role-banner subscriber">
+                <strong>Chargement du profil…</strong>
+            </div>
 
             <div id="arena-loading" class="stat-row">Chargement des modèles…</div>
             <div id="arena-error" class="error-msg hidden"></div>
@@ -278,13 +291,43 @@
         requireAuth();
         
         let currentUser = null;
-        (async function initUser() {
+        async function initUser() {
             currentUser = await getCurrentUser();
-            if (currentUser && currentUser.is_admin) {
-                const badge = document.querySelector('.badge-ai');
-                if (badge) badge.textContent = '🛡️ Admin Cockpit';
+            const roleBadge = document.getElementById('user-role-badge');
+            const roleBanner = document.getElementById('arena-role-banner');
+            const userEmailEl = document.getElementById('user-email');
+            
+            if (currentUser) {
+                if (userEmailEl) userEmailEl.textContent = currentUser.email.split('@')[0];
+                
+                if (currentUser.is_admin) {
+                    if (roleBadge) {
+                        roleBadge.textContent = '🛡️ Administrateur';
+                        roleBadge.className = 'badge-role admin';
+                    }
+                    if (roleBanner) {
+                        roleBanner.className = 'arena-role-banner admin';
+                        roleBanner.innerHTML = `
+                            <strong>🛡️ Cockpit Administrateur Actif</strong>
+                            <span>Vous êtes connecté en tant qu'administrateur (<code>${currentUser.email}</code>). Vous disposez des droits d'évaluation, d'audit approfondi et de promotion des modèles en production.</span>
+                        `;
+                    }
+                } else {
+                    if (roleBadge) {
+                        roleBadge.textContent = '👤 Abonné';
+                        roleBadge.className = 'badge-role subscriber';
+                    }
+                    if (roleBanner) {
+                        roleBanner.className = 'arena-role-banner subscriber';
+                        roleBanner.innerHTML = `
+                            <strong>👁️ Espace Consultation Transparent (Lecture Seule)</strong>
+                            <span>Bienvenue sur l'Arène IA ! Retrouvez en toute transparence les performances statistiques réelles et la santé de nos algorithmes de prédiction.</span>
+                        `;
+                    }
+                }
             }
-        })();
+        }
+        initUser();
 
         const MARKET_LABELS = { '1X2': '1X2', 'BTTS': 'BTTS (les 2 marquent)', 'OVER_UNDER_2_5': 'Plus/Moins 2.5 buts' };
         const METRIC_LABELS = { accuracy: 'accuracy', log_loss: 'log loss', brier_score: 'Brier score' };
