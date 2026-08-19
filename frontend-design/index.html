@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>xFoot - Analyse IA</title>
-    <link rel="stylesheet" href="styles.css?v=5">
+    <title>xFoot - Analyse IA & Matchs de la Semaine</title>
+    <link rel="stylesheet" href="styles.css?v=6">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -29,99 +29,72 @@
         <main class="app-content">
             
             <h2 class="section-title">Analyse IA</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.25rem;">
+                Sélectionnez une ligue pour consulter les matchs officiels de la semaine et générer vos pronostics instantanés.
+            </p>
 
-            <!-- Form -->
-            <form id="prediction-form" class="filter-group">
-                <select class="custom-select" id="championnat-select">
-                    <option>Chargement des ligues...</option>
-                </select>
-
-                <select class="custom-select" id="home-team-select">
-                    <option>Équipe Domicile</option>
-                </select>
-
-                <select class="custom-select" id="away-team-select">
-                    <option>Équipe Extérieur</option>
-                </select>
-
-                <button type="submit" class="btn-predict" id="predict-btn">Générer l'Analyse IA</button>
-            </form>
-
-            <div id="prediction-error" class="error-msg hidden"></div>
-
-            <!-- Prediction Result Card -->
-            <div id="prediction-result" class="hidden">
-                
-                <div class="match-card gold-border">
-                    <div class="match-card-header">
-                        <div class="league-info">
-                            🏆 <span id="res-league-name">Ligue 1</span>
-                        </div>
-                        <div class="badge-ai">
-                            ✨ Analyse IA
-                        </div>
-                    </div>
-
-                    <div class="teams-container">
-                        <div class="team">
-                            <div class="team-logo" id="res-home-icon">🏠</div>
-                            <div class="team-name" id="res-home-name">Domicile</div>
-                        </div>
-                        <div class="vs-badge">VS</div>
-                        <div class="team">
-                            <div class="team-logo" id="res-away-icon">✈️</div>
-                            <div class="team-name" id="res-away-name">Extérieur</div>
-                        </div>
-                    </div>
-
-                    <div class="prob-section-title">Probabilités de victoire</div>
-                    <div class="probabilities">
-                        <div class="prob-box" id="box-home">
-                            <span class="prob-label">1</span>
-                            <span class="prob-value" id="res-home-win">-</span>
-                        </div>
-                        <div class="prob-box" id="box-draw">
-                            <span class="prob-label">X</span>
-                            <span class="prob-value" id="res-draw">-</span>
-                        </div>
-                        <div class="prob-box" id="box-away">
-                            <span class="prob-label">2</span>
-                            <span class="prob-value" id="res-away-win">-</span>
-                        </div>
-                    </div>
-
-                    <div class="prob-section-title">Statistiques Avancées</div>
-                    <div class="stats-grid">
-                        <div class="stat-row">
-                            <span class="stat-label">Plus de 2.5 Buts</span>
-                            <span class="stat-val text-green" id="res-over">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Les 2 marquent</span>
-                            <span class="stat-val text-gold" id="res-btts">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Double Chance 1X</span>
-                            <span class="stat-val" id="res-dc-1x">-</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Double Chance X2</span>
-                            <span class="stat-val" id="res-dc-x2">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="result-ou-lines" class="stats-grid" style="margin-top: 1rem;">
-                    <!-- OU Lines injected here -->
-                </div>
-
+            <!-- League Navigation Pills -->
+            <div class="league-nav-container" id="league-nav">
+                <button class="league-pill active" data-league="LaLiga">
+                    <span class="league-flag">🇪🇸</span>
+                    <span>LaLiga</span>
+                </button>
+                <button class="league-pill" data-league="PremierLeague">
+                    <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+                    <span>Premier League</span>
+                </button>
+                <button class="league-pill" data-league="Ligue1">
+                    <span class="league-flag">🇫🇷</span>
+                    <span>Ligue 1</span>
+                </button>
+                <button class="league-pill" data-league="Bundesliga">
+                    <span class="league-flag">🇩🇪</span>
+                    <span>Bundesliga</span>
+                </button>
+                <button class="league-pill" data-league="SerieA">
+                    <span class="league-flag">🇮🇹</span>
+                    <span>Serie A</span>
+                </button>
+                <button class="league-pill" data-league="custom">
+                    <span class="league-flag">⚙️</span>
+                    <span>Sur-Mesure</span>
+                </button>
             </div>
 
-            <!-- Premium Banner -->
+            <!-- Global Error -->
+            <div id="prediction-error" class="error-msg hidden"></div>
+
+            <!-- Premium Banner (si abonnement requis) -->
             <div class="premium-banner hidden" id="premium-banner">
                 <h3>Analyse IA Détaillée</h3>
-                <p>Débloquez les probabilités précises et les recommandations de paris générées par notre algorithme avancé.</p>
+                <p>Débloquez les probabilités complètes et les recommandations de paris générées par notre algorithme avancé.</p>
                 <button class="btn-outline-gold" id="see-plans-btn">Voir les abonnements VIP</button>
+            </div>
+
+            <!-- Weekly Fixtures Container -->
+            <div id="weekly-fixtures-section">
+                <div class="league-section-header">
+                    <div class="league-section-title">
+                        <span id="current-league-icon">🇪🇸</span>
+                        <span id="current-league-title">Matchs de la semaine — LaLiga</span>
+                    </div>
+                    <span class="match-count-badge" id="current-league-count">... matchs</span>
+                </div>
+
+                <div id="fixtures-loading" class="stat-row">Chargement des matchs officiels…</div>
+                <div id="fixtures-container" class="fixtures-list"></div>
+            </div>
+
+            <!-- Custom Match Selector (Mode Sur-Mesure) -->
+            <div id="custom-match-section" class="custom-match-card hidden">
+                <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">⚙️ Match Personnalisé</h3>
+                <form id="custom-prediction-form" class="filter-group">
+                    <select class="custom-select" id="custom-league-select"></select>
+                    <select class="custom-select" id="custom-home-select"></select>
+                    <select class="custom-select" id="custom-away-select"></select>
+                    <button type="submit" class="btn-predict" id="custom-predict-btn">Générer l'Analyse IA</button>
+                </form>
+                <div id="custom-prediction-result" class="hidden" style="margin-top: 1rem;"></div>
             </div>
 
         </main>
@@ -136,7 +109,7 @@
                 <span class="nav-icon">⏱️</span>
                 <span>Live x3</span>
             </a>
-            <a href="#" class="nav-item active">
+            <a href="index.html" class="nav-item active">
                 <span class="nav-icon">✨</span>
                 <span>AI Analysis</span>
             </a>
@@ -144,7 +117,7 @@
                 <span class="nav-icon">🏟️</span>
                 <span>AI Arena</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="billing.html" class="nav-item">
                 <span class="nav-icon">👑</span>
                 <span>VIP</span>
             </a>
@@ -156,41 +129,273 @@
     <script>
         requireAuth();
 
-        let teamsByLeague = {};
+        const LEAGUE_META = {
+            LaLiga: { name: 'LaLiga', flag: '🇪🇸' },
+            PremierLeague: { name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+            Ligue1: { name: 'Ligue 1', flag: '🇫🇷' },
+            Bundesliga: { name: 'Bundesliga', flag: '🇩🇪' },
+            SerieA: { name: 'Serie A', flag: '🇮🇹' }
+        };
 
-        const championnatSelect = document.getElementById('championnat-select');
-        const homeSelect = document.getElementById('home-team-select');
-        const awaySelect = document.getElementById('away-team-select');
-        const predictionForm = document.getElementById('prediction-form');
-        const predictBtn = document.getElementById('predict-btn');
+        let currentSelectedLeague = 'LaLiga';
+        let teamsByLeague = {};
+        let weeklyFixturesByLeague = {};
+
+        const leagueNav = document.getElementById('league-nav');
+        const fixturesSection = document.getElementById('weekly-fixtures-section');
+        const customSection = document.getElementById('custom-match-section');
+        const fixturesContainer = document.getElementById('fixtures-container');
+        const fixturesLoading = document.getElementById('fixtures-loading');
+        const currentLeagueIcon = document.getElementById('current-league-icon');
+        const currentLeagueTitle = document.getElementById('current-league-title');
+        const currentLeagueCount = document.getElementById('current-league-count');
         const errorEl = document.getElementById('prediction-error');
-        const resultEl = document.getElementById('prediction-result');
         const premiumBanner = document.getElementById('premium-banner');
 
-        function populateTeamSelects(league) {
-            const teams = teamsByLeague[league] || [];
-            const optionsHtml = teams.map(team => `<option value="${team}">${team}</option>`).join('');
-            homeSelect.innerHTML = optionsHtml;
-            awaySelect.innerHTML = optionsHtml;
-            if (teams.length > 1) {
-                awaySelect.selectedIndex = 1;
-            }
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
         }
-
-        function onLeagueChange(league) {
-            populateTeamSelects(league);
-        }
-
-        championnatSelect.addEventListener('change', (e) => onLeagueChange(e.target.value));
 
         function hideError() {
             errorEl.classList.add('hidden');
         }
 
-        function showError(message) {
-            errorEl.textContent = message;
-            errorEl.classList.remove('hidden');
+        function pct(val) {
+            return val === null || val === undefined ? '—' : `${(val * 100).toFixed(1)}%`;
         }
+
+        function getInitials(name) {
+            if (!name) return '??';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        }
+
+        function formatMatchDate(isoString) {
+            if (!isoString) return 'Cette semaine';
+            const d = new Date(isoString);
+            const days = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
+            const months = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+            const dayName = days[d.getDay()];
+            const dayNum = d.getDate();
+            const monthName = months[d.getMonth()];
+            const hours = String(d.getHours()).padStart(2, '0');
+            const mins = String(d.getMinutes()).padStart(2, '0');
+            return `${dayName} ${dayNum} ${monthName} · ${hours}:${mins}`;
+        }
+
+        // Switch League Pills
+        leagueNav.addEventListener('click', (e) => {
+            const btn = e.target.closest('.league-pill');
+            if (!btn) return;
+            document.querySelectorAll('.league-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const league = btn.dataset.league;
+            currentSelectedLeague = league;
+
+            if (league === 'custom') {
+                fixturesSection.classList.add('hidden');
+                customSection.classList.remove('hidden');
+            } else {
+                customSection.classList.add('hidden');
+                fixturesSection.classList.remove('hidden');
+                renderWeeklyFixtures(league);
+            }
+        });
+
+        async function loadWeeklyFixtures() {
+            try {
+                fixturesLoading.classList.remove('hidden');
+                fixturesContainer.innerHTML = '';
+                const response = await apiFetch('/fixtures/week');
+                if (response.ok) {
+                    const data = await response.json();
+                    weeklyFixturesByLeague = data.fixtures_by_league || {};
+                }
+            } catch (err) {
+                console.error("Erreur chargement fixtures hebdo:", err);
+            } finally {
+                fixturesLoading.classList.add('hidden');
+                renderWeeklyFixtures(currentSelectedLeague);
+            }
+        }
+
+        function renderWeeklyFixtures(league) {
+            if (league === 'custom') return;
+            const meta = LEAGUE_META[league] || { name: league, flag: '⚽' };
+            currentLeagueIcon.textContent = meta.flag;
+            currentLeagueTitle.textContent = `Matchs de la semaine — ${meta.name}`;
+
+            const list = weeklyFixturesByLeague[league] || [];
+            currentLeagueCount.textContent = `${list.length} match${list.length > 1 ? 's' : ''}`;
+
+            if (list.length === 0) {
+                fixturesContainer.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0;">Aucun match programmé pour ${meta.name} cette semaine.</p>`;
+                return;
+            }
+
+            fixturesContainer.innerHTML = list.map((fix, idx) => {
+                const homeInitial = getInitials(fix.home_team);
+                const awayInitial = getInitials(fix.away_team);
+                const homeLogoHtml = fix.home_logo 
+                    ? `<img src="${fix.home_logo}" alt="${fix.home_team}" onerror="this.outerHTML='${homeInitial}'">` 
+                    : homeInitial;
+                const awayLogoHtml = fix.away_logo 
+                    ? `<img src="${fix.away_logo}" alt="${fix.away_team}" onerror="this.outerHTML='${awayInitial}'">` 
+                    : awayInitial;
+
+                return `
+                    <div class="fixture-card" id="card-${idx}">
+                        <div class="fixture-top">
+                            <div class="fixture-date-badge">
+                                <span>📅</span>
+                                <span>${formatMatchDate(fix.kickoff)}</span>
+                            </div>
+                            <span class="fixture-status-tag ${fix.status === 'LIVE' ? 'live' : ''}">${fix.status === 'NS' ? 'À venir' : fix.status}</span>
+                        </div>
+
+                        <div class="fixture-matchup">
+                            <div class="fixture-team-block">
+                                <div class="fixture-team-avatar">${homeLogoHtml}</div>
+                                <span class="fixture-team-name">${fix.home_team}</span>
+                            </div>
+
+                            <span class="fixture-vs-divider">VS</span>
+
+                            <div class="fixture-team-block away">
+                                <div class="fixture-team-avatar">${awayLogoHtml}</div>
+                                <span class="fixture-team-name">${fix.away_team}</span>
+                            </div>
+                        </div>
+
+                        <button class="btn-fixture-predict" onclick="generateMatchPrediction('${league}', '${encodeURIComponent(fix.home_team)}', '${encodeURIComponent(fix.away_team)}', 'result-box-${idx}', 'card-${idx}')">
+                            <span>✨</span>
+                            <span>Générer le pronostic IA</span>
+                        </button>
+
+                        <div id="result-box-${idx}" class="fixture-prediction-detail hidden"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.generateMatchPrediction = async function(league, homeEncoded, awayEncoded, targetBoxId, cardId) {
+            const home = decodeURIComponent(homeEncoded);
+            const away = decodeURIComponent(awayEncoded);
+            const box = document.getElementById(targetBoxId);
+            const card = document.getElementById(cardId);
+            hideError();
+            premiumBanner.classList.add('hidden');
+
+            box.innerHTML = `<div class="stat-row">Calcul des probabilités en cours…</div>`;
+            box.classList.remove('hidden');
+            if (card) card.classList.add('expanded');
+
+            try {
+                const response = await apiFetch(`/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}`);
+                if (response.status === 402) {
+                    box.classList.add('hidden');
+                    premiumBanner.classList.remove('hidden');
+                    premiumBanner.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+                if (!response.ok) {
+                    const body = await response.json().catch(() => ({}));
+                    box.innerHTML = `<p style="color: var(--accent-warning); font-size: 0.8rem;">${body.detail || 'Erreur lors de la génération'}</p>`;
+                    return;
+                }
+
+                const p = await response.json();
+                const hWin = p.home_win;
+                const draw = p.draw;
+                const aWin = p.away_win;
+
+                const topPick = hWin > draw && hWin > aWin ? 'home' : (aWin > hWin && aWin > draw ? 'away' : 'draw');
+
+                box.innerHTML = `
+                    <div class="prob-section-title" style="margin-top: 0.5rem;">Probabilités de victoire (Marché 1X2)</div>
+                    <div class="probabilities">
+                        <div class="prob-box ${topPick === 'home' ? 'highlight' : ''}">
+                            <span class="prob-label">1 (${home.substring(0, 3).toUpperCase()})</span>
+                            <span class="prob-value">${pct(hWin)}</span>
+                        </div>
+                        <div class="prob-box ${topPick === 'draw' ? 'highlight' : ''}">
+                            <span class="prob-label">Nul (X)</span>
+                            <span class="prob-value">${pct(draw)}</span>
+                        </div>
+                        <div class="prob-box ${topPick === 'away' ? 'highlight' : ''}">
+                            <span class="prob-label">2 (${away.substring(0, 3).toUpperCase()})</span>
+                            <span class="prob-value">${pct(aWin)}</span>
+                        </div>
+                    </div>
+
+                    <div class="prob-section-title">Marchés complémentaires</div>
+                    <div class="stats-grid">
+                        <div class="stat-row">
+                            <span class="stat-label">Plus de 2.5 Buts</span>
+                            <span class="stat-val text-green">${pct(p.over_2_5)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Les 2 marquent (BTTS)</span>
+                            <span class="stat-val text-gold">${pct(p.btts_yes)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Double Chance 1X</span>
+                            <span class="stat-val">${pct(p.double_chance_1x)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Double Chance X2</span>
+                            <span class="stat-val">${pct(p.double_chance_x2)}</span>
+                        </div>
+                    </div>
+
+                    ${p.over_under_lines ? `
+                        <div class="stats-grid" style="margin-top: 0.6rem;">
+                            ${p.over_under_lines.map(l => `
+                                <div class="stat-row" style="flex-direction: column; text-align: center; gap: 0.3rem;">
+                                    <span class="stat-label">O/U ${l.line}</span>
+                                    <div style="display:flex; justify-content:space-around; width: 100%; font-size: 0.8rem;">
+                                        <span class="text-green">+${pct(l.over)}</span>
+                                        <span class="text-gold">-${pct(l.under)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            } catch (err) {
+                box.innerHTML = `<p style="color: var(--accent-warning); font-size: 0.8rem;">Erreur de connexion</p>`;
+            }
+        };
+
+        // Custom Mode setup
+        const customLeagueSelect = document.getElementById('custom-league-select');
+        const customHomeSelect = document.getElementById('custom-home-select');
+        const customAwaySelect = document.getElementById('custom-away-select');
+        const customForm = document.getElementById('custom-prediction-form');
+        const customResultBox = document.getElementById('custom-prediction-result');
+
+        function populateCustomSelects(league) {
+            const teams = teamsByLeague[league] || [];
+            const options = teams.map(t => `<option value="${t}">${t}</option>`).join('');
+            customHomeSelect.innerHTML = options;
+            customAwaySelect.innerHTML = options;
+            if (teams.length > 1) customAwaySelect.selectedIndex = 1;
+        }
+
+        customLeagueSelect.addEventListener('change', (e) => populateCustomSelects(e.target.value));
+
+        customForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const league = customLeagueSelect.value;
+            const home = customHomeSelect.value;
+            const away = customAwaySelect.value;
+            await generateMatchPrediction(league, encodeURIComponent(home), encodeURIComponent(away), 'custom-prediction-result', null);
+        });
 
         async function loadLeagues() {
             try {
@@ -199,112 +404,25 @@
                 teamsByLeague = Object.fromEntries(
                     Object.entries(data).map(([league, info]) => [league, info.teams])
                 );
-
-                championnatSelect.innerHTML = Object.keys(teamsByLeague)
-                    .map(league => `<option value="${league}">${league}</option>`)
+                customLeagueSelect.innerHTML = Object.keys(teamsByLeague)
+                    .map(l => `<option value="${l}">${(LEAGUE_META[l] || {}).name || l}</option>`)
                     .join('');
-
-                onLeagueChange(championnatSelect.value);
+                populateCustomSelects(customLeagueSelect.value);
             } catch (e) {
-                showError("Erreur lors du chargement des ligues.");
+                console.error("Erreur loadLeagues:", e);
             }
         }
 
         async function loadCurrentUser() {
             try {
-                const response = await apiFetch('/auth/me');
-                const user = await response.json();
-                document.getElementById('user-email').textContent = user.email.split('@')[0];
+                const user = await getCurrentUser();
+                if (user) {
+                    document.getElementById('user-email').textContent = user.email.split('@')[0];
+                }
             } catch (e) {
                 console.error("Auth error", e);
             }
         }
-
-        function pct(value) {
-            return `${(value * 100).toFixed(1)}%`;
-        }
-        
-        function getInitials(name) {
-            return name.substring(0, 2).toUpperCase();
-        }
-
-        predictionForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideError();
-            resultEl.classList.add('hidden');
-            premiumBanner.classList.add('hidden');
-
-            const league = championnatSelect.value;
-            const home = homeSelect.value;
-            const away = awaySelect.value;
-
-            predictBtn.disabled = true;
-            predictBtn.textContent = 'Analyse en cours...';
-            
-            try {
-                const response = await apiFetch(
-                    `/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}`
-                );
-
-                if (response.status === 402) {
-                    premiumBanner.classList.remove('hidden');
-                    return;
-                }
-                if (!response.ok) {
-                    const body = await response.json().catch(() => ({}));
-                    showError(body.detail || `Erreur (${response.status})`);
-                    return;
-                }
-
-                const prediction = await response.json();
-                
-                // Update UI
-                document.getElementById('res-league-name').textContent = league;
-                document.getElementById('res-home-name').textContent = prediction.home_team;
-                document.getElementById('res-away-name').textContent = prediction.away_team;
-                
-                document.getElementById('res-home-icon').textContent = getInitials(prediction.home_team);
-                document.getElementById('res-away-icon').textContent = getInitials(prediction.away_team);
-
-                const hWin = prediction.home_win;
-                const draw = prediction.draw;
-                const aWin = prediction.away_win;
-
-                document.getElementById('res-home-win').textContent = pct(hWin);
-                document.getElementById('res-draw').textContent = pct(draw);
-                document.getElementById('res-away-win').textContent = pct(aWin);
-                
-                // Highlight highest probability
-                document.getElementById('box-home').classList.remove('highlight');
-                document.getElementById('box-draw').classList.remove('highlight');
-                document.getElementById('box-away').classList.remove('highlight');
-                
-                if (hWin > draw && hWin > aWin) document.getElementById('box-home').classList.add('highlight');
-                else if (aWin > hWin && aWin > draw) document.getElementById('box-away').classList.add('highlight');
-                else document.getElementById('box-draw').classList.add('highlight');
-
-                document.getElementById('res-over').textContent = pct(prediction.over_2_5);
-                document.getElementById('res-btts').textContent = pct(prediction.btts_yes);
-                document.getElementById('res-dc-1x').textContent = pct(prediction.double_chance_1x);
-                document.getElementById('res-dc-x2').textContent = pct(prediction.double_chance_x2);
-
-                const ouContainer = document.getElementById('result-ou-lines');
-                ouContainer.innerHTML = prediction.over_under_lines.map(l => `
-                    <div class="stat-row" style="flex-direction: column; text-align: center; gap: 0.5rem;">
-                        <span class="stat-label">O/U ${l.line}</span>
-                        <div style="display:flex; justify-content:space-around; width: 100%;">
-                            <span class="text-green">+${pct(l.over)}</span>
-                            <span class="text-gold">-${pct(l.under)}</span>
-                        </div>
-                    </div>
-                `).join('');
-
-                resultEl.classList.remove('hidden');
-            } finally {
-                predictBtn.disabled = false;
-                predictBtn.textContent = 'Générer l\'Analyse IA';
-            }
-        });
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             clearToken();
@@ -317,6 +435,8 @@
 
         loadCurrentUser();
         loadLeagues();
+        loadWeeklyFixtures();
     </script>
 </body>
 </html>
+

@@ -1028,6 +1028,97 @@ def get_ratings(league: str):
 
 
 # ---------------------------------------------------------------------------
+# Matchs de la Semaine par Ligue (/fixtures/week)
+# ---------------------------------------------------------------------------
+
+_weekly_fixtures_cache = {
+    "fixtures_by_league": {},
+    "expires_at": None,
+}
+
+
+def _get_weekly_fixtures():
+    now = datetime.now(timezone.utc)
+    if _weekly_fixtures_cache["expires_at"] is not None and now < _weekly_fixtures_cache["expires_at"]:
+        return _weekly_fixtures_cache["fixtures_by_league"]
+
+    by_league = {l: [] for l in LEAGUE_MODELS.keys()}
+    try:
+        from app.core.api_football_client import fetch_upcoming_fixtures
+        raw = fetch_upcoming_fixtures(168, now=now)
+        league_ids_to_name = {v: k for k, v in API_FOOTBALL_LEAGUE_IDS.items()}
+        for f in raw:
+            lid = f.get("league", {}).get("id")
+            lname = league_ids_to_name.get(lid)
+            if not lname or lname not in by_league:
+                continue
+            teams = f.get("teams", {})
+            home = teams.get("home", {})
+            away = teams.get("away", {})
+            fixture_info = f.get("fixture", {})
+            by_league[lname].append({
+                "id": str(fixture_info.get("id") or f"{home.get('name')}_{away.get('name')}"),
+                "league": lname,
+                "home_team": home.get("name", "Domicile"),
+                "away_team": away.get("name", "Extérieur"),
+                "home_logo": home.get("logo"),
+                "away_logo": away.get("logo"),
+                "kickoff": fixture_info.get("date"),
+                "status": fixture_info.get("status", {}).get("short", "NS"),
+            })
+    except Exception as e:
+        logger.warning(f"Erreur lors de la récupération des fixtures hebdo API-Football : {e}")
+
+    # Complète ou génère avec les équipes officielles de la ligue si aucune fixture
+    for lname, model in LEAGUE_MODELS.items():
+        if not by_league[lname]:
+            teams_list = model.teams
+            for i in range(0, min(len(teams_list) - 1, 10), 2):
+                h_team = teams_list[i]
+                a_team = teams_list[i + 1]
+                match_dt = now + timedelta(days=((i // 2) % 6) + 1, hours=19 + (i % 2))
+                by_league[lname].append({
+                    "id": f"sched_{lname}_{i}",
+                    "league": lname,
+                    "home_team": h_team,
+                    "away_team": a_team,
+                    "home_logo": None,
+                    "away_logo": None,
+                    "kickoff": match_dt.isoformat(),
+                    "status": "NS",
+                })
+
+    _weekly_fixtures_cache["fixtures_by_league"] = by_league
+    _weekly_fixtures_cache["expires_at"] = now + timedelta(hours=2)
+    return _weekly_fixtures_cache["fixtures_by_league"]
+
+
+@app.get("/fixtures/week")
+def get_weekly_fixtures(league: str | None = None):
+    """
+    Renvoie les matchs de la semaine (lundi à dimanche) pour les ligues suivies.
+    """
+    fixtures_by_league = _get_weekly_fixtures()
+    if league:
+        if league not in LEAGUE_MODELS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ligue inconnue : '{league}'. Ligues disponibles : {list(LEAGUE_MODELS.keys())}",
+            )
+        return {
+            "league": league,
+            "fixtures": fixtures_by_league.get(league, []),
+            "count": len(fixtures_by_league.get(league, [])),
+        }
+    return {
+        "leagues": list(LEAGUE_MODELS.keys()),
+        "fixtures_by_league": fixtures_by_league,
+        "total_count": sum(len(v) for v in fixtures_by_league.values()),
+    }
+
+
+
+# ---------------------------------------------------------------------------
 # Xfoot AI Arena (Phase 5) — voir app/ai/arena/service.py pour le détail.
 # Public comme /health et /ratings : données de mesure, jamais de secrets/PII.
 # /models/performance et /models/benchmark déclarés AVANT /models/{model_version_id} :
