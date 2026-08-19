@@ -25,6 +25,7 @@ from typing import Optional
 
 from sqlmodel import Session, select
 
+from app.models.model_prediction import ModelPrediction
 from app.models.team_rating import ModelVersion
 
 from .models_common import MatchContext, PredictionOutcome, _MLPredictionModel
@@ -119,7 +120,13 @@ def generate_live_predictions(
         for shadow_version in shadow_versions:
             model = shadow_models.get(shadow_version.model_type)
             if model is None:
-                continue  # ce model_type n'est pas géré en shadow (seuls XGBoost/LightGBM le sont, §20)
+                # ce model_type n'est pas géré en shadow (seuls XGBoost/LightGBM le sont, §20)
+                logger.info(
+                    f"[SHADOW_PREDICTION_SKIPPED] model_type={shadow_version.model_type} "
+                    f"model_version_id={shadow_version.id} league={ctx.league} match_date={ctx.match_date} "
+                    f"reason=model_type_not_shadow_capable"
+                )
+                continue
             try:
                 outcome = model.predict_for_shadow(session, ctx, shadow_version)
             except Exception as e:
@@ -130,8 +137,9 @@ def generate_live_predictions(
 
             if outcome.status != "ok" or outcome.record is None:
                 logger.info(
-                    f"shadow_prediction_unavailable model_type={shadow_version.model_type} "
-                    f"version_id={shadow_version.id} reason={outcome.reason}"
+                    f"[SHADOW_PREDICTION_SKIPPED] model_type={shadow_version.model_type} "
+                    f"model_version_id={shadow_version.id} league={ctx.league} match_date={ctx.match_date} "
+                    f"reason={outcome.reason}"
                 )
                 continue
 
@@ -146,8 +154,21 @@ def generate_live_predictions(
                 source="live", role="shadow",
             )
             if persist:
+                already_existed = session.exec(
+                    select(ModelPrediction).where(
+                        ModelPrediction.league == shadow_record.league, ModelPrediction.match_date == shadow_record.match_date,
+                        ModelPrediction.home_team == shadow_record.home_team, ModelPrediction.away_team == shadow_record.away_team,
+                        ModelPrediction.model_type == shadow_record.model_type,
+                        ModelPrediction.model_version_id == shadow_version.id,
+                    )
+                ).first() is not None
                 log_prediction(session, shadow_record, shadow_version.id)
                 session.commit()
+                event = "SHADOW_PREDICTION_ALREADY_EXISTS" if already_existed else "SHADOW_PREDICTION_CREATED"
+                logger.info(
+                    f"[{event}] model_type={shadow_version.model_type} model_version_id={shadow_version.id} "
+                    f"league={shadow_record.league} match_date={shadow_record.match_date}"
+                )
             result.shadow_predictions_logged += 1
 
     return result

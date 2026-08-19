@@ -216,7 +216,7 @@ def run(target_date: date | None = None) -> int:
             None,
         )
 
-    matched, unmatched = 0, []
+    matched, matched_shadow, unmatched = 0, 0, []
     with Session(engine) as session:
         for log in pending:
             fixture = _find_fixture(log.league, log.home_team, log.away_team)
@@ -266,10 +266,17 @@ def run(target_date: date | None = None) -> int:
             session.add(db_pred)
             session.commit()
             matched += 1
+            # Phase 11, §7/§14 : compteur dédié pour le log structuré ci-dessous — la
+            # résolution elle-même (resolve_prediction) ne distingue déjà PAS active/shadow
+            # (§25 Phase 9, voir docstring module) : uniquement un comptage a posteriori,
+            # aucune branche supplémentaire dans la logique de résolution.
+            if pred.role == "shadow":
+                matched_shadow += 1
 
     logger.info("=" * 80)
     logger.info("RÉCAPITULATIF")
     logger.info(f"  Rapprochés  : {matched}/{total_pending}")
+    logger.info(f"[SHADOW_RESOLUTION_COMPLETED] count={matched_shadow} target_date={target_date.isoformat()}")
     if unmatched:
         logger.warning(f"  Non rapprochés ({len(unmatched)}) :")
         for m in unmatched:

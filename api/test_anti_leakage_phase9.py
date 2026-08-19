@@ -33,7 +33,7 @@ from app.models.team_rating import ModelVersion
 from app.ai.engine.live_features import build_live_features
 from app.ai.arena.prediction_logging import PredictionRecord, log_prediction, resolve_prediction
 from app.ai.arena.ensemble import compute_market_weights
-from app.ai.arena import retraining, service
+from app.ai.arena import retraining, service, promotion
 
 init_db()
 
@@ -266,6 +266,79 @@ def test_retraining_does_not_modify_old_predictions():
         assert after == snapshot
 
 
+# ---------------------------------------------------------------------------
+# 9-10. Phase 10 : promotion pilotée par les performances LIVE — ne doit
+# jamais utiliser une prédiction pending, et doit être entièrement
+# reconstructible depuis les données déjà stockées (déterministe, aucun état
+# caché) — voir aussi test_live_promotion.py pour la couverture complète des
+# décisions.
+# ---------------------------------------------------------------------------
+
+def test_promotion_never_uses_pending_predictions():
+    """Un candidat avec beaucoup de lignes en base mais dont la plupart sont
+    encore `status="pending"` (résultat pas encore connu) doit rester
+    honnêtement insufficient_data — jamais compter une prédiction dont le
+    résultat n'est pas encore arrivé (§14 du ticket Phase 10)."""
+    _clean_all()
+    with Session(engine) as session:
+        active = _make_version(session, "xgboost", is_active=True)
+        shadow = ModelVersion(name=f"test-shadow-{datetime.now(timezone.utc).timestamp()}",
+                               model_type="xgboost", trained_at=datetime.now(timezone.utc),
+                               is_active=False, status="shadow")
+        session.add(shadow)
+        session.commit()
+        session.refresh(shadow)
+
+        for i in range(120):
+            _log_resolved(session, "xgboost", active.id, BASE_DATE + timedelta(days=i), p_true=0.6)
+
+        # 120 lignes shadow au total, mais seulement 15 réellement résolues —
+        # le reste attend encore un résultat (match pas encore joué).
+        for i in range(15):
+            _log_resolved(session, "xgboost", shadow.id, BASE_DATE + timedelta(days=i), p_true=0.95)
+        for i in range(105):
+            d = BASE_DATE + timedelta(days=200 + i)
+            record = PredictionRecord(
+                league="Ligue1", match_date=d, home_team=f"Pending-{d}", away_team=f"Pending2-{d}",
+                model_type="xgboost", prob_home=0.95, prob_draw=0.025, prob_away=0.025, source="live", role="shadow",
+            )
+            log_prediction(session, record, shadow.id)
+        session.commit()
+
+        decision = promotion.evaluate_live_promotion(session, shadow.id, "1X2")
+        assert decision.status == "insufficient_data", (
+            f"attendu insufficient_data (15 résolues < seuil), obtenu {decision.status} : {decision.reason}"
+        )
+        assert decision.candidate_metrics["sample_size"] == 15
+
+
+def test_promotion_decision_reconstructable_from_stored_data():
+    """Rejouer evaluate_live_promotion sur le même état stocké doit toujours
+    produire EXACTEMENT la même décision (§12 : "toute métrique doit pouvoir
+    être reconstruite à partir des données sources") — aucun horodatage
+    d'exécution, aucun aléa, aucun état mutable en dehors de la base."""
+    _clean_all()
+    with Session(engine) as session:
+        active = _make_version(session, "lightgbm", is_active=True)
+        shadow = ModelVersion(name=f"test-shadow-{datetime.now(timezone.utc).timestamp()}",
+                               model_type="lightgbm", trained_at=datetime.now(timezone.utc),
+                               is_active=False, status="shadow")
+        session.add(shadow)
+        session.commit()
+        session.refresh(shadow)
+
+        for i in range(110):
+            _log_resolved(session, "lightgbm", active.id, BASE_DATE + timedelta(days=i), p_true=0.6)
+        for i in range(110):
+            _log_resolved(session, "lightgbm", shadow.id, BASE_DATE + timedelta(days=i), p_true=0.85)
+
+        d1 = promotion.evaluate_live_promotion(session, shadow.id, "1X2")
+        d2 = promotion.evaluate_live_promotion(session, shadow.id, "1X2")
+        assert d1.status == d2.status
+        assert d1.candidate_metrics == d2.candidate_metrics
+        assert d1.baseline_metrics == d2.baseline_metrics
+
+
 UNIT_TESTS = [
     test_no_future_results_in_features,
     test_no_future_matches_in_training_features,
@@ -275,6 +348,8 @@ UNIT_TESTS = [
     test_live_and_backtest_are_separated,
     test_prediction_probability_immutable,
     test_retraining_does_not_modify_old_predictions,
+    test_promotion_never_uses_pending_predictions,
+    test_promotion_decision_reconstructable_from_stored_data,
 ]
 
 

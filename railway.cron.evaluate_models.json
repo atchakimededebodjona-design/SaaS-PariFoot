@@ -1,0 +1,7 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "deploy": {
+    "startCommand": "python scripts/evaluate_live_models.py",
+    "cronSchedule": "0 7 * * *"
+  }
+}

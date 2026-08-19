@@ -18,6 +18,7 @@ Lancement local :
 Puis : http://localhost:8000/docs pour la documentation interactive.
 """
 
+import dataclasses
 import json
 import logging
 import os
@@ -72,7 +73,12 @@ from app.ai.arena.ensemble import build_live_ensemble, WEIGHT_STRATEGIES, DEFAUL
 from app.ai.arena.availability import compute_model_availability
 from app.ai.arena import monitoring as arena_monitoring
 from app.ai.arena import retraining as arena_retraining
+from app.ai.arena import promotion as arena_promotion
+from app.ai.arena import live_validation as arena_live_validation
+from app.ai.arena import shadow_comparison as arena_shadow_comparison
 from app.models.team_rating import ModelVersion as ArenaModelVersion
+from app.models.model_promotion_event import ModelPromotionEvent
+from app.auth.admin import require_admin
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -1288,10 +1294,10 @@ def get_models_availability_endpoint():
 
 # ---------------------------------------------------------------------------
 # Phase 9 — LIVE monitoring / model health / versioning / training status
-# (GET uniquement — retrain/promote/shadow restent CLI-only, voir
-# scripts/retrain_ml_models.py : ce dépôt n'a pas de palier d'autorisation
-# "admin" distinct de get_current_user/require_active_subscription, et
-# inventer ce palier était hors du périmètre décidé pour cette phase).
+# (GET uniquement — retrain/shadow restent CLI-only, voir
+# scripts/retrain_ml_models.py). La promotion, elle, a un palier admin
+# depuis la Phase 10 (voir app/auth/admin.py::require_admin, ADMIN_EMAILS) —
+# section "Phase 10" plus bas pour les endpoints /models/promotion/*.
 # ---------------------------------------------------------------------------
 
 _LIVE_MONITORING_MODEL_TYPES = (*KNOWN_MODEL_TYPES, "ensemble")
@@ -1482,6 +1488,288 @@ def get_models_training_status_endpoint(model_type: str | None = None):
                 },
             }
     return result
+
+
+# ---------------------------------------------------------------------------
+# Phase 10 — Promotion pilotée par les performances LIVE (voir app/ai/arena/
+# promotion.py::evaluate_live_promotion / app/ai/arena/live_validation.py).
+# GET (status/history) restent publics, comme le reste de l'Arena (données de
+# mesure, jamais de secrets/PII) ; POST (evaluate/promote) exigent
+# require_admin (ADMIN_EMAILS) — endpoints MUTANTS, jamais publics.
+# ---------------------------------------------------------------------------
+
+_PROMOTABLE_STATUSES = ("shadow", "candidate")
+
+
+def _live_promotion_decision_response(d) -> dict:
+    return {
+        "status": d.status, "reason": d.reason, "model_type": d.model_type, "market": d.market,
+        "candidate_version_id": d.candidate_version_id, "baseline_version_id": d.baseline_version_id,
+        "candidate_metrics": _live_metrics_response(d.candidate_metrics),
+        "baseline_metrics": _live_metrics_response(d.baseline_metrics),
+        "min_sample_size": d.min_sample_size, "min_improvement": d.min_improvement,
+    }
+
+
+def _live_metrics_response(m: dict | None) -> dict | None:
+    if m is None:
+        return None
+    return {
+        **{k: v for k, v in m.items() if k not in ("period_start", "period_end")},
+        "period_start": m["period_start"].isoformat() if m.get("period_start") else None,
+        "period_end": m["period_end"].isoformat() if m.get("period_end") else None,
+    }
+
+
+def _record_promotion_event(
+    session: Session, decision, *, actor: str, automatic: bool, previous_model_version_id: int | None,
+) -> ModelPromotionEvent:
+    metrics_snapshot = json.dumps({
+        "candidate": _live_metrics_response(decision.candidate_metrics),
+        "baseline": _live_metrics_response(decision.baseline_metrics),
+    })
+    sample_size = None
+    if decision.candidate_metrics is not None:
+        sample_size = decision.candidate_metrics.get("sample_size")
+    event = ModelPromotionEvent(
+        model_version_id=decision.candidate_version_id,
+        previous_model_version_id=previous_model_version_id,
+        model_type=decision.model_type, market=decision.market,
+        decision=decision.status, reason=decision.reason,
+        metrics=metrics_snapshot, sample_size=sample_size,
+        actor=actor, automatic=automatic,
+    )
+    session.add(event)
+    session.commit()
+    session.refresh(event)
+    return event
+
+
+@app.get("/models/promotion/status")
+def get_models_promotion_status_endpoint(model_type: str | None = None, market: str = "1X2"):
+    """
+    Pour chaque ModelVersion candidate à la promotion (status shadow ou
+    candidate) du/des model_type demandé(s) : décision LIVE actuelle
+    (voir evaluate_live_promotion), SANS rien écrire dans l'historique — un
+    simple GET de consultation n'est jamais une "décision" tracée (voir POST
+    /models/promotion/evaluate pour ça).
+    """
+    if model_type is not None and model_type not in KNOWN_MODEL_TYPES:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(KNOWN_MODEL_TYPES)}")
+    if market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+
+    model_types = [model_type] if model_type else list(KNOWN_MODEL_TYPES)
+    candidates: list[dict] = []
+    with Session(engine) as session:
+        for mt in model_types:
+            versions = session.exec(
+                select(ArenaModelVersion).where(
+                    ArenaModelVersion.model_type == mt, ArenaModelVersion.status.in_(_PROMOTABLE_STATUSES),
+                )
+            ).all()
+            for v in versions:
+                decision = arena_promotion.evaluate_live_promotion(session, v.id, market)
+                candidates.append({
+                    "model_version_id": v.id, "version_name": v.name, "status": v.status,
+                    **_live_promotion_decision_response(decision),
+                })
+    return {"market": market, "candidates": candidates, "count": len(candidates)}
+
+
+@app.get("/models/promotion/history")
+def get_models_promotion_history_endpoint(
+    model_type: str | None = None, decision: str | None = None, limit: int = 50,
+):
+    """Historique append-only des décisions de promotion (§9/règle 11 du
+    ticket Phase 10 : rien de silencieux), plus récentes d'abord."""
+    limit = max(1, min(limit, 200))
+    with Session(engine) as session:
+        stmt = select(ModelPromotionEvent)
+        if model_type is not None:
+            stmt = stmt.where(ModelPromotionEvent.model_type == model_type)
+        if decision is not None:
+            stmt = stmt.where(ModelPromotionEvent.decision == decision)
+        events = session.exec(stmt.order_by(ModelPromotionEvent.created_at.desc()).limit(limit)).all()
+
+    return {
+        "events": [
+            {
+                "id": e.id, "model_version_id": e.model_version_id,
+                "previous_model_version_id": e.previous_model_version_id,
+                "model_type": e.model_type, "market": e.market, "decision": e.decision, "reason": e.reason,
+                "metrics": json.loads(e.metrics) if e.metrics else None, "sample_size": e.sample_size,
+                "created_at": e.created_at.isoformat(), "actor": e.actor, "automatic": e.automatic,
+            }
+            for e in events
+        ],
+        "count": len(events),
+    }
+
+
+class PromotionEvaluateRequest(BaseModel):
+    model_version_id: int
+    market: str = "1X2"
+
+
+@app.post("/models/promotion/evaluate")
+def post_models_promotion_evaluate(payload: PromotionEvaluateRequest, user: User = Depends(require_admin)):
+    """
+    Évalue une version candidate SANS la promouvoir (§10 : "évalue une
+    version candidate sans forcément la promouvoir") — écrit tout de même
+    une ligne d'historique (jamais une évaluation silencieuse, admin ou
+    non) avec `automatic=False`, `actor=<email admin>`.
+    """
+    if payload.market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{payload.market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+    with Session(engine) as session:
+        version = session.get(ArenaModelVersion, payload.model_version_id)
+        if version is None:
+            raise HTTPException(status_code=404, detail=f"Aucune ModelVersion avec id={payload.model_version_id}.")
+        decision = arena_promotion.evaluate_live_promotion(session, payload.model_version_id, payload.market)
+        _record_promotion_event(
+            session, decision, actor=user.email, automatic=False,
+            previous_model_version_id=decision.baseline_version_id,
+        )
+    return _live_promotion_decision_response(decision)
+
+
+class PromotionPromoteRequest(BaseModel):
+    model_version_id: int
+    market: str = "1X2"
+
+
+@app.post("/models/promotion/promote")
+def post_models_promotion_promote(payload: PromotionPromoteRequest, user: User = Depends(require_admin)):
+    """
+    Applique une promotion — ré-évalue TOUJOURS côté serveur avant
+    d'appliquer (§ : "ne jamais faire confiance à une décision envoyée par
+    le client"). Rejette (400) et journalise quand même si la décision
+    n'est pas "eligible" — une tentative de promotion refusée reste une
+    décision tracée, jamais un échec silencieux.
+    """
+    if payload.market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{payload.market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+    with Session(engine) as session:
+        version = session.get(ArenaModelVersion, payload.model_version_id)
+        if version is None:
+            raise HTTPException(status_code=404, detail=f"Aucune ModelVersion avec id={payload.model_version_id}.")
+
+        decision = arena_promotion.evaluate_live_promotion(session, payload.model_version_id, payload.market)
+        previous = arena_promotion.get_active_version(session, decision.model_type)
+        previous_id = previous.id if previous is not None else None
+
+        if decision.status != "eligible":
+            _record_promotion_event(
+                session, decision, actor=user.email, automatic=False, previous_model_version_id=previous_id,
+            )
+            raise HTTPException(
+                status_code=400,
+                detail={"message": "Promotion refusée.", "decision": _live_promotion_decision_response(decision)},
+            )
+
+        arena_promotion.apply_promotion(session, version)
+        _record_promotion_event(
+            session, dataclasses.replace(decision, status="promoted"),
+            actor=user.email, automatic=False, previous_model_version_id=previous_id,
+        )
+
+    return {"status": "promoted", "model_version_id": payload.model_version_id, "previous_model_version_id": previous_id}
+
+
+# ---------------------------------------------------------------------------
+# Phase 11 — Live Shadow Comparison (voir app/ai/arena/shadow_comparison.py).
+# Publics comme le reste de l'observabilité Arena (mesure pure, aucune
+# décision appliquée ici — pour la décision de promotion, voir
+# /models/promotion/* ci-dessus).
+# ---------------------------------------------------------------------------
+
+@app.get("/models/shadow/status")
+def get_models_shadow_status_endpoint(model_type: str | None = None):
+    """
+    Vue d'ensemble ACTIVE vs SHADOW par model_type : version(s) en place,
+    disponibilité LIVE, compteurs pending/resolved de chaque rôle (§10 du
+    ticket Phase 11) — réutilise compute_model_availability (Phase 8) et
+    get_live_summary (Phase 9), aucun calcul dupliqué.
+    """
+    if model_type is not None and model_type not in KNOWN_MODEL_TYPES:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(KNOWN_MODEL_TYPES)}")
+    model_types = [model_type] if model_type else list(KNOWN_MODEL_TYPES)
+
+    result: dict = {}
+    with Session(engine) as session:
+        availability = compute_model_availability(session, _PREDICTION_MODELS)
+        for mt in model_types:
+            active_version = arena_promotion.get_active_version(session, mt)
+            shadow_versions = session.exec(
+                select(ArenaModelVersion).where(ArenaModelVersion.model_type == mt, ArenaModelVersion.status == "shadow")
+            ).all()
+            active_summary = arena_monitoring.get_live_summary(session, mt, role="active")
+            avail = availability.get(mt)
+
+            result[mt] = {
+                "active": {
+                    "model_version_id": active_version.id if active_version else None,
+                    "version_name": active_version.name if active_version else None,
+                    "live_available": avail.live_available if avail else False,
+                    "predictions_pending": active_summary.predictions_pending,
+                    "predictions_resolved": active_summary.predictions_resolved,
+                },
+                "shadow": [
+                    {
+                        "model_version_id": sv.id, "version_name": sv.name,
+                        "predictions_pending": sv_metrics.predictions_pending,
+                        "predictions_resolved": sv_metrics.predictions_resolved,
+                    }
+                    for sv in shadow_versions
+                    # Scopé par model_version_id (comme live_validation.py, jamais par role
+                    # seul) : si plusieurs versions shadow coexistent pour ce model_type, chacune
+                    # affiche SES PROPRES compteurs, jamais un total mélangé (§8 du ticket Phase 11).
+                    for sv_metrics in [arena_live_validation.compute_live_model_metrics(session, mt, sv.id, "1X2")]
+                ],
+            }
+    return {"status": "ok", "models": result}
+
+
+@app.get("/models/shadow/comparison")
+def get_models_shadow_comparison_endpoint(model_type: str, market: str = "1X2", shadow_version_id: int | None = None):
+    """
+    Comparaison "matched" ACTIVE vs SHADOW — UNIQUEMENT sur les matchs
+    réellement prédits ET résolus par les DEUX (§9 du ticket Phase 11),
+    jamais deux échantillons indépendants présentés comme comparables.
+    """
+    if model_type not in KNOWN_MODEL_TYPES:
+        raise HTTPException(status_code=400, detail=f"model_type inconnu : '{model_type}'. Valeurs possibles : {list(KNOWN_MODEL_TYPES)}")
+    if market not in ARENA_MARKETS:
+        raise HTTPException(status_code=400, detail=f"Marché inconnu : '{market}'. Marchés disponibles : {list(ARENA_MARKETS)}")
+
+    with Session(engine) as session:
+        comparison = arena_shadow_comparison.compute_matched_comparison(
+            session, model_type, market, shadow_version_id=shadow_version_id,
+        )
+
+    logger.info(
+        f"[LIVE_SHADOW_EVALUATION_COMPLETED] model_type={model_type} market={market} "
+        f"status={comparison.status} matched_sample_size={comparison.matched_sample_size}"
+    )
+    return {
+        "status": comparison.status, "reason": comparison.reason,
+        "model_type": comparison.model_type, "market": comparison.market,
+        "active_version_id": comparison.active_version_id, "shadow_version_id": comparison.shadow_version_id,
+        "matched_sample_size": comparison.matched_sample_size,
+        "min_matched_sample_size": comparison.min_matched_sample_size,
+        "active": {
+            "accuracy": comparison.active_accuracy, "log_loss": comparison.active_log_loss, "brier_score": comparison.active_brier,
+        },
+        "shadow": {
+            "accuracy": comparison.shadow_accuracy, "log_loss": comparison.shadow_log_loss, "brier_score": comparison.shadow_brier,
+        },
+        "deltas": {
+            "log_loss": comparison.delta_log_loss, "brier_score": comparison.delta_brier, "accuracy": comparison.delta_accuracy,
+        },
+        "period_start": comparison.period_start.isoformat() if comparison.period_start else None,
+        "period_end": comparison.period_end.isoformat() if comparison.period_end else None,
+    }
 
 
 @app.get("/models/{model_version_id}", response_model=ModelPerformanceEntry)

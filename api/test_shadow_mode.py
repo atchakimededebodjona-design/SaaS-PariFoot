@@ -182,6 +182,73 @@ def test_shadow_resolved_via_same_status_pending_query_as_active():
         assert any(p.id == row.id for p in pending)
 
 
+# ---------------------------------------------------------------------------
+# Phase 11, §16 : ACTIVE et SHADOW sur EXACTEMENT le même match — mêmes clés
+# naturelles, IDs de ligne et de version distincts, immutabilité post-résolution
+# côté shadow (déjà couverte côté générique par test_prediction_probability_
+# immutable dans test_anti_leakage_phase9.py — revérifiée ici spécifiquement
+# pour role="shadow").
+# ---------------------------------------------------------------------------
+
+def test_active_and_shadow_predict_same_match_with_different_ids():
+    _clean_all()
+    with Session(engine) as session:
+        active = _make_version(session, "xgboost", is_active=True, status="active")
+        shadow = _make_version(session, "xgboost", is_active=False, status="candidate")
+        promotion.set_shadow(session, shadow.id)
+        session.commit()
+
+        active_row = _log_resolved(session, "xgboost", active.id, BASE_DATE, p_true=0.6,
+                                    role="active", home_team="SameHome", away_team="SameAway")
+        shadow_row = _log_resolved(session, "xgboost", shadow.id, BASE_DATE, p_true=0.6,
+                                    role="shadow", home_team="SameHome", away_team="SameAway")
+
+        assert active_row.league == shadow_row.league
+        assert active_row.match_date == shadow_row.match_date
+        assert active_row.home_team == shadow_row.home_team == "SameHome"
+        assert active_row.away_team == shadow_row.away_team == "SameAway"
+        assert active_row.id != shadow_row.id, "active et shadow doivent rester deux lignes indépendantes"
+        assert active_row.model_version_id != shadow_row.model_version_id
+        assert active_row.model_version_id == active.id
+        assert shadow_row.model_version_id == shadow.id
+
+
+def test_shadow_prediction_immutable_after_resolution():
+    """Même garantie que test_anti_leakage_phase9.py::test_prediction_
+    probability_immutable, revérifiée spécifiquement pour role='shadow'
+    (§16 du ticket Phase 11 : 'shadow prediction is immutable')."""
+    _clean_all()
+    with Session(engine) as session:
+        shadow = _make_version(session, "lightgbm", is_active=False, status="candidate")
+        promotion.set_shadow(session, shadow.id)
+        session.commit()
+
+        record = PredictionRecord(
+            league="Ligue1", match_date=BASE_DATE, home_team="A", away_team="B",
+            model_type="lightgbm", prob_home=0.55, prob_draw=0.25, prob_away=0.20,
+            source="live", role="shadow",
+        )
+        row = log_prediction(session, record, shadow.id)
+        session.commit()
+        original = (row.prob_home, row.prob_draw, row.prob_away, row.role)
+
+        resolve_prediction(row, 2, 0)
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        assert (row.prob_home, row.prob_draw, row.prob_away, row.role) == original, (
+            "resolve_prediction a modifié les probabilités ou le role d'une prédiction shadow"
+        )
+
+        try:
+            resolve_prediction(row, 0, 0)
+            assert False, "une deuxième résolution aurait dû lever RuntimeError"
+        except RuntimeError:
+            pass
+        session.refresh(row)
+        assert (row.prob_home, row.prob_draw, row.prob_away, row.role) == original
+
+
 UNIT_TESTS = [
     test_set_shadow_flips_status_but_never_is_active,
     test_shadow_version_excluded_from_active_version_lookup,
@@ -189,6 +256,8 @@ UNIT_TESTS = [
     test_get_or_create_active_model_version_never_returns_a_shadow,
     test_shadow_predictions_excluded_from_default_live_monitoring,
     test_shadow_resolved_via_same_status_pending_query_as_active,
+    test_active_and_shadow_predict_same_match_with_different_ids,
+    test_shadow_prediction_immutable_after_resolution,
 ]
 
 

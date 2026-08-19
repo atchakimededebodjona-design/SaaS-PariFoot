@@ -186,6 +186,174 @@ def apply_promotion(session: Session, candidate: ModelVersion) -> None:
     session.flush()
 
 
+
+# =============================================================================
+# Phase 10 : promotion pilotée par les performances LIVE (jamais par les
+# métriques de VALIDATION offline ci-dessus, voir docstring
+# evaluate_live_promotion) — moteur DISTINCT de evaluate_promotion, jamais un
+# remplacement : evaluate_promotion reste la porte utilisée juste après un
+# entraînement (scripts/retrain_ml_models.py --force, sur le split de
+# validation) ; evaluate_live_promotion est la porte utilisée une fois qu'une
+# version a tourné en SHADOW en production (voir scripts/evaluate_live_models.py).
+# =============================================================================
+
+# Échantillon LIVE minimal (résolu) requis pour CHAQUE version comparée
+# (candidat ET baseline) — même ordre de grandeur que PROMOTION_MIN_VALIDATION_
+# SAMPLE ci-dessus, mais une constante séparée : rien n'impose que les deux
+# univers (validation offline vs LIVE réel) doivent un jour partager la même
+# valeur. Valeur "bootstrap" (voir rapport final Phase 10) : à recalibrer une
+# fois des cycles de shadow réels observés.
+LIVE_MIN_SAMPLE_SIZE = int(os.environ.get("LIVE_MIN_SAMPLE_SIZE", "100"))
+
+# Marge minimale d'amélioration (en log_loss, plus petit = meilleur) exigée
+# pour qu'une promotion LIVE soit jugée "eligible" — DÉLIBÉRÉMENT plus strict
+# que PROMOTION_LOG_LOSS_TOLERANCE (qui, elle, autorise un candidat
+# légèrement MOINS bon qu'une baseline, pour un flux offline où un humain
+# review déjà le résultat via --force). Ici, personne ne review
+# nécessairement chaque décision (voir AUTO_PROMOTION_ENABLED) : ne jamais
+# promouvoir "parce que le candidat est meilleur sur un petit écart" sans
+# cette marge explicite. Valeur "bootstrap", voir rapport final Phase 10.
+PROMOTION_MIN_IMPROVEMENT = float(os.environ.get("PROMOTION_MIN_IMPROVEMENT", "0.01"))
+
+# Interrupteur global de la promotion AUTOMATIQUE (scripts/evaluate_live_models.py
+# uniquement — n'affecte JAMAIS POST /models/promotion/promote, qui reste un
+# acte humain explicite quel que soit ce réglage). False par défaut (§39 du
+# ticket Phase 10 : "AUTO_PROMOTION_ENABLED=false par défaut").
+AUTO_PROMOTION_ENABLED = os.environ.get("AUTO_PROMOTION_ENABLED", "false").strip().lower() in ("1", "true", "yes")
+
+LivePromotionStatus = str  # "already_active" | "insufficient_data" | "rejected" | "no_clear_gain" | "eligible"
+
+
+@dataclass
+class LivePromotionDecision:
+    status: LivePromotionStatus
+    reason: str
+    model_type: str
+    market: str
+    candidate_version_id: Optional[int]
+    baseline_version_id: Optional[int] = None
+    candidate_metrics: Optional[dict] = None
+    baseline_metrics: Optional[dict] = None
+    min_sample_size: int = LIVE_MIN_SAMPLE_SIZE
+    min_improvement: float = PROMOTION_MIN_IMPROVEMENT
+
+
+def get_active_version(session: Session, model_type: str) -> Optional[ModelVersion]:
+    """Version actuellement active (is_active=True) pour un model_type — None
+    s'il n'y en a aucune. Public (pas de préfixe `_`) : réutilisée par
+    main.py (endpoints /models/promotion/*) pour retrouver la version qu'une
+    promotion remplacerait, sans dupliquer cette requête."""
+    return session.exec(
+        select(ModelVersion).where(ModelVersion.model_type == model_type, ModelVersion.is_active == True)  # noqa: E712
+    ).first()
+
+
+def evaluate_live_promotion(
+    session: Session, model_version_id: int, market: str = "1X2",
+) -> LivePromotionDecision:
+    """
+    Décision de promotion basée sur les performances LIVE RÉELLES (jamais la
+    VALIDATION offline, voir en-tête du bloc Phase 10 ci-dessus) d'une
+    ModelVersion candidate (`status` "shadow" ou "candidate") face à la
+    version ACTIVE actuelle du même `model_type`, sur les mêmes prédictions
+    LIVE — deux portes indépendantes, toutes les deux doivent passer :
+
+      1. Échantillon LIVE résolu du candidat ET de la baseline >=
+         LIVE_MIN_SAMPLE_SIZE (chacun scoré par sa PROPRE model_version_id,
+         voir live_validation.py — jamais mélangé avec une autre version du
+         même model_type, contrairement à monitoring.py qui agrège par role).
+      2. Marge d'amélioration réelle : log_loss du candidat +
+         PROMOTION_MIN_IMPROVEMENT < log_loss de la baseline. Un candidat
+         seulement "pas pire" (`no_clear_gain`) ou pire (`rejected`) n'est
+         JAMAIS promu automatiquement.
+
+    Fonction PURE : ne modifie jamais la base (voir apply_promotion pour
+    l'application effective d'une décision déjà prise).
+    """
+    from . import live_validation  # import local : évite un cycle promotion.py <-> live_validation.py
+
+    candidate = session.get(ModelVersion, model_version_id)
+    if candidate is None:
+        raise ValueError(f"ModelVersion #{model_version_id} introuvable.")
+
+    if candidate.is_active:
+        return LivePromotionDecision(
+            status="already_active", reason="Cette version est déjà la version active servie en direct.",
+            model_type=candidate.model_type, market=market, candidate_version_id=candidate.id,
+        )
+
+    baseline = get_active_version(session, candidate.model_type)
+
+    candidate_metrics = live_validation.compute_live_model_metrics(session, candidate.model_type, candidate.id, market)
+
+    if baseline is None:
+        # Bootstrap : aucune version active pour ce model_type — seule la
+        # porte d'échantillon s'applique (même logique que evaluate_promotion
+        # sans baseline, ci-dessus).
+        if candidate_metrics.sample_size < LIVE_MIN_SAMPLE_SIZE:
+            return LivePromotionDecision(
+                status="insufficient_data",
+                reason=(
+                    f"Échantillon LIVE résolu insuffisant : {candidate_metrics.sample_size} "
+                    f"< LIVE_MIN_SAMPLE_SIZE={LIVE_MIN_SAMPLE_SIZE}."
+                ),
+                model_type=candidate.model_type, market=market, candidate_version_id=candidate.id,
+                candidate_metrics=vars(candidate_metrics),
+            )
+        return LivePromotionDecision(
+            status="eligible",
+            reason="Aucune version active pour ce type de modèle (bootstrap) — échantillon LIVE suffisant.",
+            model_type=candidate.model_type, market=market, candidate_version_id=candidate.id,
+            candidate_metrics=vars(candidate_metrics),
+        )
+
+    baseline_metrics = live_validation.compute_live_model_metrics(session, baseline.model_type, baseline.id, market)
+
+    if candidate_metrics.sample_size < LIVE_MIN_SAMPLE_SIZE or baseline_metrics.sample_size < LIVE_MIN_SAMPLE_SIZE:
+        return LivePromotionDecision(
+            status="insufficient_data",
+            reason=(
+                f"Échantillon LIVE résolu insuffisant : candidat={candidate_metrics.sample_size}, "
+                f"baseline={baseline_metrics.sample_size} (seuil LIVE_MIN_SAMPLE_SIZE={LIVE_MIN_SAMPLE_SIZE})."
+            ),
+            model_type=candidate.model_type, market=market,
+            candidate_version_id=candidate.id, baseline_version_id=baseline.id,
+            candidate_metrics=vars(candidate_metrics), baseline_metrics=vars(baseline_metrics),
+        )
+
+    if candidate_metrics.log_loss is None or baseline_metrics.log_loss is None:
+        return LivePromotionDecision(
+            status="insufficient_data",
+            reason="Log loss LIVE manquant (candidat ou baseline) — comparaison impossible, jamais devinée.",
+            model_type=candidate.model_type, market=market,
+            candidate_version_id=candidate.id, baseline_version_id=baseline.id,
+            candidate_metrics=vars(candidate_metrics), baseline_metrics=vars(baseline_metrics),
+        )
+
+    threshold = baseline_metrics.log_loss - PROMOTION_MIN_IMPROVEMENT
+    if candidate_metrics.log_loss < threshold:
+        status, reason = "eligible", (
+            f"Log loss LIVE du candidat ({candidate_metrics.log_loss}) < baseline "
+            f"({baseline_metrics.log_loss}) - marge ({PROMOTION_MIN_IMPROVEMENT}) = {round(threshold, 4)}."
+        )
+    elif candidate_metrics.log_loss < baseline_metrics.log_loss:
+        status, reason = "no_clear_gain", (
+            f"Candidat légèrement meilleur ({candidate_metrics.log_loss} < {baseline_metrics.log_loss}) mais "
+            f"sous la marge minimale d'amélioration ({PROMOTION_MIN_IMPROVEMENT}) : jamais promu sur un écart "
+            "trop faible pour être jugé significatif."
+        )
+    else:
+        status, reason = "rejected", (
+            f"Log loss LIVE du candidat ({candidate_metrics.log_loss}) >= baseline ({baseline_metrics.log_loss})."
+        )
+
+    return LivePromotionDecision(
+        status=status, reason=reason, model_type=candidate.model_type, market=market,
+        candidate_version_id=candidate.id, baseline_version_id=baseline.id,
+        candidate_metrics=vars(candidate_metrics), baseline_metrics=vars(baseline_metrics),
+    )
+
+
 def set_shadow(session: Session, model_version_id: int) -> ModelVersion:
     """
     Place une ModelVersion en mode SHADOW (§24-25) : `status="shadow"`
