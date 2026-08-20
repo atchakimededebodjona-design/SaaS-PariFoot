@@ -1,0 +1,9 @@
+{
+  "appId": "site.xfoot.app",
+  "appName": "xFoot",
+  "webDir": "../frontend-design",
+  "server": {
+    "hostname": "app.xfoot.site",
+    "androidScheme": "https"
+  }
+}

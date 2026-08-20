@@ -16,7 +16,17 @@ const _LOCAL_HOSTNAME_RE = /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|
 // Une fois la page hébergée sur un vrai domaine (Hostinger), l'API n'est
 // PLUS sur le même hôte (elle reste sur Railway) : impossible de la
 // dériver de window.location, il faut PRODUCTION_API_URL ci-dessus.
-const API_BASE_URL = _LOCAL_HOSTNAME_RE.test(window.location.hostname)
+//
+// App native (Capacitor) : la WebView sert les fichiers locaux depuis
+// https://localhost, qui matche _LOCAL_HOSTNAME_RE — sans ce garde-fou,
+// l'app tenterait d'appeler https://localhost:8000 (rien n'y écoute) au
+// lieu de l'API de production. window.Capacitor n'existe QUE dans une app
+// empaquetée (jamais dans un navigateur classique, même en dev local).
+const _isNativeApp = typeof window.Capacitor !== "undefined"
+    && typeof window.Capacitor.isNativePlatform === "function"
+    && window.Capacitor.isNativePlatform();
+
+const API_BASE_URL = (!_isNativeApp && _LOCAL_HOSTNAME_RE.test(window.location.hostname))
     ? `${window.location.protocol}//${window.location.hostname}:8000`
     : PRODUCTION_API_URL;
 
