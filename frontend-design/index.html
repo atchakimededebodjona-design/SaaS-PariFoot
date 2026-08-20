@@ -35,27 +35,27 @@
 
             <!-- League Navigation Pills -->
             <div class="league-nav-container" id="league-nav">
-                <button class="league-pill active" data-league="LaLiga">
+                <button class="league-pill hover-lift active" data-league="LaLiga">
                     <span class="league-flag">🇪🇸</span>
                     <span>LaLiga</span>
                 </button>
-                <button class="league-pill" data-league="PremierLeague">
+                <button class="league-pill hover-lift" data-league="PremierLeague">
                     <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
                     <span>Premier League</span>
                 </button>
-                <button class="league-pill" data-league="Ligue1">
+                <button class="league-pill hover-lift" data-league="Ligue1">
                     <span class="league-flag">🇫🇷</span>
                     <span>Ligue 1</span>
                 </button>
-                <button class="league-pill" data-league="Bundesliga">
+                <button class="league-pill hover-lift" data-league="Bundesliga">
                     <span class="league-flag">🇩🇪</span>
                     <span>Bundesliga</span>
                 </button>
-                <button class="league-pill" data-league="SerieA">
+                <button class="league-pill hover-lift" data-league="SerieA">
                     <span class="league-flag">🇮🇹</span>
                     <span>Serie A</span>
                 </button>
-                <button class="league-pill" data-league="custom">
+                <button class="league-pill hover-lift" data-league="custom">
                     <span class="league-flag">⚙️</span>
                     <span>Sur-Mesure</span>
                 </button>
@@ -68,7 +68,7 @@
             <div class="premium-banner hidden" id="premium-banner">
                 <h3>Analyse IA Détaillée</h3>
                 <p>Débloquez les probabilités complètes et les recommandations de paris générées par notre algorithme avancé.</p>
-                <button class="btn-outline-gold" id="see-plans-btn">Voir les abonnements VIP</button>
+                <button class="btn-outline-gold btn-ripple hover-lift" id="see-plans-btn">Voir les abonnements VIP</button>
             </div>
 
             <!-- Weekly Fixtures Container -->
@@ -92,7 +92,7 @@
                     <select class="custom-select" id="custom-league-select"></select>
                     <select class="custom-select" id="custom-home-select"></select>
                     <select class="custom-select" id="custom-away-select"></select>
-                    <button type="submit" class="btn-predict" id="custom-predict-btn">Générer l'Analyse IA</button>
+                    <button type="submit" class="btn-predict btn-ripple hover-lift" id="custom-predict-btn">Générer l'Analyse IA</button>
                 </form>
                 <div id="custom-prediction-result" class="hidden" style="margin-top: 1rem;"></div>
             </div>
@@ -248,8 +248,10 @@
                     ? `<img src="${fix.away_logo}" alt="${fix.away_team}" onerror="this.outerHTML='${awayInitial}'">` 
                     : awayInitial;
 
+                const delayClass = `animate-delay-${(idx % 3) + 1}`;
+
                 return `
-                    <div class="fixture-card" id="card-${idx}">
+                    <div class="fixture-card animate-fade-in hover-lift ${delayClass}" id="card-${idx}">
                         <div class="fixture-top">
                             <div class="fixture-date-badge">
                                 <span>📅</span>
@@ -272,7 +274,7 @@
                             </div>
                         </div>
 
-                        <button class="btn-fixture-predict" onclick="generateMatchPrediction('${league}', '${encodeURIComponent(fix.home_team)}', '${encodeURIComponent(fix.away_team)}', 'result-box-${idx}', 'card-${idx}')">
+                        <button class="btn-fixture-predict btn-ripple" onclick="generateMatchPrediction('${league}', '${encodeURIComponent(fix.home_team)}', '${encodeURIComponent(fix.away_team)}', 'result-box-${idx}', 'card-${idx}')">
                             <span>✨</span>
                             <span>Générer le pronostic IA</span>
                         </button>

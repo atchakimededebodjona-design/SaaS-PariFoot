@@ -1067,3 +1067,79 @@ body {
     margin-bottom: 2rem;
 }
 
+/* ==========================================================================
+   Animations & Micro-interactions
+   ========================================================================== */
+
+/* 1. Staggered Fade-In Up for lists and cards */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+
+/* 2. Skeleton Loading Shimmer */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+.skeleton-loader {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: 8px;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+/* 3. Hover Lift for Interactive Cards */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 10px 24px rgba(44, 217, 165, 0.15);
+}
+
+/* 4. Pulse Glow for Live badges or primary buttons */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(44, 217, 165, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(44, 217, 165, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(44, 217, 165, 0); }
+}
+.pulse-glow {
+    animation: pulseGlow 2s infinite;
+}
+
+/* 5. Ripple Effect (to be added dynamically via JS or on active state) */
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+.btn-ripple:after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transform: scale(10, 10);
+    opacity: 0;
+    transition: transform .5s, opacity 1s;
+}
+.btn-ripple:active:after {
+    transform: scale(0, 0);
+    opacity: .3;
+    transition: 0s;
+}
+

@@ -35,27 +35,27 @@
 
             <!-- League Navigation Pills -->
             <div class="league-nav-container" id="history-league-nav">
-                <button class="league-pill active" data-league="all">
+                <button class="league-pill hover-lift active" data-league="all">
                     <span class="league-flag">🌍</span>
                     <span>Toutes</span>
                 </button>
-                <button class="league-pill" data-league="LaLiga">
+                <button class="league-pill hover-lift" data-league="LaLiga">
                     <span class="league-flag">🇪🇸</span>
                     <span>LaLiga</span>
                 </button>
-                <button class="league-pill" data-league="PremierLeague">
+                <button class="league-pill hover-lift" data-league="PremierLeague">
                     <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
                     <span>Premier League</span>
                 </button>
-                <button class="league-pill" data-league="Ligue1">
+                <button class="league-pill hover-lift" data-league="Ligue1">
                     <span class="league-flag">🇫🇷</span>
                     <span>Ligue 1</span>
                 </button>
-                <button class="league-pill" data-league="Bundesliga">
+                <button class="league-pill hover-lift" data-league="Bundesliga">
                     <span class="league-flag">🇩🇪</span>
                     <span>Bundesliga</span>
                 </button>
-                <button class="league-pill" data-league="SerieA">
+                <button class="league-pill hover-lift" data-league="SerieA">
                     <span class="league-flag">🇮🇹</span>
                     <span>Serie A</span>
                 </button>
@@ -204,9 +204,10 @@
             const awayInitials = getInitials(m.away_team);
             const borderClass = getCardBorderClass(m.correct_1x2);
             const expandedClass = m.result ? 'expanded' : '';
+            const delayClass = `animate-delay-${(idx % 3) + 1}`; // cascade de 1 à 3
 
             return `
-                <div class="fixture-card ${borderClass} ${expandedClass}" id="history-card-${idx}">
+                <div class="fixture-card animate-fade-in hover-lift ${borderClass} ${expandedClass} ${delayClass}" id="history-card-${idx}">
                     <!-- Top: League + Outcome Badge -->
                     <div class="fixture-top">
                         <div class="fixture-date-badge">
