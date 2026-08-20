@@ -29,6 +29,11 @@
             <p class="subtitle">Connecte-toi pour voir les prédictions.</p>
 
             <form class="prediction-form" id="auth-form" style="grid-template-columns: 1fr;">
+                <div class="form-group full-width" id="name-group" style="display: none;">
+                    <label>Nom</label>
+                    <input type="text" class="form-control" id="name" autocomplete="name">
+                </div>
+
                 <div class="form-group full-width">
                     <label>Email</label>
                     <input type="email" class="form-control" id="email" required autocomplete="email">
@@ -79,6 +84,8 @@
         const errorMessage = document.getElementById("error-message");
         const confirmPasswordGroup = document.getElementById("confirm-password-group");
         const confirmPasswordInput = document.getElementById("confirm-password");
+        const nameGroup = document.getElementById("name-group");
+        const nameInput = document.getElementById("name");
 
         // Un seul handler pour les deux boutons "afficher le mot de passe"
         // (connexion + confirmation à l'inscription) plutôt que dupliqué par champ.
@@ -111,6 +118,8 @@
                 toggleLink.textContent = "Déjà un compte ? Se connecter";
                 confirmPasswordGroup.style.display = "block";
                 confirmPasswordInput.required = true;
+                nameGroup.style.display = "block";
+                nameInput.required = true;
             } else {
                 mode = "login";
                 title.textContent = "Connexion";
@@ -119,6 +128,9 @@
                 confirmPasswordGroup.style.display = "none";
                 confirmPasswordInput.required = false;
                 confirmPasswordInput.value = "";
+                nameGroup.style.display = "none";
+                nameInput.required = false;
+                nameInput.value = "";
             }
         });
 
@@ -136,11 +148,11 @@
             setToken(data.access_token);
         }
 
-        async function register(email, password) {
+        async function register(name, email, password) {
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ name, email, password }),
             });
             if (!response.ok) {
                 const body = await response.json().catch(() => ({}));
@@ -162,7 +174,8 @@
             submitBtn.disabled = true;
             try {
                 if (mode === "register") {
-                    await register(email, password);
+                    const name = nameInput.value;
+                    await register(name, email, password);
                 }
                 await login(email, password);
                 window.location.href = "index.html";
