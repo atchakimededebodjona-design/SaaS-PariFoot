@@ -298,7 +298,7 @@
             const userEmailEl = document.getElementById('user-email');
             
             if (currentUser) {
-                if (userEmailEl) userEmailEl.textContent = currentUser.email.split('@')[0];
+                if (userEmailEl) userEmailEl.textContent = currentUser.name || currentUser.email.split('@')[0];
                 
                 if (currentUser.is_admin) {
                     if (roleBadge) {
@@ -503,7 +503,7 @@
             try {
                 const response = await apiFetch('/auth/me');
                 const user = await response.json();
-                document.getElementById('user-email').textContent = user.email.split('@')[0];
+                document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
             } catch (e) {
                 console.error("Auth error", e);
             }

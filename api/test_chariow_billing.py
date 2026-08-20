@@ -86,7 +86,7 @@ def post_pulse(client, event_type: str, delivery_id: str, secret: str = PULSE_SE
 
 
 def get_auth_token(client) -> tuple[int, str]:
-    r = client.post("/auth/register", json={"email": EMAIL, "password": PASSWORD})
+    r = client.post("/auth/register", json={"name": "Test User", "email": EMAIL, "password": PASSWORD})
     assert r.status_code == 201, r.text
     user_id = r.json()["id"]
 
@@ -442,7 +442,7 @@ def test_activate_license_user_mismatch_403(client, token):
     du current_user) — ne doit jamais activer sur la seule foi du texte
     collé par le client."""
     other_email = "eve@example.com"
-    client.post("/auth/register", json={"email": other_email, "password": PASSWORD})
+    client.post("/auth/register", json={"name": "Eve", "email": other_email, "password": PASSWORD})
     r_login = client.post("/auth/login", data={"username": other_email, "password": PASSWORD})
     other_token = r_login.json()["access_token"]
     other_user_id = client.get("/auth/me", headers={"Authorization": f"Bearer {other_token}"}).json()["id"]

@@ -493,7 +493,7 @@
             try {
                 const user = await getCurrentUser();
                 if (user) {
-                    document.getElementById('user-email').textContent = user.email.split('@')[0];
+                    document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
                 }
             } catch (e) {
                 console.error("Auth error", e);

@@ -71,8 +71,8 @@ def make_event(event_type: str, **fields) -> bytes:
     return json.dumps({"event": event_type, **fields}).encode()
 
 
-def register_and_login(client, email: str, password: str) -> tuple[int, str]:
-    r = client.post("/auth/register", json={"email": email, "password": password})
+def register_and_login(client, email: str, password: str, name: str = "Test User") -> tuple[int, str]:
+    r = client.post("/auth/register", json={"name": name, "email": email, "password": password})
     assert r.status_code == 201, r.text
     user_id = r.json()["id"]
 

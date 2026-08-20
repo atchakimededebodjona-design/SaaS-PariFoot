@@ -240,12 +240,15 @@ une base SQL (SQLite en développement, cf. section suivante).
 
 **Requête :**
 ```json
-{"email": "alice@example.com", "password": "correct-horse-battery-staple"}
+{"name": "Alice", "email": "alice@example.com", "password": "correct-horse-battery-staple"}
 ```
+
+`name` est obligatoire (1-100 caractères) — c'est le nom/pseudo affiché
+partout dans l'app à la place de l'email.
 
 **Réponse (201) :**
 ```json
-{"id": 1, "email": "alice@example.com", "is_active": true, "created_at": "2026-08-03T20:07:18.801126+00:00"}
+{"id": 1, "email": "alice@example.com", "name": "Alice", "is_active": true, "created_at": "2026-08-03T20:07:18.801126+00:00"}
 ```
 
 `hashed_password` n'est jamais exposé dans la réponse. Un email déjà

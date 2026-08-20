@@ -30,21 +30,29 @@ from fastapi.testclient import TestClient
 from main import app
 
 EMAIL = "alice@example.com"
+NAME = "Alice"
 PASSWORD = "correct-horse-battery-staple"
 
 
 def test_register_success(client):
-    r = client.post("/auth/register", json={"email": EMAIL, "password": PASSWORD})
+    r = client.post("/auth/register", json={"name": NAME, "email": EMAIL, "password": PASSWORD})
     assert r.status_code == 201, r.text
     body = r.json()
     assert body["email"] == EMAIL
+    assert body["name"] == NAME
     assert body["is_active"] is True
     assert "hashed_password" not in body  # ne doit jamais être exposé
     print(f"  [OK] inscription réussie -> id={body['id']}")
 
 
+def test_register_missing_name_refused(client):
+    r = client.post("/auth/register", json={"email": "sans-nom@example.com", "password": PASSWORD})
+    assert r.status_code == 422, r.text
+    print(f"  [OK] inscription sans nom refusée -> 422")
+
+
 def test_register_duplicate_refused(client):
-    r = client.post("/auth/register", json={"email": EMAIL, "password": "autre-mot-de-passe"})
+    r = client.post("/auth/register", json={"name": NAME, "email": EMAIL, "password": "autre-mot-de-passe"})
     assert r.status_code == 400, r.text
     print(f"  [OK] inscription en double refusée -> 400, detail: {r.json()['detail']}")
 
@@ -106,6 +114,7 @@ if __name__ == "__main__":
     with TestClient(app) as client:
         steps = [
             ("test_register_success", lambda: test_register_success(client)),
+            ("test_register_missing_name_refused", lambda: test_register_missing_name_refused(client)),
             ("test_register_duplicate_refused", lambda: test_register_duplicate_refused(client)),
             ("test_login_success", lambda: test_login_success(client)),
             ("test_login_wrong_password_no_enumeration", lambda: test_login_wrong_password_no_enumeration(client)),
@@ -140,6 +149,6 @@ if __name__ == "__main__":
         # toute façon supprimé au début de la prochaine exécution (voir plus haut).
         pass
 
-    n_tests = 7
+    n_tests = 8
     print(f"\n{'='*60}\n{n_tests - failures}/{n_tests} tests reussis\n{'='*60}")
     sys.exit(1 if failures else 0)

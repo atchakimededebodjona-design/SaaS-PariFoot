@@ -228,7 +228,7 @@
             try {
                 const response = await apiFetch('/auth/me');
                 const user = await response.json();
-                document.getElementById('user-email').textContent = user.email.split('@')[0];
+                document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
             } catch (e) {
                 console.error("Auth error", e);
             }

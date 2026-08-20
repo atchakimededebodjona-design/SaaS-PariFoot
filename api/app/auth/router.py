@@ -20,7 +20,7 @@ def register(request: Request, user_in: UserCreate, session: Session = Depends(g
     if existing:
         raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email")
 
-    user = User(email=user_in.email, hashed_password=hash_password(user_in.password))
+    user = User(email=user_in.email, name=user_in.name, hashed_password=hash_password(user_in.password))
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -55,6 +55,7 @@ def read_current_user(current_user: User = Depends(get_current_user)):
     return UserRead(
         id=current_user.id,
         email=current_user.email,
+        name=current_user.name,
         is_active=current_user.is_active,
         is_admin=current_user.email.strip().lower() in _admin_emails(),
         created_at=current_user.created_at,
