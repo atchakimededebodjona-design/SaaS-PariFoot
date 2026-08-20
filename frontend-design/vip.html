@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>xFoot - Espace VIP</title>
+    <link rel="stylesheet" href="styles.css?v=7">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Scoped à cette page — mêmes tokens de couleur que le reste du site,
+           juste de nouvelles compositions (hero + grille de features) absentes
+           de styles.css car aucune autre page n'en avait besoin. */
+        .vip-hero {
+            background: linear-gradient(145deg, rgba(44, 217, 165, 0.14) 0%, var(--bg-card) 65%);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px;
+            padding: 1.75rem 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .vip-hero-icon { font-size: 2.4rem; display: block; margin-bottom: 0.5rem; }
+        .vip-hero h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.4rem; }
+        .vip-hero p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; }
+
+        .vip-status-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.9rem 1.1rem;
+            margin-top: 1.25rem;
+            font-size: 0.82rem;
+            text-align: left;
+        }
+        .vip-status-card.active { border-color: var(--border-gold); background: rgba(44, 217, 165, 0.08); }
+        .vip-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary); flex-shrink: 0; }
+        .vip-status-card.active .vip-status-dot { background: var(--accent-gold); }
+        .vip-status-text { color: var(--text-secondary); flex: 1; }
+        .vip-status-text strong { color: var(--text-primary); }
+
+        .feature-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-bottom: 2rem;
+        }
+        .feature-card {
+            display: flex;
+            gap: 0.9rem;
+            align-items: flex-start;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+        }
+        .feature-icon {
+            font-size: 1.4rem;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(44, 217, 165, 0.1);
+        }
+        .feature-body h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .feature-body p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+
+        .vip-plans-section { margin-bottom: 1.5rem; }
+        .vip-plan-preview {
+            border-radius: 12px;
+            text-align: center;
+            padding: 1rem;
+        }
+        .vip-plan-preview .price { font-size: 1.1rem; font-weight: 800; }
+        .vip-plan-preview .price span { font-size: 0.72rem; font-weight: 400; color: var(--text-secondary); }
+
+        .vip-cta-btn {
+            width: 100%;
+            background-color: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 1.1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(44, 217, 165, 0.2);
+            transition: transform 0.2s ease;
+        }
+        .vip-cta-btn:active { transform: scale(0.98); }
+
+        .vip-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.85rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-title">
+                <span>👑</span>
+                <span>Espace VIP</span>
+            </div>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-content">
+
+            <div class="vip-hero">
+                <span class="vip-hero-icon">👑</span>
+                <h1>Débloque l'IA xFoot en entier</h1>
+                <p>Probabilités complètes, marchés avancés (corners, fautes, cartons, pénaltys) et l'Ensemble multi-modèles — sur tous les matchs, sans limite.</p>
+
+                <div class="vip-status-card" id="vip-status-card">
+                    <span class="vip-status-dot"></span>
+                    <span class="vip-status-text" id="vip-status-text">Chargement du statut de ton abonnement…</span>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="font-size: 1.1rem; margin-bottom: 1rem;">Ce que débloque le VIP</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🧠</span>
+                    <div class="feature-body">
+                        <h4>Analyse IA détaillée</h4>
+                        <p>Probabilités complètes 1X2, Plus/Moins 2.5 buts, BTTS et double chance sur chaque match de la semaine.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🚩</span>
+                    <div class="feature-body">
+                        <h4>Marchés avancés</h4>
+                        <p>Corners, fautes, cartons jaunes/rouges et probabilité de pénalty estimés par notre algorithme.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🧬</span>
+                    <div class="feature-body">
+                        <h4>XFOOT Ensemble</h4>
+                        <p>La combinaison pondérée de nos modèles (Dixon-Coles, Elo, XGBoost, LightGBM), pondérée selon leur performance réelle.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🏟️</span>
+                    <div class="feature-body">
+                        <h4>AI Arena en direct</h4>
+                        <p>Suis la performance réelle de chaque modèle et leur statut LIVE, en toute transparence.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-body">
+                        <h4>Historique &amp; Live illimités</h4>
+                        <p>Consulte tout l'historique de performance de l'IA et les scores en direct, sans restriction.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title vip-plans-section" style="font-size: 1.1rem; margin-bottom: 1rem;">Formules</h2>
+            <div class="plan-selector" style="margin-bottom: 1.5rem;">
+                <div class="plan-card vip-plan-preview">
+                    <h4>Mensuel</h4>
+                    <div class="price">1000 FCFA<span>/mois</span></div>
+                </div>
+                <div class="plan-card vip-plan-preview" style="border-color: var(--accent-gold); background: rgba(44, 217, 165, 0.08);">
+                    <h4>Annuel</h4>
+                    <div class="price">10000 FCFA<span>/an</span></div>
+                    <div class="badge">Économisez 2 mois</div>
+                </div>
+            </div>
+
+            <a href="billing.html" class="vip-cta-btn" id="vip-cta-btn">Débloquer l'accès VIP</a>
+            <p class="vip-note">Paiement sécurisé par Mobile Money via Chariow. Choix du plan et activation sur la page suivante.</p>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="history.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Historique</span>
+            </a>
+            <a href="live.html" class="nav-item">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="arena.html" class="nav-item">
+                <span class="nav-icon">🏟️</span>
+                <span>AI Arena</span>
+            </a>
+            <a href="vip.html" class="nav-item active">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        async function loadCurrentUser() {
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.email.split('@')[0];
+            } catch (e) {
+                console.error("Auth error", e);
+            }
+        }
+
+        async function loadSubscriptionStatus() {
+            const statusCard = document.getElementById('vip-status-card');
+            const statusText = document.getElementById('vip-status-text');
+            const ctaBtn = document.getElementById('vip-cta-btn');
+            try {
+                const response = await apiFetch('/billing/subscription');
+                if (!response.ok) throw new Error(`Erreur (${response.status})`);
+                const sub = await response.json();
+
+                if (sub.is_active) {
+                    statusCard.classList.add('active');
+                    const expiry = sub.current_period_end
+                        ? new Date(sub.current_period_end).toLocaleDateString('fr-FR')
+                        : null;
+                    statusText.innerHTML = `<strong>Abonnement VIP actif</strong> — plan ${sub.plan}${expiry ? ` · expire le ${expiry}` : ''}`;
+                    ctaBtn.textContent = 'Prolonger mon abonnement';
+                } else {
+                    statusCard.classList.remove('active');
+                    statusText.innerHTML = `<strong>Aucun abonnement actif</strong> — débloque l'IA complète dès maintenant`;
+                    ctaBtn.textContent = "Débloquer l'accès VIP";
+                }
+            } catch (e) {
+                statusText.textContent = 'Impossible de charger ton statut d\'abonnement pour le moment.';
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        loadCurrentUser();
+        loadSubscriptionStatus();
+    </script>
+</body>
+</html>

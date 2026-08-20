@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>xFoot - Historique</title>
-    <link rel="stylesheet" href="styles.css?v=5">
+    <title>xFoot - Historique des Prédictions</title>
+    <link rel="stylesheet" href="styles.css?v=7">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -13,8 +13,9 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-title">
-                <span>📊</span>
-                <span>Historique</span>
+                <span>⚽</span>
+                <span>xFoot</span>
+                <span class="pro-badge">HISTORIQUE</span>
             </div>
             <div class="header-actions">
                 <span class="user-email" id="user-email">...</span>
@@ -27,12 +28,47 @@
         <!-- Main Content -->
         <main class="app-content">
 
-            <h2 class="section-title">Performance de xFoot</h2>
+            <h2 class="section-title">Performance IA</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.25rem;">
+                Sélectionnez une ligue pour voir la performance des matchs déjà joués.
+            </p>
 
+            <!-- League Navigation Pills -->
+            <div class="league-nav-container" id="history-league-nav">
+                <button class="league-pill active" data-league="all">
+                    <span class="league-flag">🌍</span>
+                    <span>Toutes</span>
+                </button>
+                <button class="league-pill" data-league="LaLiga">
+                    <span class="league-flag">🇪🇸</span>
+                    <span>LaLiga</span>
+                </button>
+                <button class="league-pill" data-league="PremierLeague">
+                    <span class="league-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+                    <span>Premier League</span>
+                </button>
+                <button class="league-pill" data-league="Ligue1">
+                    <span class="league-flag">🇫🇷</span>
+                    <span>Ligue 1</span>
+                </button>
+                <button class="league-pill" data-league="Bundesliga">
+                    <span class="league-flag">🇩🇪</span>
+                    <span>Bundesliga</span>
+                </button>
+                <button class="league-pill" data-league="SerieA">
+                    <span class="league-flag">🇮🇹</span>
+                    <span>Serie A</span>
+                </button>
+            </div>
+
+            <!-- Loading & Error States -->
             <div id="history-loading" class="stat-row">Chargement de l'historique…</div>
             <div id="history-error" class="error-msg hidden"></div>
 
+            <!-- Main Content Section -->
             <div id="history-content" class="hidden">
+
+                <!-- Accuracy Hero Card -->
                 <div class="accuracy-hero">
                     <div class="accuracy-main">
                         <span class="accuracy-value" id="accuracy-main-value">--%</span>
@@ -51,11 +87,25 @@
                     <p class="accuracy-sample" id="accuracy-sample">Basé sur 0 prédiction(s) résolue(s)</p>
                 </div>
 
-                <div id="history-empty" class="error-msg hidden" style="background: rgba(142,147,166,0.08); border-color: var(--border-color); color: var(--text-secondary);">
-                    Aucune prédiction historisée pour l'instant — reviens après avoir généré quelques analyses depuis le dashboard.
+                <!-- League Section Header -->
+                <div class="league-section-header" id="history-section-header">
+                    <div class="league-section-title">
+                        <span id="history-league-flag">🌍</span>
+                        <span id="history-league-title">Historique — Toutes les ligues</span>
+                    </div>
+                    <span class="match-count-badge" id="history-match-count">0 matchs</span>
                 </div>
 
-                <div id="history-days"></div>
+                <!-- Empty State -->
+                <div id="history-empty" class="empty-state hidden">
+                    <span class="empty-icon">📭</span>
+                    <p>Aucune prédiction historisée pour l'instant.</p>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Reviens après avoir généré quelques analyses depuis le dashboard.</p>
+                </div>
+
+                <!-- History Days (fixture-card style) -->
+                <div id="history-days" class="fixtures-list"></div>
+
             </div>
 
         </main>
@@ -78,7 +128,7 @@
                 <span class="nav-icon">🏟️</span>
                 <span>AI Arena</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="vip.html" class="nav-item">
                 <span class="nav-icon">👑</span>
                 <span>VIP</span>
             </a>
@@ -90,83 +140,235 @@
     <script>
         requireAuth();
 
+        /* ─── Constants ─── */
+        const LEAGUE_META = {
+            all:           { name: 'Toutes les ligues', flag: '🌍' },
+            LaLiga:        { name: 'LaLiga',            flag: '🇪🇸' },
+            PremierLeague: { name: 'Premier League',    flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+            Ligue1:        { name: 'Ligue 1',           flag: '🇫🇷' },
+            Bundesliga:    { name: 'Bundesliga',        flag: '🇩🇪' },
+            SerieA:        { name: 'Serie A',           flag: '🇮🇹' },
+        };
+
         const PICK_1X2_LABELS = { home: 'Domicile', draw: 'Nul', away: 'Extérieur' };
         const PICK_BTTS_LABELS = { yes: 'Oui', no: 'Non' };
         const PICK_OU_LABELS = { over: 'Plus de 2.5', under: 'Moins de 2.5' };
         const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
                             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+        const DAYS_FR = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
 
+        /* ─── Helpers ─── */
         function formatDay(isoDate) {
             const [year, month, day] = isoDate.split('-').map(Number);
-            return `${day} ${MONTHS_FR[month - 1]} ${year}`;
+            const d = new Date(year, month - 1, day);
+            const dayName = DAYS_FR[d.getDay()];
+            return `${dayName} ${day} ${MONTHS_FR[month - 1]} ${year}`;
         }
 
         function pct(value) {
             return value === null || value === undefined ? '—' : `${(value * 100).toFixed(0)}%`;
         }
 
-        function outcomeBadge(correct) {
-            if (correct === null || correct === undefined) return '<span class="result-badge pending">⏳ En attente</span>';
-            return correct
-                ? '<span class="result-badge correct">✅ Correct</span>'
-                : '<span class="result-badge incorrect">❌ Incorrect</span>';
-        }
-
-        function marketMark(correct) {
-            if (correct === null || correct === undefined) return '';
-            return correct ? ' ✅' : ' ❌';
-        }
-
         function getInitials(name) {
+            if (!name) return '??';
+            const parts = name.trim().split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
             return name.substring(0, 2).toUpperCase();
         }
 
-        function renderMatch(m) {
+        function outcomeStatusTag(correct) {
+            if (correct === null || correct === undefined) {
+                return '<span class="fixture-status-tag" style="background: rgba(142,147,166,0.15); color: var(--text-secondary);">⏳ En attente</span>';
+            }
+            return correct
+                ? '<span class="fixture-status-tag" style="background: rgba(44,217,165,0.15); color: #2CD9A5;">✅ Correct</span>'
+                : '<span class="fixture-status-tag" style="background: rgba(255,77,77,0.15); color: #FF4D4D;">❌ Incorrect</span>';
+        }
+
+        function marketIcon(correct) {
+            if (correct === null || correct === undefined) return '<span style="color: var(--text-secondary);">⏳</span>';
+            return correct ? '<span style="color: #2CD9A5;">✅</span>' : '<span style="color: #FF4D4D;">❌</span>';
+        }
+
+        function getCardBorderClass(correct) {
+            if (correct === null || correct === undefined) return '';
+            return correct ? 'history-card-correct' : 'history-card-incorrect';
+        }
+
+        /* ─── Render a single match as a fixture-card ─── */
+        function renderMatch(m, idx) {
             const resultText = m.result ? `${m.result.home_goals} - ${m.result.away_goals}` : 'À venir';
+            const homeInitials = getInitials(m.home_team);
+            const awayInitials = getInitials(m.away_team);
+            const borderClass = getCardBorderClass(m.correct_1x2);
+            const expandedClass = m.result ? 'expanded' : '';
+
             return `
-                <div class="match-card">
-                    <div class="match-card-header">
-                        <div class="league-info">🏆 <span>${m.league}</span></div>
-                        ${outcomeBadge(m.correct_1x2)}
+                <div class="fixture-card ${borderClass} ${expandedClass}" id="history-card-${idx}">
+                    <!-- Top: League + Outcome Badge -->
+                    <div class="fixture-top">
+                        <div class="fixture-date-badge">
+                            <span>🏆</span>
+                            <span>${m.league}</span>
+                        </div>
+                        ${outcomeStatusTag(m.correct_1x2)}
                     </div>
-                    <div class="teams-container">
-                        <div class="team">
-                            <div class="team-logo">${getInitials(m.home_team)}</div>
-                            <div class="team-name">${m.home_team}</div>
+
+                    <!-- Matchup: Teams face-to-face -->
+                    <div class="fixture-matchup">
+                        <div class="fixture-team-block">
+                            <div class="fixture-team-avatar">${homeInitials}</div>
+                            <span class="fixture-team-name">${m.home_team}</span>
                         </div>
-                        <div class="vs-badge">${resultText}</div>
-                        <div class="team">
-                            <div class="team-logo">${getInitials(m.away_team)}</div>
-                            <div class="team-name">${m.away_team}</div>
+
+                        <span class="fixture-vs-divider ${m.result ? 'score' : ''}">${resultText}</span>
+
+                        <div class="fixture-team-block away">
+                            <div class="fixture-team-avatar">${awayInitials}</div>
+                            <span class="fixture-team-name">${m.away_team}</span>
                         </div>
                     </div>
-                    <div class="stats-grid">
-                        <div class="stat-row">
-                            <span class="stat-label">Prédiction 1X2</span>
-                            <span class="stat-val">${PICK_1X2_LABELS[m.pick_1x2] || m.pick_1x2}</span>
+
+                    <!-- Prediction Details (inline expansion like AI Analysis) -->
+                    <div class="fixture-prediction-detail">
+                        <div class="prob-section-title" style="margin-top: 0;">Prédictions de l'IA</div>
+                        <div class="probabilities">
+                            <div class="prob-box ${m.pick_1x2 === 'home' ? 'highlight' : ''}">
+                                <span class="prob-label">1X2</span>
+                                <span class="prob-value" style="font-size: 1rem;">${PICK_1X2_LABELS[m.pick_1x2] || m.pick_1x2}</span>
+                            </div>
+                            <div class="prob-box ${m.pick_btts ? 'highlight' : ''}">
+                                <span class="prob-label">BTTS</span>
+                                <span class="prob-value" style="font-size: 1rem;">${PICK_BTTS_LABELS[m.pick_btts] || m.pick_btts}</span>
+                            </div>
+                            <div class="prob-box ${m.pick_over_2_5 === 'over' ? 'highlight' : ''}">
+                                <span class="prob-label">+/- 2.5</span>
+                                <span class="prob-value" style="font-size: 1rem;">${PICK_OU_LABELS[m.pick_over_2_5] || m.pick_over_2_5}</span>
+                            </div>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">BTTS</span>
-                            <span class="stat-val">${PICK_BTTS_LABELS[m.pick_btts] || m.pick_btts}${marketMark(m.correct_btts)}</span>
+
+                        ${m.result ? `
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <span class="stat-label">1X2</span>
+                                <span class="stat-val">${marketIcon(m.correct_1x2)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">BTTS</span>
+                                <span class="stat-val">${marketIcon(m.correct_btts)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">+/- 2.5</span>
+                                <span class="stat-val">${marketIcon(m.correct_over_2_5)}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Score final</span>
+                                <span class="stat-val" style="font-weight: 800; color: var(--text-primary);">${m.result.home_goals} - ${m.result.away_goals}</span>
+                            </div>
                         </div>
-                        <div class="stat-row">
-                            <span class="stat-label">+/- 2.5 buts</span>
-                            <span class="stat-val">${PICK_OU_LABELS[m.pick_over_2_5] || m.pick_over_2_5}${marketMark(m.correct_over_2_5)}</span>
+                        ` : `
+                        <div class="stat-row" style="justify-content: center; color: var(--text-secondary); font-size: 0.8rem;">
+                            ⏳ Résultats en attente…
                         </div>
+                        `}
                     </div>
                 </div>
             `;
         }
 
-        function renderDay(day) {
+        /* ─── Render a day group ─── */
+        function renderDay(day, startIdx) {
+            let matchHtml = '';
+            day.matches.forEach((m, i) => {
+                matchHtml += renderMatch(m, startIdx + i);
+            });
             return `
                 <div class="day-group">
                     <div class="day-header">${formatDay(day.date)}</div>
-                    ${day.matches.map(renderMatch).join('')}
+                    ${matchHtml}
                 </div>
             `;
         }
 
+        /* ─── State ─── */
+        let allDays = [];
+        let currentHistoryLeague = 'all';
+
+        /* ─── Accuracy Computation ─── */
+        function computeAccuracy(matches) {
+            const resolved = matches.filter(m => m.correct_1x2 !== null && m.correct_1x2 !== undefined);
+            const rate = (key) => {
+                const withMarket = resolved.filter(m => m[key] !== null && m[key] !== undefined);
+                return withMarket.length ? withMarket.filter(m => m[key]).length / withMarket.length : null;
+            };
+            return {
+                sample_size: resolved.length,
+                overall_1x2: resolved.length ? resolved.filter(m => m.correct_1x2).length / resolved.length : null,
+                btts: rate('correct_btts'),
+                over_under_2_5: rate('correct_over_2_5'),
+            };
+        }
+
+        /* ─── Render history for a selected league ─── */
+        function renderHistoryForLeague(league) {
+            currentHistoryLeague = league;
+            const meta = LEAGUE_META[league] || { name: league, flag: '⚽' };
+
+            // Update section header
+            document.getElementById('history-league-flag').textContent = meta.flag;
+            document.getElementById('history-league-title').textContent = `Historique — ${meta.name}`;
+
+            const filteredDays = allDays
+                .map(day => ({
+                    date: day.date,
+                    matches: league === 'all' ? day.matches : day.matches.filter(m => m.league === league),
+                }))
+                .filter(day => day.matches.length > 0);
+
+            const allMatches = filteredDays.flatMap(d => d.matches);
+            const totalMatches = allMatches.length;
+            document.getElementById('history-match-count').textContent = `${totalMatches} match${totalMatches > 1 ? 's' : ''}`;
+
+            const playedMatches = allMatches.filter(m => m.result !== null && m.result !== undefined);
+            const accuracy = computeAccuracy(playedMatches);
+
+            // Update accuracy hero
+            document.getElementById('accuracy-main-value').textContent = pct(accuracy.overall_1x2);
+            document.getElementById('accuracy-btts').textContent = pct(accuracy.btts);
+            document.getElementById('accuracy-ou').textContent = pct(accuracy.over_under_2_5);
+            document.getElementById('accuracy-sample').textContent =
+                `Basé sur ${accuracy.sample_size} prédiction(s) résolue(s)`;
+
+            // Render days
+            const daysContainer = document.getElementById('history-days');
+            const emptyEl = document.getElementById('history-empty');
+
+            if (filteredDays.length === 0) {
+                emptyEl.classList.remove('hidden');
+                daysContainer.innerHTML = '';
+            } else {
+                emptyEl.classList.add('hidden');
+                let globalIdx = 0;
+                daysContainer.innerHTML = filteredDays.map(day => {
+                    const html = renderDay(day, globalIdx);
+                    globalIdx += day.matches.length;
+                    return html;
+                }).join('');
+            }
+        }
+
+        /* ─── League pill navigation ─── */
+        document.getElementById('history-league-nav').addEventListener('click', (e) => {
+            const btn = e.target.closest('.league-pill');
+            if (!btn) return;
+            document.querySelectorAll('#history-league-nav .league-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderHistoryForLeague(btn.dataset.league);
+        });
+
+        /* ─── Load history data ─── */
         async function loadHistory() {
             const loadingEl = document.getElementById('history-loading');
             const errorEl = document.getElementById('history-error');
@@ -180,21 +382,8 @@
                 }
                 const data = await response.json();
 
-                document.getElementById('accuracy-main-value').textContent = pct(data.accuracy.overall_1x2);
-                document.getElementById('accuracy-btts').textContent = pct(data.accuracy.btts);
-                document.getElementById('accuracy-ou').textContent = pct(data.accuracy.over_under_2_5);
-                document.getElementById('accuracy-sample').textContent =
-                    `Basé sur ${data.accuracy.sample_size} prédiction(s) résolue(s)`;
-
-                const daysContainer = document.getElementById('history-days');
-                const emptyEl = document.getElementById('history-empty');
-                if (data.days.length === 0) {
-                    emptyEl.classList.remove('hidden');
-                    daysContainer.innerHTML = '';
-                } else {
-                    emptyEl.classList.add('hidden');
-                    daysContainer.innerHTML = data.days.map(renderDay).join('');
-                }
+                allDays = data.days;
+                renderHistoryForLeague(currentHistoryLeague);
 
                 loadingEl.classList.add('hidden');
                 contentEl.classList.remove('hidden');
@@ -205,6 +394,7 @@
             }
         }
 
+        /* ─── Load current user ─── */
         async function loadCurrentUser() {
             try {
                 const response = await apiFetch('/auth/me');
@@ -215,13 +405,59 @@
             }
         }
 
+        /* ─── Logout ─── */
         document.getElementById('logout-btn').addEventListener('click', () => {
             clearToken();
             window.location.href = 'login.html';
         });
 
+        /* ─── Init ─── */
         loadCurrentUser();
         loadHistory();
     </script>
+
+    <style>
+        /* History-specific card border accents */
+        .fixture-card.history-card-correct {
+            border-color: rgba(44, 217, 165, 0.3);
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(44, 217, 165, 0.03) 100%);
+        }
+
+        .fixture-card.history-card-incorrect {
+            border-color: rgba(255, 77, 77, 0.2);
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(255, 77, 77, 0.03) 100%);
+        }
+
+        /* Day group inside fixtures list */
+        .fixtures-list .day-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .fixtures-list .day-group + .day-group {
+            margin-top: 0.5rem;
+        }
+
+        /* VS divider with score styling */
+        .fixture-vs-divider.score {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            background: rgba(44, 217, 165, 0.1);
+            border: 1px solid rgba(44, 217, 165, 0.2);
+            padding: 0.3rem 0.7rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Smooth appearance animation for history cards */
+        .fixture-card {
+            animation: slideUp 0.4s ease-out both;
+        }
+
+        .day-group:nth-child(2) .fixture-card { animation-delay: 0.05s; }
+        .day-group:nth-child(3) .fixture-card { animation-delay: 0.1s; }
+        .day-group:nth-child(4) .fixture-card { animation-delay: 0.15s; }
+    </style>
 </body>
 </html>
