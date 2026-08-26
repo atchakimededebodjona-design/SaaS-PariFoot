@@ -72,6 +72,39 @@
     <script>
         requireAuth();
 
+        // Logos officiels par ligue (media.api-sports.io/football/leagues/<id>.png,
+        // mêmes ids qu'API_FOOTBALL_LEAGUE_IDS côté backend) — statiques,
+        // pas besoin de les faire transiter par /live-scores.
+        const LEAGUE_LOGOS = {
+            PremierLeague: 'https://media.api-sports.io/football/leagues/39.png',
+            LaLiga: 'https://media.api-sports.io/football/leagues/140.png',
+            SerieA: 'https://media.api-sports.io/football/leagues/135.png',
+            Bundesliga: 'https://media.api-sports.io/football/leagues/78.png',
+            Ligue1: 'https://media.api-sports.io/football/leagues/61.png',
+            PrimeiraLiga: 'https://media.api-sports.io/football/leagues/94.png',
+            MLS: 'https://media.api-sports.io/football/leagues/253.png',
+            SaudiProLeague: 'https://media.api-sports.io/football/leagues/307.png',
+            ChampionsLeague: 'https://media.api-sports.io/football/leagues/2.png',
+            EuropaLeague: 'https://media.api-sports.io/football/leagues/3.png',
+            ConferenceLeague: 'https://media.api-sports.io/football/leagues/848.png',
+        };
+
+        // Noms d'affichage lisibles — m.league est la clé interne brute
+        // (ex. "SaudiProLeague") renvoyée par /live-scores.
+        const LEAGUE_DISPLAY_NAMES = {
+            PremierLeague: 'Premier League',
+            LaLiga: 'LaLiga',
+            SerieA: 'Serie A',
+            Bundesliga: 'Bundesliga',
+            Ligue1: 'Ligue 1',
+            PrimeiraLiga: 'Liga Portugal',
+            MLS: 'MLS',
+            SaudiProLeague: 'Saudi Pro League',
+            ChampionsLeague: 'Champions League',
+            EuropaLeague: 'Europa League',
+            ConferenceLeague: 'Conference League',
+        };
+
         const STATUS_LABELS = {
             '1H': '1ère mi-temps',
             'HT': 'Mi-temps',
@@ -102,10 +135,14 @@
             const awayLogoHtml = m.away_logo
                 ? `<img src="${m.away_logo}" alt="${m.away_team}" onerror="this.outerHTML='${awayInitial}'">`
                 : awayInitial;
+            const leagueLogo = LEAGUE_LOGOS[m.league];
+            const leagueLogoHtml = leagueLogo
+                ? `<img class="league-logo" src="${leagueLogo}" alt="${m.league}" onerror="this.outerHTML='🏆'">`
+                : '🏆';
             return `
                 <div class="match-card animate-fade-in hover-lift ${delayClass}">
                     <div class="match-card-header">
-                        <div class="league-info">🏆 <span>${m.league}</span></div>
+                        <div class="league-info">${leagueLogoHtml} <span>${LEAGUE_DISPLAY_NAMES[m.league] || m.league}</span></div>
                         <div class="badge-live pulse-glow"><span class="live-dot"></span>LIVE</div>
                     </div>
                     <div class="teams-container">
