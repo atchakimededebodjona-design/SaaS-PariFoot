@@ -236,6 +236,12 @@ body {
     font-size: 1.8rem;
 }
 
+.team-logo img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
 .team-name {
     font-weight: 700;
     font-size: 1rem;

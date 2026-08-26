@@ -94,6 +94,14 @@
 
         function renderMatch(m, idx) {
             const delayClass = `animate-delay-${(idx % 3) + 1}`;
+            const homeInitial = getInitials(m.home_team);
+            const awayInitial = getInitials(m.away_team);
+            const homeLogoHtml = m.home_logo
+                ? `<img src="${m.home_logo}" alt="${m.home_team}" onerror="this.outerHTML='${homeInitial}'">`
+                : homeInitial;
+            const awayLogoHtml = m.away_logo
+                ? `<img src="${m.away_logo}" alt="${m.away_team}" onerror="this.outerHTML='${awayInitial}'">`
+                : awayInitial;
             return `
                 <div class="match-card animate-fade-in hover-lift ${delayClass}">
                     <div class="match-card-header">
@@ -102,12 +110,12 @@
                     </div>
                     <div class="teams-container">
                         <div class="team">
-                            <div class="team-logo">${getInitials(m.home_team)}</div>
+                            <div class="team-logo">${homeLogoHtml}</div>
                             <div class="team-name">${m.home_team}</div>
                         </div>
                         <div class="vs-badge score">${m.home_goals} - ${m.away_goals}</div>
                         <div class="team">
-                            <div class="team-logo">${getInitials(m.away_team)}</div>
+                            <div class="team-logo">${awayLogoHtml}</div>
                             <div class="team-name">${m.away_team}</div>
                         </div>
                     </div>

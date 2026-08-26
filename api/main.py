@@ -1141,6 +1141,8 @@ class LiveMatch(BaseModel):
     away_goals: int
     status_short: str
     elapsed: int | None = None
+    home_logo: str | None = None
+    away_logo: str | None = None
 
 
 # Cache en mémoire, PARTAGÉ entre tous les utilisateurs — pas une table,
@@ -1193,6 +1195,8 @@ def _get_live_scores() -> list[LiveMatch]:
                 away_goals=fixture.get("goals", {}).get("away") or 0,
                 status_short=fixture.get("fixture", {}).get("status", {}).get("short", "?"),
                 elapsed=fixture.get("fixture", {}).get("status", {}).get("elapsed"),
+                home_logo=fixture.get("teams", {}).get("home", {}).get("logo"),
+                away_logo=fixture.get("teams", {}).get("away", {}).get("logo"),
             ))
 
         _live_scores_cache["matches"] = matches
