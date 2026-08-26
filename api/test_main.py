@@ -38,7 +38,10 @@ def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
     body = r.json()
-    assert set(body["leagues_loaded"]) == {"Ligue1", "PremierLeague", "LaLiga", "Bundesliga", "SerieA", "PrimeiraLiga"}
+    assert set(body["leagues_loaded"]) == {
+        "Ligue1", "PremierLeague", "LaLiga", "Bundesliga", "SerieA", "PrimeiraLiga",
+        "MLS", "SaudiProLeague", "ChampionsLeague", "EuropaLeague", "ConferenceLeague",
+    }
     print(f"  [OK] /health -> {body['leagues_loaded']}")
 
 

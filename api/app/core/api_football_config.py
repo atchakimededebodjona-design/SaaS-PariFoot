@@ -21,7 +21,10 @@ démarrage de tout le service web pour une fonctionnalité annexe.
 API_FOOTBALL_LEAGUE_IDS — vérifiés dans le dashboard API-Football
 (Football → Ids → recherche par nom de championnat, filtré sur Current=True) :
 Premier League 39, LaLiga 140, Serie A 135, Bundesliga 78, Ligue 1 61,
-Primeira Liga (Portugal) 94.
+Primeira Liga (Portugal) 94, MLS 253, Saudi Pro League 307,
+UEFA Champions League 2, UEFA Europa League 3,
+UEFA Europa Conference League 848 (pas d'id séparé pour les tours de
+qualification — inclus dans l'id de la compétition principale).
 """
 
 import os
@@ -36,4 +39,9 @@ API_FOOTBALL_LEAGUE_IDS = {
     "Bundesliga": 78,
     "Ligue1": 61,
     "PrimeiraLiga": 94,
+    "MLS": 253,
+    "SaudiProLeague": 307,
+    "ChampionsLeague": 2,
+    "EuropaLeague": 3,
+    "ConferenceLeague": 848,
 }

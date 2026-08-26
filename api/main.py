@@ -361,6 +361,46 @@ TEAM_ALIASES = {
     "os belenenses": "Belenenses",
     "vitoria de setubal": "Setubal",
     "vitória de setúbal": "Setubal",
+
+    # --- MLS ---
+    "inter miami cf": "Inter Miami",
+    "la galaxy": "Los Angeles Galaxy",
+    "lafc": "Los Angeles FC",
+    "la fc": "Los Angeles FC",
+    "atlanta united": "Atlanta United FC",
+    "montreal impact": "CF Montreal",
+    "chicago fire fc": "Chicago Fire",
+    "dc utd": "DC United",
+    "new york city fc": "New York City FC",
+    "nyc fc": "New York City FC",
+    "nycfc": "New York City FC",
+    "red bulls": "New York Red Bulls",
+    "ny red bulls": "New York Red Bulls",
+    "st louis city": "St. Louis City",
+    "saint louis city": "St. Louis City",
+    "sporting kc": "Sporting Kansas City",
+    "houston dynamo fc": "Houston Dynamo",
+
+    # --- Saudi Pro League ---
+    "al hilal": "Al-Hilal Saudi FC",
+    "al-hilal": "Al-Hilal Saudi FC",
+    "al nassr": "Al-Nassr",
+    "al nassr fc": "Al-Nassr",
+    "al ittihad": "Al-Ittihad FC",
+    "al ahli": "Al-Ahli Jeddah",
+    "al ahli saudi": "Al-Ahli Jeddah",
+    "al ettifaq": "Al-Ettifaq",
+    "al fateh": "Al-Fateh",
+    "al shabab fc": "Al Shabab",
+    "al taawoun": "Al Taawon",
+    "al wehda": "Al Wehda Club",
+
+    # --- Champions/Europa/Conference League ---
+    # NB : "psg"/"paris saint germain"/"paris saint-germain" sont déjà alias
+    # de "Paris SG" (section Ligue 1 ci-dessus) — ne PAS les redéfinir ici,
+    # un alias ne peut viser qu'une seule cible. Le nom exact utilisé par
+    # API-Football dans ces 3 coupes est "Paris Saint Germain" (sans tiret),
+    # qui se résout déjà tel quel en saisie exacte, sans alias nécessaire.
 }
 
 

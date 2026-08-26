@@ -51,9 +51,11 @@ Usage autonome (test manuel, sans ré-entraînement) :
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+import httpx
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -84,6 +86,31 @@ LEAGUE_DIRECT_CODES = {
 }
 
 DIRECT_BASE_URL = "https://www.football-data.co.uk/mmz4281"
+
+# Compétitions absentes à la fois du miroir GitHub et de football-data.co.uk
+# (championnats hors Europe/Amérique du Sud couverts par ce dernier, et
+# coupes continentales qu'il ne couvre jamais) — récupérées directement via
+# API-Football (déjà utilisée pour /live-scores et les fixtures à venir,
+# voir api/app/core/api_football_config.py). Contrairement aux deux sources
+# ci-dessus, ce n'est QUE le score final qui est disponible ici (pas de
+# tirs/corners) : home_shots/away_shots/home_shots_target/away_shots_target/
+# home_corners/away_corners restent vides pour ces lignes — sans impact sur
+# l'entraînement Dixon-Coles (export_model_artifacts.py n'utilise que
+# date/home_team/away_team/home_goals/away_goals), potentiellement limitant
+# pour un futur modèle ML qui en dépendrait (voir app/ai/engine/features.py).
+# Nom de ligue interne -> id de ligue API-Football (mêmes ids que
+# API_FOOTBALL_LEAGUE_IDS dans api/app/core/api_football_config.py — pas
+# importé directement pour ne pas faire dépendre ce script racine du
+# sous-package api/, voir docstring module).
+LEAGUE_API_FOOTBALL_IDS = {
+    "MLS": 253,
+    "SaudiProLeague": 307,
+    "ChampionsLeague": 2,
+    "EuropaLeague": 3,
+    "ConferenceLeague": 848,
+}
+
+API_FOOTBALL_BASE_URL = "https://v3.football.api-sports.io"
 
 # Colonnes du dépôt source (format football-data.co.uk) -> nos colonnes.
 COLUMN_MAP = {
@@ -173,13 +200,79 @@ def download_direct_season(division_code: str, season_code: str, timeout: int = 
     return df
 
 
+def download_api_football_season(league_id: int, season_year: int, api_key: str, timeout: int = 30) -> pd.DataFrame:
+    """
+    Équivalent de download_league_season()/download_direct_season() pour une
+    compétition suivie uniquement via API-Football (voir LEAGUE_API_FOOTBALL_IDS).
+    `season_year` est l'année de DÉBUT de saison au sens API-Football (ex.
+    2025 pour "2025-2026" en Europe, ou pour la saison MLS qui, elle, se
+    déroule dans cette seule année civile — API-Football encode déjà cette
+    différence par compétition, ce script n'a pas à la connaître).
+
+    Ne filtre que sur status="FT" (matchs terminés) — jamais de match en
+    cours/à venir dans l'historique d'entraînement. Contrairement aux deux
+    autres sources, une saison sans aucun match terminé (pas encore commencée)
+    n'est PAS une erreur : retourne un DataFrame vide plutôt que None (pas de
+    notion de 404 ici, juste une réponse "response": [] normale).
+
+    Noms d'équipe nettoyés des espaces parasites en tête/fin (cf. bug constaté
+    à l'ajout des coupes UEFA : "Olympiakos Piraeus" vs "Olympiakos Piraeus ",
+    deux lignes du même club scindées en deux équipes dans le modèle). Pas de
+    canonisation plus large des variantes de noms (ex. "Bayern Munich" vs
+    "Bayern München", constaté et corrigé une fois manuellement) — à surveiller
+    au cas par cas si ça réapparaît, jamais résolu automatiquement ici (risque
+    de fusionner par erreur deux clubs réellement différents au nom proche,
+    ex. "Hibernian" (Écosse) vs "Hibernians" (Malte), tous deux réels).
+    """
+    resp = httpx.get(
+        f"{API_FOOTBALL_BASE_URL}/fixtures",
+        params={"league": league_id, "season": season_year, "status": "FT"},
+        headers={"x-apisports-key": api_key},
+        timeout=timeout,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    errors = data.get("errors")
+    if errors:
+        raise RuntimeError(f"réponse API-Football en erreur (league={league_id}, season={season_year}) : {errors}")
+
+    rows = []
+    for f in data.get("response", []):
+        rows.append({
+            "date": f["fixture"]["date"][:10],
+            "home_team": f["teams"]["home"]["name"].strip(),
+            "away_team": f["teams"]["away"]["name"].strip(),
+            "home_goals": f["goals"]["home"],
+            "away_goals": f["goals"]["away"],
+        })
+    return pd.DataFrame(rows, columns=["date", "home_team", "away_team", "home_goals", "away_goals"])
+
+
+def current_and_previous_seasons_int(reference_date: datetime | None = None) -> list[int]:
+    """
+    Équivalent de current_and_previous_season_codes() mais pour le paramètre
+    `season` d'API-Football, un simple entier (année de début de saison,
+    voir download_api_football_season) — même règle de bascule début juillet
+    que la version "XXYY" (fonctionne aussi pour la MLS, dont la saison
+    coïncide avec l'année civile : la bascule début juillet tombe alors en
+    plein milieu de saison, mais [année précédente, année courante] couvre
+    quand même sans trou la fenêtre de rafraîchissement hebdomadaire visée).
+    """
+    reference_date = reference_date or datetime.now(timezone.utc)
+    current_start_year = reference_date.year if reference_date.month >= 7 else reference_date.year - 1
+    return [current_start_year - 1, current_start_year]
+
+
 def fetch_latest_matches(reference_date: datetime | None = None) -> pd.DataFrame:
     """
     Télécharge la saison courante + précédente pour toutes les ligues
     suivies (miroir GitHub pour les 5 grands championnats, football-data.co.uk
-    en direct pour les autres, voir LEAGUE_DIRECT_CODES) et retourne un
-    DataFrame unique au format attendu par le reste du pipeline (mêmes
-    colonnes que data/all_leagues_raw_with_stats.csv).
+    en direct pour certaines autres, API-Football pour le reste — voir
+    LEAGUE_DIRECT_CODES et LEAGUE_API_FOOTBALL_IDS) et retourne un DataFrame
+    unique au format attendu par le reste du pipeline (mêmes colonnes que
+    data/all_leagues_raw_with_stats.csv — home_shots/home_corners/etc.
+    resteront vides pour les lignes issues d'API-Football, voir
+    download_api_football_season).
     """
     season_codes = current_and_previous_season_codes(reference_date)
     logger.info(f"Codes de saison recherchés : {season_codes}")
@@ -205,6 +298,25 @@ def fetch_latest_matches(reference_date: datetime | None = None) -> pd.DataFrame
             df["league"] = league
             frames.append(df)
             logger.info(f"  -> {len(df)} matchs")
+
+    if LEAGUE_API_FOOTBALL_IDS:
+        api_football_key = os.environ.get("API_FOOTBALL_KEY", "")
+        if not api_football_key:
+            logger.warning(
+                "API_FOOTBALL_KEY absente — compétitions suivies via API-Football "
+                f"({sorted(LEAGUE_API_FOOTBALL_IDS)}) sautées cette exécution, pas d'échec du job pour autant."
+            )
+        else:
+            season_years = current_and_previous_seasons_int(reference_date)
+            for league, league_id in LEAGUE_API_FOOTBALL_IDS.items():
+                for season_year in season_years:
+                    logger.info(f"Téléchargement {league} — saison {season_year} (API-Football, id={league_id}) ...")
+                    df = download_api_football_season(league_id, season_year, api_football_key)
+                    if df.empty:
+                        continue
+                    df["league"] = league
+                    frames.append(df)
+                    logger.info(f"  -> {len(df)} matchs")
 
     if not frames:
         raise RuntimeError("Aucune donnée récupérée sur aucune ligue — vérifier la connectivité réseau ou le dépôt source")
@@ -263,7 +375,7 @@ def update_raw_data_file(raw_file: str = RAW_FILE, reference_date: datetime | No
                 "after": counts_after.get(league, 0),
                 "added": counts_after.get(league, 0) - counts_before.get(league, 0),
             }
-            for league in {**LEAGUE_REPO_DIRS, **LEAGUE_DIRECT_CODES}
+            for league in {**LEAGUE_REPO_DIRS, **LEAGUE_DIRECT_CODES, **LEAGUE_API_FOOTBALL_IDS}
         },
     }
     return summary

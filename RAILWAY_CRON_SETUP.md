@@ -74,6 +74,7 @@ Dans **Variables** de ce service :
 | Variable | Valeur | Nécessaire ? |
 |---|---|---|
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (référence à ton add-on Postgres existant — à adapter au nom réel du service Postgres dans ton projet) | **Oui** — c'est ce qui permet l'écriture dans `model_artifact` (§ décision de stockage) |
+| `API_FOOTBALL_KEY` | ta clé du dashboard API-Football (même clé que le service web) | Optionnel mais recommandé — sans elle, `update_raw_data.py` saute silencieusement (log WARNING, job pas mis en échec) le rafraîchissement des compétitions suivies uniquement via API-Football (MLS, Saudi Pro League, Champions/Europa/Conference League — voir LEAGUE_API_FOOTBALL_IDS dans update_raw_data.py) ; les autres ligues continuent d'être mises à jour normalement |
 | `ALERT_WEBHOOK_URL` | URL d'un webhook entrant Slack ou Discord | Optionnel — active la notification d'échec (étape 7) |
 
 Aucune variable Chariow (`CHARIOW_*`), `JWT_SECRET_KEY`, `ALLOWED_ORIGINS`
