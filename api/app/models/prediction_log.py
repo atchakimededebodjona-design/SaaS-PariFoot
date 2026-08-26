@@ -3,12 +3,24 @@ Historique des prédictions générées par l'app, pour la page "Historique &
 Performance" du frontend (voir GET /predictions/history dans api/main.py).
 
 Une ligne par (league, match_date, home_team, away_team) — `match_date` est
-la date de la DEMANDE de prédiction, pas une vraie date de match (l'API de
-prédiction n'en reçoit jamais) : on suppose que l'utilisateur prédit un
-match du jour, hypothèse raisonnable vu l'usage actuel de l'app mais qui
-peut manquer un rapprochement si le match se joue plusieurs jours plus
-tard. `payload` reproduit la réponse MatchPrediction complète (mêmes
-raisons que ModelArtifact.payload : éviter de dupliquer/faire diverger le
+la vraie date du coup d'envoi, transmise par l'appelant (frontend, depuis
+les fixtures officielles déjà connues) via le paramètre `kickoff_date` de
+GET /predictions/{league}/{home}/{away} et POST /predictions/batch (voir
+main.py::_log_prediction). Sans elle (ex. match "Sur-Mesure" sans fixture
+réelle associée), on retombe sur la date du jour de la requête.
+
+AVANT ce comportement, `match_date` stockait la date de la DEMANDE de
+prédiction (pas la vraie date de match), en supposant que l'utilisateur
+prédit toujours "le match du jour" — hypothèse fausse en pratique (l'app
+permet de prédire les matchs de toute la semaine à l'avance), ce qui
+empêchait fetch_daily_results.py de jamais rapprocher un résultat (il
+cherche des fixtures terminées CE jour-là). Les lignes créées avant ce
+changement gardent l'ancienne sémantique et resteront probablement NULL
+sur result_* pour toujours — sans conséquence, elles ne sont pas
+réécrites.
+
+`payload` reproduit la réponse MatchPrediction complète (mêmes raisons
+que ModelArtifact.payload : éviter de dupliquer/faire diverger le
 schéma). Les colonnes result_*/correct_* restent NULL tant que
 fetch_daily_results.py n'a pas rapproché de résultat réel (API-Football).
 """

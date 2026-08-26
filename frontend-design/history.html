@@ -351,10 +351,16 @@
             document.getElementById('history-league-flag').textContent = meta.flag;
             document.getElementById('history-league-title').textContent = `Historique — ${meta.name}`;
 
+            // Ne montre que les matchs déjà joués (résultat connu) — c'est
+            // une page de preuve de performance, pas un calendrier de
+            // pronostics en attente (voir loadHistory pour la fenêtre
+            // hier + aujourd'hui).
             const filteredDays = allDays
                 .map(day => ({
                     date: day.date,
-                    matches: league === 'all' ? day.matches : day.matches.filter(m => m.league === league),
+                    matches: day.matches
+                        .filter(m => m.result !== null && m.result !== undefined)
+                        .filter(m => league === 'all' || m.league === league),
                 }))
                 .filter(day => day.matches.length > 0);
 
@@ -406,7 +412,10 @@
             const contentEl = document.getElementById('history-content');
 
             try {
-                const response = await apiFetch('/predictions/history?days=14');
+                // days=1 -> since = hier (match_date >= hier), donc la fenêtre
+                // couvre hier + aujourd'hui : uniquement de quoi montrer la
+                // performance récente du modèle, pas un historique complet.
+                const response = await apiFetch('/predictions/history?days=1');
                 if (!response.ok) {
                     const body = await response.json().catch(() => ({}));
                     throw new Error(body.detail || `Erreur (${response.status})`);

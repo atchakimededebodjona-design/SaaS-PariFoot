@@ -304,7 +304,7 @@
                             </div>
                         </div>
 
-                        <button class="btn-fixture-predict btn-ripple" onclick="generateMatchPrediction('${league}', '${encodeURIComponent(fix.home_team)}', '${encodeURIComponent(fix.away_team)}', 'result-box-${idx}', 'card-${idx}')">
+                        <button class="btn-fixture-predict btn-ripple" onclick="generateMatchPrediction('${league}', '${encodeURIComponent(fix.home_team)}', '${encodeURIComponent(fix.away_team)}', 'result-box-${idx}', 'card-${idx}', '${fix.kickoff ? fix.kickoff.slice(0, 10) : ''}')">
                             <span>✨</span>
                             <span>Générer le pronostic IA</span>
                         </button>
@@ -315,7 +315,7 @@
             }).join('');
         }
 
-        window.generateMatchPrediction = async function(league, homeEncoded, awayEncoded, targetBoxId, cardId) {
+        window.generateMatchPrediction = async function(league, homeEncoded, awayEncoded, targetBoxId, cardId, kickoffDate) {
             const home = decodeURIComponent(homeEncoded);
             const away = decodeURIComponent(awayEncoded);
             const box = document.getElementById(targetBoxId);
@@ -328,7 +328,12 @@
             if (card) card.classList.add('expanded');
 
             try {
-                const response = await apiFetch(`/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}`);
+                // kickoffDate (YYYY-MM-DD, depuis la fixture officielle) permet
+                // à fetch_daily_results.py de rapprocher cette prédiction du bon
+                // jour de match plus tard — absent pour le mode "Sur-Mesure"
+                // (pas de fixture réelle), l'API retombe alors sur la date du jour.
+                const qs = kickoffDate ? `?kickoff_date=${encodeURIComponent(kickoffDate)}` : '';
+                const response = await apiFetch(`/predictions/${encodeURIComponent(league)}/${encodeURIComponent(home)}/${encodeURIComponent(away)}${qs}`);
                 if (response.status === 402) {
                     box.classList.add('hidden');
                     premiumBanner.classList.remove('hidden');

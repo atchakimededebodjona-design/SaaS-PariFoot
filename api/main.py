@@ -775,6 +775,7 @@ class BatchMatchRequest(BaseModel):
     league: str
     home_team: str
     away_team: str
+    kickoff_date: date | None = None
 
 
 class BatchPredictionResult(BaseModel):
@@ -852,22 +853,28 @@ def _pick_1x2(prediction: "MatchPrediction") -> str:
     return "draw"
 
 
-def _log_prediction(prediction: "MatchPrediction") -> None:
+def _log_prediction(prediction: "MatchPrediction", kickoff_date: date | None = None) -> None:
     """
     Enregistre la prédiction pour la page Historique & Performance (voir
     app/models/prediction_log.py) — best effort, ne doit jamais faire
     échouer la réponse de prédiction elle-même (même philosophie que
     _write_artifact_to_db dans refresh_and_retrain.py). Un seul
-    enregistrement par (league, jour, home_team, away_team) : les relances
-    du même match le même jour sont ignorées silencieusement.
+    enregistrement par (league, kickoff_date, home_team, away_team) : les
+    relances du même match sont ignorées silencieusement.
+
+    `kickoff_date` est la vraie date du coup d'envoi (transmise par
+    l'appelant depuis les données de fixture déjà connues côté frontend —
+    voir GET /predictions/{league}/{home}/{away}) — jamais recalculée ici.
+    Sans elle (match "Sur-Mesure" sans fixture réelle associée), on retombe
+    sur la date du jour, comme avant.
     """
     try:
-        today = datetime.now(timezone.utc).date()
+        target_date = kickoff_date or datetime.now(timezone.utc).date()
         with Session(engine) as session:
             existing = session.exec(
                 select(PredictionLog).where(
                     PredictionLog.league == prediction.league,
-                    PredictionLog.match_date == today,
+                    PredictionLog.match_date == target_date,
                     PredictionLog.home_team == prediction.home_team,
                     PredictionLog.away_team == prediction.away_team,
                 )
@@ -876,7 +883,7 @@ def _log_prediction(prediction: "MatchPrediction") -> None:
                 return
             session.add(PredictionLog(
                 league=prediction.league,
-                match_date=today,
+                match_date=target_date,
                 home_team=prediction.home_team,
                 away_team=prediction.away_team,
                 payload=prediction.model_dump_json(),
@@ -889,7 +896,7 @@ def _log_prediction(prediction: "MatchPrediction") -> None:
         logger.warning(f"Enregistrement de l'historique de prédiction impossible (non bloquant) : {e}")
 
 
-def _log_model_prediction(prediction: "MatchPrediction") -> None:
+def _log_model_prediction(prediction: "MatchPrediction", kickoff_date: date | None = None) -> None:
     """
     Dual-write vers model_predictions (Phase 6, source de vérité
     multi-modèles pour Xfoot AI Arena) — EN PLUS de _log_prediction
@@ -901,6 +908,11 @@ def _log_model_prediction(prediction: "MatchPrediction") -> None:
     écriture-ci sert à faire passer Dixon-Coles par le même mécanisme
     commun que Elo/XGBoost/LightGBM (voir prediction_logging.py), pas à
     doubler le calcul des métriques.
+
+    `kickoff_date` : même paramètre et même repli sur aujourd'hui que
+    _log_prediction — aligne cette écriture sur la convention déjà utilisée
+    par le scheduler automatique (app/ai/arena/scheduler.py::fixture.match_date),
+    qui stocke lui aussi la vraie date de coup d'envoi, pas la date de la requête.
     """
     try:
         with Session(engine) as session:
@@ -910,7 +922,7 @@ def _log_model_prediction(prediction: "MatchPrediction") -> None:
             )
             record = PredictionRecord(
                 league=prediction.league,
-                match_date=datetime.now(timezone.utc).date(),
+                match_date=kickoff_date or datetime.now(timezone.utc).date(),
                 home_team=prediction.home_team,
                 away_team=prediction.away_team,
                 model_type="dixon_coles",
@@ -929,7 +941,8 @@ def _log_model_prediction(prediction: "MatchPrediction") -> None:
         logger.warning(f"Enregistrement model_predictions impossible (non bloquant) : {e}")
 
 
-def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str) -> MatchPrediction:
+def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str,
+                          kickoff_date: date | None = None) -> MatchPrediction:
     """
     Résout les noms d'équipes (exact -> normalisé -> alias) puis calcule la
     prédiction. Lève ValueError avec un message actionnable (incluant des
@@ -937,6 +950,9 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
     peut pas être résolue de façon fiable — la résolution floue (fuzzy)
     n'est JAMAIS appliquée silencieusement, elle remonte comme une erreur
     avec suggestions.
+
+    `kickoff_date` : simplement relayé à _log_prediction/_log_model_prediction
+    (voir leurs docstrings) — cette fonction ne le lit ni ne le valide.
     """
     if league not in LEAGUE_MODELS:
         raise ValueError(f"Ligue inconnue : '{league}'. Ligues disponibles : {list(LEAGUE_MODELS.keys())}")
@@ -994,16 +1010,24 @@ def _resolve_and_predict(league: str, home_team_input: str, away_team_input: str
         home_team_resolution=home_res["method"],
         away_team_resolution=away_res["method"],
     )
-    _log_prediction(prediction)
-    _log_model_prediction(prediction)
+    _log_prediction(prediction, kickoff_date)
+    _log_model_prediction(prediction, kickoff_date)
     return prediction
 
 
 @app.get("/predictions/{league}/{home_team}/{away_team}", response_model=MatchPrediction)
-def get_prediction(league: str, home_team: str, away_team: str,
+def get_prediction(league: str, home_team: str, away_team: str, kickoff_date: date | None = None,
                     user: User = Depends(require_active_subscription)):
+    """
+    `kickoff_date` (optionnel, YYYY-MM-DD) : vraie date du coup d'envoi,
+    connue côté frontend depuis les fixtures officielles (voir
+    index.html::generateMatchPrediction) — permet à fetch_daily_results.py
+    de rapprocher cette prédiction du bon jour de match, pas du jour de la
+    requête (voir _log_prediction). Absent pour un match "Sur-Mesure" sans
+    fixture réelle associée, auquel cas on retombe sur la date du jour.
+    """
     try:
-        return _resolve_and_predict(league, home_team, away_team)
+        return _resolve_and_predict(league, home_team, away_team, kickoff_date)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -1021,7 +1045,7 @@ def get_predictions_batch(matches: list[BatchMatchRequest],
     results = []
     for m in matches:
         try:
-            prediction = _resolve_and_predict(m.league, m.home_team, m.away_team)
+            prediction = _resolve_and_predict(m.league, m.home_team, m.away_team, m.kickoff_date)
             results.append(BatchPredictionResult(
                 league=m.league, home_team_input=m.home_team, away_team_input=m.away_team,
                 ok=True, prediction=prediction,
