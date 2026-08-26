@@ -20,7 +20,8 @@ démarrage de tout le service web pour une fonctionnalité annexe.
 
 API_FOOTBALL_LEAGUE_IDS — vérifiés dans le dashboard API-Football
 (Football → Ids → recherche par nom de championnat, filtré sur Current=True) :
-Premier League 39, LaLiga 140, Serie A 135, Bundesliga 78, Ligue 1 61.
+Premier League 39, LaLiga 140, Serie A 135, Bundesliga 78, Ligue 1 61,
+Primeira Liga (Portugal) 94.
 """
 
 import os
@@ -34,4 +35,5 @@ API_FOOTBALL_LEAGUE_IDS = {
     "SerieA": 135,
     "Bundesliga": 78,
     "Ligue1": 61,
+    "PrimeiraLiga": 94,
 }

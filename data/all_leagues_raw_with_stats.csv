@@ -9798,6 +9798,2148 @@ date,home_team,away_team,home_goals,away_goals,home_shots,away_shots,home_shots_
 2026-05-24,Sunderland,Chelsea,2,1,20.0,10.0,2.0,1.0,7.0,7.0,PremierLeague
 2026-05-24,Tottenham,Everton,1,0,21.0,8.0,6.0,3.0,6.0,2.0,PremierLeague
 2026-05-24,West Ham,Leeds,3,0,16.0,13.0,9.0,3.0,6.0,4.0,PremierLeague
+2019-08-09,Portimonense,Belenenses,0,0,16.0,8.0,5.0,2.0,5.0,5.0,PrimeiraLiga
+2019-08-10,Santa Clara,Famalicao,0,2,22.0,14.0,6.0,6.0,14.0,6.0,PrimeiraLiga
+2019-08-10,Gil Vicente,Porto,2,1,13.0,16.0,7.0,5.0,4.0,6.0,PrimeiraLiga
+2019-08-10,Benfica,Pacos Ferreira,5,0,15.0,7.0,7.0,0.0,10.0,3.0,PrimeiraLiga
+2019-08-11,Boavista,Aves,2,1,8.0,17.0,3.0,2.0,3.0,8.0,PrimeiraLiga
+2019-08-11,Maritimo,Sp Lisbon,1,1,10.0,17.0,3.0,2.0,2.0,8.0,PrimeiraLiga
+2019-08-11,Sp Braga,Moreirense,3,1,19.0,11.0,9.0,4.0,7.0,4.0,PrimeiraLiga
+2019-08-12,Setubal,Tondela,0,0,7.0,7.0,4.0,2.0,3.0,3.0,PrimeiraLiga
+2019-08-16,Famalicao,Rio Ave,1,0,16.0,13.0,4.0,1.0,5.0,2.0,PrimeiraLiga
+2019-08-17,Moreirense,Gil Vicente,3,0,12.0,16.0,4.0,2.0,3.0,5.0,PrimeiraLiga
+2019-08-17,Belenenses,Benfica,0,2,7.0,21.0,1.0,5.0,5.0,4.0,PrimeiraLiga
+2019-08-17,Porto,Setubal,4,0,23.0,6.0,10.0,5.0,7.0,0.0,PrimeiraLiga
+2019-08-18,Aves,Maritimo,3,1,11.0,10.0,4.0,1.0,4.0,6.0,PrimeiraLiga
+2019-08-18,Pacos Ferreira,Santa Clara,0,1,19.0,6.0,3.0,3.0,8.0,3.0,PrimeiraLiga
+2019-08-18,Guimaraes,Boavista,1,1,16.0,5.0,4.0,2.0,4.0,2.0,PrimeiraLiga
+2019-08-18,Sp Lisbon,Sp Braga,2,1,11.0,21.0,6.0,7.0,2.0,7.0,PrimeiraLiga
+2019-08-19,Tondela,Portimonense,1,2,8.0,14.0,3.0,6.0,6.0,3.0,PrimeiraLiga
+2019-08-23,Setubal,Moreirense,0,0,18.0,5.0,1.0,2.0,9.0,5.0,PrimeiraLiga
+2019-08-23,Rio Ave,Aves,5,1,17.0,7.0,9.0,1.0,3.0,6.0,PrimeiraLiga
+2019-08-24,Benfica,Porto,0,2,6.0,11.0,1.0,5.0,5.0,4.0,PrimeiraLiga
+2019-08-24,Boavista,Pacos Ferreira,1,1,15.0,14.0,2.0,5.0,6.0,8.0,PrimeiraLiga
+2019-08-25,Maritimo,Tondela,2,3,15.0,10.0,5.0,7.0,4.0,6.0,PrimeiraLiga
+2019-08-25,Santa Clara,Belenenses,0,0,15.0,6.0,3.0,1.0,9.0,2.0,PrimeiraLiga
+2019-08-25,Portimonense,Sp Lisbon,1,3,16.0,11.0,2.0,6.0,3.0,6.0,PrimeiraLiga
+2019-08-25,Gil Vicente,Sp Braga,1,1,15.0,8.0,6.0,4.0,5.0,1.0,PrimeiraLiga
+2019-08-25,Guimaraes,Famalicao,1,1,18.0,15.0,4.0,3.0,12.0,5.0,PrimeiraLiga
+2019-08-30,Moreirense,Portimonense,1,0,9.0,10.0,3.0,2.0,0.0,3.0,PrimeiraLiga
+2019-08-30,Belenenses,Boavista,0,1,9.0,12.0,3.0,7.0,5.0,1.0,PrimeiraLiga
+2019-08-31,Aves,Famalicao,2,3,18.0,12.0,6.0,7.0,4.0,7.0,PrimeiraLiga
+2019-08-31,Pacos Ferreira,Maritimo,0,1,21.0,9.0,3.0,2.0,7.0,0.0,PrimeiraLiga
+2019-08-31,Sp Lisbon,Rio Ave,2,3,9.0,6.0,5.0,3.0,1.0,2.0,PrimeiraLiga
+2019-08-31,Gil Vicente,Setubal,0,0,15.0,8.0,2.0,3.0,7.0,6.0,PrimeiraLiga
+2019-09-01,Sp Braga,Benfica,0,4,11.0,12.0,2.0,6.0,4.0,5.0,PrimeiraLiga
+2019-09-01,Porto,Guimaraes,3,0,18.0,8.0,10.0,3.0,7.0,5.0,PrimeiraLiga
+2019-09-01,Tondela,Santa Clara,0,0,11.0,13.0,4.0,4.0,7.0,10.0,PrimeiraLiga
+2019-09-08,Rio Ave,Guimaraes,1,1,6.0,15.0,2.0,5.0,5.0,8.0,PrimeiraLiga
+2019-09-13,Setubal,Sp Braga,1,0,7.0,22.0,4.0,6.0,1.0,7.0,PrimeiraLiga
+2019-09-14,Famalicao,Pacos Ferreira,4,2,11.0,15.0,5.0,3.0,1.0,9.0,PrimeiraLiga
+2019-09-14,Benfica,Gil Vicente,2,0,13.0,8.0,4.0,1.0,9.0,7.0,PrimeiraLiga
+2019-09-14,Guimaraes,Aves,5,1,18.0,12.0,8.0,2.0,9.0,6.0,PrimeiraLiga
+2019-09-15,Maritimo,Belenenses,1,3,12.0,13.0,4.0,7.0,8.0,9.0,PrimeiraLiga
+2019-09-15,Rio Ave,Tondela,2,4,23.0,5.0,6.0,4.0,8.0,0.0,PrimeiraLiga
+2019-09-15,Santa Clara,Moreirense,2,0,18.0,12.0,5.0,2.0,6.0,3.0,PrimeiraLiga
+2019-09-15,Portimonense,Porto,2,3,8.0,21.0,4.0,6.0,1.0,10.0,PrimeiraLiga
+2019-09-15,Boavista,Sp Lisbon,1,1,11.0,13.0,4.0,3.0,5.0,8.0,PrimeiraLiga
+2019-09-20,Pacos Ferreira,Aves,2,1,15.0,8.0,2.0,3.0,9.0,2.0,PrimeiraLiga
+2019-09-21,Belenenses,Rio Ave,0,2,9.0,16.0,2.0,4.0,4.0,1.0,PrimeiraLiga
+2019-09-21,Moreirense,Benfica,1,2,6.0,20.0,2.0,2.0,3.0,5.0,PrimeiraLiga
+2019-09-22,Porto,Santa Clara,2,0,19.0,6.0,7.0,2.0,9.0,0.0,PrimeiraLiga
+2019-09-22,Tondela,Guimaraes,1,3,5.0,20.0,3.0,6.0,5.0,5.0,PrimeiraLiga
+2019-09-22,Gil Vicente,Boavista,0,0,15.0,4.0,6.0,0.0,10.0,4.0,PrimeiraLiga
+2019-09-22,Setubal,Portimonense,0,0,7.0,7.0,3.0,1.0,4.0,2.0,PrimeiraLiga
+2019-09-23,Sp Braga,Maritimo,2,2,26.0,6.0,6.0,3.0,9.0,3.0,PrimeiraLiga
+2019-09-23,Sp Lisbon,Famalicao,1,2,20.0,13.0,5.0,7.0,6.0,6.0,PrimeiraLiga
+2019-09-27,Boavista,Tondela,0,0,16.0,5.0,3.0,0.0,6.0,4.0,PrimeiraLiga
+2019-09-28,Maritimo,Moreirense,2,1,12.0,12.0,4.0,4.0,6.0,2.0,PrimeiraLiga
+2019-09-28,Benfica,Setubal,1,0,13.0,9.0,3.0,2.0,14.0,3.0,PrimeiraLiga
+2019-09-28,Famalicao,Belenenses,3,1,16.0,9.0,6.0,3.0,6.0,2.0,PrimeiraLiga
+2019-09-29,Guimaraes,Pacos Ferreira,1,0,14.0,5.0,4.0,1.0,10.0,3.0,PrimeiraLiga
+2019-09-29,Santa Clara,Gil Vicente,1,0,14.0,7.0,6.0,5.0,6.0,6.0,PrimeiraLiga
+2019-09-29,Portimonense,Sp Braga,0,1,12.0,9.0,5.0,3.0,2.0,7.0,PrimeiraLiga
+2019-09-29,Rio Ave,Porto,0,1,8.0,13.0,1.0,5.0,0.0,6.0,PrimeiraLiga
+2019-09-30,Aves,Sp Lisbon,0,1,7.0,15.0,2.0,3.0,3.0,7.0,PrimeiraLiga
+2019-10-05,Aves,Tondela,0,1,12.0,11.0,1.0,2.0,6.0,8.0,PrimeiraLiga
+2019-10-25,Pacos Ferreira,Rio Ave,0,0,16.0,4.0,3.0,0.0,2.0,4.0,PrimeiraLiga
+2019-10-26,Moreirense,Boavista,1,1,9.0,23.0,4.0,4.0,1.0,10.0,PrimeiraLiga
+2019-10-26,Setubal,Maritimo,0,0,11.0,10.0,2.0,3.0,5.0,5.0,PrimeiraLiga
+2019-10-26,Belenenses,Aves,3,2,11.0,8.0,5.0,2.0,7.0,6.0,PrimeiraLiga
+2019-10-26,Gil Vicente,Portimonense,1,1,6.0,10.0,2.0,4.0,2.0,3.0,PrimeiraLiga
+2019-10-27,Tondela,Benfica,0,1,9.0,12.0,4.0,3.0,5.0,5.0,PrimeiraLiga
+2019-10-27,Porto,Famalicao,3,0,19.0,5.0,9.0,2.0,4.0,3.0,PrimeiraLiga
+2019-10-27,Sp Lisbon,Guimaraes,3,1,13.0,13.0,6.0,3.0,3.0,4.0,PrimeiraLiga
+2019-10-28,Sp Braga,Santa Clara,2,0,20.0,8.0,12.0,5.0,4.0,6.0,PrimeiraLiga
+2019-10-30,Famalicao,Gil Vicente,2,1,10.0,12.0,2.0,4.0,9.0,2.0,PrimeiraLiga
+2019-10-30,Guimaraes,Belenenses,5,0,14.0,6.0,6.0,2.0,6.0,3.0,PrimeiraLiga
+2019-10-30,Benfica,Portimonense,4,0,17.0,8.0,6.0,2.0,5.0,1.0,PrimeiraLiga
+2019-10-30,Rio Ave,Moreirense,1,1,20.0,8.0,7.0,4.0,13.0,3.0,PrimeiraLiga
+2019-10-30,Maritimo,Porto,1,1,6.0,14.0,2.0,5.0,6.0,9.0,PrimeiraLiga
+2019-10-31,Pacos Ferreira,Sp Lisbon,1,2,12.0,12.0,5.0,4.0,10.0,4.0,PrimeiraLiga
+2019-10-31,Boavista,Sp Braga,2,0,10.0,19.0,2.0,2.0,3.0,7.0,PrimeiraLiga
+2019-10-31,Santa Clara,Setubal,1,1,20.0,13.0,4.0,3.0,7.0,6.0,PrimeiraLiga
+2019-11-02,Benfica,Rio Ave,2,0,20.0,3.0,4.0,0.0,10.0,2.0,PrimeiraLiga
+2019-11-02,Moreirense,Guimaraes,1,1,7.0,15.0,1.0,6.0,8.0,9.0,PrimeiraLiga
+2019-11-03,Sp Braga,Famalicao,2,2,18.0,6.0,5.0,4.0,11.0,2.0,PrimeiraLiga
+2019-11-03,Porto,Aves,1,0,12.0,9.0,4.0,0.0,6.0,2.0,PrimeiraLiga
+2019-11-03,Gil Vicente,Maritimo,2,0,15.0,8.0,6.0,1.0,4.0,3.0,PrimeiraLiga
+2019-11-03,Tondela,Sp Lisbon,1,0,5.0,15.0,3.0,3.0,1.0,7.0,PrimeiraLiga
+2019-11-04,Belenenses,Pacos Ferreira,1,0,8.0,16.0,2.0,5.0,1.0,9.0,PrimeiraLiga
+2019-11-04,Portimonense,Santa Clara,1,1,14.0,15.0,4.0,4.0,4.0,8.0,PrimeiraLiga
+2019-11-04,Setubal,Boavista,1,0,7.0,27.0,2.0,5.0,2.0,11.0,PrimeiraLiga
+2019-11-08,Aves,Gil Vicente,1,2,5.0,5.0,4.0,4.0,7.0,4.0,PrimeiraLiga
+2019-11-09,Rio Ave,Setubal,1,0,7.0,10.0,3.0,3.0,9.0,4.0,PrimeiraLiga
+2019-11-09,Santa Clara,Benfica,1,2,12.0,11.0,3.0,6.0,2.0,4.0,PrimeiraLiga
+2019-11-09,Famalicao,Moreirense,3,3,17.0,9.0,14.0,5.0,2.0,2.0,PrimeiraLiga
+2019-11-10,Guimaraes,Sp Braga,0,2,14.0,9.0,2.0,5.0,11.0,2.0,PrimeiraLiga
+2019-11-10,Maritimo,Portimonense,1,1,15.0,10.0,4.0,2.0,3.0,1.0,PrimeiraLiga
+2019-11-10,Pacos Ferreira,Tondela,1,0,9.0,13.0,2.0,5.0,3.0,5.0,PrimeiraLiga
+2019-11-10,Sp Lisbon,Belenenses,2,0,19.0,9.0,5.0,3.0,6.0,5.0,PrimeiraLiga
+2019-11-10,Boavista,Porto,0,1,7.0,9.0,1.0,1.0,3.0,6.0,PrimeiraLiga
+2019-11-29,Santa Clara,Boavista,1,2,15.0,17.0,2.0,7.0,10.0,2.0,PrimeiraLiga
+2019-11-30,Moreirense,Aves,3,2,18.0,12.0,5.0,3.0,11.0,5.0,PrimeiraLiga
+2019-11-30,Benfica,Maritimo,4,0,12.0,12.0,9.0,1.0,4.0,3.0,PrimeiraLiga
+2019-11-30,Portimonense,Famalicao,2,1,12.0,12.0,5.0,4.0,6.0,3.0,PrimeiraLiga
+2019-12-01,Tondela,Belenenses,0,1,15.0,11.0,3.0,3.0,8.0,7.0,PrimeiraLiga
+2019-12-01,Setubal,Guimaraes,1,1,17.0,13.0,4.0,3.0,10.0,7.0,PrimeiraLiga
+2019-12-01,Gil Vicente,Sp Lisbon,3,1,7.0,9.0,4.0,2.0,1.0,3.0,PrimeiraLiga
+2019-12-02,Sp Braga,Rio Ave,2,0,12.0,9.0,4.0,2.0,7.0,3.0,PrimeiraLiga
+2019-12-02,Porto,Pacos Ferreira,2,0,8.0,5.0,6.0,4.0,8.0,1.0,PrimeiraLiga
+2019-12-06,Boavista,Benfica,1,4,9.0,11.0,5.0,6.0,3.0,5.0,PrimeiraLiga
+2019-12-07,Maritimo,Santa Clara,2,2,12.0,6.0,7.0,2.0,11.0,4.0,PrimeiraLiga
+2019-12-07,Famalicao,Tondela,2,3,27.0,8.0,10.0,5.0,9.0,3.0,PrimeiraLiga
+2019-12-07,Aves,Sp Braga,1,0,6.0,13.0,1.0,2.0,3.0,13.0,PrimeiraLiga
+2019-12-08,Belenenses,Porto,1,1,5.0,16.0,3.0,7.0,2.0,4.0,PrimeiraLiga
+2019-12-08,Sp Lisbon,Moreirense,1,0,28.0,9.0,9.0,1.0,8.0,2.0,PrimeiraLiga
+2019-12-08,Guimaraes,Portimonense,2,0,10.0,13.0,5.0,2.0,8.0,3.0,PrimeiraLiga
+2019-12-08,Pacos Ferreira,Setubal,2,3,21.0,9.0,4.0,4.0,8.0,5.0,PrimeiraLiga
+2019-12-09,Rio Ave,Gil Vicente,1,0,9.0,8.0,2.0,4.0,7.0,1.0,PrimeiraLiga
+2019-12-13,Portimonense,Rio Ave,1,1,16.0,9.0,6.0,2.0,5.0,1.0,PrimeiraLiga
+2019-12-14,Maritimo,Boavista,1,0,9.0,11.0,3.0,1.0,4.0,6.0,PrimeiraLiga
+2019-12-14,Benfica,Famalicao,4,0,17.0,8.0,6.0,4.0,8.0,3.0,PrimeiraLiga
+2019-12-14,Setubal,Aves,1,0,11.0,11.0,2.0,5.0,7.0,6.0,PrimeiraLiga
+2019-12-15,Moreirense,Belenenses,2,1,13.0,8.0,7.0,2.0,8.0,3.0,PrimeiraLiga
+2019-12-15,Gil Vicente,Guimaraes,2,2,6.0,16.0,4.0,7.0,3.0,7.0,PrimeiraLiga
+2019-12-15,Sp Braga,Pacos Ferreira,0,1,23.0,3.0,5.0,1.0,10.0,3.0,PrimeiraLiga
+2019-12-16,Santa Clara,Sp Lisbon,0,4,12.0,19.0,3.0,7.0,2.0,8.0,PrimeiraLiga
+2019-12-16,Porto,Tondela,3,0,12.0,2.0,5.0,0.0,8.0,0.0,PrimeiraLiga
+2020-01-04,Belenenses,Sp Braga,1,7,3.0,18.0,2.0,15.0,2.0,4.0,PrimeiraLiga
+2020-01-04,Aves,Santa Clara,0,1,10.0,3.0,4.0,3.0,7.0,9.0,PrimeiraLiga
+2020-01-04,Boavista,Portimonense,1,1,5.0,6.0,2.0,5.0,4.0,5.0,PrimeiraLiga
+2020-01-04,Guimaraes,Benfica,0,1,11.0,4.0,5.0,3.0,6.0,7.0,PrimeiraLiga
+2020-01-05,Famalicao,Setubal,3,0,13.0,4.0,7.0,2.0,3.0,2.0,PrimeiraLiga
+2020-01-05,Tondela,Gil Vicente,1,1,7.0,10.0,1.0,9.0,3.0,5.0,PrimeiraLiga
+2020-01-05,Sp Lisbon,Porto,1,2,11.0,9.0,2.0,7.0,4.0,3.0,PrimeiraLiga
+2020-01-05,Rio Ave,Maritimo,0,1,6.0,6.0,3.0,3.0,3.0,2.0,PrimeiraLiga
+2020-01-05,Pacos Ferreira,Moreirense,1,0,6.0,5.0,3.0,1.0,2.0,5.0,PrimeiraLiga
+2020-01-10,Benfica,Aves,2,1,28.0,6.0,11.0,3.0,17.0,2.0,PrimeiraLiga
+2020-01-10,Santa Clara,Rio Ave,0,1,8.0,5.0,4.0,3.0,3.0,4.0,PrimeiraLiga
+2020-01-10,Moreirense,Porto,2,4,8.0,14.0,5.0,6.0,4.0,7.0,PrimeiraLiga
+2020-01-11,Portimonense,Pacos Ferreira,0,0,8.0,2.0,4.0,0.0,3.0,4.0,PrimeiraLiga
+2020-01-11,Boavista,Famalicao,0,1,9.0,8.0,3.0,5.0,8.0,5.0,PrimeiraLiga
+2020-01-11,Setubal,Sp Lisbon,1,3,10.0,9.0,2.0,5.0,3.0,5.0,PrimeiraLiga
+2020-01-12,Sp Braga,Tondela,2,1,17.0,6.0,6.0,2.0,9.0,1.0,PrimeiraLiga
+2020-01-12,Gil Vicente,Belenenses,2,0,9.0,4.0,7.0,2.0,5.0,5.0,PrimeiraLiga
+2020-01-12,Maritimo,Guimaraes,0,0,4.0,15.0,1.0,9.0,3.0,16.0,PrimeiraLiga
+2020-01-17,Porto,Sp Braga,1,2,7.0,2.0,3.0,1.0,10.0,5.0,PrimeiraLiga
+2020-01-17,Sp Lisbon,Benfica,0,2,10.0,9.0,6.0,4.0,6.0,3.0,PrimeiraLiga
+2020-01-18,Belenenses,Setubal,0,1,10.0,7.0,1.0,4.0,9.0,3.0,PrimeiraLiga
+2020-01-18,Aves,Portimonense,3,0,12.0,9.0,7.0,1.0,5.0,7.0,PrimeiraLiga
+2020-01-18,Guimaraes,Santa Clara,1,0,15.0,3.0,5.0,1.0,5.0,4.0,PrimeiraLiga
+2020-01-18,Tondela,Moreirense,1,1,16.0,5.0,4.0,1.0,2.0,2.0,PrimeiraLiga
+2020-01-19,Rio Ave,Boavista,2,0,3.0,6.0,2.0,2.0,4.0,5.0,PrimeiraLiga
+2020-01-19,Pacos Ferreira,Gil Vicente,0,0,8.0,8.0,5.0,3.0,7.0,4.0,PrimeiraLiga
+2020-01-19,Famalicao,Maritimo,1,1,17.0,4.0,6.0,2.0,6.0,2.0,PrimeiraLiga
+2020-01-26,Belenenses,Portimonense,2,1,9.0,13.0,4.0,6.0,2.0,6.0,PrimeiraLiga
+2020-01-26,Famalicao,Santa Clara,0,1,11.0,5.0,1.0,2.0,12.0,7.0,PrimeiraLiga
+2020-01-26,Tondela,Setubal,0,3,12.0,5.0,6.0,4.0,11.0,2.0,PrimeiraLiga
+2020-01-26,Pacos Ferreira,Benfica,0,2,6.0,11.0,2.0,6.0,6.0,7.0,PrimeiraLiga
+2020-01-26,Aves,Boavista,0,1,3.0,9.0,2.0,3.0,4.0,4.0,PrimeiraLiga
+2020-01-27,Guimaraes,Rio Ave,1,2,14.0,5.0,7.0,3.0,14.0,1.0,PrimeiraLiga
+2020-01-27,Sp Lisbon,Maritimo,1,0,14.0,4.0,5.0,2.0,12.0,3.0,PrimeiraLiga
+2020-01-28,Porto,Gil Vicente,2,1,6.0,6.0,2.0,2.0,5.0,2.0,PrimeiraLiga
+2020-01-29,Moreirense,Sp Braga,1,2,6.0,11.0,4.0,6.0,2.0,6.0,PrimeiraLiga
+2020-01-31,Benfica,Belenenses,3,2,12.0,15.0,6.0,5.0,10.0,9.0,PrimeiraLiga
+2020-01-31,Rio Ave,Famalicao,2,2,7.0,17.0,3.0,7.0,4.0,6.0,PrimeiraLiga
+2020-02-01,Portimonense,Tondela,0,1,11.0,9.0,4.0,2.0,4.0,2.0,PrimeiraLiga
+2020-02-01,Setubal,Porto,0,4,7.0,20.0,2.0,6.0,3.0,5.0,PrimeiraLiga
+2020-02-02,Boavista,Guimaraes,2,0,9.0,18.0,5.0,8.0,1.0,11.0,PrimeiraLiga
+2020-02-02,Sp Braga,Sp Lisbon,1,0,13.0,15.0,8.0,9.0,5.0,9.0,PrimeiraLiga
+2020-02-02,Gil Vicente,Moreirense,1,5,9.0,10.0,5.0,6.0,10.0,1.0,PrimeiraLiga
+2020-02-02,Maritimo,Aves,1,2,11.0,9.0,4.0,2.0,8.0,2.0,PrimeiraLiga
+2020-02-02,Santa Clara,Pacos Ferreira,2,1,10.0,7.0,4.0,2.0,3.0,2.0,PrimeiraLiga
+2020-02-07,Pacos Ferreira,Boavista,0,1,20.0,7.0,5.0,3.0,13.0,2.0,PrimeiraLiga
+2020-02-08,Belenenses,Santa Clara,0,2,13.0,9.0,1.0,3.0,7.0,8.0,PrimeiraLiga
+2020-02-08,Famalicao,Guimaraes,0,7,6.0,19.0,3.0,10.0,1.0,6.0,PrimeiraLiga
+2020-02-08,Sp Braga,Gil Vicente,2,2,10.0,13.0,7.0,7.0,3.0,6.0,PrimeiraLiga
+2020-02-08,Porto,Benfica,3,2,17.0,9.0,4.0,3.0,4.0,4.0,PrimeiraLiga
+2020-02-09,Moreirense,Setubal,1,1,19.0,8.0,6.0,1.0,8.0,4.0,PrimeiraLiga
+2020-02-09,Tondela,Maritimo,0,0,10.0,10.0,1.0,5.0,3.0,4.0,PrimeiraLiga
+2020-02-09,Sp Lisbon,Portimonense,2,1,20.0,10.0,4.0,3.0,3.0,2.0,PrimeiraLiga
+2020-02-09,Aves,Rio Ave,0,4,7.0,12.0,2.0,6.0,5.0,10.0,PrimeiraLiga
+2020-02-14,Setubal,Gil Vicente,1,2,7.0,7.0,2.0,3.0,5.0,3.0,PrimeiraLiga
+2020-02-15,Benfica,Sp Braga,0,1,10.0,12.0,3.0,7.0,3.0,6.0,PrimeiraLiga
+2020-02-15,Rio Ave,Sp Lisbon,1,1,15.0,7.0,6.0,2.0,9.0,1.0,PrimeiraLiga
+2020-02-15,Portimonense,Moreirense,1,1,12.0,9.0,3.0,2.0,8.0,4.0,PrimeiraLiga
+2020-02-15,Santa Clara,Tondela,1,0,16.0,6.0,3.0,1.0,8.0,4.0,PrimeiraLiga
+2020-02-16,Boavista,Belenenses,1,2,19.0,11.0,4.0,4.0,9.0,6.0,PrimeiraLiga
+2020-02-16,Maritimo,Pacos Ferreira,3,0,8.0,16.0,5.0,3.0,5.0,6.0,PrimeiraLiga
+2020-02-16,Guimaraes,Porto,1,2,13.0,8.0,3.0,1.0,4.0,5.0,PrimeiraLiga
+2020-02-16,Famalicao,Aves,1,1,17.0,12.0,7.0,4.0,10.0,5.0,PrimeiraLiga
+2020-02-21,Aves,Guimaraes,0,2,8.0,9.0,2.0,4.0,6.0,5.0,PrimeiraLiga
+2020-02-22,Belenenses,Maritimo,1,0,9.0,18.0,3.0,1.0,0.0,2.0,PrimeiraLiga
+2020-02-22,Tondela,Rio Ave,1,2,7.0,9.0,4.0,3.0,4.0,3.0,PrimeiraLiga
+2020-02-23,Moreirense,Santa Clara,2,1,9.0,11.0,4.0,4.0,1.0,2.0,PrimeiraLiga
+2020-02-23,Pacos Ferreira,Famalicao,2,1,9.0,11.0,4.0,5.0,4.0,3.0,PrimeiraLiga
+2020-02-23,Sp Lisbon,Boavista,2,0,7.0,9.0,4.0,4.0,6.0,5.0,PrimeiraLiga
+2020-02-23,Sp Braga,Setubal,3,1,23.0,6.0,7.0,4.0,13.0,4.0,PrimeiraLiga
+2020-02-23,Porto,Portimonense,1,0,24.0,6.0,4.0,0.0,8.0,3.0,PrimeiraLiga
+2020-02-24,Gil Vicente,Benfica,0,1,16.0,10.0,7.0,4.0,9.0,6.0,PrimeiraLiga
+2020-02-28,Portimonense,Setubal,0,0,15.0,12.0,5.0,4.0,9.0,3.0,PrimeiraLiga
+2020-02-29,Boavista,Gil Vicente,0,1,15.0,9.0,2.0,4.0,4.0,2.0,PrimeiraLiga
+2020-02-29,Rio Ave,Belenenses,0,0,10.0,5.0,2.0,0.0,12.0,1.0,PrimeiraLiga
+2020-03-01,Aves,Pacos Ferreira,1,3,10.0,10.0,3.0,4.0,7.0,7.0,PrimeiraLiga
+2020-03-01,Maritimo,Sp Braga,1,2,12.0,18.0,3.0,6.0,5.0,8.0,PrimeiraLiga
+2020-03-01,Guimaraes,Tondela,2,0,12.0,9.0,5.0,2.0,7.0,4.0,PrimeiraLiga
+2020-03-02,Santa Clara,Porto,0,2,11.0,7.0,1.0,2.0,2.0,3.0,PrimeiraLiga
+2020-03-02,Benfica,Moreirense,1,1,26.0,7.0,9.0,1.0,10.0,0.0,PrimeiraLiga
+2020-03-03,Famalicao,Sp Lisbon,3,1,13.0,13.0,3.0,3.0,6.0,6.0,PrimeiraLiga
+2020-03-06,Sp Braga,Portimonense,3,1,19.0,13.0,9.0,5.0,3.0,7.0,PrimeiraLiga
+2020-03-07,Tondela,Boavista,1,1,11.0,10.0,4.0,6.0,0.0,5.0,PrimeiraLiga
+2020-03-07,Setubal,Benfica,1,1,3.0,15.0,2.0,6.0,1.0,8.0,PrimeiraLiga
+2020-03-07,Porto,Rio Ave,1,1,23.0,6.0,5.0,3.0,9.0,3.0,PrimeiraLiga
+2020-03-08,Belenenses,Famalicao,0,0,11.0,18.0,2.0,3.0,5.0,6.0,PrimeiraLiga
+2020-03-08,Moreirense,Maritimo,2,0,15.0,13.0,4.0,3.0,8.0,3.0,PrimeiraLiga
+2020-03-08,Gil Vicente,Santa Clara,1,1,9.0,4.0,3.0,2.0,6.0,5.0,PrimeiraLiga
+2020-03-08,Sp Lisbon,Aves,2,0,22.0,3.0,5.0,3.0,14.0,0.0,PrimeiraLiga
+2020-03-08,Pacos Ferreira,Guimaraes,1,2,12.0,13.0,5.0,4.0,5.0,5.0,PrimeiraLiga
+2020-06-03,Famalicao,Porto,2,1,7.0,16.0,2.0,6.0,1.0,7.0,PrimeiraLiga
+2020-06-03,Portimonense,Gil Vicente,1,0,6.0,6.0,2.0,2.0,5.0,5.0,PrimeiraLiga
+2020-06-04,Maritimo,Setubal,1,1,20.0,12.0,4.0,3.0,10.0,1.0,PrimeiraLiga
+2020-06-04,Benfica,Tondela,0,0,26.0,4.0,5.0,0.0,14.0,0.0,PrimeiraLiga
+2020-06-04,Guimaraes,Sp Lisbon,2,2,13.0,17.0,3.0,5.0,7.0,3.0,PrimeiraLiga
+2020-06-05,Santa Clara,Sp Braga,3,2,15.0,11.0,7.0,2.0,2.0,4.0,PrimeiraLiga
+2020-06-05,Aves,Belenenses,0,2,10.0,11.0,2.0,4.0,5.0,4.0,PrimeiraLiga
+2020-06-06,Boavista,Moreirense,0,1,26.0,5.0,9.0,3.0,7.0,2.0,PrimeiraLiga
+2020-06-07,Rio Ave,Pacos Ferreira,2,3,23.0,9.0,8.0,6.0,8.0,7.0,PrimeiraLiga
+2020-06-09,Gil Vicente,Famalicao,1,3,6.0,7.0,2.0,3.0,4.0,3.0,PrimeiraLiga
+2020-06-10,Setubal,Santa Clara,2,2,6.0,8.0,4.0,3.0,4.0,3.0,PrimeiraLiga
+2020-06-10,Portimonense,Benfica,2,2,10.0,11.0,4.0,4.0,5.0,3.0,PrimeiraLiga
+2020-06-10,Porto,Maritimo,1,0,15.0,10.0,8.0,1.0,8.0,1.0,PrimeiraLiga
+2020-06-11,Belenenses,Guimaraes,1,1,7.0,17.0,2.0,6.0,1.0,13.0,PrimeiraLiga
+2020-06-11,Tondela,Aves,2,0,6.0,12.0,4.0,1.0,5.0,7.0,PrimeiraLiga
+2020-06-12,Sp Lisbon,Pacos Ferreira,1,0,6.0,11.0,2.0,5.0,5.0,4.0,PrimeiraLiga
+2020-06-12,Moreirense,Rio Ave,0,1,7.0,14.0,1.0,2.0,9.0,6.0,PrimeiraLiga
+2020-06-13,Sp Braga,Boavista,0,1,9.0,7.0,3.0,3.0,9.0,6.0,PrimeiraLiga
+2020-06-15,Maritimo,Gil Vicente,2,1,15.0,6.0,9.0,2.0,4.0,4.0,PrimeiraLiga
+2020-06-16,Santa Clara,Portimonense,1,1,9.0,8.0,5.0,2.0,13.0,7.0,PrimeiraLiga
+2020-06-16,Aves,Porto,0,0,5.0,24.0,0.0,8.0,1.0,12.0,PrimeiraLiga
+2020-06-17,Pacos Ferreira,Belenenses,2,1,16.0,4.0,3.0,1.0,4.0,5.0,PrimeiraLiga
+2020-06-17,Rio Ave,Benfica,1,2,5.0,16.0,1.0,4.0,4.0,10.0,PrimeiraLiga
+2020-06-18,Boavista,Setubal,3,1,9.0,15.0,6.0,6.0,3.0,11.0,PrimeiraLiga
+2020-06-18,Sp Lisbon,Tondela,2,0,8.0,7.0,2.0,3.0,4.0,6.0,PrimeiraLiga
+2020-06-19,Guimaraes,Moreirense,1,1,13.0,11.0,4.0,4.0,6.0,5.0,PrimeiraLiga
+2020-06-19,Famalicao,Sp Braga,0,0,7.0,14.0,2.0,0.0,3.0,5.0,PrimeiraLiga
+2020-06-21,Gil Vicente,Aves,3,0,17.0,10.0,9.0,1.0,9.0,2.0,PrimeiraLiga
+2020-06-22,Portimonense,Maritimo,3,2,11.0,11.0,5.0,5.0,3.0,6.0,PrimeiraLiga
+2020-06-23,Benfica,Santa Clara,3,4,15.0,8.0,8.0,6.0,4.0,7.0,PrimeiraLiga
+2020-06-23,Porto,Boavista,4,0,12.0,6.0,7.0,2.0,6.0,3.0,PrimeiraLiga
+2020-06-23,Setubal,Rio Ave,1,2,8.0,17.0,3.0,7.0,4.0,6.0,PrimeiraLiga
+2020-06-24,Tondela,Pacos Ferreira,1,3,12.0,14.0,4.0,5.0,10.0,4.0,PrimeiraLiga
+2020-06-24,Moreirense,Famalicao,1,1,11.0,16.0,4.0,6.0,5.0,5.0,PrimeiraLiga
+2020-06-25,Sp Braga,Guimaraes,3,2,14.0,15.0,3.0,4.0,0.0,10.0,PrimeiraLiga
+2020-06-26,Belenenses,Sp Lisbon,1,3,11.0,10.0,3.0,7.0,8.0,7.0,PrimeiraLiga
+2020-06-28,Boavista,Santa Clara,1,0,12.0,10.0,2.0,4.0,4.0,4.0,PrimeiraLiga
+2020-06-29,Aves,Moreirense,0,1,14.0,7.0,3.0,2.0,8.0,3.0,PrimeiraLiga
+2020-06-29,Maritimo,Benfica,2,0,6.0,20.0,2.0,7.0,1.0,11.0,PrimeiraLiga
+2020-06-29,Pacos Ferreira,Porto,0,1,11.0,5.0,3.0,3.0,5.0,4.0,PrimeiraLiga
+2020-06-30,Famalicao,Portimonense,0,1,13.0,12.0,5.0,4.0,3.0,5.0,PrimeiraLiga
+2020-06-30,Guimaraes,Setubal,2,0,18.0,5.0,5.0,1.0,8.0,6.0,PrimeiraLiga
+2020-06-30,Rio Ave,Sp Braga,4,3,13.0,11.0,8.0,6.0,1.0,4.0,PrimeiraLiga
+2020-07-01,Belenenses,Tondela,1,1,11.0,11.0,3.0,4.0,2.0,5.0,PrimeiraLiga
+2020-07-01,Sp Lisbon,Gil Vicente,2,1,12.0,8.0,4.0,3.0,4.0,3.0,PrimeiraLiga
+2020-07-03,Santa Clara,Maritimo,0,1,13.0,13.0,4.0,7.0,5.0,6.0,PrimeiraLiga
+2020-07-04,Benfica,Boavista,3,1,15.0,6.0,9.0,3.0,8.0,2.0,PrimeiraLiga
+2020-07-04,Sp Braga,Aves,4,0,14.0,6.0,9.0,1.0,6.0,3.0,PrimeiraLiga
+2020-07-04,Setubal,Pacos Ferreira,2,3,7.0,21.0,3.0,8.0,3.0,7.0,PrimeiraLiga
+2020-07-04,Portimonense,Guimaraes,0,1,13.0,9.0,3.0,3.0,5.0,3.0,PrimeiraLiga
+2020-07-05,Porto,Belenenses,5,0,17.0,10.0,7.0,1.0,3.0,5.0,PrimeiraLiga
+2020-07-05,Gil Vicente,Rio Ave,1,0,13.0,5.0,4.0,1.0,0.0,0.0,PrimeiraLiga
+2020-07-05,Tondela,Famalicao,0,1,11.0,10.0,2.0,3.0,8.0,6.0,PrimeiraLiga
+2020-07-06,Moreirense,Sp Lisbon,0,0,9.0,14.0,0.0,2.0,5.0,9.0,PrimeiraLiga
+2020-07-08,Boavista,Maritimo,0,1,11.0,11.0,1.0,6.0,2.0,4.0,PrimeiraLiga
+2020-07-08,Aves,Setubal,1,0,7.0,14.0,4.0,3.0,5.0,4.0,PrimeiraLiga
+2020-07-09,Rio Ave,Portimonense,2,1,7.0,8.0,2.0,2.0,8.0,7.0,PrimeiraLiga
+2020-07-09,Tondela,Porto,1,3,9.0,13.0,2.0,4.0,3.0,3.0,PrimeiraLiga
+2020-07-09,Famalicao,Benfica,1,1,12.0,20.0,6.0,9.0,4.0,8.0,PrimeiraLiga
+2020-07-10,Guimaraes,Gil Vicente,1,2,12.0,10.0,1.0,4.0,3.0,1.0,PrimeiraLiga
+2020-07-10,Sp Lisbon,Santa Clara,1,0,12.0,4.0,1.0,0.0,8.0,3.0,PrimeiraLiga
+2020-07-10,Pacos Ferreira,Sp Braga,1,5,7.0,8.0,3.0,8.0,3.0,1.0,PrimeiraLiga
+2020-07-11,Belenenses,Moreirense,0,1,10.0,16.0,0.0,7.0,11.0,4.0,PrimeiraLiga
+2020-07-13,Maritimo,Rio Ave,0,0,16.0,9.0,3.0,2.0,4.0,5.0,PrimeiraLiga
+2020-07-13,Setubal,Famalicao,1,2,8.0,11.0,1.0,3.0,5.0,8.0,PrimeiraLiga
+2020-07-14,Benfica,Guimaraes,2,0,12.0,12.0,5.0,3.0,4.0,6.0,PrimeiraLiga
+2020-07-14,Gil Vicente,Tondela,3,2,11.0,15.0,6.0,7.0,8.0,10.0,PrimeiraLiga
+2020-07-14,Santa Clara,Aves,3,0,12.0,9.0,4.0,3.0,4.0,11.0,PrimeiraLiga
+2020-07-14,Portimonense,Boavista,2,1,15.0,16.0,6.0,5.0,9.0,3.0,PrimeiraLiga
+2020-07-15,Moreirense,Pacos Ferreira,1,1,12.0,6.0,3.0,2.0,4.0,4.0,PrimeiraLiga
+2020-07-15,Sp Braga,Belenenses,1,1,32.0,7.0,7.0,1.0,11.0,1.0,PrimeiraLiga
+2020-07-15,Porto,Sp Lisbon,2,0,8.0,8.0,4.0,2.0,5.0,8.0,PrimeiraLiga
+2020-07-18,Rio Ave,Santa Clara,2,2,18.0,11.0,6.0,7.0,9.0,4.0,PrimeiraLiga
+2020-07-18,Famalicao,Boavista,2,2,13.0,13.0,6.0,5.0,7.0,3.0,PrimeiraLiga
+2020-07-19,Guimaraes,Maritimo,1,0,10.0,7.0,4.0,2.0,3.0,1.0,PrimeiraLiga
+2020-07-19,Belenenses,Gil Vicente,1,0,7.0,8.0,2.0,3.0,3.0,3.0,PrimeiraLiga
+2020-07-20,Pacos Ferreira,Portimonense,2,1,10.0,9.0,2.0,3.0,0.0,5.0,PrimeiraLiga
+2020-07-20,Tondela,Sp Braga,1,0,8.0,7.0,2.0,1.0,4.0,5.0,PrimeiraLiga
+2020-07-20,Porto,Moreirense,6,1,14.0,8.0,9.0,4.0,2.0,3.0,PrimeiraLiga
+2020-07-21,Sp Lisbon,Setubal,0,0,13.0,3.0,3.0,1.0,6.0,0.0,PrimeiraLiga
+2020-07-21,Aves,Benfica,0,4,8.0,21.0,2.0,11.0,1.0,6.0,PrimeiraLiga
+2020-07-24,Santa Clara,Guimaraes,2,2,7.0,10.0,3.0,4.0,3.0,9.0,PrimeiraLiga
+2020-07-24,Gil Vicente,Pacos Ferreira,3,3,13.0,13.0,5.0,7.0,7.0,5.0,PrimeiraLiga
+2020-07-25,Sp Braga,Porto,2,1,11.0,10.0,5.0,5.0,8.0,3.0,PrimeiraLiga
+2020-07-25,Benfica,Sp Lisbon,2,1,17.0,12.0,4.0,5.0,8.0,3.0,PrimeiraLiga
+2020-07-25,Maritimo,Famalicao,3,3,8.0,17.0,5.0,5.0,1.0,10.0,PrimeiraLiga
+2020-07-25,Boavista,Rio Ave,0,2,10.0,7.0,2.0,4.0,6.0,5.0,PrimeiraLiga
+2020-07-26,Moreirense,Tondela,1,2,10.0,14.0,5.0,6.0,5.0,4.0,PrimeiraLiga
+2020-07-26,Portimonense,Aves,2,0,13.0,10.0,5.0,3.0,6.0,4.0,PrimeiraLiga
+2020-07-26,Setubal,Belenenses,2,0,11.0,8.0,4.0,2.0,2.0,4.0,PrimeiraLiga
+2020-09-18,Famalicao,Benfica,1,5,6.0,13.0,2.0,7.0,3.0,4.0,PrimeiraLiga
+2020-09-18,Guimaraes,Belenenses,0,1,11.0,4.0,2.0,3.0,7.0,2.0,PrimeiraLiga
+2020-09-19,Nacional,Boavista,3,3,14.0,8.0,7.0,3.0,6.0,4.0,PrimeiraLiga
+2020-09-19,Porto,Sp Braga,3,1,11.0,7.0,4.0,1.0,5.0,1.0,PrimeiraLiga
+2020-09-20,Santa Clara,Maritimo,2,0,12.0,12.0,5.0,2.0,5.0,6.0,PrimeiraLiga
+2020-09-20,Moreirense,Farense,2,0,13.0,10.0,5.0,2.0,4.0,6.0,PrimeiraLiga
+2020-09-20,Tondela,Rio Ave,1,1,7.0,14.0,2.0,4.0,1.0,6.0,PrimeiraLiga
+2020-09-21,Portimonense,Pacos Ferreira,1,1,12.0,16.0,3.0,5.0,4.0,9.0,PrimeiraLiga
+2020-09-25,Sp Braga,Santa Clara,0,1,22.0,6.0,4.0,1.0,8.0,0.0,PrimeiraLiga
+2020-09-26,Benfica,Moreirense,2,0,29.0,5.0,10.0,1.0,10.0,1.0,PrimeiraLiga
+2020-09-26,Boavista,Porto,0,5,11.0,15.0,4.0,6.0,3.0,2.0,PrimeiraLiga
+2020-09-26,Maritimo,Tondela,2,1,8.0,21.0,6.0,6.0,0.0,8.0,PrimeiraLiga
+2020-09-27,Farense,Nacional,0,1,18.0,9.0,4.0,4.0,11.0,5.0,PrimeiraLiga
+2020-09-27,Gil Vicente,Portimonense,1,0,9.0,13.0,3.0,2.0,10.0,7.0,PrimeiraLiga
+2020-09-27,Pacos Ferreira,Sp Lisbon,0,2,9.0,11.0,0.0,5.0,4.0,8.0,PrimeiraLiga
+2020-09-27,Rio Ave,Guimaraes,0,0,7.0,10.0,3.0,3.0,4.0,4.0,PrimeiraLiga
+2020-09-28,Belenenses,Famalicao,1,2,10.0,6.0,5.0,2.0,5.0,2.0,PrimeiraLiga
+2020-10-02,Moreirense,Boavista,1,1,14.0,16.0,6.0,5.0,5.0,3.0,PrimeiraLiga
+2020-10-02,Guimaraes,Pacos Ferreira,1,0,8.0,16.0,1.0,7.0,2.0,7.0,PrimeiraLiga
+2020-10-03,Santa Clara,Gil Vicente,0,0,12.0,8.0,3.0,1.0,8.0,3.0,PrimeiraLiga
+2020-10-03,Porto,Maritimo,2,3,32.0,11.0,10.0,4.0,9.0,0.0,PrimeiraLiga
+2020-10-03,Tondela,Sp Braga,0,4,13.0,18.0,4.0,8.0,5.0,8.0,PrimeiraLiga
+2020-10-04,Portimonense,Sp Lisbon,0,2,14.0,10.0,6.0,4.0,7.0,2.0,PrimeiraLiga
+2020-10-04,Nacional,Belenenses,0,0,18.0,7.0,4.0,2.0,7.0,2.0,PrimeiraLiga
+2020-10-04,Benfica,Farense,3,2,12.0,14.0,7.0,9.0,3.0,2.0,PrimeiraLiga
+2020-10-04,Famalicao,Rio Ave,1,1,13.0,13.0,5.0,4.0,3.0,5.0,PrimeiraLiga
+2020-10-17,Sp Lisbon,Porto,2,2,13.0,10.0,5.0,5.0,4.0,1.0,PrimeiraLiga
+2020-10-17,Sp Braga,Nacional,2,1,20.0,5.0,7.0,2.0,4.0,2.0,PrimeiraLiga
+2020-10-17,Gil Vicente,Tondela,1,1,13.0,2.0,4.0,1.0,5.0,1.0,PrimeiraLiga
+2020-10-17,Maritimo,Portimonense,1,2,10.0,10.0,4.0,3.0,10.0,6.0,PrimeiraLiga
+2020-10-18,Belenenses,Moreirense,0,0,15.0,8.0,5.0,4.0,7.0,3.0,PrimeiraLiga
+2020-10-18,Pacos Ferreira,Santa Clara,2,1,12.0,15.0,3.0,5.0,7.0,2.0,PrimeiraLiga
+2020-10-18,Farense,Famalicao,3,3,13.0,13.0,5.0,5.0,6.0,9.0,PrimeiraLiga
+2020-10-18,Rio Ave,Benfica,0,3,4.0,13.0,2.0,6.0,4.0,4.0,PrimeiraLiga
+2020-10-19,Boavista,Guimaraes,0,1,19.0,9.0,2.0,1.0,9.0,4.0,PrimeiraLiga
+2020-10-23,Tondela,Portimonense,1,0,8.0,10.0,3.0,4.0,5.0,6.0,PrimeiraLiga
+2020-10-24,Nacional,Pacos Ferreira,1,1,7.0,18.0,2.0,6.0,3.0,6.0,PrimeiraLiga
+2020-10-24,Santa Clara,Sp Lisbon,1,2,5.0,18.0,2.0,3.0,1.0,9.0,PrimeiraLiga
+2020-10-24,Porto,Gil Vicente,1,0,18.0,13.0,7.0,2.0,8.0,3.0,PrimeiraLiga
+2020-10-25,Guimaraes,Sp Braga,0,1,11.0,16.0,1.0,8.0,4.0,9.0,PrimeiraLiga
+2020-10-25,Farense,Rio Ave,0,1,13.0,6.0,1.0,2.0,6.0,1.0,PrimeiraLiga
+2020-10-25,Moreirense,Maritimo,2,1,13.0,12.0,7.0,3.0,9.0,3.0,PrimeiraLiga
+2020-10-25,Famalicao,Boavista,2,2,17.0,10.0,6.0,6.0,9.0,1.0,PrimeiraLiga
+2020-10-26,Benfica,Belenenses,2,0,15.0,6.0,6.0,2.0,7.0,2.0,PrimeiraLiga
+2020-10-28,Sp Lisbon,Gil Vicente,3,1,13.0,4.0,6.0,1.0,9.0,4.0,PrimeiraLiga
+2020-10-30,Pacos Ferreira,Porto,3,2,16.0,10.0,7.0,3.0,5.0,4.0,PrimeiraLiga
+2020-10-31,Belenenses,Farense,1,1,7.0,10.0,3.0,2.0,8.0,6.0,PrimeiraLiga
+2020-10-31,Rio Ave,Moreirense,2,0,11.0,7.0,6.0,1.0,3.0,5.0,PrimeiraLiga
+2020-10-31,Maritimo,Nacional,0,0,15.0,9.0,4.0,3.0,3.0,6.0,PrimeiraLiga
+2020-11-01,Portimonense,Santa Clara,1,2,12.0,13.0,2.0,7.0,7.0,5.0,PrimeiraLiga
+2020-11-01,Gil Vicente,Guimaraes,1,2,21.0,7.0,4.0,5.0,8.0,4.0,PrimeiraLiga
+2020-11-01,Sp Lisbon,Tondela,4,0,26.0,3.0,15.0,0.0,8.0,1.0,PrimeiraLiga
+2020-11-02,Sp Braga,Famalicao,1,0,20.0,5.0,9.0,2.0,11.0,2.0,PrimeiraLiga
+2020-11-02,Boavista,Benfica,3,0,14.0,5.0,7.0,2.0,4.0,6.0,PrimeiraLiga
+2020-11-06,Belenenses,Rio Ave,0,0,11.0,6.0,1.0,2.0,6.0,2.0,PrimeiraLiga
+2020-11-07,Tondela,Santa Clara,2,0,11.0,20.0,5.0,4.0,3.0,3.0,PrimeiraLiga
+2020-11-07,Famalicao,Maritimo,2,1,18.0,10.0,8.0,4.0,4.0,2.0,PrimeiraLiga
+2020-11-07,Guimaraes,Sp Lisbon,0,4,15.0,16.0,1.0,6.0,5.0,2.0,PrimeiraLiga
+2020-11-08,Benfica,Sp Braga,2,3,12.0,7.0,5.0,5.0,5.0,3.0,PrimeiraLiga
+2020-11-08,Porto,Portimonense,3,1,18.0,8.0,7.0,1.0,11.0,4.0,PrimeiraLiga
+2020-11-08,Nacional,Gil Vicente,2,1,13.0,10.0,6.0,8.0,8.0,11.0,PrimeiraLiga
+2020-11-08,Farense,Boavista,3,1,6.0,13.0,5.0,5.0,5.0,7.0,PrimeiraLiga
+2020-11-27,Pacos Ferreira,Famalicao,2,0,11.0,9.0,4.0,1.0,3.0,3.0,PrimeiraLiga
+2020-11-27,Tondela,Guimaraes,0,2,13.0,10.0,4.0,5.0,5.0,2.0,PrimeiraLiga
+2020-11-28,Santa Clara,Porto,0,1,7.0,4.0,2.0,2.0,2.0,7.0,PrimeiraLiga
+2020-11-28,Sp Lisbon,Moreirense,2,1,13.0,2.0,5.0,0.0,9.0,0.0,PrimeiraLiga
+2020-11-29,Gil Vicente,Rio Ave,2,0,4.0,12.0,2.0,3.0,2.0,8.0,PrimeiraLiga
+2020-11-29,Portimonense,Nacional,1,0,14.0,12.0,4.0,1.0,7.0,3.0,PrimeiraLiga
+2020-11-29,Boavista,Belenenses,0,0,15.0,14.0,6.0,4.0,4.0,7.0,PrimeiraLiga
+2020-11-29,Sp Braga,Farense,1,0,16.0,6.0,7.0,0.0,7.0,3.0,PrimeiraLiga
+2020-11-30,Maritimo,Benfica,1,2,5.0,12.0,2.0,2.0,1.0,12.0,PrimeiraLiga
+2020-12-01,Moreirense,Pacos Ferreira,0,1,10.0,12.0,2.0,4.0,2.0,2.0,PrimeiraLiga
+2020-12-05,Famalicao,Sp Lisbon,2,2,5.0,15.0,2.0,6.0,3.0,4.0,PrimeiraLiga
+2020-12-05,Porto,Tondela,4,3,16.0,8.0,9.0,4.0,5.0,2.0,PrimeiraLiga
+2020-12-05,Guimaraes,Portimonense,1,0,10.0,7.0,3.0,1.0,5.0,3.0,PrimeiraLiga
+2020-12-05,Moreirense,Gil Vicente,1,1,4.0,6.0,2.0,2.0,1.0,2.0,PrimeiraLiga
+2020-12-06,Nacional,Santa Clara,1,3,15.0,13.0,4.0,8.0,7.0,12.0,PrimeiraLiga
+2020-12-06,Rio Ave,Boavista,0,0,7.0,6.0,3.0,2.0,7.0,0.0,PrimeiraLiga
+2020-12-06,Belenenses,Sp Braga,2,1,11.0,16.0,5.0,6.0,5.0,9.0,PrimeiraLiga
+2020-12-06,Benfica,Pacos Ferreira,2,1,13.0,16.0,4.0,5.0,6.0,4.0,PrimeiraLiga
+2020-12-07,Farense,Maritimo,2,1,4.0,10.0,4.0,4.0,1.0,4.0,PrimeiraLiga
+2020-12-18,Portimonense,Famalicao,0,0,19.0,8.0,6.0,4.0,4.0,1.0,PrimeiraLiga
+2020-12-19,Sp Lisbon,Farense,1,0,18.0,8.0,3.0,3.0,7.0,2.0,PrimeiraLiga
+2020-12-19,Maritimo,Belenenses,1,0,10.0,7.0,2.0,2.0,4.0,2.0,PrimeiraLiga
+2020-12-19,Tondela,Moreirense,0,0,6.0,10.0,1.0,2.0,1.0,6.0,PrimeiraLiga
+2020-12-20,Pacos Ferreira,Boavista,1,1,7.0,8.0,3.0,4.0,5.0,3.0,PrimeiraLiga
+2020-12-20,Gil Vicente,Benfica,0,2,14.0,11.0,5.0,6.0,4.0,3.0,PrimeiraLiga
+2020-12-20,Porto,Nacional,2,0,14.0,4.0,5.0,2.0,8.0,1.0,PrimeiraLiga
+2020-12-21,Santa Clara,Guimaraes,0,4,11.0,7.0,2.0,5.0,7.0,3.0,PrimeiraLiga
+2020-12-22,Sp Braga,Rio Ave,3,0,10.0,8.0,5.0,2.0,3.0,4.0,PrimeiraLiga
+2020-12-27,Farense,Pacos Ferreira,1,1,6.0,13.0,1.0,3.0,5.0,3.0,PrimeiraLiga
+2020-12-27,Belenenses,Sp Lisbon,1,2,10.0,6.0,7.0,4.0,5.0,3.0,PrimeiraLiga
+2020-12-27,Famalicao,Gil Vicente,0,1,7.0,8.0,1.0,3.0,4.0,6.0,PrimeiraLiga
+2020-12-27,Nacional,Tondela,2,0,10.0,13.0,4.0,2.0,2.0,6.0,PrimeiraLiga
+2020-12-28,Boavista,Sp Braga,1,4,13.0,11.0,5.0,7.0,8.0,6.0,PrimeiraLiga
+2020-12-28,Rio Ave,Maritimo,1,3,10.0,13.0,5.0,6.0,4.0,5.0,PrimeiraLiga
+2020-12-29,Benfica,Portimonense,2,1,15.0,13.0,6.0,2.0,3.0,2.0,PrimeiraLiga
+2020-12-29,Moreirense,Santa Clara,1,0,12.0,8.0,2.0,1.0,2.0,0.0,PrimeiraLiga
+2020-12-29,Guimaraes,Porto,2,3,4.0,17.0,2.0,7.0,0.0,3.0,PrimeiraLiga
+2021-01-02,Sp Lisbon,Sp Braga,2,0,6.0,12.0,4.0,3.0,5.0,4.0,PrimeiraLiga
+2021-01-03,Tondela,Famalicao,1,0,9.0,17.0,3.0,7.0,4.0,5.0,PrimeiraLiga
+2021-01-03,Maritimo,Boavista,0,0,9.0,10.0,4.0,3.0,2.0,3.0,PrimeiraLiga
+2021-01-03,Pacos Ferreira,Rio Ave,2,0,15.0,12.0,4.0,2.0,3.0,4.0,PrimeiraLiga
+2021-01-03,Porto,Moreirense,3,0,20.0,3.0,7.0,2.0,6.0,1.0,PrimeiraLiga
+2021-01-04,Santa Clara,Benfica,1,1,12.0,7.0,4.0,2.0,3.0,10.0,PrimeiraLiga
+2021-01-04,Gil Vicente,Belenenses,0,0,13.0,7.0,5.0,1.0,8.0,3.0,PrimeiraLiga
+2021-01-04,Portimonense,Farense,2,0,13.0,6.0,5.0,0.0,5.0,1.0,PrimeiraLiga
+2021-01-07,Sp Braga,Maritimo,2,1,18.0,9.0,3.0,2.0,4.0,1.0,PrimeiraLiga
+2021-01-08,Famalicao,Porto,1,4,8.0,9.0,3.0,5.0,3.0,3.0,PrimeiraLiga
+2021-01-08,Rio Ave,Portimonense,3,0,16.0,13.0,7.0,3.0,4.0,4.0,PrimeiraLiga
+2021-01-08,Nacional,Sp Lisbon,0,2,6.0,24.0,1.0,5.0,1.0,10.0,PrimeiraLiga
+2021-01-08,Benfica,Tondela,2,0,21.0,3.0,5.0,2.0,11.0,0.0,PrimeiraLiga
+2021-01-09,Moreirense,Guimaraes,2,2,7.0,9.0,6.0,3.0,2.0,3.0,PrimeiraLiga
+2021-01-09,Boavista,Santa Clara,1,1,13.0,7.0,5.0,2.0,3.0,4.0,PrimeiraLiga
+2021-01-10,Farense,Gil Vicente,3,1,10.0,7.0,4.0,3.0,7.0,6.0,PrimeiraLiga
+2021-01-10,Belenenses,Pacos Ferreira,0,2,14.0,9.0,6.0,5.0,8.0,4.0,PrimeiraLiga
+2021-01-15,Sp Lisbon,Rio Ave,1,1,14.0,6.0,4.0,1.0,5.0,2.0,PrimeiraLiga
+2021-01-15,Porto,Benfica,1,1,9.0,12.0,4.0,4.0,1.0,3.0,PrimeiraLiga
+2021-01-16,Pacos Ferreira,Sp Braga,2,0,8.0,12.0,4.0,4.0,2.0,4.0,PrimeiraLiga
+2021-01-16,Tondela,Boavista,3,1,18.0,8.0,7.0,2.0,7.0,5.0,PrimeiraLiga
+2021-01-17,Nacional,Moreirense,0,1,18.0,15.0,3.0,4.0,5.0,6.0,PrimeiraLiga
+2021-01-17,Santa Clara,Famalicao,1,2,11.0,9.0,2.0,4.0,1.0,4.0,PrimeiraLiga
+2021-01-17,Gil Vicente,Maritimo,0,1,14.0,16.0,3.0,1.0,3.0,4.0,PrimeiraLiga
+2021-01-18,Portimonense,Belenenses,1,0,15.0,7.0,7.0,2.0,7.0,2.0,PrimeiraLiga
+2021-01-21,Guimaraes,Nacional,3,1,10.0,12.0,4.0,5.0,3.0,3.0,PrimeiraLiga
+2021-01-24,Famalicao,Guimaraes,0,1,11.0,9.0,5.0,3.0,7.0,4.0,PrimeiraLiga
+2021-01-24,Moreirense,Portimonense,2,2,11.0,10.0,3.0,4.0,3.0,1.0,PrimeiraLiga
+2021-01-24,Maritimo,Pacos Ferreira,0,3,13.0,11.0,4.0,5.0,5.0,2.0,PrimeiraLiga
+2021-01-25,Belenenses,Tondela,2,0,8.0,12.0,3.0,2.0,4.0,9.0,PrimeiraLiga
+2021-01-25,Rio Ave,Santa Clara,1,2,11.0,12.0,5.0,5.0,6.0,2.0,PrimeiraLiga
+2021-01-25,Benfica,Nacional,1,1,11.0,7.0,3.0,2.0,7.0,3.0,PrimeiraLiga
+2021-01-25,Farense,Porto,0,1,5.0,18.0,1.0,8.0,7.0,4.0,PrimeiraLiga
+2021-01-26,Sp Braga,Gil Vicente,1,0,13.0,6.0,1.0,0.0,7.0,4.0,PrimeiraLiga
+2021-01-26,Boavista,Sp Lisbon,0,2,7.0,14.0,3.0,6.0,4.0,8.0,PrimeiraLiga
+2021-01-30,Nacional,Famalicao,2,1,17.0,14.0,8.0,4.0,9.0,3.0,PrimeiraLiga
+2021-01-30,Tondela,Farense,2,0,7.0,10.0,2.0,2.0,5.0,5.0,PrimeiraLiga
+2021-01-30,Portimonense,Boavista,1,2,9.0,11.0,2.0,6.0,4.0,2.0,PrimeiraLiga
+2021-01-31,Guimaraes,Maritimo,1,0,13.0,9.0,4.0,5.0,7.0,1.0,PrimeiraLiga
+2021-02-01,Santa Clara,Belenenses,2,0,9.0,11.0,3.0,1.0,2.0,2.0,PrimeiraLiga
+2021-02-01,Porto,Rio Ave,2,0,14.0,8.0,5.0,2.0,7.0,8.0,PrimeiraLiga
+2021-02-01,Moreirense,Sp Braga,0,4,14.0,14.0,4.0,7.0,5.0,5.0,PrimeiraLiga
+2021-02-01,Sp Lisbon,Benfica,1,0,10.0,5.0,2.0,2.0,8.0,1.0,PrimeiraLiga
+2021-02-02,Gil Vicente,Pacos Ferreira,1,2,3.0,9.0,3.0,6.0,8.0,3.0,PrimeiraLiga
+2021-02-04,Farense,Santa Clara,1,1,16.0,11.0,4.0,3.0,11.0,7.0,PrimeiraLiga
+2021-02-04,Belenenses,Porto,0,0,6.0,16.0,0.0,6.0,2.0,10.0,PrimeiraLiga
+2021-02-04,Sp Braga,Portimonense,2,1,16.0,7.0,4.0,5.0,4.0,1.0,PrimeiraLiga
+2021-02-04,Famalicao,Moreirense,0,2,19.0,10.0,2.0,3.0,5.0,3.0,PrimeiraLiga
+2021-02-05,Rio Ave,Nacional,0,0,15.0,18.0,4.0,7.0,5.0,3.0,PrimeiraLiga
+2021-02-05,Benfica,Guimaraes,0,0,22.0,5.0,5.0,2.0,9.0,2.0,PrimeiraLiga
+2021-02-05,Maritimo,Sp Lisbon,0,2,5.0,19.0,0.0,4.0,2.0,5.0,PrimeiraLiga
+2021-02-05,Boavista,Gil Vicente,1,2,16.0,12.0,5.0,5.0,3.0,5.0,PrimeiraLiga
+2021-02-05,Pacos Ferreira,Tondela,2,1,9.0,8.0,3.0,3.0,3.0,3.0,PrimeiraLiga
+2021-02-07,Sp Braga,Porto,2,2,15.0,10.0,5.0,3.0,6.0,5.0,PrimeiraLiga
+2021-02-08,Farense,Moreirense,1,2,15.0,6.0,4.0,3.0,10.0,1.0,PrimeiraLiga
+2021-02-08,Benfica,Famalicao,2,0,13.0,10.0,5.0,5.0,4.0,1.0,PrimeiraLiga
+2021-02-08,Maritimo,Santa Clara,1,2,16.0,8.0,5.0,3.0,3.0,5.0,PrimeiraLiga
+2021-02-08,Belenenses,Guimaraes,1,1,10.0,9.0,4.0,4.0,4.0,7.0,PrimeiraLiga
+2021-02-09,Boavista,Nacional,0,1,20.0,7.0,2.0,1.0,6.0,1.0,PrimeiraLiga
+2021-02-09,Gil Vicente,Sp Lisbon,1,2,6.0,21.0,2.0,5.0,1.0,4.0,PrimeiraLiga
+2021-02-09,Pacos Ferreira,Portimonense,0,0,6.0,14.0,1.0,3.0,3.0,2.0,PrimeiraLiga
+2021-02-09,Rio Ave,Tondela,2,1,6.0,11.0,2.0,5.0,2.0,3.0,PrimeiraLiga
+2021-02-12,Famalicao,Belenenses,0,0,8.0,20.0,5.0,11.0,4.0,5.0,PrimeiraLiga
+2021-02-13,Nacional,Farense,2,3,10.0,9.0,4.0,4.0,6.0,10.0,PrimeiraLiga
+2021-02-13,Guimaraes,Rio Ave,1,3,15.0,5.0,7.0,3.0,11.0,0.0,PrimeiraLiga
+2021-02-13,Porto,Boavista,2,2,17.0,4.0,6.0,4.0,7.0,2.0,PrimeiraLiga
+2021-02-14,Portimonense,Gil Vicente,4,1,11.0,9.0,4.0,3.0,6.0,4.0,PrimeiraLiga
+2021-02-14,Santa Clara,Sp Braga,0,1,9.0,8.0,2.0,3.0,9.0,3.0,PrimeiraLiga
+2021-02-14,Moreirense,Benfica,1,1,8.0,18.0,3.0,8.0,3.0,9.0,PrimeiraLiga
+2021-02-15,Sp Lisbon,Pacos Ferreira,2,0,7.0,7.0,3.0,2.0,2.0,4.0,PrimeiraLiga
+2021-02-16,Tondela,Maritimo,2,1,13.0,5.0,6.0,3.0,2.0,1.0,PrimeiraLiga
+2021-02-17,Guimaraes,Farense,2,2,15.0,8.0,3.0,3.0,8.0,4.0,PrimeiraLiga
+2021-02-19,Boavista,Moreirense,1,0,11.0,8.0,6.0,1.0,10.0,5.0,PrimeiraLiga
+2021-02-20,Belenenses,Nacional,2,1,16.0,13.0,4.0,4.0,9.0,1.0,PrimeiraLiga
+2021-02-20,Gil Vicente,Santa Clara,1,0,10.0,10.0,3.0,1.0,6.0,4.0,PrimeiraLiga
+2021-02-20,Sp Lisbon,Portimonense,2,0,14.0,7.0,7.0,1.0,5.0,4.0,PrimeiraLiga
+2021-02-21,Farense,Benfica,0,0,8.0,15.0,3.0,2.0,4.0,7.0,PrimeiraLiga
+2021-02-21,Sp Braga,Tondela,4,2,19.0,8.0,7.0,3.0,8.0,2.0,PrimeiraLiga
+2021-02-21,Rio Ave,Famalicao,0,1,5.0,8.0,1.0,5.0,4.0,8.0,PrimeiraLiga
+2021-02-21,Pacos Ferreira,Guimaraes,2,1,8.0,10.0,3.0,3.0,3.0,3.0,PrimeiraLiga
+2021-02-22,Maritimo,Porto,1,2,12.0,14.0,7.0,6.0,3.0,3.0,PrimeiraLiga
+2021-02-26,Guimaraes,Boavista,2,1,18.0,7.0,9.0,2.0,10.0,1.0,PrimeiraLiga
+2021-02-27,Famalicao,Farense,0,0,11.0,10.0,3.0,1.0,5.0,4.0,PrimeiraLiga
+2021-02-27,Santa Clara,Pacos Ferreira,3,0,7.0,17.0,4.0,4.0,2.0,13.0,PrimeiraLiga
+2021-02-27,Porto,Sp Lisbon,0,0,14.0,4.0,3.0,0.0,3.0,1.0,PrimeiraLiga
+2021-02-28,Portimonense,Maritimo,0,0,7.0,11.0,1.0,4.0,6.0,4.0,PrimeiraLiga
+2021-02-28,Tondela,Gil Vicente,1,0,16.0,13.0,6.0,2.0,6.0,8.0,PrimeiraLiga
+2021-02-28,Nacional,Sp Braga,1,2,8.0,15.0,2.0,4.0,2.0,5.0,PrimeiraLiga
+2021-03-01,Benfica,Rio Ave,2,0,17.0,11.0,6.0,5.0,6.0,6.0,PrimeiraLiga
+2021-03-01,Moreirense,Belenenses,2,2,11.0,13.0,5.0,5.0,4.0,5.0,PrimeiraLiga
+2021-03-05,Sp Lisbon,Santa Clara,2,1,6.0,6.0,4.0,2.0,4.0,8.0,PrimeiraLiga
+2021-03-05,Pacos Ferreira,Nacional,2,1,12.0,10.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2021-03-06,Boavista,Famalicao,3,0,11.0,12.0,4.0,2.0,2.0,7.0,PrimeiraLiga
+2021-03-06,Portimonense,Tondela,3,0,10.0,12.0,5.0,3.0,3.0,3.0,PrimeiraLiga
+2021-03-06,Gil Vicente,Porto,0,2,9.0,11.0,1.0,6.0,4.0,10.0,PrimeiraLiga
+2021-03-07,Maritimo,Moreirense,0,2,15.0,16.0,6.0,5.0,5.0,2.0,PrimeiraLiga
+2021-03-07,Rio Ave,Farense,2,0,10.0,6.0,4.0,1.0,4.0,6.0,PrimeiraLiga
+2021-03-08,Belenenses,Benfica,0,3,10.0,11.0,3.0,6.0,4.0,5.0,PrimeiraLiga
+2021-03-09,Sp Braga,Guimaraes,3,0,8.0,14.0,4.0,1.0,3.0,12.0,PrimeiraLiga
+2021-03-12,Nacional,Maritimo,1,2,17.0,14.0,7.0,3.0,8.0,6.0,PrimeiraLiga
+2021-03-13,Santa Clara,Portimonense,2,0,18.0,11.0,5.0,4.0,6.0,2.0,PrimeiraLiga
+2021-03-13,Farense,Belenenses,0,1,13.0,8.0,4.0,4.0,6.0,2.0,PrimeiraLiga
+2021-03-13,Benfica,Boavista,2,0,17.0,3.0,7.0,0.0,13.0,3.0,PrimeiraLiga
+2021-03-13,Tondela,Sp Lisbon,0,1,4.0,14.0,2.0,4.0,3.0,5.0,PrimeiraLiga
+2021-03-14,Moreirense,Rio Ave,1,1,9.0,13.0,2.0,2.0,7.0,5.0,PrimeiraLiga
+2021-03-14,Guimaraes,Gil Vicente,2,4,20.0,11.0,8.0,8.0,8.0,6.0,PrimeiraLiga
+2021-03-14,Porto,Pacos Ferreira,2,0,16.0,2.0,5.0,2.0,10.0,2.0,PrimeiraLiga
+2021-03-15,Famalicao,Sp Braga,2,2,17.0,9.0,5.0,3.0,2.0,4.0,PrimeiraLiga
+2021-03-19,Gil Vicente,Nacional,2,0,10.0,9.0,4.0,1.0,3.0,3.0,PrimeiraLiga
+2021-03-20,Sp Lisbon,Guimaraes,1,0,10.0,4.0,4.0,1.0,5.0,6.0,PrimeiraLiga
+2021-03-20,Portimonense,Porto,1,2,8.0,12.0,3.0,3.0,2.0,4.0,PrimeiraLiga
+2021-03-20,Pacos Ferreira,Moreirense,3,0,14.0,9.0,8.0,0.0,5.0,10.0,PrimeiraLiga
+2021-03-20,Santa Clara,Tondela,1,1,16.0,5.0,5.0,4.0,6.0,4.0,PrimeiraLiga
+2021-03-21,Rio Ave,Belenenses,0,0,19.0,6.0,7.0,3.0,9.0,2.0,PrimeiraLiga
+2021-03-21,Boavista,Farense,0,1,14.0,19.0,5.0,8.0,5.0,9.0,PrimeiraLiga
+2021-03-21,Maritimo,Famalicao,0,4,8.0,13.0,2.0,7.0,5.0,1.0,PrimeiraLiga
+2021-03-21,Sp Braga,Benfica,0,2,8.0,10.0,3.0,5.0,2.0,1.0,PrimeiraLiga
+2021-04-02,Nacional,Portimonense,1,5,12.0,18.0,2.0,10.0,6.0,6.0,PrimeiraLiga
+2021-04-03,Rio Ave,Gil Vicente,0,2,10.0,8.0,3.0,3.0,4.0,6.0,PrimeiraLiga
+2021-04-03,Porto,Santa Clara,2,1,17.0,5.0,6.0,3.0,7.0,5.0,PrimeiraLiga
+2021-04-04,Guimaraes,Tondela,1,2,16.0,10.0,6.0,3.0,11.0,5.0,PrimeiraLiga
+2021-04-04,Belenenses,Boavista,0,2,10.0,10.0,2.0,6.0,5.0,4.0,PrimeiraLiga
+2021-04-04,Famalicao,Pacos Ferreira,2,0,16.0,3.0,6.0,0.0,6.0,3.0,PrimeiraLiga
+2021-04-05,Benfica,Maritimo,1,0,15.0,8.0,6.0,2.0,4.0,3.0,PrimeiraLiga
+2021-04-05,Farense,Sp Braga,1,2,18.0,14.0,9.0,2.0,4.0,5.0,PrimeiraLiga
+2021-04-05,Moreirense,Sp Lisbon,1,1,5.0,10.0,1.0,3.0,2.0,4.0,PrimeiraLiga
+2021-04-09,Portimonense,Guimaraes,3,0,7.0,10.0,3.0,3.0,3.0,8.0,PrimeiraLiga
+2021-04-10,Pacos Ferreira,Benfica,0,5,2.0,15.0,1.0,9.0,1.0,11.0,PrimeiraLiga
+2021-04-10,Tondela,Porto,0,2,7.0,13.0,2.0,6.0,1.0,6.0,PrimeiraLiga
+2021-04-10,Boavista,Rio Ave,3,3,13.0,10.0,4.0,5.0,6.0,5.0,PrimeiraLiga
+2021-04-10,Maritimo,Farense,1,0,9.0,14.0,2.0,2.0,6.0,12.0,PrimeiraLiga
+2021-04-11,Gil Vicente,Moreirense,1,2,18.0,10.0,6.0,4.0,7.0,2.0,PrimeiraLiga
+2021-04-11,Santa Clara,Nacional,5,1,16.0,10.0,9.0,3.0,3.0,3.0,PrimeiraLiga
+2021-04-11,Sp Braga,Belenenses,1,1,14.0,9.0,4.0,2.0,9.0,7.0,PrimeiraLiga
+2021-04-11,Sp Lisbon,Famalicao,1,1,16.0,2.0,5.0,2.0,6.0,5.0,PrimeiraLiga
+2021-04-16,Boavista,Pacos Ferreira,2,0,9.0,13.0,4.0,2.0,0.0,8.0,PrimeiraLiga
+2021-04-16,Farense,Sp Lisbon,0,1,8.0,12.0,3.0,4.0,7.0,9.0,PrimeiraLiga
+2021-04-17,Guimaraes,Santa Clara,1,0,5.0,9.0,2.0,1.0,4.0,5.0,PrimeiraLiga
+2021-04-17,Moreirense,Tondela,2,3,12.0,7.0,3.0,5.0,5.0,3.0,PrimeiraLiga
+2021-04-17,Belenenses,Maritimo,2,0,6.0,21.0,4.0,6.0,2.0,11.0,PrimeiraLiga
+2021-04-17,Benfica,Gil Vicente,1,2,19.0,8.0,1.0,2.0,5.0,5.0,PrimeiraLiga
+2021-04-17,Rio Ave,Sp Braga,0,0,10.0,13.0,4.0,6.0,2.0,5.0,PrimeiraLiga
+2021-04-18,Nacional,Porto,0,1,7.0,9.0,3.0,3.0,2.0,2.0,PrimeiraLiga
+2021-04-18,Famalicao,Portimonense,0,1,18.0,9.0,2.0,4.0,5.0,4.0,PrimeiraLiga
+2021-04-20,Pacos Ferreira,Farense,0,2,5.0,13.0,1.0,6.0,6.0,6.0,PrimeiraLiga
+2021-04-21,Santa Clara,Moreirense,0,0,18.0,6.0,5.0,3.0,8.0,5.0,PrimeiraLiga
+2021-04-21,Maritimo,Rio Ave,1,0,6.0,15.0,2.0,1.0,4.0,10.0,PrimeiraLiga
+2021-04-21,Sp Braga,Boavista,2,1,25.0,5.0,10.0,2.0,15.0,2.0,PrimeiraLiga
+2021-04-21,Sp Lisbon,Belenenses,2,2,28.0,3.0,9.0,3.0,9.0,0.0,PrimeiraLiga
+2021-04-22,Tondela,Nacional,2,1,6.0,11.0,5.0,5.0,6.0,7.0,PrimeiraLiga
+2021-04-22,Gil Vicente,Famalicao,0,3,10.0,14.0,5.0,5.0,6.0,5.0,PrimeiraLiga
+2021-04-22,Portimonense,Benfica,1,5,8.0,15.0,3.0,6.0,5.0,4.0,PrimeiraLiga
+2021-04-22,Porto,Guimaraes,1,0,15.0,4.0,7.0,1.0,8.0,4.0,PrimeiraLiga
+2021-04-25,Boavista,Maritimo,0,1,9.0,10.0,3.0,3.0,3.0,8.0,PrimeiraLiga
+2021-04-25,Rio Ave,Pacos Ferreira,1,1,7.0,9.0,2.0,3.0,5.0,2.0,PrimeiraLiga
+2021-04-25,Sp Braga,Sp Lisbon,0,1,17.0,5.0,4.0,1.0,6.0,2.0,PrimeiraLiga
+2021-04-26,Nacional,Guimaraes,1,0,8.0,6.0,6.0,1.0,6.0,4.0,PrimeiraLiga
+2021-04-26,Famalicao,Tondela,2,2,11.0,11.0,4.0,2.0,8.0,9.0,PrimeiraLiga
+2021-04-26,Moreirense,Porto,1,1,10.0,20.0,4.0,7.0,6.0,11.0,PrimeiraLiga
+2021-04-26,Belenenses,Gil Vicente,2,1,8.0,16.0,3.0,4.0,4.0,5.0,PrimeiraLiga
+2021-04-26,Benfica,Santa Clara,2,1,10.0,16.0,1.0,7.0,5.0,4.0,PrimeiraLiga
+2021-04-27,Farense,Portimonense,1,1,10.0,17.0,3.0,6.0,8.0,5.0,PrimeiraLiga
+2021-04-29,Maritimo,Sp Braga,1,0,7.0,12.0,2.0,4.0,2.0,8.0,PrimeiraLiga
+2021-04-30,Pacos Ferreira,Belenenses,1,0,13.0,7.0,6.0,1.0,3.0,5.0,PrimeiraLiga
+2021-04-30,Guimaraes,Moreirense,2,0,15.0,14.0,7.0,2.0,4.0,10.0,PrimeiraLiga
+2021-04-30,Tondela,Benfica,0,2,7.0,13.0,3.0,6.0,3.0,6.0,PrimeiraLiga
+2021-04-30,Porto,Famalicao,3,2,10.0,9.0,4.0,3.0,5.0,4.0,PrimeiraLiga
+2021-05-01,Portimonense,Rio Ave,0,0,6.0,11.0,1.0,2.0,6.0,10.0,PrimeiraLiga
+2021-05-01,Santa Clara,Boavista,3,3,15.0,10.0,6.0,5.0,5.0,4.0,PrimeiraLiga
+2021-05-01,Sp Lisbon,Nacional,2,0,19.0,2.0,8.0,1.0,7.0,4.0,PrimeiraLiga
+2021-05-01,Gil Vicente,Farense,0,0,11.0,11.0,3.0,3.0,5.0,4.0,PrimeiraLiga
+2021-05-05,Maritimo,Gil Vicente,0,1,9.0,8.0,2.0,5.0,9.0,3.0,PrimeiraLiga
+2021-05-05,Sp Braga,Pacos Ferreira,1,1,11.0,13.0,3.0,1.0,7.0,5.0,PrimeiraLiga
+2021-05-05,Rio Ave,Sp Lisbon,0,2,5.0,17.0,1.0,5.0,2.0,9.0,PrimeiraLiga
+2021-05-06,Benfica,Porto,1,1,5.0,15.0,3.0,2.0,7.0,11.0,PrimeiraLiga
+2021-05-06,Farense,Guimaraes,2,2,13.0,13.0,8.0,3.0,3.0,6.0,PrimeiraLiga
+2021-05-06,Belenenses,Portimonense,1,0,13.0,10.0,3.0,2.0,3.0,4.0,PrimeiraLiga
+2021-05-06,Moreirense,Nacional,2,2,12.0,17.0,6.0,3.0,3.0,7.0,PrimeiraLiga
+2021-05-07,Famalicao,Santa Clara,1,0,14.0,6.0,4.0,3.0,5.0,2.0,PrimeiraLiga
+2021-05-07,Boavista,Tondela,1,1,22.0,7.0,8.0,3.0,8.0,2.0,PrimeiraLiga
+2021-05-09,Pacos Ferreira,Maritimo,1,1,17.0,7.0,5.0,1.0,7.0,4.0,PrimeiraLiga
+2021-05-09,Gil Vicente,Sp Braga,1,1,5.0,12.0,2.0,3.0,2.0,4.0,PrimeiraLiga
+2021-05-10,Portimonense,Moreirense,1,2,13.0,8.0,3.0,3.0,2.0,6.0,PrimeiraLiga
+2021-05-10,Porto,Farense,5,1,13.0,6.0,7.0,1.0,3.0,1.0,PrimeiraLiga
+2021-05-11,Santa Clara,Rio Ave,1,0,14.0,7.0,6.0,5.0,8.0,6.0,PrimeiraLiga
+2021-05-11,Tondela,Belenenses,1,3,18.0,8.0,3.0,7.0,11.0,3.0,PrimeiraLiga
+2021-05-11,Nacional,Benfica,1,3,15.0,14.0,4.0,3.0,5.0,6.0,PrimeiraLiga
+2021-05-11,Sp Lisbon,Boavista,1,0,17.0,5.0,3.0,2.0,12.0,1.0,PrimeiraLiga
+2021-05-12,Guimaraes,Famalicao,1,2,7.0,12.0,1.0,5.0,7.0,8.0,PrimeiraLiga
+2021-05-14,Sp Braga,Moreirense,2,1,15.0,10.0,5.0,3.0,10.0,1.0,PrimeiraLiga
+2021-05-14,Pacos Ferreira,Gil Vicente,0,2,8.0,13.0,4.0,7.0,2.0,9.0,PrimeiraLiga
+2021-05-15,Benfica,Sp Lisbon,4,3,12.0,11.0,9.0,5.0,5.0,5.0,PrimeiraLiga
+2021-05-15,Rio Ave,Porto,0,3,12.0,15.0,2.0,4.0,5.0,5.0,PrimeiraLiga
+2021-05-15,Boavista,Portimonense,1,0,10.0,8.0,2.0,0.0,2.0,5.0,PrimeiraLiga
+2021-05-15,Farense,Tondela,1,0,15.0,12.0,5.0,4.0,5.0,3.0,PrimeiraLiga
+2021-05-16,Famalicao,Nacional,3,0,15.0,9.0,6.0,2.0,5.0,2.0,PrimeiraLiga
+2021-05-16,Belenenses,Santa Clara,0,2,11.0,10.0,3.0,4.0,10.0,5.0,PrimeiraLiga
+2021-05-16,Maritimo,Guimaraes,0,0,6.0,9.0,1.0,1.0,2.0,2.0,PrimeiraLiga
+2021-05-18,Tondela,Pacos Ferreira,2,3,14.0,16.0,3.0,8.0,3.0,6.0,PrimeiraLiga
+2021-05-19,Porto,Belenenses,4,0,12.0,13.0,6.0,3.0,6.0,6.0,PrimeiraLiga
+2021-05-19,Gil Vicente,Boavista,1,2,13.0,15.0,4.0,6.0,7.0,8.0,PrimeiraLiga
+2021-05-19,Guimaraes,Benfica,1,3,10.0,17.0,7.0,9.0,7.0,4.0,PrimeiraLiga
+2021-05-19,Moreirense,Famalicao,3,0,11.0,14.0,3.0,3.0,6.0,3.0,PrimeiraLiga
+2021-05-19,Nacional,Rio Ave,1,2,11.0,30.0,2.0,14.0,1.0,16.0,PrimeiraLiga
+2021-05-19,Portimonense,Sp Braga,0,0,8.0,4.0,2.0,1.0,4.0,5.0,PrimeiraLiga
+2021-05-19,Santa Clara,Farense,4,0,8.0,6.0,5.0,1.0,1.0,4.0,PrimeiraLiga
+2021-05-19,Sp Lisbon,Maritimo,5,1,18.0,5.0,6.0,1.0,4.0,3.0,PrimeiraLiga
+2021-08-06,Sp Lisbon,Vizela,3,0,15.0,6.0,5.0,1.0,3.0,5.0,PrimeiraLiga
+2021-08-07,Maritimo,Sp Braga,0,2,7.0,12.0,0.0,5.0,3.0,6.0,PrimeiraLiga
+2021-08-07,Arouca,Estoril,0,2,11.0,12.0,3.0,6.0,3.0,2.0,PrimeiraLiga
+2021-08-07,Moreirense,Benfica,1,2,8.0,9.0,3.0,6.0,0.0,6.0,PrimeiraLiga
+2021-08-08,Guimaraes,Portimonense,0,1,18.0,7.0,3.0,1.0,10.0,5.0,PrimeiraLiga
+2021-08-08,Tondela,Santa Clara,3,0,10.0,23.0,5.0,5.0,3.0,5.0,PrimeiraLiga
+2021-08-08,Porto,Belenenses,2,0,21.0,7.0,7.0,3.0,8.0,3.0,PrimeiraLiga
+2021-08-08,Pacos Ferreira,Famalicao,2,0,20.0,10.0,3.0,2.0,6.0,3.0,PrimeiraLiga
+2021-08-09,Gil Vicente,Boavista,3,0,9.0,13.0,6.0,5.0,1.0,5.0,PrimeiraLiga
+2021-08-13,Estoril,Guimaraes,0,0,7.0,12.0,1.0,2.0,4.0,9.0,PrimeiraLiga
+2021-08-14,Vizela,Tondela,2,1,20.0,8.0,6.0,2.0,11.0,4.0,PrimeiraLiga
+2021-08-14,Benfica,Arouca,2,0,17.0,3.0,5.0,1.0,4.0,2.0,PrimeiraLiga
+2021-08-14,Sp Braga,Sp Lisbon,1,2,16.0,5.0,6.0,3.0,6.0,5.0,PrimeiraLiga
+2021-08-15,Portimonense,Gil Vicente,0,1,18.0,7.0,5.0,4.0,5.0,4.0,PrimeiraLiga
+2021-08-15,Famalicao,Porto,1,2,7.0,12.0,1.0,4.0,3.0,2.0,PrimeiraLiga
+2021-08-15,Santa Clara,Moreirense,2,2,17.0,10.0,4.0,4.0,5.0,4.0,PrimeiraLiga
+2021-08-16,Boavista,Pacos Ferreira,3,0,8.0,17.0,4.0,5.0,2.0,8.0,PrimeiraLiga
+2021-08-16,Belenenses,Maritimo,1,2,5.0,13.0,2.0,4.0,3.0,4.0,PrimeiraLiga
+2021-08-20,Moreirense,Sp Braga,2,3,13.0,16.0,5.0,7.0,6.0,0.0,PrimeiraLiga
+2021-08-20,Arouca,Famalicao,2,1,22.0,10.0,6.0,5.0,10.0,9.0,PrimeiraLiga
+2021-08-21,Gil Vicente,Benfica,0,2,5.0,21.0,2.0,7.0,3.0,9.0,PrimeiraLiga
+2021-08-21,Sp Lisbon,Belenenses,2,0,26.0,3.0,7.0,0.0,10.0,0.0,PrimeiraLiga
+2021-08-22,Tondela,Portimonense,0,3,11.0,7.0,3.0,5.0,6.0,5.0,PrimeiraLiga
+2021-08-22,Maritimo,Porto,1,1,5.0,16.0,1.0,5.0,3.0,4.0,PrimeiraLiga
+2021-08-22,Guimaraes,Vizela,4,0,20.0,4.0,8.0,2.0,8.0,2.0,PrimeiraLiga
+2021-08-23,Pacos Ferreira,Estoril,1,3,10.0,14.0,2.0,4.0,5.0,4.0,PrimeiraLiga
+2021-08-23,Boavista,Santa Clara,2,0,9.0,11.0,4.0,2.0,5.0,5.0,PrimeiraLiga
+2021-08-27,Estoril,Maritimo,2,1,9.0,7.0,3.0,2.0,1.0,4.0,PrimeiraLiga
+2021-08-27,Belenenses,Moreirense,1,1,4.0,18.0,1.0,6.0,3.0,11.0,PrimeiraLiga
+2021-08-28,Vizela,Boavista,1,1,16.0,5.0,4.0,1.0,11.0,2.0,PrimeiraLiga
+2021-08-28,Porto,Arouca,3,0,15.0,8.0,4.0,1.0,4.0,5.0,PrimeiraLiga
+2021-08-28,Famalicao,Sp Lisbon,1,1,14.0,15.0,5.0,5.0,2.0,9.0,PrimeiraLiga
+2021-08-29,Benfica,Tondela,2,1,20.0,3.0,8.0,2.0,11.0,0.0,PrimeiraLiga
+2021-08-29,Sp Braga,Guimaraes,0,0,20.0,11.0,6.0,2.0,6.0,6.0,PrimeiraLiga
+2021-08-29,Portimonense,Pacos Ferreira,0,1,18.0,6.0,5.0,2.0,7.0,3.0,PrimeiraLiga
+2021-08-29,Santa Clara,Gil Vicente,1,0,10.0,5.0,4.0,2.0,5.0,4.0,PrimeiraLiga
+2021-09-11,Sp Lisbon,Porto,1,1,9.0,5.0,5.0,1.0,5.0,4.0,PrimeiraLiga
+2021-09-11,Pacos Ferreira,Sp Braga,0,0,12.0,10.0,3.0,2.0,11.0,5.0,PrimeiraLiga
+2021-09-11,Santa Clara,Benfica,0,5,11.0,8.0,5.0,5.0,7.0,2.0,PrimeiraLiga
+2021-09-12,Moreirense,Famalicao,2,2,7.0,15.0,3.0,8.0,6.0,4.0,PrimeiraLiga
+2021-09-12,Boavista,Portimonense,1,1,11.0,7.0,3.0,3.0,8.0,2.0,PrimeiraLiga
+2021-09-12,Gil Vicente,Vizela,2,2,21.0,19.0,6.0,6.0,9.0,7.0,PrimeiraLiga
+2021-09-12,Guimaraes,Belenenses,0,0,10.0,16.0,3.0,6.0,5.0,7.0,PrimeiraLiga
+2021-09-13,Maritimo,Arouca,2,2,14.0,17.0,6.0,3.0,5.0,2.0,PrimeiraLiga
+2021-09-13,Tondela,Estoril,1,2,20.0,11.0,5.0,4.0,6.0,5.0,PrimeiraLiga
+2021-09-17,Portimonense,Santa Clara,2,1,10.0,13.0,4.0,2.0,4.0,2.0,PrimeiraLiga
+2021-09-18,Famalicao,Maritimo,0,0,16.0,2.0,4.0,0.0,7.0,5.0,PrimeiraLiga
+2021-09-18,Belenenses,Gil Vicente,1,1,11.0,8.0,4.0,4.0,4.0,7.0,PrimeiraLiga
+2021-09-18,Arouca,Guimaraes,2,2,11.0,11.0,5.0,4.0,6.0,4.0,PrimeiraLiga
+2021-09-19,Porto,Moreirense,5,0,18.0,5.0,7.0,0.0,6.0,5.0,PrimeiraLiga
+2021-09-19,Vizela,Pacos Ferreira,1,1,21.0,12.0,4.0,3.0,5.0,4.0,PrimeiraLiga
+2021-09-19,Estoril,Sp Lisbon,0,1,7.0,11.0,3.0,4.0,7.0,9.0,PrimeiraLiga
+2021-09-20,Benfica,Boavista,3,1,8.0,10.0,6.0,6.0,5.0,4.0,PrimeiraLiga
+2021-09-20,Sp Braga,Tondela,3,1,20.0,3.0,7.0,1.0,5.0,0.0,PrimeiraLiga
+2021-09-24,Gil Vicente,Porto,1,2,8.0,16.0,4.0,8.0,2.0,6.0,PrimeiraLiga
+2021-09-24,Sp Lisbon,Maritimo,1,0,25.0,4.0,7.0,0.0,9.0,0.0,PrimeiraLiga
+2021-09-25,Moreirense,Arouca,2,1,8.0,17.0,3.0,5.0,5.0,9.0,PrimeiraLiga
+2021-09-25,Guimaraes,Benfica,1,3,13.0,16.0,3.0,4.0,5.0,5.0,PrimeiraLiga
+2021-09-25,Tondela,Famalicao,3,2,11.0,14.0,4.0,7.0,4.0,3.0,PrimeiraLiga
+2021-09-26,Santa Clara,Sp Braga,1,1,15.0,10.0,3.0,4.0,5.0,5.0,PrimeiraLiga
+2021-09-26,Portimonense,Vizela,0,0,14.0,14.0,4.0,2.0,7.0,5.0,PrimeiraLiga
+2021-09-27,Pacos Ferreira,Belenenses,2,2,20.0,11.0,5.0,2.0,3.0,2.0,PrimeiraLiga
+2021-09-27,Boavista,Estoril,1,1,9.0,9.0,3.0,1.0,2.0,13.0,PrimeiraLiga
+2021-10-01,Maritimo,Moreirense,0,0,6.0,18.0,0.0,6.0,3.0,7.0,PrimeiraLiga
+2021-10-01,Famalicao,Guimaraes,1,2,15.0,9.0,2.0,5.0,8.0,0.0,PrimeiraLiga
+2021-10-02,Vizela,Santa Clara,1,1,16.0,10.0,4.0,1.0,6.0,4.0,PrimeiraLiga
+2021-10-02,Porto,Pacos Ferreira,2,1,23.0,7.0,8.0,2.0,11.0,3.0,PrimeiraLiga
+2021-10-02,Arouca,Sp Lisbon,1,2,10.0,10.0,5.0,8.0,4.0,5.0,PrimeiraLiga
+2021-10-03,Sp Braga,Boavista,2,2,13.0,7.0,8.0,2.0,3.0,1.0,PrimeiraLiga
+2021-10-03,Estoril,Gil Vicente,2,2,14.0,23.0,4.0,9.0,1.0,5.0,PrimeiraLiga
+2021-10-03,Belenenses,Tondela,0,2,13.0,11.0,2.0,5.0,1.0,4.0,PrimeiraLiga
+2021-10-03,Benfica,Portimonense,0,1,24.0,5.0,7.0,3.0,13.0,4.0,PrimeiraLiga
+2021-10-22,Guimaraes,Maritimo,2,1,27.0,7.0,10.0,3.0,14.0,2.0,PrimeiraLiga
+2021-10-23,Santa Clara,Famalicao,0,2,9.0,12.0,0.0,5.0,1.0,5.0,PrimeiraLiga
+2021-10-23,Tondela,Porto,1,3,3.0,24.0,2.0,6.0,3.0,10.0,PrimeiraLiga
+2021-10-23,Sp Lisbon,Moreirense,1,0,14.0,5.0,4.0,1.0,7.0,1.0,PrimeiraLiga
+2021-10-24,Pacos Ferreira,Arouca,0,0,3.0,15.0,0.0,6.0,3.0,9.0,PrimeiraLiga
+2021-10-24,Vizela,Benfica,0,1,15.0,14.0,4.0,7.0,7.0,12.0,PrimeiraLiga
+2021-10-24,Portimonense,Estoril,0,2,24.0,6.0,3.0,2.0,6.0,1.0,PrimeiraLiga
+2021-10-25,Gil Vicente,Sp Braga,0,1,21.0,13.0,7.0,4.0,11.0,2.0,PrimeiraLiga
+2021-10-25,Boavista,Belenenses,0,0,15.0,4.0,5.0,0.0,5.0,1.0,PrimeiraLiga
+2021-10-29,Arouca,Tondela,2,0,4.0,15.0,2.0,6.0,4.0,6.0,PrimeiraLiga
+2021-10-30,Sp Lisbon,Guimaraes,1,0,12.0,12.0,4.0,2.0,7.0,2.0,PrimeiraLiga
+2021-10-30,Porto,Boavista,4,1,18.0,8.0,11.0,3.0,4.0,6.0,PrimeiraLiga
+2021-10-30,Estoril,Benfica,1,1,8.0,15.0,2.0,7.0,4.0,10.0,PrimeiraLiga
+2021-10-31,Belenenses,Santa Clara,2,1,10.0,12.0,4.0,4.0,8.0,7.0,PrimeiraLiga
+2021-10-31,Famalicao,Vizela,1,1,14.0,9.0,5.0,3.0,5.0,2.0,PrimeiraLiga
+2021-10-31,Maritimo,Gil Vicente,1,2,19.0,14.0,7.0,5.0,4.0,5.0,PrimeiraLiga
+2021-11-01,Sp Braga,Portimonense,3,0,18.0,5.0,5.0,2.0,3.0,5.0,PrimeiraLiga
+2021-11-01,Moreirense,Pacos Ferreira,1,1,7.0,11.0,1.0,4.0,4.0,7.0,PrimeiraLiga
+2021-11-05,Gil Vicente,Arouca,1,1,16.0,9.0,5.0,1.0,8.0,1.0,PrimeiraLiga
+2021-11-05,Boavista,Famalicao,2,5,16.0,15.0,5.0,10.0,6.0,2.0,PrimeiraLiga
+2021-11-06,Vizela,Estoril,1,1,12.0,8.0,3.0,6.0,3.0,1.0,PrimeiraLiga
+2021-11-06,Portimonense,Belenenses,2,0,14.0,17.0,6.0,4.0,6.0,5.0,PrimeiraLiga
+2021-11-06,Guimaraes,Moreirense,2,1,11.0,20.0,5.0,8.0,5.0,9.0,PrimeiraLiga
+2021-11-07,Benfica,Sp Braga,6,1,12.0,8.0,9.0,4.0,2.0,6.0,PrimeiraLiga
+2021-11-07,Pacos Ferreira,Sp Lisbon,0,2,9.0,20.0,1.0,8.0,4.0,10.0,PrimeiraLiga
+2021-11-07,Tondela,Maritimo,4,2,15.0,20.0,7.0,11.0,3.0,4.0,PrimeiraLiga
+2021-11-07,Santa Clara,Porto,0,3,3.0,23.0,1.0,10.0,1.0,8.0,PrimeiraLiga
+2021-11-26,Moreirense,Gil Vicente,2,2,15.0,14.0,4.0,8.0,5.0,5.0,PrimeiraLiga
+2021-11-27,Famalicao,Portimonense,0,3,20.0,6.0,2.0,2.0,8.0,3.0,PrimeiraLiga
+2021-11-27,Arouca,Boavista,2,1,8.0,13.0,6.0,2.0,2.0,1.0,PrimeiraLiga
+2021-11-27,Belenenses,Benfica,0,7,0.0,17.0,0.0,11.0,2.0,4.0,PrimeiraLiga
+2021-11-28,Porto,Guimaraes,2,1,17.0,9.0,9.0,2.0,5.0,2.0,PrimeiraLiga
+2021-11-28,Maritimo,Pacos Ferreira,2,0,9.0,16.0,4.0,3.0,2.0,8.0,PrimeiraLiga
+2021-11-28,Sp Lisbon,Tondela,2,0,14.0,5.0,8.0,1.0,1.0,4.0,PrimeiraLiga
+2021-11-29,Estoril,Santa Clara,2,2,11.0,10.0,7.0,5.0,4.0,3.0,PrimeiraLiga
+2021-11-30,Sp Braga,Vizela,4,1,17.0,8.0,9.0,2.0,10.0,1.0,PrimeiraLiga
+2021-12-03,Portimonense,Porto,0,3,7.0,23.0,4.0,6.0,3.0,6.0,PrimeiraLiga
+2021-12-03,Benfica,Sp Lisbon,1,3,11.0,14.0,3.0,5.0,3.0,3.0,PrimeiraLiga
+2021-12-04,Boavista,Maritimo,1,1,6.0,10.0,4.0,3.0,2.0,6.0,PrimeiraLiga
+2021-12-04,Pacos Ferreira,Guimaraes,1,2,7.0,17.0,3.0,8.0,4.0,6.0,PrimeiraLiga
+2021-12-05,Santa Clara,Arouca,2,1,5.0,13.0,4.0,4.0,1.0,8.0,PrimeiraLiga
+2021-12-05,Gil Vicente,Famalicao,4,0,18.0,9.0,10.0,1.0,4.0,1.0,PrimeiraLiga
+2021-12-05,Sp Braga,Estoril,2,0,14.0,11.0,4.0,5.0,2.0,7.0,PrimeiraLiga
+2021-12-10,Pacos Ferreira,Gil Vicente,0,1,11.0,13.0,2.0,5.0,7.0,5.0,PrimeiraLiga
+2021-12-11,Guimaraes,Tondela,5,2,18.0,8.0,10.0,3.0,0.0,8.0,PrimeiraLiga
+2021-12-11,Maritimo,Santa Clara,4,1,9.0,10.0,4.0,3.0,4.0,2.0,PrimeiraLiga
+2021-12-11,Sp Lisbon,Boavista,2,0,19.0,4.0,6.0,2.0,10.0,3.0,PrimeiraLiga
+2021-12-12,Porto,Sp Braga,1,0,20.0,7.0,4.0,1.0,6.0,3.0,PrimeiraLiga
+2021-12-12,Famalicao,Benfica,1,4,13.0,6.0,2.0,4.0,5.0,2.0,PrimeiraLiga
+2021-12-12,Moreirense,Portimonense,0,1,11.0,7.0,4.0,4.0,6.0,1.0,PrimeiraLiga
+2021-12-12,Belenenses,Estoril,0,1,7.0,21.0,0.0,7.0,0.0,14.0,PrimeiraLiga
+2021-12-13,Arouca,Vizela,1,4,15.0,10.0,2.0,4.0,6.0,4.0,PrimeiraLiga
+2021-12-17,Santa Clara,Guimaraes,1,0,15.0,10.0,6.0,2.0,8.0,2.0,PrimeiraLiga
+2021-12-17,Estoril,Famalicao,2,2,11.0,7.0,4.0,3.0,7.0,2.0,PrimeiraLiga
+2021-12-18,Portimonense,Arouca,1,1,12.0,19.0,5.0,6.0,5.0,6.0,PrimeiraLiga
+2021-12-18,Tondela,Pacos Ferreira,0,1,12.0,9.0,9.0,5.0,7.0,6.0,PrimeiraLiga
+2021-12-18,Gil Vicente,Sp Lisbon,0,3,7.0,17.0,4.0,9.0,1.0,5.0,PrimeiraLiga
+2021-12-19,Benfica,Maritimo,7,1,17.0,9.0,9.0,2.0,1.0,3.0,PrimeiraLiga
+2021-12-19,Boavista,Moreirense,1,0,14.0,9.0,5.0,3.0,5.0,7.0,PrimeiraLiga
+2021-12-19,Vizela,Porto,0,4,9.0,15.0,4.0,7.0,3.0,11.0,PrimeiraLiga
+2021-12-19,Sp Braga,Belenenses,1,0,18.0,6.0,5.0,2.0,6.0,3.0,PrimeiraLiga
+2021-12-28,Tondela,Gil Vicente,0,3,7.0,12.0,2.0,6.0,6.0,2.0,PrimeiraLiga
+2021-12-28,Maritimo,Vizela,2,0,11.0,7.0,5.0,1.0,2.0,4.0,PrimeiraLiga
+2021-12-28,Moreirense,Estoril,1,0,5.0,13.0,3.0,4.0,7.0,11.0,PrimeiraLiga
+2021-12-29,Sp Lisbon,Portimonense,3,2,24.0,6.0,12.0,2.0,5.0,0.0,PrimeiraLiga
+2021-12-29,Guimaraes,Boavista,1,1,17.0,11.0,2.0,4.0,11.0,4.0,PrimeiraLiga
+2021-12-30,Pacos Ferreira,Santa Clara,2,1,9.0,11.0,3.0,4.0,2.0,4.0,PrimeiraLiga
+2021-12-30,Arouca,Sp Braga,0,6,6.0,11.0,0.0,8.0,1.0,1.0,PrimeiraLiga
+2021-12-30,Porto,Benfica,3,1,15.0,13.0,6.0,5.0,5.0,7.0,PrimeiraLiga
+2022-01-02,Vizela,Belenenses,2,0,12.0,19.0,4.0,7.0,4.0,10.0,PrimeiraLiga
+2022-01-03,Tondela,Moreirense,2,1,10.0,9.0,5.0,5.0,1.0,3.0,PrimeiraLiga
+2022-01-07,Santa Clara,Sp Lisbon,3,2,9.0,19.0,5.0,5.0,3.0,3.0,PrimeiraLiga
+2022-01-08,Estoril,Porto,2,3,7.0,23.0,2.0,10.0,2.0,7.0,PrimeiraLiga
+2022-01-08,Vizela,Moreirense,0,1,15.0,14.0,3.0,4.0,8.0,5.0,PrimeiraLiga
+2022-01-08,Boavista,Tondela,1,1,18.0,5.0,4.0,2.0,9.0,4.0,PrimeiraLiga
+2022-01-09,Portimonense,Maritimo,1,2,18.0,17.0,4.0,8.0,7.0,4.0,PrimeiraLiga
+2022-01-09,Benfica,Pacos Ferreira,2,0,22.0,6.0,6.0,1.0,9.0,1.0,PrimeiraLiga
+2022-01-09,Sp Braga,Famalicao,2,2,17.0,10.0,8.0,7.0,5.0,2.0,PrimeiraLiga
+2022-01-09,Belenenses,Arouca,2,1,15.0,10.0,5.0,2.0,4.0,2.0,PrimeiraLiga
+2022-01-10,Gil Vicente,Guimaraes,3,2,17.0,8.0,10.0,2.0,6.0,1.0,PrimeiraLiga
+2022-01-13,Famalicao,Belenenses,1,0,11.0,8.0,2.0,4.0,5.0,5.0,PrimeiraLiga
+2022-01-15,Sp Braga,Maritimo,0,1,16.0,8.0,4.0,3.0,7.0,4.0,PrimeiraLiga
+2022-01-15,Benfica,Moreirense,1,1,16.0,9.0,5.0,2.0,9.0,1.0,PrimeiraLiga
+2022-01-15,Boavista,Gil Vicente,1,1,17.0,4.0,5.0,2.0,8.0,5.0,PrimeiraLiga
+2022-01-16,Santa Clara,Tondela,2,2,18.0,12.0,9.0,7.0,11.0,5.0,PrimeiraLiga
+2022-01-16,Vizela,Sp Lisbon,0,2,8.0,14.0,1.0,6.0,2.0,4.0,PrimeiraLiga
+2022-01-16,Famalicao,Pacos Ferreira,0,0,10.0,11.0,6.0,3.0,2.0,8.0,PrimeiraLiga
+2022-01-16,Belenenses,Porto,1,4,4.0,24.0,2.0,9.0,3.0,8.0,PrimeiraLiga
+2022-01-17,Portimonense,Guimaraes,1,1,15.0,12.0,4.0,6.0,6.0,4.0,PrimeiraLiga
+2022-01-21,Arouca,Benfica,0,2,8.0,8.0,2.0,6.0,2.0,2.0,PrimeiraLiga
+2022-01-21,Pacos Ferreira,Boavista,1,1,11.0,18.0,3.0,9.0,7.0,0.0,PrimeiraLiga
+2022-01-22,Moreirense,Santa Clara,0,2,11.0,10.0,3.0,3.0,2.0,3.0,PrimeiraLiga
+2022-01-22,Tondela,Vizela,2,3,12.0,21.0,3.0,8.0,6.0,10.0,PrimeiraLiga
+2022-01-22,Sp Lisbon,Sp Braga,1,2,13.0,9.0,4.0,3.0,3.0,4.0,PrimeiraLiga
+2022-01-23,Guimaraes,Estoril,3,1,20.0,7.0,7.0,3.0,4.0,4.0,PrimeiraLiga
+2022-01-23,Maritimo,Belenenses,1,1,16.0,15.0,2.0,9.0,7.0,2.0,PrimeiraLiga
+2022-01-23,Gil Vicente,Portimonense,1,0,28.0,3.0,6.0,1.0,12.0,2.0,PrimeiraLiga
+2022-01-23,Porto,Famalicao,3,1,18.0,6.0,9.0,1.0,7.0,4.0,PrimeiraLiga
+2022-01-27,Estoril,Arouca,1,2,11.0,21.0,4.0,5.0,4.0,9.0,PrimeiraLiga
+2022-01-30,Portimonense,Tondela,1,2,11.0,10.0,6.0,4.0,6.0,2.0,PrimeiraLiga
+2022-01-30,Vizela,Guimaraes,3,2,16.0,11.0,6.0,4.0,6.0,10.0,PrimeiraLiga
+2022-01-30,Sp Braga,Moreirense,2,0,11.0,15.0,5.0,1.0,9.0,2.0,PrimeiraLiga
+2022-01-30,Porto,Maritimo,2,1,14.0,8.0,5.0,3.0,1.0,3.0,PrimeiraLiga
+2022-01-31,Estoril,Pacos Ferreira,0,0,12.0,11.0,6.0,4.0,3.0,1.0,PrimeiraLiga
+2022-01-31,Famalicao,Arouca,0,0,3.0,7.0,1.0,2.0,4.0,4.0,PrimeiraLiga
+2022-02-01,Santa Clara,Boavista,2,1,12.0,12.0,3.0,5.0,2.0,5.0,PrimeiraLiga
+2022-02-02,Benfica,Gil Vicente,1,2,23.0,12.0,5.0,6.0,13.0,3.0,PrimeiraLiga
+2022-02-02,Belenenses,Sp Lisbon,1,4,6.0,15.0,2.0,6.0,1.0,4.0,PrimeiraLiga
+2022-02-05,Maritimo,Estoril,0,0,28.0,7.0,4.0,0.0,13.0,2.0,PrimeiraLiga
+2022-02-05,Pacos Ferreira,Portimonense,1,1,14.0,19.0,3.0,8.0,8.0,7.0,PrimeiraLiga
+2022-02-05,Guimaraes,Sp Braga,2,1,10.0,11.0,5.0,4.0,3.0,5.0,PrimeiraLiga
+2022-02-06,Boavista,Vizela,2,2,12.0,20.0,4.0,4.0,7.0,5.0,PrimeiraLiga
+2022-02-06,Gil Vicente,Santa Clara,2,2,8.0,11.0,3.0,4.0,1.0,9.0,PrimeiraLiga
+2022-02-06,Arouca,Porto,0,2,6.0,15.0,1.0,4.0,3.0,3.0,PrimeiraLiga
+2022-02-06,Sp Lisbon,Famalicao,2,0,8.0,8.0,4.0,5.0,4.0,4.0,PrimeiraLiga
+2022-02-07,Tondela,Benfica,1,3,12.0,19.0,3.0,8.0,4.0,9.0,PrimeiraLiga
+2022-02-07,Moreirense,Belenenses,4,1,18.0,3.0,10.0,1.0,2.0,0.0,PrimeiraLiga
+2022-02-11,Porto,Sp Lisbon,2,2,21.0,7.0,7.0,3.0,9.0,0.0,PrimeiraLiga
+2022-02-12,Sp Braga,Pacos Ferreira,2,1,17.0,9.0,5.0,3.0,3.0,8.0,PrimeiraLiga
+2022-02-12,Benfica,Santa Clara,2,1,16.0,7.0,4.0,4.0,7.0,2.0,PrimeiraLiga
+2022-02-12,Portimonense,Boavista,1,1,21.0,17.0,4.0,3.0,6.0,6.0,PrimeiraLiga
+2022-02-12,Estoril,Tondela,1,0,15.0,8.0,8.0,3.0,1.0,2.0,PrimeiraLiga
+2022-02-13,Famalicao,Moreirense,5,0,13.0,6.0,9.0,4.0,4.0,5.0,PrimeiraLiga
+2022-02-13,Belenenses,Guimaraes,1,0,13.0,19.0,4.0,2.0,5.0,3.0,PrimeiraLiga
+2022-02-13,Vizela,Gil Vicente,0,1,19.0,6.0,3.0,3.0,12.0,2.0,PrimeiraLiga
+2022-02-14,Arouca,Maritimo,0,3,20.0,9.0,4.0,6.0,9.0,2.0,PrimeiraLiga
+2022-02-18,Boavista,Benfica,2,2,14.0,8.0,4.0,3.0,9.0,4.0,PrimeiraLiga
+2022-02-19,Gil Vicente,Belenenses,2,0,13.0,8.0,5.0,1.0,6.0,3.0,PrimeiraLiga
+2022-02-19,Pacos Ferreira,Vizela,2,1,20.0,10.0,4.0,2.0,10.0,5.0,PrimeiraLiga
+2022-02-19,Guimaraes,Arouca,1,3,11.0,14.0,5.0,7.0,4.0,9.0,PrimeiraLiga
+2022-02-20,Moreirense,Porto,0,1,9.0,16.0,1.0,5.0,2.0,9.0,PrimeiraLiga
+2022-02-20,Tondela,Sp Braga,0,1,7.0,8.0,2.0,2.0,3.0,4.0,PrimeiraLiga
+2022-02-20,Maritimo,Famalicao,0,1,5.0,17.0,2.0,8.0,5.0,6.0,PrimeiraLiga
+2022-02-20,Sp Lisbon,Estoril,3,0,22.0,5.0,7.0,0.0,7.0,1.0,PrimeiraLiga
+2022-02-21,Santa Clara,Portimonense,1,1,13.0,13.0,4.0,7.0,3.0,2.0,PrimeiraLiga
+2022-02-25,Belenenses,Pacos Ferreira,0,2,12.0,15.0,1.0,7.0,10.0,6.0,PrimeiraLiga
+2022-02-26,Famalicao,Tondela,2,1,12.0,10.0,3.0,3.0,7.0,3.0,PrimeiraLiga
+2022-02-26,Maritimo,Sp Lisbon,1,1,6.0,17.0,2.0,4.0,4.0,7.0,PrimeiraLiga
+2022-02-26,Arouca,Moreirense,1,1,17.0,5.0,4.0,3.0,7.0,2.0,PrimeiraLiga
+2022-02-27,Porto,Gil Vicente,1,1,30.0,5.0,8.0,1.0,10.0,1.0,PrimeiraLiga
+2022-02-27,Estoril,Boavista,2,3,11.0,14.0,2.0,4.0,5.0,1.0,PrimeiraLiga
+2022-02-27,Benfica,Guimaraes,3,0,9.0,17.0,6.0,7.0,5.0,9.0,PrimeiraLiga
+2022-02-27,Vizela,Portimonense,1,1,18.0,10.0,2.0,1.0,11.0,2.0,PrimeiraLiga
+2022-02-28,Sp Braga,Santa Clara,0,0,16.0,9.0,4.0,1.0,2.0,8.0,PrimeiraLiga
+2022-03-04,Gil Vicente,Estoril,0,0,14.0,10.0,3.0,1.0,6.0,2.0,PrimeiraLiga
+2022-03-05,Boavista,Sp Braga,1,1,10.0,8.0,5.0,5.0,4.0,1.0,PrimeiraLiga
+2022-03-05,Portimonense,Benfica,1,2,6.0,16.0,1.0,4.0,2.0,8.0,PrimeiraLiga
+2022-03-05,Sp Lisbon,Arouca,2,0,15.0,5.0,6.0,2.0,5.0,1.0,PrimeiraLiga
+2022-03-06,Santa Clara,Vizela,3,1,14.0,6.0,4.0,2.0,6.0,1.0,PrimeiraLiga
+2022-03-06,Guimaraes,Famalicao,2,1,14.0,7.0,5.0,3.0,7.0,2.0,PrimeiraLiga
+2022-03-06,Pacos Ferreira,Porto,2,4,6.0,12.0,4.0,9.0,1.0,7.0,PrimeiraLiga
+2022-03-06,Moreirense,Maritimo,0,1,18.0,12.0,5.0,2.0,8.0,4.0,PrimeiraLiga
+2022-03-07,Tondela,Belenenses,1,1,7.0,9.0,2.0,3.0,4.0,5.0,PrimeiraLiga
+2022-03-11,Benfica,Vizela,1,1,22.0,20.0,9.0,4.0,9.0,8.0,PrimeiraLiga
+2022-03-12,Estoril,Portimonense,2,0,14.0,17.0,6.0,4.0,6.0,10.0,PrimeiraLiga
+2022-03-12,Famalicao,Santa Clara,0,0,7.0,10.0,3.0,4.0,6.0,5.0,PrimeiraLiga
+2022-03-12,Arouca,Pacos Ferreira,0,1,14.0,11.0,4.0,4.0,6.0,9.0,PrimeiraLiga
+2022-03-12,Belenenses,Boavista,0,0,9.0,15.0,2.0,1.0,3.0,4.0,PrimeiraLiga
+2022-03-13,Sp Braga,Gil Vicente,0,1,12.0,12.0,4.0,2.0,7.0,2.0,PrimeiraLiga
+2022-03-13,Porto,Tondela,4,0,17.0,9.0,9.0,2.0,5.0,4.0,PrimeiraLiga
+2022-03-13,Maritimo,Guimaraes,0,1,7.0,22.0,4.0,6.0,3.0,3.0,PrimeiraLiga
+2022-03-14,Moreirense,Sp Lisbon,0,2,12.0,14.0,3.0,4.0,3.0,7.0,PrimeiraLiga
+2022-03-18,Vizela,Famalicao,1,1,22.0,11.0,7.0,4.0,7.0,4.0,PrimeiraLiga
+2022-03-19,Tondela,Arouca,2,2,6.0,12.0,4.0,5.0,4.0,3.0,PrimeiraLiga
+2022-03-19,Santa Clara,Belenenses,0,0,10.0,7.0,3.0,1.0,7.0,8.0,PrimeiraLiga
+2022-03-19,Guimaraes,Sp Lisbon,1,3,12.0,15.0,4.0,6.0,2.0,3.0,PrimeiraLiga
+2022-03-20,Boavista,Porto,0,1,9.0,10.0,1.0,4.0,3.0,5.0,PrimeiraLiga
+2022-03-20,Portimonense,Sp Braga,1,2,13.0,17.0,7.0,6.0,7.0,9.0,PrimeiraLiga
+2022-03-20,Gil Vicente,Maritimo,1,1,15.0,12.0,8.0,3.0,8.0,6.0,PrimeiraLiga
+2022-03-20,Pacos Ferreira,Moreirense,2,1,10.0,16.0,6.0,5.0,7.0,3.0,PrimeiraLiga
+2022-03-20,Benfica,Estoril,2,1,18.0,16.0,6.0,3.0,7.0,4.0,PrimeiraLiga
+2022-04-01,Sp Braga,Benfica,3,2,12.0,11.0,5.0,4.0,2.0,9.0,PrimeiraLiga
+2022-04-02,Belenenses,Portimonense,2,0,10.0,19.0,6.0,4.0,1.0,8.0,PrimeiraLiga
+2022-04-02,Arouca,Gil Vicente,2,1,6.0,13.0,2.0,5.0,2.0,12.0,PrimeiraLiga
+2022-04-02,Estoril,Vizela,1,2,11.0,7.0,3.0,4.0,7.0,2.0,PrimeiraLiga
+2022-04-02,Famalicao,Boavista,1,2,13.0,9.0,6.0,3.0,11.0,1.0,PrimeiraLiga
+2022-04-03,Maritimo,Tondela,1,3,9.0,14.0,3.0,6.0,9.0,4.0,PrimeiraLiga
+2022-04-03,Moreirense,Guimaraes,0,1,11.0,16.0,3.0,4.0,5.0,3.0,PrimeiraLiga
+2022-04-03,Sp Lisbon,Pacos Ferreira,2,0,17.0,1.0,6.0,0.0,5.0,2.0,PrimeiraLiga
+2022-04-04,Porto,Santa Clara,3,0,16.0,5.0,6.0,1.0,7.0,3.0,PrimeiraLiga
+2022-04-08,Gil Vicente,Moreirense,1,2,23.0,14.0,5.0,7.0,11.0,3.0,PrimeiraLiga
+2022-04-09,Tondela,Sp Lisbon,1,3,3.0,17.0,2.0,9.0,1.0,9.0,PrimeiraLiga
+2022-04-09,Boavista,Arouca,1,0,14.0,16.0,5.0,1.0,3.0,3.0,PrimeiraLiga
+2022-04-09,Pacos Ferreira,Maritimo,2,0,14.0,15.0,6.0,4.0,5.0,2.0,PrimeiraLiga
+2022-04-09,Benfica,Belenenses,3,1,27.0,8.0,8.0,2.0,11.0,6.0,PrimeiraLiga
+2022-04-10,Portimonense,Famalicao,1,0,15.0,7.0,6.0,2.0,7.0,2.0,PrimeiraLiga
+2022-04-10,Santa Clara,Estoril,2,0,7.0,14.0,4.0,4.0,5.0,1.0,PrimeiraLiga
+2022-04-10,Guimaraes,Porto,0,1,4.0,13.0,1.0,4.0,3.0,1.0,PrimeiraLiga
+2022-04-10,Vizela,Sp Braga,0,1,14.0,10.0,2.0,4.0,2.0,8.0,PrimeiraLiga
+2022-04-15,Guimaraes,Pacos Ferreira,4,0,18.0,7.0,8.0,0.0,2.0,4.0,PrimeiraLiga
+2022-04-15,Arouca,Santa Clara,1,1,17.0,9.0,7.0,2.0,7.0,7.0,PrimeiraLiga
+2022-04-15,Famalicao,Gil Vicente,2,2,10.0,16.0,3.0,5.0,3.0,7.0,PrimeiraLiga
+2022-04-16,Moreirense,Tondela,2,0,12.0,3.0,3.0,1.0,4.0,1.0,PrimeiraLiga
+2022-04-16,Belenenses,Vizela,1,0,6.0,15.0,3.0,3.0,2.0,7.0,PrimeiraLiga
+2022-04-16,Maritimo,Boavista,4,0,8.0,4.0,5.0,0.0,1.0,1.0,PrimeiraLiga
+2022-04-16,Porto,Portimonense,7,0,26.0,3.0,12.0,2.0,9.0,1.0,PrimeiraLiga
+2022-04-17,Sp Lisbon,Benfica,0,2,16.0,10.0,4.0,4.0,7.0,5.0,PrimeiraLiga
+2022-04-18,Estoril,Sp Braga,0,0,15.0,13.0,6.0,2.0,7.0,5.0,PrimeiraLiga
+2022-04-22,Vizela,Arouca,2,1,16.0,14.0,6.0,5.0,6.0,2.0,PrimeiraLiga
+2022-04-23,Gil Vicente,Pacos Ferreira,1,1,16.0,10.0,3.0,2.0,6.0,2.0,PrimeiraLiga
+2022-04-23,Santa Clara,Maritimo,2,2,10.0,10.0,3.0,3.0,3.0,10.0,PrimeiraLiga
+2022-04-23,Portimonense,Moreirense,1,0,19.0,15.0,7.0,7.0,6.0,6.0,PrimeiraLiga
+2022-04-23,Benfica,Famalicao,0,0,25.0,4.0,5.0,0.0,8.0,5.0,PrimeiraLiga
+2022-04-24,Estoril,Belenenses,2,2,6.0,23.0,2.0,4.0,2.0,8.0,PrimeiraLiga
+2022-04-24,Tondela,Guimaraes,1,1,11.0,10.0,5.0,3.0,4.0,3.0,PrimeiraLiga
+2022-04-25,Sp Braga,Porto,1,0,9.0,19.0,5.0,3.0,2.0,10.0,PrimeiraLiga
+2022-04-25,Boavista,Sp Lisbon,0,3,10.0,10.0,1.0,5.0,2.0,3.0,PrimeiraLiga
+2022-04-29,Famalicao,Estoril,3,1,25.0,9.0,7.0,3.0,7.0,3.0,PrimeiraLiga
+2022-04-30,Belenenses,Sp Braga,0,1,9.0,25.0,1.0,9.0,2.0,6.0,PrimeiraLiga
+2022-04-30,Arouca,Portimonense,1,0,15.0,7.0,6.0,4.0,5.0,7.0,PrimeiraLiga
+2022-04-30,Maritimo,Benfica,0,1,14.0,15.0,5.0,4.0,5.0,6.0,PrimeiraLiga
+2022-04-30,Porto,Vizela,4,2,17.0,3.0,8.0,2.0,8.0,2.0,PrimeiraLiga
+2022-05-01,Moreirense,Boavista,1,2,14.0,8.0,2.0,2.0,5.0,3.0,PrimeiraLiga
+2022-05-01,Sp Lisbon,Gil Vicente,4,1,22.0,3.0,13.0,1.0,13.0,2.0,PrimeiraLiga
+2022-05-01,Guimaraes,Santa Clara,1,1,7.0,3.0,1.0,1.0,4.0,3.0,PrimeiraLiga
+2022-05-02,Pacos Ferreira,Tondela,1,1,19.0,8.0,5.0,3.0,7.0,0.0,PrimeiraLiga
+2022-05-06,Boavista,Guimaraes,1,1,16.0,13.0,6.0,5.0,5.0,7.0,PrimeiraLiga
+2022-05-07,Estoril,Moreirense,1,0,6.0,18.0,2.0,5.0,2.0,8.0,PrimeiraLiga
+2022-05-07,Benfica,Porto,0,1,9.0,10.0,2.0,5.0,5.0,3.0,PrimeiraLiga
+2022-05-07,Portimonense,Sp Lisbon,2,3,5.0,28.0,3.0,8.0,1.0,8.0,PrimeiraLiga
+2022-05-08,Gil Vicente,Tondela,3,0,8.0,5.0,4.0,3.0,8.0,0.0,PrimeiraLiga
+2022-05-08,Vizela,Maritimo,1,1,11.0,10.0,3.0,3.0,2.0,8.0,PrimeiraLiga
+2022-05-08,Sp Braga,Arouca,1,0,12.0,14.0,2.0,4.0,4.0,8.0,PrimeiraLiga
+2022-05-08,Santa Clara,Pacos Ferreira,2,0,20.0,3.0,7.0,0.0,10.0,0.0,PrimeiraLiga
+2022-05-09,Belenenses,Famalicao,2,3,14.0,14.0,5.0,4.0,7.0,5.0,PrimeiraLiga
+2022-05-13,Pacos Ferreira,Benfica,0,2,12.0,15.0,4.0,8.0,6.0,4.0,PrimeiraLiga
+2022-05-14,Porto,Estoril,2,0,21.0,7.0,5.0,1.0,12.0,6.0,PrimeiraLiga
+2022-05-14,Maritimo,Portimonense,0,1,11.0,15.0,6.0,4.0,4.0,2.0,PrimeiraLiga
+2022-05-14,Sp Lisbon,Santa Clara,4,0,23.0,10.0,9.0,1.0,10.0,5.0,PrimeiraLiga
+2022-05-14,Moreirense,Vizela,4,1,12.0,6.0,6.0,2.0,4.0,7.0,PrimeiraLiga
+2022-05-14,Arouca,Belenenses,0,0,22.0,10.0,7.0,3.0,8.0,4.0,PrimeiraLiga
+2022-05-14,Tondela,Boavista,2,2,11.0,14.0,8.0,5.0,4.0,5.0,PrimeiraLiga
+2022-05-15,Famalicao,Sp Braga,3,2,21.0,11.0,11.0,6.0,6.0,4.0,PrimeiraLiga
+2022-05-15,Guimaraes,Gil Vicente,5,0,15.0,8.0,8.0,4.0,1.0,3.0,PrimeiraLiga
+2022-08-05,Benfica,Arouca,4,0,20.0,3.0,6.0,2.0,6.0,1.0,PrimeiraLiga
+2022-08-06,Estoril,Famalicao,2,0,10.0,15.0,5.0,5.0,1.0,2.0,PrimeiraLiga
+2022-08-06,Porto,Maritimo,5,1,22.0,9.0,7.0,3.0,4.0,4.0,PrimeiraLiga
+2022-08-06,Rio Ave,Vizela,0,1,7.0,12.0,0.0,7.0,6.0,7.0,PrimeiraLiga
+2022-08-07,Santa Clara,Casa Pia,0,0,7.0,11.0,3.0,3.0,7.0,6.0,PrimeiraLiga
+2022-08-07,Sp Braga,Sp Lisbon,3,3,15.0,11.0,7.0,4.0,3.0,3.0,PrimeiraLiga
+2022-08-07,Chaves,Guimaraes,0,1,14.0,15.0,2.0,6.0,2.0,5.0,PrimeiraLiga
+2022-08-07,Portimonense,Boavista,0,1,18.0,10.0,8.0,5.0,7.0,1.0,PrimeiraLiga
+2022-08-08,Gil Vicente,Pacos Ferreira,1,0,16.0,12.0,7.0,5.0,8.0,6.0,PrimeiraLiga
+2022-08-12,Famalicao,Sp Braga,0,3,11.0,24.0,5.0,9.0,7.0,7.0,PrimeiraLiga
+2022-08-13,Sp Lisbon,Rio Ave,3,0,20.0,3.0,6.0,1.0,7.0,1.0,PrimeiraLiga
+2022-08-13,Casa Pia,Benfica,0,1,8.0,14.0,2.0,4.0,4.0,9.0,PrimeiraLiga
+2022-08-14,Vizela,Porto,0,1,4.0,13.0,1.0,4.0,1.0,10.0,PrimeiraLiga
+2022-08-14,Guimaraes,Estoril,1,0,8.0,7.0,3.0,4.0,5.0,7.0,PrimeiraLiga
+2022-08-14,Boavista,Santa Clara,2,1,16.0,3.0,5.0,1.0,8.0,6.0,PrimeiraLiga
+2022-08-15,Pacos Ferreira,Portimonense,0,3,14.0,13.0,4.0,3.0,2.0,7.0,PrimeiraLiga
+2022-08-15,Arouca,Gil Vicente,1,0,8.0,10.0,4.0,2.0,4.0,4.0,PrimeiraLiga
+2022-08-15,Maritimo,Chaves,1,2,13.0,21.0,6.0,8.0,3.0,6.0,PrimeiraLiga
+2022-08-19,Estoril,Rio Ave,2,2,9.0,17.0,4.0,7.0,1.0,5.0,PrimeiraLiga
+2022-08-20,Santa Clara,Arouca,1,2,12.0,10.0,3.0,4.0,4.0,2.0,PrimeiraLiga
+2022-08-20,Chaves,Vizela,1,1,18.0,17.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2022-08-20,Porto,Sp Lisbon,3,0,11.0,8.0,5.0,4.0,3.0,4.0,PrimeiraLiga
+2022-08-21,Casa Pia,Boavista,2,0,6.0,11.0,4.0,4.0,2.0,2.0,PrimeiraLiga
+2022-08-21,Sp Braga,Maritimo,5,0,20.0,7.0,9.0,1.0,5.0,5.0,PrimeiraLiga
+2022-08-21,Portimonense,Guimaraes,2,1,15.0,17.0,5.0,6.0,6.0,11.0,PrimeiraLiga
+2022-08-22,Gil Vicente,Famalicao,0,0,15.0,10.0,5.0,2.0,8.0,4.0,PrimeiraLiga
+2022-08-26,Pacos Ferreira,Estoril,0,3,10.0,11.0,4.0,7.0,4.0,5.0,PrimeiraLiga
+2022-08-27,Maritimo,Portimonense,0,1,19.0,9.0,4.0,6.0,8.0,7.0,PrimeiraLiga
+2022-08-27,Boavista,Benfica,0,3,4.0,16.0,0.0,6.0,7.0,8.0,PrimeiraLiga
+2022-08-27,Sp Lisbon,Chaves,0,2,22.0,8.0,10.0,5.0,13.0,3.0,PrimeiraLiga
+2022-08-28,Famalicao,Santa Clara,1,0,12.0,13.0,4.0,2.0,6.0,4.0,PrimeiraLiga
+2022-08-28,Arouca,Sp Braga,0,6,12.0,15.0,4.0,10.0,5.0,4.0,PrimeiraLiga
+2022-08-28,Rio Ave,Porto,3,1,6.0,27.0,4.0,10.0,2.0,7.0,PrimeiraLiga
+2022-08-29,Vizela,Gil Vicente,2,2,18.0,12.0,9.0,4.0,5.0,10.0,PrimeiraLiga
+2022-08-29,Guimaraes,Casa Pia,0,1,15.0,8.0,2.0,2.0,9.0,1.0,PrimeiraLiga
+2022-08-30,Benfica,Pacos Ferreira,3,2,27.0,3.0,6.0,2.0,13.0,3.0,PrimeiraLiga
+2022-09-02,Benfica,Vizela,2,1,28.0,7.0,6.0,2.0,15.0,4.0,PrimeiraLiga
+2022-09-02,Estoril,Sp Lisbon,0,2,5.0,18.0,0.0,4.0,2.0,7.0,PrimeiraLiga
+2022-09-03,Sp Braga,Guimaraes,1,0,18.0,7.0,2.0,3.0,5.0,0.0,PrimeiraLiga
+2022-09-03,Gil Vicente,Porto,0,2,6.0,16.0,2.0,4.0,6.0,4.0,PrimeiraLiga
+2022-09-04,Casa Pia,Arouca,0,0,6.0,8.0,1.0,1.0,9.0,2.0,PrimeiraLiga
+2022-09-04,Santa Clara,Maritimo,2,1,9.0,17.0,4.0,5.0,2.0,3.0,PrimeiraLiga
+2022-09-04,Portimonense,Famalicao,1,0,9.0,13.0,1.0,1.0,7.0,5.0,PrimeiraLiga
+2022-09-05,Boavista,Pacos Ferreira,1,0,12.0,7.0,3.0,1.0,5.0,1.0,PrimeiraLiga
+2022-09-05,Chaves,Rio Ave,1,1,21.0,13.0,6.0,3.0,8.0,11.0,PrimeiraLiga
+2022-09-09,Guimaraes,Santa Clara,1,0,9.0,9.0,3.0,4.0,6.0,5.0,PrimeiraLiga
+2022-09-10,Famalicao,Benfica,0,1,4.0,13.0,2.0,7.0,1.0,5.0,PrimeiraLiga
+2022-09-10,Sp Lisbon,Portimonense,4,0,17.0,4.0,7.0,1.0,8.0,3.0,PrimeiraLiga
+2022-09-10,Porto,Chaves,3,0,19.0,8.0,7.0,1.0,9.0,3.0,PrimeiraLiga
+2022-09-11,Rio Ave,Sp Braga,2,3,17.0,24.0,5.0,11.0,7.0,8.0,PrimeiraLiga
+2022-09-11,Maritimo,Gil Vicente,1,2,18.0,22.0,4.0,5.0,10.0,8.0,PrimeiraLiga
+2022-09-11,Pacos Ferreira,Casa Pia,2,3,19.0,12.0,8.0,5.0,7.0,2.0,PrimeiraLiga
+2022-09-11,Arouca,Boavista,1,2,6.0,10.0,1.0,4.0,2.0,5.0,PrimeiraLiga
+2022-09-12,Vizela,Estoril,0,1,22.0,10.0,7.0,2.0,16.0,2.0,PrimeiraLiga
+2022-09-16,Portimonense,Chaves,1,0,15.0,17.0,6.0,4.0,9.0,7.0,PrimeiraLiga
+2022-09-17,Gil Vicente,Rio Ave,2,2,18.0,8.0,7.0,5.0,7.0,4.0,PrimeiraLiga
+2022-09-17,Santa Clara,Pacos Ferreira,1,1,8.0,7.0,2.0,4.0,5.0,8.0,PrimeiraLiga
+2022-09-17,Estoril,Porto,1,1,9.0,19.0,4.0,4.0,4.0,11.0,PrimeiraLiga
+2022-09-17,Boavista,Sp Lisbon,2,1,7.0,11.0,3.0,3.0,4.0,9.0,PrimeiraLiga
+2022-09-18,Arouca,Guimaraes,2,2,10.0,12.0,6.0,5.0,3.0,6.0,PrimeiraLiga
+2022-09-18,Benfica,Maritimo,5,0,23.0,4.0,12.0,1.0,7.0,2.0,PrimeiraLiga
+2022-09-18,Casa Pia,Famalicao,1,0,17.0,10.0,6.0,1.0,8.0,4.0,PrimeiraLiga
+2022-09-18,Sp Braga,Vizela,2,0,22.0,17.0,10.0,6.0,8.0,4.0,PrimeiraLiga
+2022-09-30,Sp Lisbon,Gil Vicente,3,1,16.0,11.0,7.0,4.0,3.0,2.0,PrimeiraLiga
+2022-09-30,Porto,Sp Braga,4,1,16.0,9.0,7.0,0.0,6.0,5.0,PrimeiraLiga
+2022-10-01,Guimaraes,Benfica,0,0,6.0,6.0,1.0,1.0,5.0,6.0,PrimeiraLiga
+2022-10-01,Chaves,Estoril,1,1,12.0,14.0,3.0,3.0,4.0,8.0,PrimeiraLiga
+2022-10-01,Vizela,Portimonense,1,0,15.0,18.0,6.0,7.0,5.0,9.0,PrimeiraLiga
+2022-10-02,Rio Ave,Santa Clara,1,0,6.0,6.0,3.0,1.0,1.0,8.0,PrimeiraLiga
+2022-10-02,Pacos Ferreira,Arouca,1,1,6.0,12.0,3.0,4.0,3.0,5.0,PrimeiraLiga
+2022-10-02,Famalicao,Boavista,4,0,8.0,10.0,4.0,1.0,1.0,5.0,PrimeiraLiga
+2022-10-03,Maritimo,Casa Pia,1,2,19.0,10.0,3.0,2.0,10.0,3.0,PrimeiraLiga
+2022-10-07,Gil Vicente,Estoril,0,1,12.0,11.0,3.0,3.0,7.0,3.0,PrimeiraLiga
+2022-10-08,Santa Clara,Sp Lisbon,1,2,9.0,11.0,6.0,3.0,3.0,5.0,PrimeiraLiga
+2022-10-08,Benfica,Rio Ave,4,2,32.0,8.0,10.0,3.0,8.0,3.0,PrimeiraLiga
+2022-10-08,Portimonense,Porto,0,2,12.0,18.0,3.0,7.0,1.0,5.0,PrimeiraLiga
+2022-10-08,Pacos Ferreira,Guimaraes,0,1,23.0,11.0,7.0,2.0,14.0,3.0,PrimeiraLiga
+2022-10-09,Boavista,Maritimo,1,1,20.0,14.0,5.0,3.0,8.0,8.0,PrimeiraLiga
+2022-10-09,Casa Pia,Vizela,0,1,12.0,8.0,5.0,5.0,8.0,1.0,PrimeiraLiga
+2022-10-09,Sp Braga,Chaves,0,1,30.0,6.0,5.0,1.0,13.0,1.0,PrimeiraLiga
+2022-10-10,Arouca,Famalicao,4,1,14.0,11.0,7.0,5.0,3.0,5.0,PrimeiraLiga
+2022-10-21,Porto,Benfica,0,1,11.0,13.0,4.0,4.0,4.0,4.0,PrimeiraLiga
+2022-10-22,Sp Lisbon,Casa Pia,3,1,25.0,10.0,10.0,3.0,7.0,3.0,PrimeiraLiga
+2022-10-22,Famalicao,Pacos Ferreira,2,1,10.0,12.0,2.0,1.0,3.0,8.0,PrimeiraLiga
+2022-10-22,Estoril,Sp Braga,0,2,4.0,14.0,2.0,7.0,5.0,7.0,PrimeiraLiga
+2022-10-23,Maritimo,Arouca,1,1,16.0,16.0,4.0,5.0,5.0,5.0,PrimeiraLiga
+2022-10-23,Vizela,Santa Clara,0,1,18.0,12.0,3.0,2.0,5.0,2.0,PrimeiraLiga
+2022-10-23,Chaves,Gil Vicente,3,1,18.0,10.0,9.0,3.0,5.0,1.0,PrimeiraLiga
+2022-10-23,Guimaraes,Boavista,3,2,18.0,4.0,9.0,2.0,9.0,1.0,PrimeiraLiga
+2022-10-24,Rio Ave,Portimonense,1,0,11.0,12.0,4.0,3.0,3.0,2.0,PrimeiraLiga
+2022-10-28,Pacos Ferreira,Maritimo,0,1,10.0,16.0,4.0,7.0,6.0,10.0,PrimeiraLiga
+2022-10-29,Santa Clara,Porto,1,1,9.0,15.0,5.0,4.0,5.0,6.0,PrimeiraLiga
+2022-10-29,Benfica,Chaves,5,0,18.0,7.0,9.0,2.0,13.0,2.0,PrimeiraLiga
+2022-10-29,Arouca,Sp Lisbon,1,0,10.0,21.0,5.0,7.0,4.0,11.0,PrimeiraLiga
+2022-10-30,Gil Vicente,Sp Braga,0,1,8.0,14.0,3.0,6.0,5.0,8.0,PrimeiraLiga
+2022-10-30,Boavista,Vizela,2,2,12.0,7.0,4.0,5.0,6.0,1.0,PrimeiraLiga
+2022-10-30,Portimonense,Estoril,1,1,23.0,10.0,7.0,5.0,11.0,7.0,PrimeiraLiga
+2022-10-30,Casa Pia,Rio Ave,1,0,11.0,9.0,2.0,0.0,3.0,4.0,PrimeiraLiga
+2022-10-31,Guimaraes,Famalicao,3,2,13.0,9.0,6.0,4.0,1.0,7.0,PrimeiraLiga
+2022-11-04,Gil Vicente,Portimonense,1,2,19.0,17.0,6.0,7.0,4.0,3.0,PrimeiraLiga
+2022-11-05,Vizela,Arouca,0,1,25.0,7.0,6.0,2.0,11.0,2.0,PrimeiraLiga
+2022-11-05,Porto,Pacos Ferreira,4,0,18.0,9.0,7.0,3.0,4.0,6.0,PrimeiraLiga
+2022-11-05,Sp Lisbon,Guimaraes,3,0,17.0,3.0,6.0,0.0,11.0,3.0,PrimeiraLiga
+2022-11-06,Rio Ave,Boavista,1,0,7.0,7.0,1.0,1.0,4.0,4.0,PrimeiraLiga
+2022-11-06,Maritimo,Famalicao,0,0,17.0,13.0,3.0,3.0,7.0,6.0,PrimeiraLiga
+2022-11-06,Sp Braga,Casa Pia,0,1,28.0,12.0,8.0,3.0,7.0,1.0,PrimeiraLiga
+2022-11-06,Estoril,Benfica,1,5,8.0,18.0,3.0,7.0,2.0,11.0,PrimeiraLiga
+2022-11-07,Chaves,Santa Clara,0,0,13.0,18.0,4.0,2.0,4.0,6.0,PrimeiraLiga
+2022-11-12,Arouca,Rio Ave,0,1,11.0,9.0,0.0,5.0,10.0,4.0,PrimeiraLiga
+2022-11-12,Boavista,Porto,1,4,6.0,24.0,0.0,9.0,5.0,4.0,PrimeiraLiga
+2022-11-13,Casa Pia,Chaves,1,2,14.0,13.0,4.0,4.0,2.0,0.0,PrimeiraLiga
+2022-11-13,Benfica,Gil Vicente,3,1,17.0,4.0,6.0,2.0,6.0,0.0,PrimeiraLiga
+2022-11-13,Portimonense,Sp Braga,1,2,14.0,22.0,5.0,10.0,2.0,8.0,PrimeiraLiga
+2022-11-13,Guimaraes,Maritimo,1,0,12.0,6.0,4.0,3.0,1.0,6.0,PrimeiraLiga
+2022-11-13,Pacos Ferreira,Vizela,0,2,14.0,21.0,5.0,9.0,9.0,7.0,PrimeiraLiga
+2022-11-13,Famalicao,Sp Lisbon,1,2,11.0,21.0,2.0,8.0,3.0,5.0,PrimeiraLiga
+2022-11-14,Santa Clara,Estoril,3,1,15.0,16.0,9.0,1.0,6.0,7.0,PrimeiraLiga
+2022-12-23,Rio Ave,Maritimo,1,1,19.0,8.0,5.0,1.0,5.0,5.0,PrimeiraLiga
+2022-12-28,Portimonense,Casa Pia,1,2,6.0,20.0,2.0,7.0,1.0,11.0,PrimeiraLiga
+2022-12-28,Porto,Arouca,5,1,16.0,8.0,11.0,2.0,5.0,3.0,PrimeiraLiga
+2022-12-29,Gil Vicente,Santa Clara,1,0,14.0,10.0,5.0,1.0,4.0,9.0,PrimeiraLiga
+2022-12-29,Sp Lisbon,Pacos Ferreira,3,0,15.0,6.0,5.0,1.0,4.0,3.0,PrimeiraLiga
+2022-12-30,Chaves,Famalicao,0,2,19.0,15.0,3.0,6.0,5.0,3.0,PrimeiraLiga
+2022-12-30,Vizela,Guimaraes,3,0,9.0,16.0,4.0,3.0,1.0,5.0,PrimeiraLiga
+2022-12-30,Sp Braga,Benfica,3,0,15.0,10.0,6.0,3.0,4.0,8.0,PrimeiraLiga
+2023-01-05,Santa Clara,Sp Braga,0,4,3.0,26.0,0.0,13.0,1.0,6.0,PrimeiraLiga
+2023-01-06,Benfica,Portimonense,1,0,27.0,1.0,12.0,0.0,12.0,2.0,PrimeiraLiga
+2023-01-06,Famalicao,Vizela,2,1,9.0,7.0,3.0,4.0,6.0,4.0,PrimeiraLiga
+2023-01-07,Arouca,Estoril,2,0,17.0,14.0,7.0,3.0,2.0,5.0,PrimeiraLiga
+2023-01-07,Guimaraes,Rio Ave,0,0,9.0,9.0,2.0,0.0,5.0,2.0,PrimeiraLiga
+2023-01-07,Casa Pia,Porto,0,0,2.0,25.0,0.0,9.0,5.0,6.0,PrimeiraLiga
+2023-01-08,Boavista,Gil Vicente,1,0,13.0,18.0,5.0,4.0,6.0,9.0,PrimeiraLiga
+2023-01-08,Pacos Ferreira,Chaves,1,1,18.0,12.0,4.0,2.0,9.0,6.0,PrimeiraLiga
+2023-01-08,Maritimo,Sp Lisbon,1,0,9.0,10.0,2.0,1.0,3.0,8.0,PrimeiraLiga
+2023-01-13,Portimonense,Santa Clara,0,0,24.0,10.0,4.0,2.0,6.0,1.0,PrimeiraLiga
+2023-01-14,Vizela,Maritimo,3,0,18.0,8.0,9.0,1.0,7.0,4.0,PrimeiraLiga
+2023-01-14,Rio Ave,Pacos Ferreira,0,1,16.0,5.0,6.0,2.0,6.0,2.0,PrimeiraLiga
+2023-01-14,Sp Braga,Boavista,1,0,9.0,10.0,4.0,0.0,1.0,7.0,PrimeiraLiga
+2023-01-15,Chaves,Arouca,1,1,15.0,18.0,5.0,6.0,5.0,10.0,PrimeiraLiga
+2023-01-15,Benfica,Sp Lisbon,2,2,14.0,8.0,8.0,3.0,5.0,2.0,PrimeiraLiga
+2023-01-15,Porto,Famalicao,4,1,17.0,10.0,9.0,2.0,2.0,5.0,PrimeiraLiga
+2023-01-16,Estoril,Casa Pia,2,0,11.0,6.0,3.0,0.0,4.0,4.0,PrimeiraLiga
+2023-01-16,Gil Vicente,Guimaraes,2,1,9.0,11.0,6.0,2.0,3.0,0.0,PrimeiraLiga
+2023-01-20,Sp Lisbon,Vizela,2,1,21.0,8.0,8.0,3.0,8.0,1.0,PrimeiraLiga
+2023-01-20,Arouca,Portimonense,4,0,17.0,3.0,12.0,0.0,3.0,7.0,PrimeiraLiga
+2023-01-21,Santa Clara,Benfica,0,3,8.0,12.0,1.0,5.0,8.0,9.0,PrimeiraLiga
+2023-01-21,Guimaraes,Porto,0,1,9.0,14.0,0.0,2.0,3.0,6.0,PrimeiraLiga
+2023-01-21,Pacos Ferreira,Sp Braga,1,2,11.0,15.0,5.0,10.0,4.0,10.0,PrimeiraLiga
+2023-01-22,Casa Pia,Gil Vicente,1,3,14.0,12.0,5.0,7.0,6.0,4.0,PrimeiraLiga
+2023-01-22,Famalicao,Rio Ave,0,0,19.0,14.0,5.0,2.0,4.0,3.0,PrimeiraLiga
+2023-01-22,Maritimo,Estoril,1,0,11.0,11.0,2.0,2.0,4.0,5.0,PrimeiraLiga
+2023-01-23,Boavista,Chaves,1,1,18.0,7.0,3.0,3.0,11.0,5.0,PrimeiraLiga
+2023-01-26,Pacos Ferreira,Benfica,0,2,12.0,13.0,3.0,6.0,1.0,10.0,PrimeiraLiga
+2023-01-29,Casa Pia,Santa Clara,2,1,19.0,6.0,8.0,3.0,8.0,3.0,PrimeiraLiga
+2023-01-29,Vizela,Rio Ave,3,1,12.0,13.0,7.0,2.0,3.0,8.0,PrimeiraLiga
+2023-01-29,Boavista,Portimonense,4,2,18.0,7.0,10.0,3.0,7.0,6.0,PrimeiraLiga
+2023-01-29,Famalicao,Estoril,1,0,16.0,16.0,6.0,6.0,5.0,7.0,PrimeiraLiga
+2023-01-30,Guimaraes,Chaves,2,1,18.0,16.0,6.0,4.0,7.0,6.0,PrimeiraLiga
+2023-01-31,Pacos Ferreira,Gil Vicente,2,1,21.0,10.0,8.0,4.0,11.0,12.0,PrimeiraLiga
+2023-01-31,Arouca,Benfica,0,3,6.0,5.0,0.0,3.0,3.0,3.0,PrimeiraLiga
+2023-02-01,Maritimo,Porto,0,2,10.0,9.0,2.0,4.0,5.0,1.0,PrimeiraLiga
+2023-02-01,Sp Lisbon,Sp Braga,5,0,22.0,4.0,9.0,4.0,10.0,1.0,PrimeiraLiga
+2023-02-04,Santa Clara,Boavista,2,2,11.0,6.0,3.0,4.0,7.0,7.0,PrimeiraLiga
+2023-02-04,Benfica,Casa Pia,3,0,16.0,7.0,5.0,0.0,4.0,4.0,PrimeiraLiga
+2023-02-04,Estoril,Guimaraes,0,1,15.0,12.0,4.0,3.0,4.0,5.0,PrimeiraLiga
+2023-02-05,Porto,Vizela,2,0,15.0,10.0,4.0,3.0,7.0,5.0,PrimeiraLiga
+2023-02-05,Gil Vicente,Arouca,1,1,17.0,12.0,7.0,6.0,13.0,4.0,PrimeiraLiga
+2023-02-05,Chaves,Maritimo,2,1,5.0,15.0,5.0,3.0,3.0,6.0,PrimeiraLiga
+2023-02-05,Sp Braga,Famalicao,4,1,14.0,6.0,4.0,1.0,6.0,2.0,PrimeiraLiga
+2023-02-06,Portimonense,Pacos Ferreira,1,0,15.0,8.0,3.0,4.0,10.0,2.0,PrimeiraLiga
+2023-02-06,Rio Ave,Sp Lisbon,0,1,5.0,8.0,1.0,1.0,4.0,2.0,PrimeiraLiga
+2023-02-09,Estoril,Boavista,2,1,27.0,5.0,13.0,4.0,11.0,0.0,PrimeiraLiga
+2023-02-10,Vizela,Chaves,0,0,15.0,15.0,4.0,5.0,5.0,6.0,PrimeiraLiga
+2023-02-11,Arouca,Santa Clara,1,0,9.0,4.0,4.0,0.0,3.0,3.0,PrimeiraLiga
+2023-02-11,Guimaraes,Portimonense,1,0,9.0,8.0,4.0,3.0,5.0,2.0,PrimeiraLiga
+2023-02-12,Maritimo,Sp Braga,1,2,18.0,9.0,6.0,3.0,5.0,5.0,PrimeiraLiga
+2023-02-12,Famalicao,Gil Vicente,0,1,16.0,16.0,3.0,3.0,4.0,6.0,PrimeiraLiga
+2023-02-12,Sp Lisbon,Porto,1,2,15.0,10.0,5.0,3.0,8.0,4.0,PrimeiraLiga
+2023-02-13,Rio Ave,Estoril,2,0,10.0,16.0,3.0,3.0,2.0,9.0,PrimeiraLiga
+2023-02-13,Boavista,Casa Pia,0,0,10.0,6.0,3.0,2.0,7.0,3.0,PrimeiraLiga
+2023-02-17,Gil Vicente,Vizela,1,1,16.0,13.0,6.0,4.0,10.0,2.0,PrimeiraLiga
+2023-02-18,Porto,Rio Ave,1,0,14.0,11.0,4.0,4.0,8.0,2.0,PrimeiraLiga
+2023-02-18,Estoril,Pacos Ferreira,1,3,13.0,17.0,4.0,5.0,5.0,7.0,PrimeiraLiga
+2023-02-18,Portimonense,Maritimo,2,1,11.0,8.0,3.0,2.0,8.0,1.0,PrimeiraLiga
+2023-02-19,Casa Pia,Guimaraes,0,0,11.0,9.0,2.0,0.0,3.0,4.0,PrimeiraLiga
+2023-02-19,Sp Braga,Arouca,2,0,7.0,13.0,4.0,3.0,4.0,3.0,PrimeiraLiga
+2023-02-19,Santa Clara,Famalicao,1,3,16.0,17.0,7.0,7.0,3.0,6.0,PrimeiraLiga
+2023-02-20,Chaves,Sp Lisbon,2,3,13.0,16.0,5.0,8.0,4.0,4.0,PrimeiraLiga
+2023-02-20,Benfica,Boavista,3,1,18.0,5.0,10.0,2.0,8.0,5.0,PrimeiraLiga
+2023-02-24,Famalicao,Portimonense,1,0,21.0,17.0,6.0,7.0,7.0,8.0,PrimeiraLiga
+2023-02-25,Arouca,Casa Pia,2,0,9.0,11.0,3.0,3.0,1.0,11.0,PrimeiraLiga
+2023-02-25,Maritimo,Santa Clara,3,1,26.0,11.0,7.0,6.0,9.0,4.0,PrimeiraLiga
+2023-02-25,Vizela,Benfica,0,2,9.0,11.0,3.0,6.0,6.0,5.0,PrimeiraLiga
+2023-02-26,Rio Ave,Chaves,1,0,10.0,11.0,3.0,6.0,4.0,8.0,PrimeiraLiga
+2023-02-26,Pacos Ferreira,Boavista,1,3,15.0,12.0,6.0,4.0,9.0,10.0,PrimeiraLiga
+2023-02-26,Porto,Gil Vicente,1,2,11.0,9.0,4.0,4.0,3.0,0.0,PrimeiraLiga
+2023-02-27,Sp Lisbon,Estoril,2,0,17.0,3.0,8.0,0.0,14.0,5.0,PrimeiraLiga
+2023-02-27,Guimaraes,Sp Braga,2,1,9.0,13.0,2.0,4.0,3.0,5.0,PrimeiraLiga
+2023-03-03,Boavista,Arouca,0,0,10.0,8.0,2.0,1.0,6.0,1.0,PrimeiraLiga
+2023-03-03,Benfica,Famalicao,2,0,19.0,7.0,7.0,0.0,7.0,2.0,PrimeiraLiga
+2023-03-04,Portimonense,Sp Lisbon,0,1,6.0,21.0,4.0,7.0,3.0,7.0,PrimeiraLiga
+2023-03-04,Chaves,Porto,1,3,13.0,13.0,4.0,5.0,4.0,8.0,PrimeiraLiga
+2023-03-04,Estoril,Vizela,0,3,10.0,6.0,2.0,3.0,8.0,0.0,PrimeiraLiga
+2023-03-05,Gil Vicente,Maritimo,2,0,11.0,19.0,5.0,6.0,12.0,8.0,PrimeiraLiga
+2023-03-05,Santa Clara,Guimaraes,1,3,16.0,11.0,5.0,6.0,7.0,6.0,PrimeiraLiga
+2023-03-05,Sp Braga,Rio Ave,2,0,21.0,10.0,11.0,4.0,9.0,4.0,PrimeiraLiga
+2023-03-06,Casa Pia,Pacos Ferreira,2,1,9.0,14.0,4.0,2.0,4.0,2.0,PrimeiraLiga
+2023-03-10,Porto,Estoril,3,2,12.0,9.0,5.0,3.0,6.0,3.0,PrimeiraLiga
+2023-03-11,Guimaraes,Arouca,0,2,25.0,9.0,8.0,4.0,12.0,0.0,PrimeiraLiga
+2023-03-11,Chaves,Portimonense,2,0,13.0,19.0,8.0,2.0,3.0,7.0,PrimeiraLiga
+2023-03-11,Pacos Ferreira,Santa Clara,1,0,15.0,11.0,4.0,4.0,9.0,2.0,PrimeiraLiga
+2023-03-11,Vizela,Sp Braga,0,4,13.0,13.0,1.0,7.0,3.0,3.0,PrimeiraLiga
+2023-03-12,Rio Ave,Gil Vicente,2,1,14.0,17.0,5.0,6.0,3.0,11.0,PrimeiraLiga
+2023-03-12,Maritimo,Benfica,0,3,8.0,21.0,2.0,10.0,2.0,10.0,PrimeiraLiga
+2023-03-12,Sp Lisbon,Boavista,3,0,16.0,2.0,5.0,0.0,4.0,1.0,PrimeiraLiga
+2023-03-13,Famalicao,Casa Pia,1,0,16.0,11.0,4.0,2.0,3.0,5.0,PrimeiraLiga
+2023-03-17,Santa Clara,Rio Ave,0,2,9.0,17.0,1.0,8.0,2.0,7.0,PrimeiraLiga
+2023-03-18,Estoril,Chaves,0,2,9.0,15.0,3.0,5.0,3.0,7.0,PrimeiraLiga
+2023-03-18,Benfica,Guimaraes,5,1,12.0,6.0,5.0,4.0,7.0,3.0,PrimeiraLiga
+2023-03-18,Arouca,Pacos Ferreira,1,1,17.0,14.0,5.0,4.0,6.0,7.0,PrimeiraLiga
+2023-03-18,Portimonense,Vizela,0,1,15.0,9.0,3.0,2.0,4.0,6.0,PrimeiraLiga
+2023-03-19,Casa Pia,Maritimo,2,0,16.0,17.0,5.0,3.0,5.0,10.0,PrimeiraLiga
+2023-03-19,Sp Braga,Porto,0,0,14.0,5.0,4.0,2.0,5.0,5.0,PrimeiraLiga
+2023-03-19,Boavista,Famalicao,1,2,16.0,7.0,6.0,3.0,9.0,1.0,PrimeiraLiga
+2023-03-31,Estoril,Gil Vicente,1,0,7.0,14.0,2.0,4.0,5.0,5.0,PrimeiraLiga
+2023-04-01,Vizela,Casa Pia,3,1,11.0,10.0,8.0,4.0,10.0,3.0,PrimeiraLiga
+2023-04-01,Guimaraes,Pacos Ferreira,0,0,17.0,9.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2023-04-01,Sp Lisbon,Santa Clara,3,0,14.0,10.0,5.0,4.0,6.0,2.0,PrimeiraLiga
+2023-04-02,Chaves,Sp Braga,1,2,14.0,17.0,8.0,8.0,7.0,5.0,PrimeiraLiga
+2023-04-02,Maritimo,Boavista,4,2,11.0,11.0,6.0,6.0,3.0,9.0,PrimeiraLiga
+2023-04-02,Rio Ave,Benfica,0,1,10.0,12.0,4.0,5.0,3.0,6.0,PrimeiraLiga
+2023-04-02,Porto,Portimonense,1,0,17.0,6.0,6.0,0.0,10.0,3.0,PrimeiraLiga
+2023-04-03,Famalicao,Arouca,0,1,18.0,9.0,1.0,2.0,7.0,1.0,PrimeiraLiga
+2023-04-05,Gil Vicente,Sp Lisbon,0,0,8.0,12.0,2.0,7.0,1.0,3.0,PrimeiraLiga
+2023-04-07,Boavista,Guimaraes,2,1,12.0,10.0,4.0,4.0,7.0,7.0,PrimeiraLiga
+2023-04-07,Benfica,Porto,1,2,7.0,7.0,1.0,3.0,4.0,5.0,PrimeiraLiga
+2023-04-07,Santa Clara,Vizela,0,1,10.0,5.0,2.0,3.0,2.0,4.0,PrimeiraLiga
+2023-04-08,Arouca,Maritimo,1,0,11.0,15.0,2.0,6.0,7.0,11.0,PrimeiraLiga
+2023-04-08,Pacos Ferreira,Famalicao,1,3,13.0,9.0,2.0,5.0,10.0,4.0,PrimeiraLiga
+2023-04-08,Portimonense,Rio Ave,2,2,17.0,18.0,6.0,8.0,8.0,4.0,PrimeiraLiga
+2023-04-08,Sp Braga,Estoril,4,1,16.0,6.0,6.0,3.0,7.0,2.0,PrimeiraLiga
+2023-04-09,Casa Pia,Sp Lisbon,3,4,8.0,20.0,5.0,12.0,1.0,18.0,PrimeiraLiga
+2023-04-10,Gil Vicente,Chaves,0,0,15.0,16.0,4.0,5.0,14.0,5.0,PrimeiraLiga
+2023-04-14,Famalicao,Guimaraes,2,1,10.0,16.0,3.0,5.0,3.0,10.0,PrimeiraLiga
+2023-04-15,Estoril,Portimonense,0,1,13.0,15.0,3.0,5.0,10.0,5.0,PrimeiraLiga
+2023-04-15,Maritimo,Pacos Ferreira,3,1,12.0,7.0,6.0,3.0,2.0,5.0,PrimeiraLiga
+2023-04-15,Chaves,Benfica,1,0,9.0,19.0,2.0,4.0,3.0,19.0,PrimeiraLiga
+2023-04-15,Porto,Santa Clara,2,1,12.0,8.0,4.0,2.0,4.0,4.0,PrimeiraLiga
+2023-04-16,Rio Ave,Casa Pia,1,1,10.0,7.0,4.0,2.0,5.0,8.0,PrimeiraLiga
+2023-04-16,Sp Braga,Gil Vicente,1,0,19.0,10.0,10.0,3.0,10.0,5.0,PrimeiraLiga
+2023-04-16,Sp Lisbon,Arouca,1,1,26.0,4.0,5.0,2.0,7.0,0.0,PrimeiraLiga
+2023-04-17,Vizela,Boavista,1,1,9.0,14.0,5.0,6.0,8.0,3.0,PrimeiraLiga
+2023-04-21,Casa Pia,Sp Braga,0,1,6.0,15.0,1.0,6.0,3.0,6.0,PrimeiraLiga
+2023-04-22,Famalicao,Maritimo,3,2,25.0,8.0,7.0,6.0,9.0,4.0,PrimeiraLiga
+2023-04-22,Boavista,Rio Ave,3,2,14.0,7.0,6.0,3.0,2.0,2.0,PrimeiraLiga
+2023-04-22,Pacos Ferreira,Porto,0,2,8.0,10.0,0.0,4.0,2.0,5.0,PrimeiraLiga
+2023-04-23,Portimonense,Gil Vicente,1,0,10.0,20.0,4.0,4.0,1.0,12.0,PrimeiraLiga
+2023-04-23,Benfica,Estoril,1,0,19.0,4.0,5.0,0.0,11.0,2.0,PrimeiraLiga
+2023-04-23,Santa Clara,Chaves,1,1,19.0,13.0,6.0,5.0,2.0,12.0,PrimeiraLiga
+2023-04-23,Arouca,Vizela,1,0,7.0,15.0,2.0,8.0,0.0,14.0,PrimeiraLiga
+2023-04-24,Guimaraes,Sp Lisbon,0,2,7.0,13.0,0.0,5.0,5.0,5.0,PrimeiraLiga
+2023-04-28,Rio Ave,Arouca,1,0,11.0,11.0,2.0,2.0,4.0,4.0,PrimeiraLiga
+2023-04-29,Maritimo,Guimaraes,1,2,21.0,11.0,6.0,5.0,5.0,3.0,PrimeiraLiga
+2023-04-29,Sp Braga,Portimonense,4,1,18.0,8.0,11.0,2.0,4.0,0.0,PrimeiraLiga
+2023-04-29,Chaves,Casa Pia,1,0,16.0,16.0,5.0,4.0,10.0,3.0,PrimeiraLiga
+2023-04-29,Vizela,Pacos Ferreira,1,2,14.0,7.0,3.0,2.0,7.0,8.0,PrimeiraLiga
+2023-04-29,Gil Vicente,Benfica,0,2,13.0,17.0,5.0,7.0,7.0,11.0,PrimeiraLiga
+2023-04-30,Sp Lisbon,Famalicao,2,1,11.0,10.0,5.0,2.0,8.0,4.0,PrimeiraLiga
+2023-04-30,Porto,Boavista,1,0,10.0,7.0,1.0,2.0,6.0,4.0,PrimeiraLiga
+2023-04-30,Estoril,Santa Clara,3,0,7.0,10.0,3.0,3.0,3.0,4.0,PrimeiraLiga
+2023-05-05,Casa Pia,Portimonense,1,1,17.0,10.0,3.0,2.0,4.0,4.0,PrimeiraLiga
+2023-05-06,Santa Clara,Gil Vicente,3,2,14.0,15.0,8.0,3.0,4.0,5.0,PrimeiraLiga
+2023-05-06,Boavista,Estoril,1,0,13.0,6.0,3.0,2.0,6.0,3.0,PrimeiraLiga
+2023-05-06,Benfica,Sp Braga,1,0,20.0,5.0,4.0,0.0,7.0,1.0,PrimeiraLiga
+2023-05-07,Maritimo,Rio Ave,2,2,28.0,7.0,6.0,3.0,13.0,1.0,PrimeiraLiga
+2023-05-07,Guimaraes,Vizela,3,0,13.0,6.0,5.0,0.0,6.0,4.0,PrimeiraLiga
+2023-05-07,Pacos Ferreira,Sp Lisbon,0,4,7.0,16.0,0.0,8.0,0.0,6.0,PrimeiraLiga
+2023-05-08,Famalicao,Chaves,1,2,19.0,12.0,6.0,3.0,11.0,6.0,PrimeiraLiga
+2023-05-08,Arouca,Porto,0,1,8.0,12.0,2.0,4.0,1.0,8.0,PrimeiraLiga
+2023-05-12,Gil Vicente,Boavista,3,1,15.0,16.0,3.0,5.0,7.0,6.0,PrimeiraLiga
+2023-05-13,Chaves,Pacos Ferreira,2,0,16.0,16.0,0.0,3.0,5.0,8.0,PrimeiraLiga
+2023-05-13,Vizela,Famalicao,0,0,10.0,15.0,4.0,3.0,2.0,7.0,PrimeiraLiga
+2023-05-13,Portimonense,Benfica,1,5,5.0,24.0,1.0,10.0,3.0,5.0,PrimeiraLiga
+2023-05-13,Sp Lisbon,Maritimo,2,1,15.0,2.0,3.0,1.0,9.0,1.0,PrimeiraLiga
+2023-05-14,Sp Braga,Santa Clara,5,3,17.0,12.0,9.0,8.0,11.0,6.0,PrimeiraLiga
+2023-05-14,Porto,Casa Pia,2,1,19.0,8.0,8.0,2.0,13.0,3.0,PrimeiraLiga
+2023-05-14,Rio Ave,Guimaraes,0,1,12.0,9.0,3.0,3.0,9.0,8.0,PrimeiraLiga
+2023-05-15,Estoril,Arouca,2,0,10.0,16.0,4.0,4.0,4.0,2.0,PrimeiraLiga
+2023-05-19,Maritimo,Vizela,1,0,18.0,9.0,5.0,3.0,5.0,6.0,PrimeiraLiga
+2023-05-20,Arouca,Chaves,1,0,11.0,9.0,6.0,3.0,4.0,6.0,PrimeiraLiga
+2023-05-20,Santa Clara,Portimonense,1,0,21.0,2.0,3.0,0.0,9.0,6.0,PrimeiraLiga
+2023-05-20,Boavista,Sp Braga,1,1,6.0,10.0,1.0,1.0,2.0,3.0,PrimeiraLiga
+2023-05-20,Famalicao,Porto,2,4,7.0,11.0,5.0,7.0,1.0,1.0,PrimeiraLiga
+2023-05-21,Guimaraes,Gil Vicente,1,0,15.0,11.0,5.0,2.0,3.0,6.0,PrimeiraLiga
+2023-05-21,Casa Pia,Estoril,2,2,25.0,12.0,10.0,3.0,3.0,3.0,PrimeiraLiga
+2023-05-21,Pacos Ferreira,Rio Ave,3,1,9.0,14.0,5.0,7.0,5.0,6.0,PrimeiraLiga
+2023-05-21,Sp Lisbon,Benfica,2,2,13.0,19.0,7.0,4.0,7.0,7.0,PrimeiraLiga
+2023-05-26,Rio Ave,Famalicao,2,2,22.0,11.0,5.0,2.0,8.0,4.0,PrimeiraLiga
+2023-05-26,Vizela,Sp Lisbon,1,2,6.0,13.0,3.0,2.0,2.0,8.0,PrimeiraLiga
+2023-05-27,Sp Braga,Pacos Ferreira,3,0,20.0,12.0,4.0,1.0,6.0,9.0,PrimeiraLiga
+2023-05-27,Porto,Guimaraes,3,0,20.0,4.0,6.0,0.0,8.0,2.0,PrimeiraLiga
+2023-05-27,Portimonense,Arouca,0,2,10.0,16.0,3.0,6.0,3.0,7.0,PrimeiraLiga
+2023-05-27,Estoril,Maritimo,3,1,12.0,18.0,3.0,6.0,4.0,5.0,PrimeiraLiga
+2023-05-27,Chaves,Boavista,1,4,10.0,20.0,5.0,3.0,1.0,4.0,PrimeiraLiga
+2023-05-27,Gil Vicente,Casa Pia,1,0,11.0,13.0,5.0,6.0,4.0,1.0,PrimeiraLiga
+2023-05-27,Benfica,Santa Clara,3,0,9.0,9.0,4.0,6.0,4.0,4.0,PrimeiraLiga
+2023-08-11,Sp Braga,Famalicao,1,2,13.0,12.0,2.0,4.0,3.0,4.0,PrimeiraLiga
+2023-08-12,Gil Vicente,Portimonense,5,0,8.0,9.0,5.0,3.0,1.0,1.0,PrimeiraLiga
+2023-08-12,Farense,Casa Pia,0,3,12.0,14.0,5.0,5.0,5.0,6.0,PrimeiraLiga
+2023-08-12,Sp Lisbon,Vizela,3,2,19.0,10.0,6.0,4.0,8.0,3.0,PrimeiraLiga
+2023-08-13,Rio Ave,Chaves,2,0,21.0,6.0,8.0,1.0,14.0,3.0,PrimeiraLiga
+2023-08-13,Estrela,Guimaraes,0,1,5.0,11.0,0.0,3.0,3.0,10.0,PrimeiraLiga
+2023-08-13,Arouca,Estoril,4,3,11.0,12.0,5.0,8.0,2.0,6.0,PrimeiraLiga
+2023-08-14,Moreirense,Porto,1,2,8.0,18.0,1.0,7.0,5.0,10.0,PrimeiraLiga
+2023-08-14,Boavista,Benfica,3,2,11.0,15.0,3.0,5.0,3.0,3.0,PrimeiraLiga
+2023-08-18,Casa Pia,Sp Lisbon,1,2,13.0,17.0,3.0,5.0,4.0,5.0,PrimeiraLiga
+2023-08-19,Portimonense,Boavista,1,4,10.0,9.0,5.0,6.0,11.0,2.0,PrimeiraLiga
+2023-08-19,Benfica,Estrela,2,0,27.0,6.0,10.0,1.0,9.0,4.0,PrimeiraLiga
+2023-08-19,Chaves,Sp Braga,2,4,15.0,13.0,4.0,6.0,5.0,6.0,PrimeiraLiga
+2023-08-19,Guimaraes,Gil Vicente,2,1,15.0,11.0,3.0,3.0,6.0,4.0,PrimeiraLiga
+2023-08-20,Estoril,Rio Ave,2,0,5.0,9.0,4.0,3.0,3.0,3.0,PrimeiraLiga
+2023-08-20,Porto,Farense,2,1,26.0,7.0,8.0,1.0,17.0,3.0,PrimeiraLiga
+2023-08-20,Vizela,Arouca,2,2,13.0,9.0,7.0,2.0,6.0,3.0,PrimeiraLiga
+2023-08-21,Famalicao,Moreirense,0,0,4.0,12.0,2.0,3.0,3.0,6.0,PrimeiraLiga
+2023-08-25,Estrela,Estoril,2,1,15.0,11.0,3.0,4.0,8.0,8.0,PrimeiraLiga
+2023-08-26,Gil Vicente,Benfica,2,3,11.0,14.0,7.0,7.0,1.0,5.0,PrimeiraLiga
+2023-08-26,Farense,Chaves,5,0,18.0,19.0,10.0,7.0,7.0,4.0,PrimeiraLiga
+2023-08-26,Arouca,Portimonense,1,1,21.0,5.0,4.0,2.0,16.0,2.0,PrimeiraLiga
+2023-08-27,Boavista,Casa Pia,1,1,10.0,10.0,5.0,7.0,11.0,4.0,PrimeiraLiga
+2023-08-27,Guimaraes,Vizela,2,0,6.0,9.0,3.0,4.0,3.0,4.0,PrimeiraLiga
+2023-08-27,Sp Lisbon,Famalicao,1,0,10.0,7.0,6.0,1.0,8.0,1.0,PrimeiraLiga
+2023-08-28,Rio Ave,Porto,1,2,4.0,9.0,1.0,5.0,1.0,7.0,PrimeiraLiga
+2023-09-01,Vizela,Gil Vicente,1,0,13.0,5.0,5.0,1.0,4.0,3.0,PrimeiraLiga
+2023-09-02,Benfica,Guimaraes,4,0,20.0,7.0,9.0,1.0,11.0,2.0,PrimeiraLiga
+2023-09-02,Portimonense,Estrela,1,1,15.0,10.0,4.0,1.0,3.0,7.0,PrimeiraLiga
+2023-09-02,Famalicao,Farense,1,0,21.0,6.0,4.0,1.0,12.0,4.0,PrimeiraLiga
+2023-09-02,Casa Pia,Rio Ave,1,1,10.0,11.0,5.0,5.0,12.0,0.0,PrimeiraLiga
+2023-09-03,Chaves,Moreirense,1,2,13.0,9.0,3.0,2.0,3.0,4.0,PrimeiraLiga
+2023-09-03,Estoril,Boavista,1,2,13.0,14.0,4.0,8.0,10.0,5.0,PrimeiraLiga
+2023-09-03,Porto,Arouca,1,1,12.0,10.0,3.0,2.0,5.0,2.0,PrimeiraLiga
+2023-09-03,Sp Braga,Sp Lisbon,1,1,6.0,4.0,2.0,2.0,4.0,2.0,PrimeiraLiga
+2023-09-09,Moreirense,Sp Braga,2,3,11.0,12.0,3.0,5.0,4.0,5.0,PrimeiraLiga
+2023-09-15,Estrela,Porto,0,1,9.0,10.0,1.0,4.0,10.0,6.0,PrimeiraLiga
+2023-09-16,Vizela,Benfica,1,2,12.0,17.0,2.0,7.0,2.0,3.0,PrimeiraLiga
+2023-09-16,Rio Ave,Famalicao,1,1,5.0,12.0,0.0,4.0,3.0,3.0,PrimeiraLiga
+2023-09-16,Farense,Sp Braga,3,1,16.0,17.0,4.0,7.0,7.0,3.0,PrimeiraLiga
+2023-09-17,Guimaraes,Portimonense,1,2,11.0,9.0,3.0,2.0,10.0,3.0,PrimeiraLiga
+2023-09-17,Sp Lisbon,Moreirense,3,0,20.0,7.0,9.0,1.0,8.0,2.0,PrimeiraLiga
+2023-09-17,Arouca,Casa Pia,0,1,11.0,12.0,5.0,2.0,2.0,7.0,PrimeiraLiga
+2023-09-17,Gil Vicente,Estoril,5,3,12.0,14.0,7.0,6.0,5.0,8.0,PrimeiraLiga
+2023-09-18,Boavista,Chaves,4,1,7.0,21.0,4.0,10.0,3.0,12.0,PrimeiraLiga
+2023-09-22,Famalicao,Arouca,1,0,7.0,13.0,4.0,6.0,6.0,8.0,PrimeiraLiga
+2023-09-23,Porto,Gil Vicente,2,1,20.0,12.0,7.0,4.0,6.0,3.0,PrimeiraLiga
+2023-09-23,Casa Pia,Guimaraes,0,0,10.0,14.0,2.0,3.0,8.0,9.0,PrimeiraLiga
+2023-09-23,Estoril,Vizela,2,2,16.0,11.0,6.0,7.0,5.0,3.0,PrimeiraLiga
+2023-09-23,Moreirense,Farense,1,0,15.0,10.0,3.0,2.0,11.0,3.0,PrimeiraLiga
+2023-09-24,Chaves,Estrela,2,2,17.0,10.0,8.0,3.0,9.0,5.0,PrimeiraLiga
+2023-09-24,Portimonense,Benfica,1,3,9.0,13.0,2.0,7.0,3.0,4.0,PrimeiraLiga
+2023-09-24,Sp Braga,Boavista,4,1,24.0,6.0,9.0,2.0,6.0,2.0,PrimeiraLiga
+2023-09-25,Sp Lisbon,Rio Ave,2,0,10.0,7.0,6.0,2.0,4.0,2.0,PrimeiraLiga
+2023-09-28,Estrela,Sp Braga,2,4,17.0,17.0,9.0,9.0,8.0,6.0,PrimeiraLiga
+2023-09-29,Benfica,Porto,1,0,12.0,6.0,2.0,3.0,9.0,5.0,PrimeiraLiga
+2023-09-30,Vizela,Portimonense,2,3,14.0,9.0,4.0,7.0,13.0,2.0,PrimeiraLiga
+2023-09-30,Boavista,Famalicao,2,2,10.0,7.0,6.0,3.0,2.0,4.0,PrimeiraLiga
+2023-09-30,Farense,Sp Lisbon,2,3,9.0,23.0,4.0,10.0,2.0,8.0,PrimeiraLiga
+2023-10-01,Arouca,Chaves,0,2,11.0,5.0,2.0,3.0,5.0,3.0,PrimeiraLiga
+2023-10-01,Guimaraes,Estoril,3,2,25.0,10.0,8.0,5.0,11.0,2.0,PrimeiraLiga
+2023-10-01,Rio Ave,Moreirense,0,4,10.0,11.0,4.0,6.0,4.0,2.0,PrimeiraLiga
+2023-10-02,Gil Vicente,Casa Pia,2,0,16.0,8.0,9.0,1.0,5.0,5.0,PrimeiraLiga
+2023-10-06,Moreirense,Boavista,1,1,11.0,8.0,6.0,1.0,6.0,1.0,PrimeiraLiga
+2023-10-07,Chaves,Gil Vicente,4,2,15.0,9.0,9.0,5.0,6.0,1.0,PrimeiraLiga
+2023-10-07,Farense,Vizela,0,0,20.0,17.0,6.0,6.0,14.0,6.0,PrimeiraLiga
+2023-10-07,Sp Braga,Rio Ave,2,1,33.0,9.0,11.0,3.0,16.0,1.0,PrimeiraLiga
+2023-10-07,Estoril,Benfica,0,1,16.0,21.0,4.0,5.0,4.0,7.0,PrimeiraLiga
+2023-10-08,Casa Pia,Estrela,0,1,7.0,11.0,2.0,6.0,3.0,6.0,PrimeiraLiga
+2023-10-08,Famalicao,Guimaraes,1,3,13.0,12.0,6.0,4.0,11.0,3.0,PrimeiraLiga
+2023-10-08,Porto,Portimonense,1,0,18.0,4.0,7.0,2.0,10.0,5.0,PrimeiraLiga
+2023-10-08,Sp Lisbon,Arouca,2,1,10.0,11.0,5.0,5.0,5.0,2.0,PrimeiraLiga
+2023-10-27,Arouca,Moreirense,0,1,13.0,12.0,3.0,5.0,7.0,5.0,PrimeiraLiga
+2023-10-28,Portimonense,Estoril,1,0,14.0,14.0,8.0,4.0,6.0,4.0,PrimeiraLiga
+2023-10-28,Benfica,Casa Pia,1,1,13.0,6.0,7.0,3.0,10.0,2.0,PrimeiraLiga
+2023-10-28,Guimaraes,Chaves,5,0,13.0,7.0,6.0,3.0,4.0,3.0,PrimeiraLiga
+2023-10-28,Gil Vicente,Sp Braga,3,3,13.0,18.0,6.0,7.0,4.0,9.0,PrimeiraLiga
+2023-10-29,Vizela,Porto,0,2,8.0,13.0,1.0,3.0,4.0,4.0,PrimeiraLiga
+2023-10-29,Estrela,Famalicao,1,0,12.0,9.0,4.0,1.0,3.0,2.0,PrimeiraLiga
+2023-10-29,Rio Ave,Farense,3,4,11.0,13.0,4.0,7.0,5.0,6.0,PrimeiraLiga
+2023-10-30,Boavista,Sp Lisbon,0,2,7.0,14.0,2.0,6.0,4.0,8.0,PrimeiraLiga
+2023-11-03,Porto,Estoril,0,1,16.0,7.0,4.0,3.0,9.0,6.0,PrimeiraLiga
+2023-11-04,Chaves,Benfica,0,2,8.0,14.0,0.0,5.0,3.0,8.0,PrimeiraLiga
+2023-11-04,Famalicao,Gil Vicente,3,1,12.0,9.0,5.0,4.0,7.0,2.0,PrimeiraLiga
+2023-11-04,Sp Braga,Portimonense,6,1,19.0,8.0,10.0,3.0,5.0,5.0,PrimeiraLiga
+2023-11-05,Casa Pia,Vizela,0,1,11.0,14.0,2.0,4.0,6.0,6.0,PrimeiraLiga
+2023-11-05,Moreirense,Guimaraes,1,0,12.0,10.0,3.0,2.0,4.0,12.0,PrimeiraLiga
+2023-11-05,Rio Ave,Boavista,2,0,9.0,10.0,3.0,2.0,3.0,3.0,PrimeiraLiga
+2023-11-05,Sp Lisbon,Estrela,3,2,23.0,6.0,8.0,4.0,6.0,1.0,PrimeiraLiga
+2023-11-06,Farense,Arouca,2,0,7.0,15.0,2.0,5.0,6.0,6.0,PrimeiraLiga
+2023-11-10,Estoril,Casa Pia,4,0,18.0,12.0,6.0,3.0,4.0,7.0,PrimeiraLiga
+2023-11-11,Guimaraes,Porto,1,2,14.0,7.0,8.0,4.0,10.0,6.0,PrimeiraLiga
+2023-11-11,Vizela,Famalicao,0,0,9.0,13.0,4.0,2.0,5.0,7.0,PrimeiraLiga
+2023-11-11,Portimonense,Chaves,2,1,12.0,19.0,7.0,8.0,3.0,8.0,PrimeiraLiga
+2023-11-11,Estrela,Moreirense,0,1,8.0,12.0,3.0,2.0,2.0,5.0,PrimeiraLiga
+2023-11-12,Boavista,Farense,1,3,15.0,13.0,2.0,7.0,9.0,2.0,PrimeiraLiga
+2023-11-12,Gil Vicente,Rio Ave,1,1,8.0,16.0,2.0,5.0,4.0,7.0,PrimeiraLiga
+2023-11-12,Arouca,Sp Braga,0,1,12.0,17.0,7.0,5.0,3.0,8.0,PrimeiraLiga
+2023-11-12,Benfica,Sp Lisbon,2,1,11.0,8.0,4.0,3.0,6.0,4.0,PrimeiraLiga
+2023-12-01,Chaves,Vizela,2,1,15.0,8.0,5.0,2.0,2.0,1.0,PrimeiraLiga
+2023-12-02,Farense,Guimaraes,1,2,5.0,16.0,2.0,5.0,1.0,7.0,PrimeiraLiga
+2023-12-02,Rio Ave,Estrela,1,1,13.0,8.0,3.0,0.0,7.0,0.0,PrimeiraLiga
+2023-12-02,Famalicao,Porto,0,3,12.0,9.0,0.0,5.0,7.0,2.0,PrimeiraLiga
+2023-12-02,Casa Pia,Portimonense,1,0,11.0,10.0,3.0,2.0,5.0,5.0,PrimeiraLiga
+2023-12-03,Boavista,Arouca,0,4,8.0,12.0,2.0,7.0,8.0,1.0,PrimeiraLiga
+2023-12-03,Sp Braga,Estoril,3,1,18.0,4.0,6.0,1.0,5.0,2.0,PrimeiraLiga
+2023-12-03,Moreirense,Benfica,0,0,11.0,12.0,4.0,3.0,2.0,7.0,PrimeiraLiga
+2023-12-04,Sp Lisbon,Gil Vicente,3,1,12.0,5.0,4.0,1.0,9.0,0.0,PrimeiraLiga
+2023-12-08,Benfica,Farense,1,1,37.0,8.0,13.0,5.0,15.0,3.0,PrimeiraLiga
+2023-12-08,Vizela,Sp Braga,1,3,11.0,13.0,5.0,4.0,7.0,6.0,PrimeiraLiga
+2023-12-09,Guimaraes,Sp Lisbon,3,2,7.0,11.0,5.0,4.0,1.0,6.0,PrimeiraLiga
+2023-12-09,Porto,Casa Pia,3,1,16.0,7.0,6.0,3.0,4.0,1.0,PrimeiraLiga
+2023-12-09,Portimonense,Famalicao,1,1,8.0,16.0,4.0,8.0,2.0,5.0,PrimeiraLiga
+2023-12-10,Estoril,Chaves,4,0,14.0,7.0,10.0,2.0,3.0,6.0,PrimeiraLiga
+2023-12-10,Arouca,Rio Ave,2,2,16.0,12.0,5.0,9.0,5.0,3.0,PrimeiraLiga
+2023-12-10,Estrela,Boavista,3,1,4.0,9.0,2.0,6.0,2.0,4.0,PrimeiraLiga
+2023-12-11,Gil Vicente,Moreirense,1,1,11.0,11.0,4.0,4.0,3.0,6.0,PrimeiraLiga
+2023-12-15,Farense,Estrela,0,0,12.0,9.0,1.0,2.0,6.0,9.0,PrimeiraLiga
+2023-12-16,Rio Ave,Vizela,1,1,13.0,6.0,4.0,4.0,7.0,2.0,PrimeiraLiga
+2023-12-16,Arouca,Gil Vicente,3,0,10.0,9.0,7.0,5.0,4.0,6.0,PrimeiraLiga
+2023-12-16,Boavista,Guimaraes,1,1,10.0,14.0,4.0,3.0,7.0,8.0,PrimeiraLiga
+2023-12-17,Chaves,Casa Pia,1,3,15.0,9.0,5.0,6.0,4.0,2.0,PrimeiraLiga
+2023-12-17,Moreirense,Portimonense,5,2,16.0,9.0,5.0,3.0,7.0,7.0,PrimeiraLiga
+2023-12-17,Famalicao,Estoril,1,1,10.0,12.0,3.0,5.0,1.0,7.0,PrimeiraLiga
+2023-12-17,Sp Braga,Benfica,0,1,16.0,11.0,6.0,6.0,5.0,2.0,PrimeiraLiga
+2023-12-18,Sp Lisbon,Porto,2,0,11.0,5.0,6.0,3.0,2.0,2.0,PrimeiraLiga
+2023-12-23,Guimaraes,Rio Ave,1,0,5.0,9.0,3.0,4.0,4.0,8.0,PrimeiraLiga
+2023-12-23,Vizela,Moreirense,0,0,9.0,10.0,3.0,5.0,3.0,9.0,PrimeiraLiga
+2023-12-28,Estrela,Arouca,1,4,6.0,18.0,2.0,5.0,3.0,5.0,PrimeiraLiga
+2023-12-29,Porto,Chaves,1,0,17.0,5.0,10.0,2.0,8.0,3.0,PrimeiraLiga
+2023-12-29,Benfica,Famalicao,3,0,17.0,12.0,10.0,3.0,6.0,4.0,PrimeiraLiga
+2023-12-30,Estoril,Farense,4,0,12.0,14.0,7.0,4.0,10.0,8.0,PrimeiraLiga
+2023-12-30,Gil Vicente,Boavista,1,0,11.0,8.0,3.0,1.0,4.0,3.0,PrimeiraLiga
+2023-12-30,Casa Pia,Sp Braga,1,3,7.0,11.0,3.0,6.0,2.0,3.0,PrimeiraLiga
+2023-12-30,Portimonense,Sp Lisbon,1,2,7.0,14.0,3.0,6.0,0.0,12.0,PrimeiraLiga
+2024-01-05,Sp Lisbon,Estoril,5,1,21.0,11.0,8.0,3.0,5.0,7.0,PrimeiraLiga
+2024-01-05,Boavista,Porto,1,1,7.0,24.0,2.0,7.0,1.0,6.0,PrimeiraLiga
+2024-01-06,Estrela,Vizela,1,1,12.0,16.0,4.0,7.0,6.0,4.0,PrimeiraLiga
+2024-01-06,Farense,Gil Vicente,1,0,11.0,14.0,5.0,6.0,6.0,5.0,PrimeiraLiga
+2024-01-06,Arouca,Benfica,0,3,11.0,11.0,1.0,5.0,1.0,3.0,PrimeiraLiga
+2024-01-06,Sp Braga,Guimaraes,1,1,11.0,13.0,4.0,4.0,5.0,6.0,PrimeiraLiga
+2024-01-07,Rio Ave,Portimonense,2,0,9.0,7.0,3.0,3.0,3.0,6.0,PrimeiraLiga
+2024-01-07,Famalicao,Chaves,2,2,17.0,10.0,7.0,5.0,5.0,8.0,PrimeiraLiga
+2024-01-08,Moreirense,Casa Pia,1,4,13.0,10.0,4.0,7.0,4.0,3.0,PrimeiraLiga
+2024-01-12,Portimonense,Farense,1,0,12.0,8.0,4.0,3.0,4.0,4.0,PrimeiraLiga
+2024-01-13,Chaves,Sp Lisbon,0,3,5.0,17.0,0.0,10.0,2.0,5.0,PrimeiraLiga
+2024-01-13,Estoril,Moreirense,1,3,9.0,12.0,5.0,7.0,8.0,1.0,PrimeiraLiga
+2024-01-13,Casa Pia,Famalicao,0,2,8.0,13.0,1.0,4.0,6.0,3.0,PrimeiraLiga
+2024-01-14,Gil Vicente,Estrela,1,1,9.0,15.0,2.0,6.0,7.0,5.0,PrimeiraLiga
+2024-01-14,Benfica,Rio Ave,4,1,15.0,9.0,12.0,5.0,5.0,3.0,PrimeiraLiga
+2024-01-14,Vizela,Boavista,1,4,27.0,10.0,7.0,7.0,11.0,1.0,PrimeiraLiga
+2024-01-14,Porto,Sp Braga,2,0,8.0,10.0,4.0,5.0,5.0,5.0,PrimeiraLiga
+2024-01-15,Guimaraes,Arouca,2,1,15.0,9.0,6.0,2.0,10.0,1.0,PrimeiraLiga
+2024-01-18,Famalicao,Sp Braga,1,2,11.0,12.0,3.0,7.0,3.0,4.0,PrimeiraLiga
+2024-01-18,Vizela,Sp Lisbon,2,5,4.0,18.0,3.0,9.0,0.0,6.0,PrimeiraLiga
+2024-01-19,Benfica,Boavista,2,0,20.0,5.0,7.0,1.0,12.0,4.0,PrimeiraLiga
+2024-01-20,Estoril,Arouca,1,2,13.0,15.0,4.0,7.0,7.0,4.0,PrimeiraLiga
+2024-01-20,Casa Pia,Farense,1,3,21.0,7.0,6.0,4.0,14.0,3.0,PrimeiraLiga
+2024-01-20,Porto,Moreirense,5,0,16.0,5.0,8.0,1.0,5.0,1.0,PrimeiraLiga
+2024-01-21,Portimonense,Gil Vicente,0,2,8.0,15.0,0.0,8.0,3.0,8.0,PrimeiraLiga
+2024-01-21,Chaves,Rio Ave,0,0,19.0,6.0,6.0,1.0,11.0,0.0,PrimeiraLiga
+2024-01-21,Guimaraes,Estrela,3,0,12.0,5.0,4.0,1.0,8.0,5.0,PrimeiraLiga
+2024-01-28,Moreirense,Famalicao,1,0,7.0,8.0,2.0,1.0,3.0,4.0,PrimeiraLiga
+2024-01-28,Gil Vicente,Guimaraes,1,0,7.0,8.0,4.0,2.0,4.0,4.0,PrimeiraLiga
+2024-01-28,Arouca,Vizela,5,0,13.0,9.0,7.0,3.0,1.0,2.0,PrimeiraLiga
+2024-01-28,Boavista,Portimonense,1,4,20.0,12.0,5.0,5.0,11.0,1.0,PrimeiraLiga
+2024-01-28,Farense,Porto,1,3,9.0,18.0,4.0,4.0,4.0,10.0,PrimeiraLiga
+2024-01-29,Estrela,Benfica,1,4,9.0,16.0,5.0,7.0,5.0,6.0,PrimeiraLiga
+2024-01-29,Sp Lisbon,Casa Pia,8,0,21.0,2.0,11.0,2.0,9.0,0.0,PrimeiraLiga
+2024-01-31,Rio Ave,Estoril,1,1,8.0,12.0,4.0,5.0,4.0,3.0,PrimeiraLiga
+2024-01-31,Sp Braga,Chaves,1,1,27.0,7.0,10.0,2.0,9.0,1.0,PrimeiraLiga
+2024-02-03,Portimonense,Arouca,1,2,11.0,8.0,4.0,3.0,3.0,2.0,PrimeiraLiga
+2024-02-03,Porto,Rio Ave,0,0,17.0,3.0,5.0,0.0,23.0,0.0,PrimeiraLiga
+2024-02-04,Sp Braga,Moreirense,1,0,13.0,8.0,5.0,1.0,6.0,1.0,PrimeiraLiga
+2024-02-04,Chaves,Farense,1,1,2.0,15.0,2.0,7.0,3.0,6.0,PrimeiraLiga
+2024-02-04,Vizela,Guimaraes,0,1,10.0,19.0,2.0,3.0,4.0,9.0,PrimeiraLiga
+2024-02-04,Benfica,Gil Vicente,3,0,10.0,5.0,5.0,3.0,6.0,4.0,PrimeiraLiga
+2024-02-04,Estoril,Estrela,1,0,10.0,11.0,5.0,6.0,6.0,1.0,PrimeiraLiga
+2024-02-05,Casa Pia,Boavista,0,0,5.0,4.0,0.0,0.0,4.0,3.0,PrimeiraLiga
+2024-02-09,Estrela,Portimonense,3,0,10.0,11.0,3.0,1.0,4.0,7.0,PrimeiraLiga
+2024-02-10,Boavista,Estoril,2,1,7.0,14.0,3.0,4.0,7.0,5.0,PrimeiraLiga
+2024-02-10,Moreirense,Chaves,1,0,15.0,10.0,5.0,4.0,11.0,4.0,PrimeiraLiga
+2024-02-10,Farense,Famalicao,1,1,17.0,18.0,7.0,4.0,7.0,6.0,PrimeiraLiga
+2024-02-11,Rio Ave,Casa Pia,1,0,8.0,6.0,3.0,1.0,5.0,3.0,PrimeiraLiga
+2024-02-11,Sp Lisbon,Sp Braga,5,0,12.0,7.0,5.0,1.0,3.0,7.0,PrimeiraLiga
+2024-02-11,Guimaraes,Benfica,2,2,8.0,6.0,6.0,3.0,6.0,11.0,PrimeiraLiga
+2024-02-12,Arouca,Porto,3,2,10.0,14.0,6.0,6.0,3.0,7.0,PrimeiraLiga
+2024-02-13,Gil Vicente,Vizela,0,1,16.0,8.0,4.0,2.0,8.0,3.0,PrimeiraLiga
+2024-02-16,Famalicao,Rio Ave,2,1,15.0,9.0,6.0,4.0,4.0,7.0,PrimeiraLiga
+2024-02-17,Chaves,Boavista,2,1,7.0,14.0,3.0,3.0,4.0,3.0,PrimeiraLiga
+2024-02-17,Portimonense,Guimaraes,1,1,10.0,10.0,6.0,2.0,9.0,6.0,PrimeiraLiga
+2024-02-17,Porto,Estrela,2,0,16.0,8.0,6.0,2.0,8.0,6.0,PrimeiraLiga
+2024-02-18,Casa Pia,Arouca,1,0,10.0,14.0,2.0,4.0,2.0,6.0,PrimeiraLiga
+2024-02-18,Benfica,Vizela,6,1,14.0,8.0,8.0,4.0,6.0,1.0,PrimeiraLiga
+2024-02-18,Estoril,Gil Vicente,1,3,8.0,11.0,4.0,7.0,2.0,4.0,PrimeiraLiga
+2024-02-18,Sp Braga,Farense,2,1,17.0,5.0,8.0,2.0,6.0,1.0,PrimeiraLiga
+2024-02-19,Moreirense,Sp Lisbon,0,2,4.0,16.0,0.0,7.0,5.0,4.0,PrimeiraLiga
+2024-02-23,Arouca,Famalicao,3,2,14.0,11.0,4.0,8.0,3.0,4.0,PrimeiraLiga
+2024-02-24,Farense,Moreirense,0,1,6.0,11.0,1.0,2.0,5.0,5.0,PrimeiraLiga
+2024-02-24,Estrela,Chaves,1,1,10.0,9.0,4.0,2.0,7.0,6.0,PrimeiraLiga
+2024-02-24,Guimaraes,Casa Pia,0,2,25.0,9.0,5.0,5.0,8.0,2.0,PrimeiraLiga
+2024-02-25,Vizela,Estoril,3,3,12.0,18.0,7.0,4.0,4.0,7.0,PrimeiraLiga
+2024-02-25,Benfica,Portimonense,4,0,19.0,10.0,13.0,2.0,8.0,1.0,PrimeiraLiga
+2024-02-25,Gil Vicente,Porto,1,1,7.0,14.0,1.0,5.0,2.0,4.0,PrimeiraLiga
+2024-02-25,Rio Ave,Sp Lisbon,3,3,8.0,13.0,3.0,6.0,2.0,5.0,PrimeiraLiga
+2024-02-26,Boavista,Sp Braga,0,4,8.0,11.0,3.0,5.0,1.0,3.0,PrimeiraLiga
+2024-03-01,Chaves,Arouca,1,5,11.0,7.0,5.0,5.0,4.0,2.0,PrimeiraLiga
+2024-03-02,Moreirense,Rio Ave,0,0,14.0,4.0,5.0,1.0,6.0,2.0,PrimeiraLiga
+2024-03-02,Estoril,Guimaraes,1,3,14.0,9.0,4.0,4.0,9.0,4.0,PrimeiraLiga
+2024-03-02,Sp Braga,Estrela,3,0,15.0,7.0,8.0,1.0,6.0,4.0,PrimeiraLiga
+2024-03-03,Casa Pia,Gil Vicente,0,0,11.0,9.0,3.0,2.0,2.0,4.0,PrimeiraLiga
+2024-03-03,Portimonense,Vizela,0,0,11.0,13.0,4.0,3.0,1.0,8.0,PrimeiraLiga
+2024-03-03,Sp Lisbon,Farense,3,2,17.0,8.0,5.0,5.0,12.0,1.0,PrimeiraLiga
+2024-03-03,Porto,Benfica,5,0,16.0,3.0,8.0,1.0,6.0,2.0,PrimeiraLiga
+2024-03-04,Famalicao,Boavista,1,1,7.0,5.0,1.0,3.0,9.0,5.0,PrimeiraLiga
+2024-03-08,Portimonense,Porto,0,3,7.0,16.0,2.0,6.0,1.0,13.0,PrimeiraLiga
+2024-03-08,Estrela,Casa Pia,3,1,14.0,6.0,6.0,3.0,8.0,4.0,PrimeiraLiga
+2024-03-09,Vizela,Farense,2,1,15.0,8.0,6.0,4.0,10.0,3.0,PrimeiraLiga
+2024-03-09,Boavista,Moreirense,1,0,9.0,8.0,3.0,3.0,4.0,4.0,PrimeiraLiga
+2024-03-09,Rio Ave,Sp Braga,0,0,8.0,10.0,5.0,4.0,6.0,5.0,PrimeiraLiga
+2024-03-09,Guimaraes,Famalicao,1,0,12.0,13.0,6.0,0.0,10.0,4.0,PrimeiraLiga
+2024-03-10,Arouca,Sp Lisbon,0,3,10.0,10.0,2.0,6.0,2.0,0.0,PrimeiraLiga
+2024-03-10,Benfica,Estoril,3,1,13.0,10.0,6.0,5.0,6.0,4.0,PrimeiraLiga
+2024-03-11,Gil Vicente,Chaves,0,0,20.0,5.0,6.0,0.0,12.0,1.0,PrimeiraLiga
+2024-03-15,Estoril,Portimonense,1,0,9.0,15.0,3.0,2.0,2.0,7.0,PrimeiraLiga
+2024-03-16,Famalicao,Estrela,0,0,12.0,9.0,3.0,2.0,4.0,7.0,PrimeiraLiga
+2024-03-16,Farense,Rio Ave,1,1,14.0,13.0,7.0,3.0,5.0,2.0,PrimeiraLiga
+2024-03-16,Sp Braga,Gil Vicente,2,1,19.0,10.0,5.0,4.0,8.0,2.0,PrimeiraLiga
+2024-03-16,Porto,Vizela,4,1,36.0,3.0,9.0,0.0,12.0,3.0,PrimeiraLiga
+2024-03-17,Sp Lisbon,Boavista,6,1,22.0,3.0,12.0,2.0,8.0,1.0,PrimeiraLiga
+2024-03-17,Casa Pia,Benfica,0,1,6.0,19.0,3.0,6.0,4.0,13.0,PrimeiraLiga
+2024-03-17,Chaves,Guimaraes,1,2,6.0,16.0,2.0,5.0,3.0,10.0,PrimeiraLiga
+2024-03-17,Moreirense,Arouca,1,0,12.0,9.0,3.0,1.0,2.0,3.0,PrimeiraLiga
+2024-03-29,Gil Vicente,Famalicao,1,2,10.0,12.0,3.0,3.0,2.0,5.0,PrimeiraLiga
+2024-03-29,Benfica,Chaves,1,0,19.0,7.0,7.0,0.0,11.0,2.0,PrimeiraLiga
+2024-03-29,Estrela,Sp Lisbon,1,2,6.0,21.0,3.0,6.0,3.0,7.0,PrimeiraLiga
+2024-03-30,Estoril,Porto,1,0,5.0,13.0,2.0,2.0,1.0,10.0,PrimeiraLiga
+2024-03-30,Arouca,Farense,2,1,28.0,10.0,17.0,4.0,13.0,4.0,PrimeiraLiga
+2024-03-30,Guimaraes,Moreirense,1,0,12.0,9.0,4.0,2.0,7.0,2.0,PrimeiraLiga
+2024-03-30,Boavista,Rio Ave,0,0,9.0,8.0,2.0,1.0,2.0,5.0,PrimeiraLiga
+2024-03-31,Vizela,Casa Pia,0,4,13.0,11.0,3.0,9.0,6.0,3.0,PrimeiraLiga
+2024-04-01,Portimonense,Sp Braga,3,5,13.0,15.0,5.0,9.0,4.0,6.0,PrimeiraLiga
+2024-04-05,Farense,Boavista,2,0,15.0,17.0,8.0,7.0,5.0,12.0,PrimeiraLiga
+2024-04-06,Sp Braga,Arouca,0,3,17.0,11.0,10.0,6.0,10.0,9.0,PrimeiraLiga
+2024-04-06,Sp Lisbon,Benfica,2,1,13.0,15.0,4.0,3.0,7.0,13.0,PrimeiraLiga
+2024-04-06,Famalicao,Vizela,3,2,17.0,8.0,9.0,4.0,1.0,5.0,PrimeiraLiga
+2024-04-06,Rio Ave,Gil Vicente,3,0,13.0,5.0,7.0,3.0,1.0,8.0,PrimeiraLiga
+2024-04-07,Porto,Guimaraes,1,2,12.0,4.0,6.0,2.0,6.0,1.0,PrimeiraLiga
+2024-04-07,Moreirense,Estrela,2,2,7.0,10.0,3.0,4.0,2.0,6.0,PrimeiraLiga
+2024-04-07,Chaves,Portimonense,2,3,9.0,11.0,3.0,4.0,4.0,4.0,PrimeiraLiga
+2024-04-08,Casa Pia,Estoril,0,0,12.0,11.0,4.0,2.0,2.0,6.0,PrimeiraLiga
+2024-04-12,Gil Vicente,Sp Lisbon,0,4,5.0,13.0,1.0,6.0,6.0,4.0,PrimeiraLiga
+2024-04-13,Guimaraes,Farense,1,1,24.0,10.0,6.0,6.0,8.0,1.0,PrimeiraLiga
+2024-04-13,Porto,Famalicao,2,2,20.0,8.0,8.0,3.0,10.0,0.0,PrimeiraLiga
+2024-04-13,Estoril,Sp Braga,0,1,4.0,12.0,0.0,5.0,2.0,3.0,PrimeiraLiga
+2024-04-14,Estrela,Rio Ave,2,2,15.0,6.0,5.0,4.0,10.0,1.0,PrimeiraLiga
+2024-04-14,Arouca,Boavista,2,1,14.0,8.0,5.0,5.0,1.0,4.0,PrimeiraLiga
+2024-04-14,Portimonense,Casa Pia,2,2,11.0,11.0,3.0,4.0,5.0,8.0,PrimeiraLiga
+2024-04-14,Benfica,Moreirense,3,0,19.0,8.0,6.0,0.0,6.0,2.0,PrimeiraLiga
+2024-04-15,Vizela,Chaves,0,1,12.0,7.0,4.0,2.0,10.0,5.0,PrimeiraLiga
+2024-04-16,Famalicao,Sp Lisbon,0,1,5.0,10.0,0.0,1.0,4.0,6.0,PrimeiraLiga
+2024-04-19,Rio Ave,Arouca,1,1,6.0,17.0,3.0,5.0,4.0,6.0,PrimeiraLiga
+2024-04-20,Boavista,Estrela,1,1,15.0,11.0,5.0,3.0,6.0,5.0,PrimeiraLiga
+2024-04-20,Sp Braga,Vizela,2,1,15.0,5.0,5.0,2.0,4.0,4.0,PrimeiraLiga
+2024-04-20,Moreirense,Gil Vicente,0,1,15.0,5.0,4.0,3.0,8.0,1.0,PrimeiraLiga
+2024-04-21,Chaves,Estoril,2,2,14.0,10.0,7.0,6.0,7.0,5.0,PrimeiraLiga
+2024-04-21,Famalicao,Portimonense,2,2,13.0,14.0,3.0,7.0,9.0,6.0,PrimeiraLiga
+2024-04-21,Casa Pia,Porto,1,2,11.0,16.0,4.0,5.0,8.0,4.0,PrimeiraLiga
+2024-04-21,Sp Lisbon,Guimaraes,3,0,10.0,6.0,4.0,1.0,5.0,3.0,PrimeiraLiga
+2024-04-22,Farense,Benfica,1,3,12.0,20.0,3.0,9.0,3.0,7.0,PrimeiraLiga
+2024-04-26,Gil Vicente,Arouca,2,2,9.0,15.0,3.0,7.0,2.0,5.0,PrimeiraLiga
+2024-04-27,Vizela,Rio Ave,1,1,16.0,11.0,4.0,2.0,7.0,0.0,PrimeiraLiga
+2024-04-27,Casa Pia,Chaves,3,1,11.0,11.0,6.0,7.0,4.0,5.0,PrimeiraLiga
+2024-04-27,Benfica,Sp Braga,3,1,21.0,11.0,6.0,7.0,6.0,3.0,PrimeiraLiga
+2024-04-27,Guimaraes,Boavista,1,0,9.0,7.0,2.0,1.0,4.0,3.0,PrimeiraLiga
+2024-04-28,Portimonense,Moreirense,0,2,10.0,13.0,4.0,6.0,5.0,5.0,PrimeiraLiga
+2024-04-28,Estoril,Famalicao,1,0,8.0,13.0,3.0,3.0,3.0,6.0,PrimeiraLiga
+2024-04-28,Porto,Sp Lisbon,2,2,11.0,9.0,5.0,5.0,2.0,6.0,PrimeiraLiga
+2024-04-29,Estrela,Farense,0,3,20.0,11.0,7.0,5.0,11.0,4.0,PrimeiraLiga
+2024-05-03,Moreirense,Vizela,1,0,11.0,8.0,5.0,2.0,4.0,5.0,PrimeiraLiga
+2024-05-04,Chaves,Porto,0,3,4.0,9.0,0.0,3.0,2.0,8.0,PrimeiraLiga
+2024-05-04,Sp Lisbon,Portimonense,3,0,22.0,2.0,12.0,0.0,15.0,1.0,PrimeiraLiga
+2024-05-04,Boavista,Gil Vicente,1,1,7.0,11.0,3.0,6.0,2.0,4.0,PrimeiraLiga
+2024-05-04,Rio Ave,Guimaraes,2,1,7.0,9.0,3.0,5.0,6.0,6.0,PrimeiraLiga
+2024-05-05,Farense,Estoril,3,2,13.0,9.0,5.0,2.0,3.0,3.0,PrimeiraLiga
+2024-05-05,Arouca,Estrela,0,0,21.0,7.0,1.0,2.0,6.0,3.0,PrimeiraLiga
+2024-05-05,Sp Braga,Casa Pia,4,3,15.0,15.0,7.0,6.0,7.0,7.0,PrimeiraLiga
+2024-05-05,Famalicao,Benfica,2,0,11.0,19.0,4.0,12.0,3.0,10.0,PrimeiraLiga
+2024-05-10,Chaves,Famalicao,0,1,8.0,11.0,2.0,4.0,3.0,3.0,PrimeiraLiga
+2024-05-11,Portimonense,Rio Ave,2,2,19.0,9.0,8.0,4.0,12.0,4.0,PrimeiraLiga
+2024-05-11,Vizela,Estrela,4,0,15.0,10.0,7.0,3.0,4.0,7.0,PrimeiraLiga
+2024-05-11,Estoril,Sp Lisbon,0,1,7.0,19.0,1.0,5.0,2.0,9.0,PrimeiraLiga
+2024-05-11,Guimaraes,Sp Braga,2,3,12.0,14.0,4.0,8.0,6.0,8.0,PrimeiraLiga
+2024-05-12,Gil Vicente,Farense,2,0,9.0,16.0,6.0,3.0,4.0,4.0,PrimeiraLiga
+2024-05-12,Benfica,Arouca,5,0,17.0,6.0,9.0,1.0,3.0,3.0,PrimeiraLiga
+2024-05-12,Casa Pia,Moreirense,0,1,11.0,12.0,0.0,5.0,5.0,1.0,PrimeiraLiga
+2024-05-12,Porto,Boavista,2,1,20.0,3.0,4.0,2.0,11.0,2.0,PrimeiraLiga
+2024-05-17,Rio Ave,Benfica,1,1,8.0,15.0,3.0,7.0,2.0,8.0,PrimeiraLiga
+2024-05-17,Famalicao,Casa Pia,1,2,13.0,10.0,5.0,5.0,3.0,5.0,PrimeiraLiga
+2024-05-18,Arouca,Guimaraes,1,3,5.0,9.0,2.0,4.0,3.0,7.0,PrimeiraLiga
+2024-05-18,Boavista,Vizela,2,2,15.0,14.0,5.0,4.0,9.0,2.0,PrimeiraLiga
+2024-05-18,Estrela,Gil Vicente,1,0,6.0,5.0,2.0,2.0,4.0,3.0,PrimeiraLiga
+2024-05-18,Farense,Portimonense,1,3,7.0,15.0,3.0,6.0,2.0,4.0,PrimeiraLiga
+2024-05-18,Moreirense,Estoril,2,1,13.0,9.0,3.0,2.0,2.0,6.0,PrimeiraLiga
+2024-05-18,Sp Lisbon,Chaves,3,0,15.0,10.0,7.0,0.0,5.0,3.0,PrimeiraLiga
+2024-05-18,Sp Braga,Porto,0,1,4.0,19.0,1.0,5.0,4.0,8.0,PrimeiraLiga
+2024-08-09,Sp Lisbon,Rio Ave,3,1,23.0,3.0,6.0,1.0,6.0,1.0,PrimeiraLiga
+2024-08-10,AVS,Nacional,1,1,17.0,6.0,3.0,2.0,4.0,2.0,PrimeiraLiga
+2024-08-10,Casa Pia,Boavista,0,1,15.0,5.0,4.0,2.0,3.0,1.0,PrimeiraLiga
+2024-08-10,Porto,Gil Vicente,3,0,16.0,3.0,7.0,2.0,6.0,2.0,PrimeiraLiga
+2024-08-11,Estoril,Santa Clara,1,4,4.0,9.0,2.0,8.0,1.0,3.0,PrimeiraLiga
+2024-08-11,Famalicao,Benfica,2,0,9.0,10.0,5.0,1.0,0.0,7.0,PrimeiraLiga
+2024-08-11,Farense,Moreirense,1,2,10.0,10.0,5.0,6.0,5.0,4.0,PrimeiraLiga
+2024-08-11,Sp Braga,Estrela,1,1,13.0,6.0,5.0,4.0,13.0,4.0,PrimeiraLiga
+2024-08-12,Arouca,Guimaraes,0,1,8.0,11.0,0.0,4.0,6.0,5.0,PrimeiraLiga
+2024-08-16,Gil Vicente,AVS,4,2,16.0,10.0,6.0,5.0,2.0,3.0,PrimeiraLiga
+2024-08-16,Santa Clara,Porto,0,2,5.0,8.0,2.0,6.0,2.0,2.0,PrimeiraLiga
+2024-08-17,Rio Ave,Farense,1,0,9.0,14.0,3.0,4.0,7.0,14.0,PrimeiraLiga
+2024-08-17,Nacional,Sp Lisbon,1,6,12.0,20.0,6.0,10.0,4.0,3.0,PrimeiraLiga
+2024-08-17,Benfica,Casa Pia,3,0,26.0,5.0,7.0,1.0,12.0,2.0,PrimeiraLiga
+2024-08-18,Moreirense,Arouca,3,1,14.0,15.0,6.0,3.0,7.0,5.0,PrimeiraLiga
+2024-08-18,Guimaraes,Estoril,1,0,14.0,3.0,5.0,1.0,9.0,3.0,PrimeiraLiga
+2024-08-18,Boavista,Sp Braga,0,1,7.0,12.0,1.0,3.0,3.0,8.0,PrimeiraLiga
+2024-08-19,Estrela,Famalicao,0,3,8.0,11.0,2.0,8.0,2.0,4.0,PrimeiraLiga
+2024-08-23,Farense,Sp Lisbon,0,5,4.0,28.0,1.0,8.0,1.0,5.0,PrimeiraLiga
+2024-08-24,Casa Pia,Santa Clara,0,2,10.0,7.0,3.0,4.0,7.0,1.0,PrimeiraLiga
+2024-08-24,Porto,Rio Ave,2,0,23.0,0.0,12.0,0.0,9.0,3.0,PrimeiraLiga
+2024-08-24,Benfica,Estrela,1,0,16.0,5.0,9.0,0.0,12.0,2.0,PrimeiraLiga
+2024-08-24,Famalicao,Boavista,1,0,10.0,5.0,4.0,2.0,7.0,3.0,PrimeiraLiga
+2024-08-25,AVS,Guimaraes,1,0,9.0,13.0,2.0,5.0,3.0,6.0,PrimeiraLiga
+2024-08-25,Sp Braga,Moreirense,3,1,19.0,12.0,7.0,5.0,6.0,1.0,PrimeiraLiga
+2024-08-25,Arouca,Nacional,1,0,10.0,11.0,4.0,1.0,9.0,2.0,PrimeiraLiga
+2024-08-25,Estoril,Gil Vicente,0,0,12.0,10.0,2.0,4.0,8.0,1.0,PrimeiraLiga
+2024-08-30,Moreirense,Benfica,1,1,8.0,12.0,6.0,4.0,0.0,8.0,PrimeiraLiga
+2024-08-31,Santa Clara,AVS,2,1,15.0,9.0,6.0,2.0,3.0,2.0,PrimeiraLiga
+2024-08-31,Boavista,Estoril,0,0,19.0,7.0,5.0,1.0,8.0,3.0,PrimeiraLiga
+2024-08-31,Estrela,Casa Pia,0,1,14.0,15.0,4.0,6.0,2.0,7.0,PrimeiraLiga
+2024-08-31,Sp Lisbon,Porto,2,0,11.0,8.0,4.0,2.0,2.0,3.0,PrimeiraLiga
+2024-09-01,Guimaraes,Famalicao,2,1,8.0,8.0,4.0,4.0,5.0,7.0,PrimeiraLiga
+2024-09-01,Gil Vicente,Sp Braga,0,0,10.0,8.0,5.0,2.0,4.0,5.0,PrimeiraLiga
+2024-09-01,Rio Ave,Arouca,1,0,11.0,13.0,3.0,3.0,8.0,8.0,PrimeiraLiga
+2024-09-01,Nacional,Farense,2,0,17.0,14.0,4.0,2.0,4.0,4.0,PrimeiraLiga
+2024-09-13,Arouca,Sp Lisbon,0,3,6.0,21.0,2.0,6.0,2.0,8.0,PrimeiraLiga
+2024-09-14,Famalicao,Gil Vicente,1,1,13.0,8.0,4.0,3.0,8.0,1.0,PrimeiraLiga
+2024-09-14,Casa Pia,Moreirense,3,1,16.0,12.0,4.0,2.0,4.0,5.0,PrimeiraLiga
+2024-09-14,AVS,Rio Ave,1,0,11.0,17.0,3.0,3.0,4.0,11.0,PrimeiraLiga
+2024-09-14,Benfica,Santa Clara,4,1,15.0,6.0,7.0,2.0,5.0,1.0,PrimeiraLiga
+2024-09-15,Estoril,Nacional,1,0,11.0,15.0,3.0,3.0,3.0,4.0,PrimeiraLiga
+2024-09-15,Sp Braga,Guimaraes,0,2,5.0,10.0,2.0,4.0,6.0,4.0,PrimeiraLiga
+2024-09-15,Porto,Farense,2,1,23.0,12.0,11.0,5.0,11.0,0.0,PrimeiraLiga
+2024-09-16,Estrela,Boavista,2,2,20.0,12.0,3.0,4.0,9.0,2.0,PrimeiraLiga
+2024-09-20,Nacional,Sp Braga,0,3,12.0,15.0,2.0,5.0,6.0,6.0,PrimeiraLiga
+2024-09-21,Rio Ave,Estoril,2,2,15.0,8.0,7.0,3.0,7.0,4.0,PrimeiraLiga
+2024-09-21,Santa Clara,Estrela,1,0,8.0,11.0,4.0,4.0,3.0,8.0,PrimeiraLiga
+2024-09-21,Guimaraes,Porto,0,3,6.0,12.0,1.0,4.0,5.0,6.0,PrimeiraLiga
+2024-09-21,Moreirense,Famalicao,0,0,8.0,6.0,3.0,1.0,4.0,3.0,PrimeiraLiga
+2024-09-22,Sp Lisbon,AVS,3,0,22.0,3.0,9.0,0.0,9.0,1.0,PrimeiraLiga
+2024-09-22,Farense,Arouca,0,1,16.0,11.0,2.0,2.0,10.0,6.0,PrimeiraLiga
+2024-09-22,Gil Vicente,Casa Pia,1,1,15.0,8.0,4.0,4.0,9.0,2.0,PrimeiraLiga
+2024-09-23,Boavista,Benfica,0,3,7.0,16.0,3.0,9.0,4.0,5.0,PrimeiraLiga
+2024-09-27,Estoril,Sp Lisbon,0,3,5.0,22.0,2.0,5.0,1.0,14.0,PrimeiraLiga
+2024-09-28,Estrela,Moreirense,2,1,4.0,13.0,2.0,2.0,2.0,7.0,PrimeiraLiga
+2024-09-28,Casa Pia,Guimaraes,1,1,9.0,19.0,4.0,7.0,7.0,9.0,PrimeiraLiga
+2024-09-28,Benfica,Gil Vicente,5,1,18.0,10.0,6.0,4.0,11.0,2.0,PrimeiraLiga
+2024-09-29,Sp Braga,Rio Ave,4,0,18.0,13.0,8.0,4.0,4.0,5.0,PrimeiraLiga
+2024-09-29,Porto,Arouca,4,0,26.0,4.0,7.0,0.0,8.0,2.0,PrimeiraLiga
+2024-09-29,Famalicao,Nacional,0,0,16.0,11.0,5.0,4.0,8.0,4.0,PrimeiraLiga
+2024-09-29,Santa Clara,Boavista,1,0,15.0,4.0,5.0,2.0,3.0,0.0,PrimeiraLiga
+2024-09-30,AVS,Farense,0,0,12.0,9.0,1.0,3.0,6.0,3.0,PrimeiraLiga
+2024-10-04,Rio Ave,Famalicao,1,1,15.0,8.0,6.0,3.0,11.0,7.0,PrimeiraLiga
+2024-10-05,Gil Vicente,Estrela,3,0,6.0,11.0,5.0,2.0,0.0,8.0,PrimeiraLiga
+2024-10-05,Moreirense,Santa Clara,1,0,11.0,12.0,2.0,3.0,1.0,7.0,PrimeiraLiga
+2024-10-05,Arouca,AVS,1,1,10.0,16.0,2.0,2.0,5.0,7.0,PrimeiraLiga
+2024-10-05,Sp Lisbon,Casa Pia,2,0,22.0,5.0,6.0,3.0,5.0,3.0,PrimeiraLiga
+2024-10-06,Farense,Estoril,1,0,15.0,7.0,2.0,2.0,5.0,4.0,PrimeiraLiga
+2024-10-06,Guimaraes,Boavista,2,2,12.0,8.0,4.0,5.0,6.0,5.0,PrimeiraLiga
+2024-10-06,Porto,Sp Braga,2,1,6.0,17.0,3.0,3.0,1.0,5.0,PrimeiraLiga
+2024-10-25,Santa Clara,Gil Vicente,2,1,15.0,10.0,3.0,1.0,6.0,4.0,PrimeiraLiga
+2024-10-25,Casa Pia,Nacional,1,0,14.0,19.0,5.0,6.0,7.0,7.0,PrimeiraLiga
+2024-10-26,Boavista,Moreirense,0,2,10.0,17.0,3.0,8.0,4.0,3.0,PrimeiraLiga
+2024-10-26,Famalicao,Sp Lisbon,0,3,6.0,33.0,1.0,13.0,4.0,8.0,PrimeiraLiga
+2024-10-26,Estoril,Arouca,4,1,12.0,13.0,5.0,4.0,6.0,9.0,PrimeiraLiga
+2024-10-27,Estrela,Guimaraes,2,2,7.0,10.0,2.0,3.0,3.0,4.0,PrimeiraLiga
+2024-10-27,Sp Braga,Farense,2,0,18.0,4.0,6.0,2.0,10.0,3.0,PrimeiraLiga
+2024-10-27,Benfica,Rio Ave,5,0,29.0,4.0,14.0,0.0,8.0,2.0,PrimeiraLiga
+2024-10-28,AVS,Porto,0,5,5.0,12.0,1.0,7.0,2.0,3.0,PrimeiraLiga
+2024-11-01,Sp Lisbon,Estrela,5,1,20.0,9.0,8.0,5.0,12.0,2.0,PrimeiraLiga
+2024-11-02,Rio Ave,Casa Pia,2,2,13.0,10.0,5.0,2.0,3.0,2.0,PrimeiraLiga
+2024-11-02,Farense,Benfica,1,2,9.0,18.0,4.0,7.0,3.0,8.0,PrimeiraLiga
+2024-11-02,Gil Vicente,Boavista,1,2,17.0,13.0,2.0,5.0,7.0,2.0,PrimeiraLiga
+2024-11-03,Porto,Estoril,4,0,16.0,12.0,9.0,5.0,9.0,5.0,PrimeiraLiga
+2024-11-03,Guimaraes,Moreirense,1,0,10.0,9.0,4.0,2.0,9.0,4.0,PrimeiraLiga
+2024-11-03,AVS,Famalicao,2,3,13.0,18.0,6.0,6.0,4.0,0.0,PrimeiraLiga
+2024-11-03,Arouca,Sp Braga,1,2,13.0,16.0,3.0,3.0,12.0,4.0,PrimeiraLiga
+2024-11-04,Nacional,Santa Clara,2,0,8.0,22.0,4.0,6.0,2.0,6.0,PrimeiraLiga
+2024-11-08,Moreirense,Gil Vicente,3,2,12.0,11.0,8.0,5.0,3.0,4.0,PrimeiraLiga
+2024-11-09,Casa Pia,Farense,1,1,13.0,8.0,2.0,3.0,4.0,2.0,PrimeiraLiga
+2024-11-09,Estoril,AVS,0,0,9.0,11.0,2.0,2.0,10.0,6.0,PrimeiraLiga
+2024-11-09,Famalicao,Arouca,0,0,6.0,9.0,2.0,1.0,4.0,8.0,PrimeiraLiga
+2024-11-09,Boavista,Rio Ave,0,2,24.0,5.0,4.0,1.0,7.0,2.0,PrimeiraLiga
+2024-11-10,Benfica,Porto,4,1,16.0,8.0,7.0,3.0,2.0,2.0,PrimeiraLiga
+2024-11-10,Sp Braga,Sp Lisbon,2,4,3.0,13.0,2.0,6.0,0.0,5.0,PrimeiraLiga
+2024-11-10,Estrela,Nacional,2,0,17.0,15.0,3.0,4.0,10.0,4.0,PrimeiraLiga
+2024-11-10,Santa Clara,Guimaraes,1,0,21.0,5.0,7.0,2.0,9.0,4.0,PrimeiraLiga
+2024-11-29,Farense,Estrela,1,0,11.0,13.0,2.0,3.0,3.0,6.0,PrimeiraLiga
+2024-11-30,Rio Ave,Moreirense,3,2,12.0,11.0,4.0,2.0,2.0,4.0,PrimeiraLiga
+2024-11-30,Nacional,Boavista,0,0,22.0,9.0,8.0,2.0,4.0,7.0,PrimeiraLiga
+2024-11-30,Sp Lisbon,Santa Clara,0,1,21.0,4.0,4.0,3.0,8.0,2.0,PrimeiraLiga
+2024-12-01,Estoril,Famalicao,2,1,12.0,7.0,4.0,1.0,5.0,7.0,PrimeiraLiga
+2024-12-01,Arouca,Benfica,0,2,12.0,14.0,5.0,8.0,5.0,6.0,PrimeiraLiga
+2024-12-01,AVS,Sp Braga,0,1,6.0,20.0,1.0,8.0,2.0,9.0,PrimeiraLiga
+2024-12-02,Guimaraes,Gil Vicente,4,0,19.0,3.0,5.0,0.0,9.0,2.0,PrimeiraLiga
+2024-12-02,Porto,Casa Pia,2,0,17.0,10.0,9.0,3.0,8.0,6.0,PrimeiraLiga
+2024-12-05,Moreirense,Sp Lisbon,2,1,8.0,16.0,4.0,2.0,4.0,6.0,PrimeiraLiga
+2024-12-06,Sp Braga,Estoril,2,2,16.0,11.0,7.0,3.0,3.0,2.0,PrimeiraLiga
+2024-12-07,Famalicao,Porto,1,1,4.0,16.0,2.0,4.0,3.0,5.0,PrimeiraLiga
+2024-12-07,Santa Clara,Rio Ave,1,0,10.0,4.0,4.0,2.0,6.0,2.0,PrimeiraLiga
+2024-12-07,Benfica,Guimaraes,1,0,8.0,10.0,1.0,2.0,6.0,9.0,PrimeiraLiga
+2024-12-07,Gil Vicente,Nacional,2,1,17.0,19.0,4.0,6.0,6.0,7.0,PrimeiraLiga
+2024-12-08,Boavista,Farense,1,1,13.0,11.0,4.0,6.0,5.0,4.0,PrimeiraLiga
+2024-12-08,Casa Pia,AVS,1,1,11.0,7.0,5.0,3.0,6.0,3.0,PrimeiraLiga
+2024-12-09,Estrela,Arouca,2,1,10.0,10.0,2.0,4.0,2.0,7.0,PrimeiraLiga
+2024-12-14,Farense,Gil Vicente,0,1,15.0,7.0,2.0,2.0,7.0,1.0,PrimeiraLiga
+2024-12-14,Nacional,Moreirense,1,0,12.0,4.0,5.0,1.0,10.0,2.0,PrimeiraLiga
+2024-12-14,Sp Lisbon,Boavista,3,2,20.0,8.0,7.0,2.0,10.0,1.0,PrimeiraLiga
+2024-12-15,Arouca,Santa Clara,1,0,12.0,5.0,3.0,1.0,7.0,2.0,PrimeiraLiga
+2024-12-15,AVS,Benfica,1,1,18.0,13.0,7.0,4.0,0.0,3.0,PrimeiraLiga
+2024-12-15,Estoril,Casa Pia,0,2,14.0,10.0,5.0,4.0,5.0,4.0,PrimeiraLiga
+2024-12-16,Sp Braga,Famalicao,3,3,21.0,10.0,8.0,8.0,10.0,3.0,PrimeiraLiga
+2024-12-16,Porto,Estrela,2,0,12.0,3.0,4.0,0.0,11.0,4.0,PrimeiraLiga
+2024-12-16,Rio Ave,Guimaraes,2,2,5.0,16.0,4.0,5.0,0.0,2.0,PrimeiraLiga
+2024-12-19,Nacional,Benfica,0,2,5.0,16.0,1.0,7.0,4.0,11.0,PrimeiraLiga
+2024-12-20,Casa Pia,Arouca,3,1,10.0,9.0,6.0,4.0,3.0,4.0,PrimeiraLiga
+2024-12-21,Moreirense,Porto,0,3,7.0,12.0,1.0,7.0,2.0,4.0,PrimeiraLiga
+2024-12-21,Famalicao,Farense,1,2,11.0,7.0,1.0,5.0,7.0,4.0,PrimeiraLiga
+2024-12-21,Boavista,AVS,0,0,15.0,7.0,4.0,1.0,5.0,1.0,PrimeiraLiga
+2024-12-22,Santa Clara,Sp Braga,0,2,12.0,12.0,6.0,5.0,2.0,2.0,PrimeiraLiga
+2024-12-22,Gil Vicente,Sp Lisbon,0,0,3.0,14.0,1.0,7.0,3.0,8.0,PrimeiraLiga
+2024-12-23,Benfica,Estoril,3,0,15.0,10.0,6.0,2.0,4.0,1.0,PrimeiraLiga
+2024-12-23,Guimaraes,Nacional,2,2,16.0,8.0,3.0,2.0,7.0,1.0,PrimeiraLiga
+2024-12-23,Estrela,Rio Ave,1,0,8.0,19.0,4.0,6.0,5.0,6.0,PrimeiraLiga
+2024-12-27,Arouca,Gil Vicente,1,1,10.0,7.0,5.0,3.0,5.0,7.0,PrimeiraLiga
+2024-12-28,AVS,Estrela,1,1,12.0,16.0,6.0,5.0,7.0,6.0,PrimeiraLiga
+2024-12-28,Estoril,Moreirense,2,2,15.0,8.0,7.0,5.0,6.0,2.0,PrimeiraLiga
+2024-12-28,Porto,Boavista,4,0,13.0,4.0,7.0,1.0,4.0,1.0,PrimeiraLiga
+2024-12-29,Sp Lisbon,Benfica,1,0,12.0,14.0,6.0,2.0,4.0,8.0,PrimeiraLiga
+2024-12-29,Farense,Guimaraes,2,2,6.0,27.0,2.0,12.0,6.0,9.0,PrimeiraLiga
+2024-12-29,Rio Ave,Nacional,2,1,20.0,13.0,7.0,2.0,11.0,6.0,PrimeiraLiga
+2024-12-29,Sp Braga,Casa Pia,1,2,16.0,8.0,6.0,4.0,10.0,2.0,PrimeiraLiga
+2024-12-30,Famalicao,Santa Clara,1,2,18.0,7.0,5.0,3.0,5.0,4.0,PrimeiraLiga
+2025-01-03,Guimaraes,Sp Lisbon,4,4,15.0,9.0,5.0,5.0,6.0,2.0,PrimeiraLiga
+2025-01-04,Moreirense,AVS,1,1,11.0,17.0,5.0,2.0,3.0,9.0,PrimeiraLiga
+2025-01-04,Benfica,Sp Braga,1,2,21.0,6.0,5.0,2.0,8.0,2.0,PrimeiraLiga
+2025-01-04,Boavista,Arouca,1,3,14.0,14.0,2.0,5.0,3.0,3.0,PrimeiraLiga
+2025-01-05,Santa Clara,Farense,0,0,17.0,2.0,6.0,1.0,13.0,2.0,PrimeiraLiga
+2025-01-05,Casa Pia,Famalicao,1,1,6.0,19.0,3.0,14.0,5.0,7.0,PrimeiraLiga
+2025-01-05,Estrela,Estoril,2,4,8.0,14.0,4.0,8.0,3.0,3.0,PrimeiraLiga
+2025-01-06,Gil Vicente,Rio Ave,1,1,13.0,14.0,4.0,4.0,4.0,4.0,PrimeiraLiga
+2025-01-12,Nacional,Porto,2,0,7.0,13.0,4.0,3.0,1.0,10.0,PrimeiraLiga
+2025-01-17,Benfica,Famalicao,4,0,21.0,1.0,12.0,0.0,7.0,2.0,PrimeiraLiga
+2025-01-18,Santa Clara,Estoril,2,3,15.0,8.0,5.0,3.0,7.0,1.0,PrimeiraLiga
+2025-01-18,Rio Ave,Sp Lisbon,0,3,2.0,29.0,0.0,13.0,0.0,8.0,PrimeiraLiga
+2025-01-18,Guimaraes,Arouca,2,2,17.0,19.0,7.0,6.0,9.0,5.0,PrimeiraLiga
+2025-01-19,Moreirense,Farense,0,0,14.0,5.0,4.0,0.0,6.0,3.0,PrimeiraLiga
+2025-01-19,Nacional,AVS,3,1,17.0,13.0,7.0,3.0,4.0,6.0,PrimeiraLiga
+2025-01-19,Estrela,Sp Braga,0,1,7.0,13.0,3.0,5.0,1.0,8.0,PrimeiraLiga
+2025-01-19,Gil Vicente,Porto,3,1,8.0,18.0,3.0,3.0,4.0,6.0,PrimeiraLiga
+2025-01-20,Boavista,Casa Pia,2,3,10.0,9.0,5.0,6.0,2.0,3.0,PrimeiraLiga
+2025-01-24,Arouca,Moreirense,1,0,16.0,7.0,5.0,1.0,10.0,2.0,PrimeiraLiga
+2025-01-25,Famalicao,Estrela,0,0,10.0,4.0,2.0,1.0,5.0,2.0,PrimeiraLiga
+2025-01-25,Farense,Rio Ave,1,2,15.0,9.0,5.0,2.0,9.0,2.0,PrimeiraLiga
+2025-01-25,Casa Pia,Benfica,3,1,8.0,19.0,3.0,7.0,2.0,9.0,PrimeiraLiga
+2025-01-25,Sp Lisbon,Nacional,2,0,15.0,3.0,5.0,1.0,6.0,2.0,PrimeiraLiga
+2025-01-26,Estoril,Guimaraes,1,0,13.0,7.0,5.0,2.0,2.0,5.0,PrimeiraLiga
+2025-01-26,Porto,Santa Clara,1,1,21.0,2.0,7.0,1.0,7.0,2.0,PrimeiraLiga
+2025-01-26,Sp Braga,Boavista,3,0,15.0,9.0,5.0,3.0,11.0,3.0,PrimeiraLiga
+2025-01-27,AVS,Gil Vicente,1,0,8.0,10.0,1.0,0.0,1.0,8.0,PrimeiraLiga
+2025-01-31,Boavista,Famalicao,0,2,4.0,20.0,1.0,4.0,2.0,7.0,PrimeiraLiga
+2025-02-01,Nacional,Arouca,1,2,19.0,11.0,4.0,6.0,3.0,3.0,PrimeiraLiga
+2025-02-01,Santa Clara,Casa Pia,2,1,16.0,5.0,6.0,2.0,5.0,2.0,PrimeiraLiga
+2025-02-01,Gil Vicente,Estoril,1,2,9.0,19.0,6.0,6.0,3.0,3.0,PrimeiraLiga
+2025-02-01,Guimaraes,AVS,2,0,14.0,4.0,8.0,1.0,8.0,2.0,PrimeiraLiga
+2025-02-02,Sp Lisbon,Farense,3,1,21.0,6.0,7.0,2.0,9.0,1.0,PrimeiraLiga
+2025-02-02,Estrela,Benfica,2,3,7.0,14.0,3.0,8.0,0.0,7.0,PrimeiraLiga
+2025-02-03,Rio Ave,Porto,2,2,9.0,23.0,3.0,8.0,3.0,5.0,PrimeiraLiga
+2025-02-03,Moreirense,Sp Braga,1,2,10.0,13.0,6.0,5.0,1.0,9.0,PrimeiraLiga
+2025-02-07,Porto,Sp Lisbon,1,1,17.0,13.0,2.0,3.0,6.0,3.0,PrimeiraLiga
+2025-02-08,AVS,Santa Clara,1,2,9.0,8.0,3.0,4.0,2.0,3.0,PrimeiraLiga
+2025-02-08,Benfica,Moreirense,3,2,11.0,8.0,6.0,4.0,6.0,6.0,PrimeiraLiga
+2025-02-08,Famalicao,Guimaraes,0,0,8.0,7.0,2.0,2.0,4.0,11.0,PrimeiraLiga
+2025-02-09,Estoril,Boavista,2,1,13.0,9.0,5.0,5.0,5.0,3.0,PrimeiraLiga
+2025-02-09,Farense,Nacional,0,2,21.0,11.0,6.0,4.0,12.0,3.0,PrimeiraLiga
+2025-02-09,Sp Braga,Gil Vicente,2,0,14.0,6.0,6.0,4.0,4.0,2.0,PrimeiraLiga
+2025-02-09,Casa Pia,Estrela,1,0,15.0,13.0,4.0,3.0,5.0,2.0,PrimeiraLiga
+2025-02-10,Arouca,Rio Ave,1,1,16.0,12.0,4.0,4.0,6.0,3.0,PrimeiraLiga
+2025-02-14,Boavista,Estrela,0,1,14.0,9.0,1.0,6.0,7.0,4.0,PrimeiraLiga
+2025-02-15,Moreirense,Casa Pia,3,2,10.0,15.0,5.0,4.0,4.0,5.0,PrimeiraLiga
+2025-02-15,Nacional,Estoril,2,2,18.0,7.0,6.0,4.0,7.0,3.0,PrimeiraLiga
+2025-02-15,Santa Clara,Benfica,0,1,10.0,17.0,3.0,6.0,2.0,5.0,PrimeiraLiga
+2025-02-15,Sp Lisbon,Arouca,2,2,21.0,15.0,8.0,7.0,9.0,9.0,PrimeiraLiga
+2025-02-16,Guimaraes,Sp Braga,0,0,16.0,6.0,3.0,3.0,7.0,4.0,PrimeiraLiga
+2025-02-16,Farense,Porto,0,1,8.0,11.0,2.0,2.0,2.0,4.0,PrimeiraLiga
+2025-02-16,Rio Ave,AVS,1,1,16.0,11.0,3.0,3.0,2.0,4.0,PrimeiraLiga
+2025-02-17,Gil Vicente,Famalicao,0,2,14.0,20.0,2.0,6.0,5.0,11.0,PrimeiraLiga
+2025-02-21,Sp Braga,Nacional,1,0,20.0,8.0,7.0,3.0,7.0,6.0,PrimeiraLiga
+2025-02-22,Casa Pia,Gil Vicente,1,0,10.0,4.0,1.0,0.0,2.0,5.0,PrimeiraLiga
+2025-02-22,Benfica,Boavista,3,0,31.0,6.0,14.0,2.0,13.0,2.0,PrimeiraLiga
+2025-02-22,Estoril,Rio Ave,2,1,11.0,9.0,4.0,4.0,0.0,4.0,PrimeiraLiga
+2025-02-23,Arouca,Farense,2,2,12.0,17.0,6.0,7.0,4.0,9.0,PrimeiraLiga
+2025-02-23,Estrela,Santa Clara,0,0,10.0,4.0,2.0,1.0,5.0,2.0,PrimeiraLiga
+2025-02-23,AVS,Sp Lisbon,2,2,11.0,9.0,4.0,3.0,4.0,5.0,PrimeiraLiga
+2025-02-23,Famalicao,Moreirense,2,0,17.0,8.0,4.0,6.0,3.0,1.0,PrimeiraLiga
+2025-02-24,Porto,Guimaraes,1,1,13.0,11.0,2.0,5.0,6.0,7.0,PrimeiraLiga
+2025-03-01,Nacional,Famalicao,2,1,15.0,15.0,5.0,3.0,1.0,6.0,PrimeiraLiga
+2025-03-01,Arouca,Porto,0,2,6.0,9.0,2.0,2.0,4.0,2.0,PrimeiraLiga
+2025-03-01,Guimaraes,Casa Pia,1,0,18.0,10.0,6.0,2.0,7.0,2.0,PrimeiraLiga
+2025-03-02,Rio Ave,Sp Braga,2,1,13.0,14.0,7.0,7.0,2.0,5.0,PrimeiraLiga
+2025-03-02,Farense,AVS,0,1,17.0,6.0,4.0,3.0,7.0,1.0,PrimeiraLiga
+2025-03-02,Moreirense,Estrela,1,1,11.0,7.0,2.0,1.0,4.0,1.0,PrimeiraLiga
+2025-03-02,Boavista,Santa Clara,1,0,12.0,11.0,5.0,1.0,9.0,5.0,PrimeiraLiga
+2025-03-03,Sp Lisbon,Estoril,3,1,13.0,8.0,6.0,2.0,6.0,6.0,PrimeiraLiga
+2025-03-07,Estrela,Gil Vicente,1,1,8.0,10.0,3.0,2.0,7.0,7.0,PrimeiraLiga
+2025-03-08,AVS,Arouca,0,1,9.0,20.0,1.0,8.0,1.0,7.0,PrimeiraLiga
+2025-03-08,Benfica,Nacional,3,0,18.0,12.0,12.0,3.0,5.0,3.0,PrimeiraLiga
+2025-03-08,Estoril,Farense,2,2,13.0,14.0,4.0,4.0,4.0,7.0,PrimeiraLiga
+2025-03-08,Sp Braga,Porto,1,0,7.0,7.0,4.0,3.0,7.0,3.0,PrimeiraLiga
+2025-03-09,Boavista,Guimaraes,1,2,7.0,19.0,4.0,8.0,2.0,7.0,PrimeiraLiga
+2025-03-09,Casa Pia,Sp Lisbon,1,3,10.0,17.0,3.0,6.0,4.0,4.0,PrimeiraLiga
+2025-03-09,Santa Clara,Moreirense,1,1,13.0,9.0,5.0,3.0,4.0,3.0,PrimeiraLiga
+2025-03-10,Famalicao,Rio Ave,1,0,16.0,13.0,7.0,4.0,5.0,1.0,PrimeiraLiga
+2025-03-15,Farense,Sp Braga,0,1,11.0,10.0,3.0,4.0,12.0,4.0,PrimeiraLiga
+2025-03-15,Gil Vicente,Santa Clara,0,1,12.0,3.0,2.0,1.0,5.0,0.0,PrimeiraLiga
+2025-03-15,Porto,AVS,2,0,20.0,8.0,10.0,2.0,4.0,3.0,PrimeiraLiga
+2025-03-15,Sp Lisbon,Famalicao,3,1,18.0,9.0,9.0,3.0,11.0,4.0,PrimeiraLiga
+2025-03-16,Moreirense,Boavista,1,0,21.0,9.0,3.0,4.0,6.0,3.0,PrimeiraLiga
+2025-03-16,Guimaraes,Estrela,2,0,12.0,9.0,6.0,0.0,8.0,2.0,PrimeiraLiga
+2025-03-16,Arouca,Estoril,1,1,3.0,12.0,1.0,3.0,3.0,4.0,PrimeiraLiga
+2025-03-16,Nacional,Casa Pia,3,1,14.0,10.0,6.0,3.0,2.0,5.0,PrimeiraLiga
+2025-03-16,Rio Ave,Benfica,2,3,7.0,20.0,2.0,8.0,3.0,11.0,PrimeiraLiga
+2025-03-28,Gil Vicente,Benfica,0,3,7.0,18.0,2.0,7.0,5.0,2.0,PrimeiraLiga
+2025-03-29,Casa Pia,Rio Ave,2,1,11.0,12.0,3.0,5.0,7.0,4.0,PrimeiraLiga
+2025-03-29,Estrela,Sp Lisbon,0,3,7.0,13.0,0.0,7.0,3.0,2.0,PrimeiraLiga
+2025-03-29,Sp Braga,Arouca,2,1,14.0,8.0,5.0,1.0,7.0,1.0,PrimeiraLiga
+2025-03-30,Famalicao,AVS,4,1,16.0,6.0,4.0,1.0,4.0,2.0,PrimeiraLiga
+2025-03-30,Santa Clara,Nacional,1,0,13.0,9.0,5.0,4.0,3.0,4.0,PrimeiraLiga
+2025-03-30,Estoril,Porto,1,2,3.0,14.0,2.0,6.0,1.0,6.0,PrimeiraLiga
+2025-03-30,Moreirense,Guimaraes,2,2,11.0,11.0,3.0,3.0,2.0,3.0,PrimeiraLiga
+2025-04-01,Boavista,Gil Vicente,1,3,7.0,14.0,3.0,9.0,3.0,3.0,PrimeiraLiga
+2025-04-02,Benfica,Farense,3,2,13.0,12.0,7.0,6.0,5.0,4.0,PrimeiraLiga
+2025-04-04,AVS,Estoril,0,3,9.0,14.0,2.0,8.0,4.0,3.0,PrimeiraLiga
+2025-04-05,Guimaraes,Santa Clara,2,0,9.0,15.0,3.0,5.0,7.0,6.0,PrimeiraLiga
+2025-04-05,Arouca,Famalicao,1,2,15.0,6.0,8.0,4.0,3.0,7.0,PrimeiraLiga
+2025-04-06,Gil Vicente,Moreirense,0,1,12.0,8.0,4.0,3.0,7.0,0.0,PrimeiraLiga
+2025-04-06,Nacional,Estrela,0,1,19.0,12.0,4.0,3.0,7.0,5.0,PrimeiraLiga
+2025-04-06,Porto,Benfica,1,4,14.0,14.0,3.0,5.0,2.0,6.0,PrimeiraLiga
+2025-04-07,Farense,Casa Pia,0,0,11.0,2.0,5.0,0.0,13.0,3.0,PrimeiraLiga
+2025-04-07,Rio Ave,Boavista,0,2,17.0,6.0,2.0,4.0,9.0,2.0,PrimeiraLiga
+2025-04-07,Sp Lisbon,Sp Braga,1,1,15.0,9.0,7.0,3.0,4.0,0.0,PrimeiraLiga
+2025-04-11,Gil Vicente,Guimaraes,0,1,7.0,7.0,1.0,1.0,1.0,5.0,PrimeiraLiga
+2025-04-12,Boavista,Nacional,0,1,21.0,15.0,8.0,5.0,7.0,7.0,PrimeiraLiga
+2025-04-12,Famalicao,Estoril,3,0,9.0,6.0,4.0,2.0,3.0,8.0,PrimeiraLiga
+2025-04-12,Santa Clara,Sp Lisbon,0,1,10.0,7.0,1.0,4.0,3.0,3.0,PrimeiraLiga
+2025-04-12,Casa Pia,Porto,0,1,5.0,10.0,2.0,3.0,4.0,3.0,PrimeiraLiga
+2025-04-13,Moreirense,Rio Ave,0,2,8.0,10.0,1.0,4.0,2.0,2.0,PrimeiraLiga
+2025-04-13,Sp Braga,AVS,4,1,18.0,4.0,8.0,2.0,7.0,3.0,PrimeiraLiga
+2025-04-13,Estrela,Farense,0,1,13.0,10.0,3.0,5.0,7.0,3.0,PrimeiraLiga
+2025-04-13,Benfica,Arouca,2,2,26.0,8.0,8.0,5.0,11.0,5.0,PrimeiraLiga
+2025-04-18,Sp Lisbon,Moreirense,3,1,20.0,6.0,10.0,2.0,4.0,2.0,PrimeiraLiga
+2025-04-18,Porto,Famalicao,2,1,8.0,12.0,6.0,4.0,4.0,5.0,PrimeiraLiga
+2025-04-18,Farense,Boavista,0,1,12.0,6.0,4.0,2.0,4.0,4.0,PrimeiraLiga
+2025-04-18,Rio Ave,Santa Clara,1,1,8.0,17.0,3.0,5.0,6.0,4.0,PrimeiraLiga
+2025-04-19,AVS,Casa Pia,1,1,10.0,6.0,3.0,4.0,3.0,4.0,PrimeiraLiga
+2025-04-19,Nacional,Gil Vicente,0,3,22.0,8.0,7.0,4.0,9.0,0.0,PrimeiraLiga
+2025-04-19,Arouca,Estrela,1,0,19.0,8.0,6.0,4.0,4.0,4.0,PrimeiraLiga
+2025-04-19,Estoril,Sp Braga,0,2,6.0,5.0,3.0,3.0,1.0,2.0,PrimeiraLiga
+2025-04-19,Guimaraes,Benfica,0,3,17.0,8.0,6.0,7.0,7.0,3.0,PrimeiraLiga
+2025-04-25,Famalicao,Sp Braga,1,1,9.0,13.0,4.0,3.0,6.0,9.0,PrimeiraLiga
+2025-04-26,Estrela,Porto,2,0,11.0,12.0,5.0,3.0,5.0,11.0,PrimeiraLiga
+2025-04-26,Santa Clara,Arouca,2,0,9.0,15.0,4.0,5.0,3.0,5.0,PrimeiraLiga
+2025-04-26,Gil Vicente,Farense,1,0,14.0,8.0,3.0,2.0,4.0,1.0,PrimeiraLiga
+2025-04-27,Benfica,AVS,6,0,23.0,10.0,11.0,3.0,10.0,4.0,PrimeiraLiga
+2025-04-27,Guimaraes,Rio Ave,3,0,25.0,10.0,6.0,5.0,9.0,1.0,PrimeiraLiga
+2025-04-27,Moreirense,Nacional,1,1,8.0,18.0,3.0,4.0,2.0,5.0,PrimeiraLiga
+2025-04-27,Boavista,Sp Lisbon,0,5,6.0,23.0,0.0,12.0,3.0,5.0,PrimeiraLiga
+2025-04-29,Casa Pia,Estoril,1,3,8.0,11.0,4.0,4.0,4.0,4.0,PrimeiraLiga
+2025-05-02,Porto,Moreirense,3,1,15.0,5.0,4.0,4.0,9.0,2.0,PrimeiraLiga
+2025-05-03,Farense,Famalicao,2,1,14.0,9.0,6.0,4.0,4.0,10.0,PrimeiraLiga
+2025-05-03,Nacional,Guimaraes,1,2,16.0,11.0,1.0,4.0,6.0,3.0,PrimeiraLiga
+2025-05-03,Sp Braga,Santa Clara,1,1,17.0,5.0,4.0,3.0,8.0,0.0,PrimeiraLiga
+2025-05-03,Estoril,Benfica,1,2,10.0,10.0,2.0,3.0,2.0,4.0,PrimeiraLiga
+2025-05-04,Arouca,Casa Pia,0,0,15.0,4.0,3.0,1.0,5.0,0.0,PrimeiraLiga
+2025-05-04,Sp Lisbon,Gil Vicente,2,1,16.0,1.0,3.0,1.0,9.0,2.0,PrimeiraLiga
+2025-05-05,Rio Ave,Estrela,2,0,19.0,8.0,6.0,3.0,5.0,3.0,PrimeiraLiga
+2025-05-05,AVS,Boavista,1,2,13.0,14.0,5.0,3.0,4.0,5.0,PrimeiraLiga
+2025-05-10,Nacional,Rio Ave,3,3,12.0,13.0,5.0,7.0,4.0,5.0,PrimeiraLiga
+2025-05-10,Santa Clara,Famalicao,2,1,16.0,12.0,5.0,4.0,3.0,6.0,PrimeiraLiga
+2025-05-10,Benfica,Sp Lisbon,1,1,14.0,7.0,1.0,4.0,6.0,2.0,PrimeiraLiga
+2025-05-10,Casa Pia,Sp Braga,2,1,5.0,21.0,3.0,6.0,2.0,7.0,PrimeiraLiga
+2025-05-10,Gil Vicente,Arouca,1,1,15.0,8.0,5.0,4.0,4.0,1.0,PrimeiraLiga
+2025-05-11,Boavista,Porto,1,2,9.0,16.0,4.0,7.0,0.0,4.0,PrimeiraLiga
+2025-05-11,Moreirense,Estoril,2,2,9.0,7.0,5.0,5.0,2.0,7.0,PrimeiraLiga
+2025-05-11,Guimaraes,Farense,1,2,21.0,7.0,4.0,3.0,16.0,3.0,PrimeiraLiga
+2025-05-11,Estrela,AVS,0,1,11.0,18.0,3.0,2.0,1.0,6.0,PrimeiraLiga
+2025-05-16,Famalicao,Casa Pia,2,1,18.0,5.0,4.0,1.0,13.0,4.0,PrimeiraLiga
+2025-05-16,Rio Ave,Gil Vicente,1,1,6.0,11.0,3.0,3.0,6.0,7.0,PrimeiraLiga
+2025-05-17,Arouca,Boavista,4,1,14.0,21.0,7.0,5.0,2.0,11.0,PrimeiraLiga
+2025-05-17,AVS,Moreirense,0,3,8.0,19.0,3.0,11.0,2.0,4.0,PrimeiraLiga
+2025-05-17,Estoril,Estrela,4,0,10.0,11.0,6.0,3.0,4.0,4.0,PrimeiraLiga
+2025-05-17,Farense,Santa Clara,1,2,12.0,16.0,2.0,5.0,3.0,6.0,PrimeiraLiga
+2025-05-17,Porto,Nacional,3,0,10.0,11.0,4.0,5.0,2.0,8.0,PrimeiraLiga
+2025-05-17,Sp Braga,Benfica,1,1,17.0,13.0,7.0,2.0,6.0,6.0,PrimeiraLiga
+2025-05-17,Sp Lisbon,Guimaraes,2,0,18.0,2.0,7.0,0.0,7.0,1.0,PrimeiraLiga
+2025-08-08,Casa Pia,Sp Lisbon,0,2,7.0,27.0,2.0,12.0,2.0,9.0,PrimeiraLiga
+2025-08-09,Nacional,Gil Vicente,0,2,15.0,12.0,4.0,2.0,14.0,6.0,PrimeiraLiga
+2025-08-09,Arouca,AVS,3,1,9.0,15.0,4.0,2.0,4.0,5.0,PrimeiraLiga
+2025-08-10,Moreirense,Alverca,2,1,10.0,7.0,3.0,2.0,6.0,2.0,PrimeiraLiga
+2025-08-10,Sp Braga,Tondela,3,0,8.0,7.0,6.0,3.0,5.0,3.0,PrimeiraLiga
+2025-08-10,Famalicao,Santa Clara,3,0,6.0,8.0,3.0,2.0,2.0,3.0,PrimeiraLiga
+2025-08-11,Estoril,Estrela,1,1,8.0,9.0,3.0,5.0,4.0,4.0,PrimeiraLiga
+2025-08-11,Porto,Guimaraes,3,0,17.0,10.0,9.0,2.0,7.0,4.0,PrimeiraLiga
+2025-08-15,AVS,Casa Pia,0,2,10.0,10.0,3.0,5.0,1.0,3.0,PrimeiraLiga
+2025-08-16,Tondela,Famalicao,0,1,15.0,14.0,4.0,5.0,2.0,7.0,PrimeiraLiga
+2025-08-16,Guimaraes,Estoril,3,2,16.0,11.0,4.0,5.0,4.0,2.0,PrimeiraLiga
+2025-08-16,Estrela,Benfica,0,1,15.0,14.0,2.0,3.0,5.0,4.0,PrimeiraLiga
+2025-08-17,Sp Lisbon,Arouca,6,0,19.0,7.0,10.0,1.0,6.0,1.0,PrimeiraLiga
+2025-08-17,Santa Clara,Moreirense,0,1,12.0,6.0,3.0,2.0,3.0,0.0,PrimeiraLiga
+2025-08-17,Alverca,Sp Braga,0,3,12.0,12.0,3.0,6.0,1.0,5.0,PrimeiraLiga
+2025-08-17,Rio Ave,Nacional,1,1,20.0,13.0,9.0,6.0,6.0,6.0,PrimeiraLiga
+2025-08-18,Gil Vicente,Porto,0,2,14.0,15.0,2.0,4.0,1.0,5.0,PrimeiraLiga
+2025-08-23,Moreirense,Guimaraes,2,0,10.0,11.0,4.0,4.0,3.0,7.0,PrimeiraLiga
+2025-08-23,Nacional,Sp Lisbon,1,4,3.0,27.0,1.0,7.0,3.0,13.0,PrimeiraLiga
+2025-08-23,Arouca,Rio Ave,3,3,14.0,15.0,6.0,7.0,4.0,2.0,PrimeiraLiga
+2025-08-23,Benfica,Tondela,3,0,21.0,9.0,12.0,4.0,13.0,2.0,PrimeiraLiga
+2025-08-24,Sp Braga,AVS,2,2,21.0,4.0,5.0,2.0,11.0,3.0,PrimeiraLiga
+2025-08-24,Famalicao,Gil Vicente,0,0,11.0,20.0,3.0,8.0,2.0,9.0,PrimeiraLiga
+2025-08-24,Porto,Casa Pia,4,0,20.0,7.0,7.0,0.0,7.0,2.0,PrimeiraLiga
+2025-08-25,Estrela,Alverca,2,2,19.0,6.0,6.0,2.0,6.0,2.0,PrimeiraLiga
+2025-08-29,Gil Vicente,Moreirense,2,0,12.0,10.0,4.0,0.0,4.0,3.0,PrimeiraLiga
+2025-08-30,Casa Pia,Nacional,0,2,9.0,9.0,3.0,2.0,2.0,3.0,PrimeiraLiga
+2025-08-30,AVS,Famalicao,0,1,13.0,11.0,3.0,3.0,5.0,9.0,PrimeiraLiga
+2025-08-30,Guimaraes,Arouca,1,1,12.0,9.0,3.0,3.0,2.0,2.0,PrimeiraLiga
+2025-08-30,Sp Lisbon,Porto,1,2,20.0,14.0,3.0,7.0,5.0,3.0,PrimeiraLiga
+2025-08-31,Tondela,Estoril,2,2,14.0,21.0,4.0,5.0,3.0,4.0,PrimeiraLiga
+2025-08-31,Alverca,Benfica,1,2,11.0,6.0,7.0,2.0,5.0,2.0,PrimeiraLiga
+2025-08-31,Rio Ave,Sp Braga,2,2,5.0,20.0,3.0,9.0,1.0,7.0,PrimeiraLiga
+2025-08-31,Santa Clara,Estrela,0,0,13.0,3.0,3.0,0.0,8.0,0.0,PrimeiraLiga
+2025-09-06,Estoril,Santa Clara,0,1,15.0,16.0,4.0,4.0,5.0,7.0,PrimeiraLiga
+2025-09-12,Benfica,Santa Clara,1,1,19.0,9.0,7.0,5.0,4.0,5.0,PrimeiraLiga
+2025-09-12,Alverca,Tondela,1,0,12.0,14.0,4.0,6.0,5.0,6.0,PrimeiraLiga
+2025-09-13,Famalicao,Sp Lisbon,1,2,9.0,9.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2025-09-13,Porto,Nacional,1,0,11.0,5.0,5.0,1.0,5.0,5.0,PrimeiraLiga
+2025-09-13,Moreirense,Rio Ave,3,1,15.0,15.0,8.0,4.0,7.0,3.0,PrimeiraLiga
+2025-09-13,Estoril,AVS,3,1,15.0,12.0,5.0,4.0,1.0,5.0,PrimeiraLiga
+2025-09-14,Estrela,Guimaraes,0,2,10.0,14.0,1.0,6.0,3.0,2.0,PrimeiraLiga
+2025-09-14,Arouca,Casa Pia,0,2,8.0,9.0,3.0,4.0,7.0,6.0,PrimeiraLiga
+2025-09-14,Sp Braga,Gil Vicente,0,1,11.0,12.0,7.0,5.0,5.0,7.0,PrimeiraLiga
+2025-09-19,Rio Ave,Porto,0,3,7.0,19.0,2.0,7.0,2.0,10.0,PrimeiraLiga
+2025-09-20,Nacional,Arouca,1,2,15.0,10.0,6.0,3.0,3.0,5.0,PrimeiraLiga
+2025-09-20,Santa Clara,Alverca,2,1,14.0,3.0,6.0,3.0,7.0,0.0,PrimeiraLiga
+2025-09-20,AVS,Benfica,0,3,8.0,19.0,1.0,6.0,2.0,1.0,PrimeiraLiga
+2025-09-20,Guimaraes,Sp Braga,1,1,11.0,17.0,3.0,5.0,3.0,5.0,PrimeiraLiga
+2025-09-21,Tondela,Estrela,0,0,17.0,8.0,8.0,3.0,5.0,2.0,PrimeiraLiga
+2025-09-21,Gil Vicente,Estoril,2,0,16.0,7.0,3.0,3.0,4.0,0.0,PrimeiraLiga
+2025-09-21,Casa Pia,Famalicao,1,1,10.0,11.0,3.0,2.0,5.0,3.0,PrimeiraLiga
+2025-09-22,Sp Lisbon,Moreirense,3,0,25.0,4.0,14.0,1.0,6.0,4.0,PrimeiraLiga
+2025-09-23,Benfica,Rio Ave,1,1,19.0,4.0,7.0,2.0,11.0,2.0,PrimeiraLiga
+2025-09-26,Benfica,Gil Vicente,2,1,10.0,16.0,4.0,8.0,0.0,7.0,PrimeiraLiga
+2025-09-27,Moreirense,Casa Pia,2,1,12.0,20.0,4.0,4.0,6.0,8.0,PrimeiraLiga
+2025-09-27,Santa Clara,Tondela,1,2,11.0,12.0,5.0,4.0,3.0,4.0,PrimeiraLiga
+2025-09-27,Estrela,AVS,3,0,11.0,11.0,6.0,2.0,6.0,6.0,PrimeiraLiga
+2025-09-27,Estoril,Sp Lisbon,0,1,7.0,9.0,2.0,2.0,3.0,9.0,PrimeiraLiga
+2025-09-28,Alverca,Guimaraes,2,0,11.0,19.0,4.0,3.0,1.0,5.0,PrimeiraLiga
+2025-09-28,Sp Braga,Nacional,0,1,9.0,13.0,1.0,5.0,6.0,3.0,PrimeiraLiga
+2025-09-28,Famalicao,Rio Ave,0,0,28.0,6.0,5.0,3.0,11.0,6.0,PrimeiraLiga
+2025-09-29,Arouca,Porto,0,4,13.0,16.0,3.0,5.0,5.0,8.0,PrimeiraLiga
+2025-10-03,Casa Pia,Estoril,2,2,11.0,10.0,5.0,3.0,6.0,7.0,PrimeiraLiga
+2025-10-04,Gil Vicente,Estrela,2,0,15.0,15.0,7.0,5.0,5.0,7.0,PrimeiraLiga
+2025-10-04,Nacional,Moreirense,3,2,17.0,10.0,7.0,4.0,2.0,4.0,PrimeiraLiga
+2025-10-04,AVS,Alverca,1,3,5.0,12.0,2.0,6.0,0.0,5.0,PrimeiraLiga
+2025-10-04,Guimaraes,Santa Clara,2,1,14.0,13.0,7.0,5.0,9.0,3.0,PrimeiraLiga
+2025-10-05,Porto,Benfica,0,0,8.0,4.0,2.0,1.0,3.0,3.0,PrimeiraLiga
+2025-10-05,Sp Lisbon,Sp Braga,1,1,13.0,11.0,3.0,5.0,1.0,5.0,PrimeiraLiga
+2025-10-05,Arouca,Famalicao,1,1,7.0,14.0,3.0,5.0,4.0,11.0,PrimeiraLiga
+2025-10-05,Rio Ave,Tondela,3,0,13.0,13.0,7.0,3.0,6.0,7.0,PrimeiraLiga
+2025-10-24,Alverca,Gil Vicente,0,4,6.0,12.0,2.0,5.0,1.0,4.0,PrimeiraLiga
+2025-10-25,Santa Clara,AVS,2,0,20.0,7.0,5.0,2.0,8.0,4.0,PrimeiraLiga
+2025-10-25,Benfica,Arouca,5,0,17.0,5.0,8.0,0.0,9.0,1.0,PrimeiraLiga
+2025-10-25,Estrela,Rio Ave,1,2,16.0,8.0,2.0,2.0,4.0,5.0,PrimeiraLiga
+2025-10-26,Estoril,Nacional,1,1,13.0,9.0,4.0,4.0,6.0,5.0,PrimeiraLiga
+2025-10-26,Famalicao,Guimaraes,2,0,15.0,13.0,10.0,3.0,5.0,4.0,PrimeiraLiga
+2025-10-26,Tondela,Sp Lisbon,0,3,9.0,29.0,2.0,15.0,2.0,9.0,PrimeiraLiga
+2025-10-26,Sp Braga,Casa Pia,4,0,15.0,3.0,8.0,1.0,4.0,2.0,PrimeiraLiga
+2025-10-27,Moreirense,Porto,1,2,8.0,16.0,1.0,7.0,2.0,7.0,PrimeiraLiga
+2025-10-31,Sp Lisbon,Alverca,2,0,27.0,8.0,8.0,0.0,10.0,0.0,PrimeiraLiga
+2025-11-01,Guimaraes,Benfica,0,3,10.0,24.0,3.0,10.0,3.0,6.0,PrimeiraLiga
+2025-11-01,Rio Ave,Estoril,0,4,2.0,24.0,0.0,6.0,0.0,6.0,PrimeiraLiga
+2025-11-01,Nacional,Famalicao,0,1,8.0,20.0,3.0,4.0,3.0,10.0,PrimeiraLiga
+2025-11-01,Casa Pia,Estrela,3,5,10.0,12.0,4.0,6.0,5.0,2.0,PrimeiraLiga
+2025-11-02,AVS,Tondela,2,2,15.0,10.0,5.0,3.0,5.0,3.0,PrimeiraLiga
+2025-11-02,Arouca,Moreirense,0,2,11.0,6.0,2.0,5.0,5.0,2.0,PrimeiraLiga
+2025-11-02,Porto,Sp Braga,2,1,9.0,10.0,4.0,3.0,2.0,3.0,PrimeiraLiga
+2025-11-03,Gil Vicente,Santa Clara,1,0,9.0,15.0,3.0,4.0,2.0,0.0,PrimeiraLiga
+2025-11-07,Estoril,Arouca,4,3,19.0,10.0,7.0,4.0,10.0,2.0,PrimeiraLiga
+2025-11-08,Alverca,Rio Ave,1,1,15.0,11.0,5.0,4.0,9.0,3.0,PrimeiraLiga
+2025-11-08,Tondela,Guimaraes,0,1,15.0,11.0,4.0,2.0,4.0,3.0,PrimeiraLiga
+2025-11-08,Santa Clara,Sp Lisbon,1,2,5.0,21.0,2.0,7.0,2.0,12.0,PrimeiraLiga
+2025-11-09,Benfica,Casa Pia,2,2,19.0,7.0,6.0,4.0,6.0,2.0,PrimeiraLiga
+2025-11-09,AVS,Gil Vicente,1,1,16.0,12.0,8.0,5.0,1.0,4.0,PrimeiraLiga
+2025-11-09,Estrela,Nacional,1,1,14.0,17.0,4.0,4.0,2.0,6.0,PrimeiraLiga
+2025-11-09,Famalicao,Porto,0,1,8.0,19.0,0.0,6.0,2.0,4.0,PrimeiraLiga
+2025-11-09,Sp Braga,Moreirense,2,1,11.0,11.0,3.0,1.0,5.0,3.0,PrimeiraLiga
+2025-11-28,Guimaraes,AVS,4,0,11.0,9.0,4.0,1.0,7.0,3.0,PrimeiraLiga
+2025-11-29,Nacional,Benfica,1,2,6.0,31.0,2.0,8.0,2.0,11.0,PrimeiraLiga
+2025-11-29,Gil Vicente,Tondela,0,1,15.0,5.0,2.0,2.0,12.0,3.0,PrimeiraLiga
+2025-11-29,Casa Pia,Alverca,0,2,5.0,10.0,0.0,5.0,6.0,4.0,PrimeiraLiga
+2025-11-29,Moreirense,Famalicao,2,2,11.0,17.0,6.0,8.0,5.0,4.0,PrimeiraLiga
+2025-11-30,Rio Ave,Santa Clara,1,1,9.0,9.0,4.0,3.0,1.0,5.0,PrimeiraLiga
+2025-11-30,Sp Lisbon,Estrela,4,0,19.0,5.0,6.0,3.0,5.0,1.0,PrimeiraLiga
+2025-11-30,Porto,Estoril,1,0,12.0,11.0,6.0,2.0,5.0,4.0,PrimeiraLiga
+2025-12-01,Arouca,Sp Braga,0,4,3.0,18.0,1.0,6.0,0.0,6.0,PrimeiraLiga
+2025-12-05,Benfica,Sp Lisbon,1,1,10.0,5.0,4.0,2.0,3.0,2.0,PrimeiraLiga
+2025-12-06,Santa Clara,Casa Pia,1,0,11.0,5.0,3.0,2.0,7.0,7.0,PrimeiraLiga
+2025-12-06,AVS,Rio Ave,1,2,9.0,17.0,5.0,8.0,3.0,11.0,PrimeiraLiga
+2025-12-06,Famalicao,Sp Braga,1,2,8.0,21.0,4.0,7.0,3.0,9.0,PrimeiraLiga
+2025-12-07,Estoril,Moreirense,3,3,9.0,8.0,5.0,5.0,1.0,5.0,PrimeiraLiga
+2025-12-07,Alverca,Nacional,1,0,10.0,17.0,4.0,3.0,2.0,2.0,PrimeiraLiga
+2025-12-07,Estrela,Arouca,3,1,24.0,9.0,9.0,2.0,5.0,3.0,PrimeiraLiga
+2025-12-07,Tondela,Porto,0,2,11.0,11.0,2.0,6.0,2.0,4.0,PrimeiraLiga
+2025-12-08,Guimaraes,Gil Vicente,0,0,10.0,6.0,3.0,1.0,8.0,4.0,PrimeiraLiga
+2025-12-13,Sp Lisbon,AVS,6,0,24.0,7.0,14.0,3.0,8.0,1.0,PrimeiraLiga
+2025-12-13,Casa Pia,Gil Vicente,1,1,3.0,11.0,1.0,2.0,1.0,8.0,PrimeiraLiga
+2025-12-13,Rio Ave,Guimaraes,0,1,8.0,16.0,2.0,3.0,6.0,6.0,PrimeiraLiga
+2025-12-14,Famalicao,Estoril,4,0,20.0,10.0,12.0,4.0,4.0,9.0,PrimeiraLiga
+2025-12-14,Moreirense,Benfica,0,4,10.0,10.0,2.0,5.0,4.0,4.0,PrimeiraLiga
+2025-12-14,Arouca,Alverca,1,0,18.0,5.0,4.0,1.0,8.0,5.0,PrimeiraLiga
+2025-12-15,Nacional,Tondela,3,1,8.0,21.0,4.0,5.0,3.0,10.0,PrimeiraLiga
+2025-12-15,Sp Braga,Santa Clara,1,0,6.0,5.0,3.0,2.0,5.0,1.0,PrimeiraLiga
+2025-12-15,Porto,Estrela,3,1,20.0,6.0,6.0,1.0,4.0,0.0,PrimeiraLiga
+2025-12-19,Estoril,Sp Braga,1,0,13.0,12.0,7.0,5.0,9.0,5.0,PrimeiraLiga
+2025-12-20,Gil Vicente,Rio Ave,2,2,23.0,3.0,5.0,2.0,10.0,1.0,PrimeiraLiga
+2025-12-20,Estrela,Moreirense,0,0,13.0,16.0,3.0,7.0,3.0,7.0,PrimeiraLiga
+2025-12-21,AVS,Nacional,2,2,16.0,19.0,3.0,6.0,9.0,2.0,PrimeiraLiga
+2025-12-21,Tondela,Casa Pia,1,2,11.0,12.0,4.0,5.0,6.0,4.0,PrimeiraLiga
+2025-12-21,Santa Clara,Arouca,0,0,9.0,8.0,5.0,2.0,2.0,4.0,PrimeiraLiga
+2025-12-22,Alverca,Porto,0,3,8.0,14.0,5.0,6.0,4.0,1.0,PrimeiraLiga
+2025-12-22,Benfica,Famalicao,1,0,9.0,4.0,6.0,2.0,5.0,2.0,PrimeiraLiga
+2025-12-23,Guimaraes,Sp Lisbon,1,4,17.0,16.0,5.0,7.0,2.0,5.0,PrimeiraLiga
+2025-12-27,Famalicao,Estrela,2,3,22.0,6.0,5.0,4.0,9.0,4.0,PrimeiraLiga
+2025-12-27,Estoril,Alverca,4,1,9.0,12.0,4.0,7.0,3.0,7.0,PrimeiraLiga
+2025-12-28,Arouca,Gil Vicente,2,2,9.0,17.0,5.0,5.0,4.0,8.0,PrimeiraLiga
+2025-12-28,Casa Pia,Guimaraes,0,0,5.0,13.0,2.0,2.0,2.0,3.0,PrimeiraLiga
+2025-12-28,Sp Braga,Benfica,2,2,11.0,14.0,3.0,6.0,1.0,5.0,PrimeiraLiga
+2025-12-28,Sp Lisbon,Rio Ave,4,0,23.0,5.0,12.0,0.0,8.0,1.0,PrimeiraLiga
+2025-12-29,Porto,AVS,2,0,18.0,7.0,4.0,1.0,7.0,0.0,PrimeiraLiga
+2026-01-02,Gil Vicente,Sp Lisbon,1,1,19.0,14.0,9.0,4.0,8.0,7.0,PrimeiraLiga
+2026-01-02,Guimaraes,Nacional,2,1,9.0,14.0,4.0,4.0,2.0,3.0,PrimeiraLiga
+2026-01-03,Tondela,Arouca,3,1,5.0,11.0,3.0,4.0,2.0,9.0,PrimeiraLiga
+2026-01-03,Benfica,Estoril,3,1,20.0,9.0,3.0,4.0,7.0,3.0,PrimeiraLiga
+2026-01-03,Estrela,Sp Braga,3,3,11.0,10.0,4.0,6.0,5.0,7.0,PrimeiraLiga
+2026-01-03,AVS,Moreirense,0,2,9.0,12.0,4.0,5.0,2.0,4.0,PrimeiraLiga
+2026-01-04,Santa Clara,Porto,0,1,12.0,8.0,0.0,5.0,2.0,7.0,PrimeiraLiga
+2026-01-04,Alverca,Famalicao,1,0,10.0,14.0,4.0,2.0,3.0,4.0,PrimeiraLiga
+2026-01-04,Rio Ave,Casa Pia,3,1,12.0,15.0,8.0,5.0,9.0,4.0,PrimeiraLiga
+2026-01-11,Nacional,Santa Clara,3,3,13.0,22.0,5.0,6.0,2.0,8.0,PrimeiraLiga
+2026-01-11,Moreirense,Tondela,1,0,7.0,8.0,2.0,2.0,4.0,2.0,PrimeiraLiga
+2026-01-16,Sp Lisbon,Casa Pia,3,0,16.0,6.0,4.0,1.0,4.0,6.0,PrimeiraLiga
+2026-01-17,Gil Vicente,Nacional,2,1,16.0,13.0,4.0,4.0,7.0,5.0,PrimeiraLiga
+2026-01-17,Alverca,Moreirense,2,1,15.0,10.0,3.0,4.0,4.0,0.0,PrimeiraLiga
+2026-01-17,AVS,Arouca,0,1,12.0,18.0,3.0,3.0,2.0,3.0,PrimeiraLiga
+2026-01-17,Rio Ave,Benfica,0,2,7.0,24.0,1.0,8.0,3.0,11.0,PrimeiraLiga
+2026-01-18,Santa Clara,Famalicao,0,1,15.0,7.0,1.0,3.0,9.0,2.0,PrimeiraLiga
+2026-01-18,Tondela,Sp Braga,0,1,7.0,11.0,2.0,4.0,1.0,5.0,PrimeiraLiga
+2026-01-18,Guimaraes,Porto,0,1,20.0,12.0,3.0,3.0,6.0,1.0,PrimeiraLiga
+2026-01-19,Estrela,Estoril,0,5,6.0,11.0,2.0,6.0,1.0,4.0,PrimeiraLiga
+2026-01-23,Casa Pia,AVS,3,3,9.0,27.0,4.0,7.0,2.0,11.0,PrimeiraLiga
+2026-01-24,Arouca,Sp Lisbon,1,2,11.0,15.0,5.0,4.0,4.0,7.0,PrimeiraLiga
+2026-01-24,Estoril,Guimaraes,4,2,16.0,13.0,6.0,4.0,4.0,2.0,PrimeiraLiga
+2026-01-24,Moreirense,Santa Clara,1,0,3.0,9.0,1.0,1.0,5.0,5.0,PrimeiraLiga
+2026-01-25,Sp Braga,Alverca,5,0,17.0,3.0,7.0,0.0,7.0,0.0,PrimeiraLiga
+2026-01-25,Famalicao,Tondela,3,0,9.0,2.0,4.0,0.0,3.0,4.0,PrimeiraLiga
+2026-01-25,Benfica,Estrela,4,0,15.0,4.0,8.0,1.0,6.0,1.0,PrimeiraLiga
+2026-01-25,Nacional,Rio Ave,4,0,14.0,11.0,5.0,6.0,5.0,5.0,PrimeiraLiga
+2026-01-26,Porto,Gil Vicente,3,0,14.0,11.0,6.0,5.0,11.0,3.0,PrimeiraLiga
+2026-01-30,Guimaraes,Moreirense,1,0,14.0,10.0,2.0,5.0,5.0,5.0,PrimeiraLiga
+2026-01-31,Santa Clara,Estoril,2,4,14.0,11.0,4.0,6.0,6.0,5.0,PrimeiraLiga
+2026-01-31,Rio Ave,Arouca,0,3,8.0,18.0,0.0,7.0,5.0,5.0,PrimeiraLiga
+2026-01-31,Alverca,Estrela,1,1,8.0,5.0,4.0,2.0,9.0,2.0,PrimeiraLiga
+2026-02-01,Tondela,Benfica,0,0,7.0,23.0,1.0,9.0,1.0,13.0,PrimeiraLiga
+2026-02-01,Sp Lisbon,Nacional,2,1,16.0,6.0,7.0,4.0,11.0,0.0,PrimeiraLiga
+2026-02-01,Gil Vicente,Famalicao,5,0,17.0,4.0,9.0,0.0,3.0,1.0,PrimeiraLiga
+2026-02-02,AVS,Sp Braga,0,4,8.0,10.0,3.0,8.0,1.0,4.0,PrimeiraLiga
+2026-02-02,Casa Pia,Porto,2,1,6.0,15.0,3.0,6.0,0.0,10.0,PrimeiraLiga
+2026-02-07,Estrela,Santa Clara,1,0,12.0,17.0,4.0,5.0,3.0,6.0,PrimeiraLiga
+2026-02-07,Moreirense,Gil Vicente,1,2,3.0,15.0,1.0,4.0,3.0,6.0,PrimeiraLiga
+2026-02-07,Arouca,Guimaraes,3,2,10.0,14.0,6.0,6.0,1.0,6.0,PrimeiraLiga
+2026-02-07,Estoril,Tondela,2,2,15.0,6.0,6.0,5.0,5.0,4.0,PrimeiraLiga
+2026-02-08,Benfica,Alverca,2,1,29.0,6.0,10.0,2.0,9.0,1.0,PrimeiraLiga
+2026-02-08,Nacional,Casa Pia,0,0,21.0,9.0,4.0,3.0,12.0,1.0,PrimeiraLiga
+2026-02-08,Sp Braga,Rio Ave,3,0,15.0,7.0,7.0,2.0,9.0,1.0,PrimeiraLiga
+2026-02-09,Famalicao,AVS,3,1,14.0,7.0,6.0,1.0,7.0,2.0,PrimeiraLiga
+2026-02-09,Porto,Sp Lisbon,1,1,8.0,11.0,1.0,3.0,1.0,8.0,PrimeiraLiga
+2026-02-13,Santa Clara,Benfica,1,2,9.0,11.0,2.0,3.0,1.0,7.0,PrimeiraLiga
+2026-02-13,Tondela,Alverca,1,1,18.0,10.0,4.0,4.0,11.0,5.0,PrimeiraLiga
+2026-02-14,Casa Pia,Arouca,3,2,11.0,8.0,4.0,4.0,2.0,3.0,PrimeiraLiga
+2026-02-14,Guimaraes,Estrela,2,1,20.0,7.0,6.0,4.0,9.0,2.0,PrimeiraLiga
+2026-02-14,Gil Vicente,Sp Braga,2,1,15.0,11.0,5.0,2.0,5.0,6.0,PrimeiraLiga
+2026-02-15,AVS,Estoril,3,0,15.0,12.0,3.0,2.0,9.0,9.0,PrimeiraLiga
+2026-02-15,Nacional,Porto,0,1,9.0,8.0,2.0,5.0,5.0,8.0,PrimeiraLiga
+2026-02-15,Sp Lisbon,Famalicao,1,0,22.0,2.0,5.0,1.0,14.0,1.0,PrimeiraLiga
+2026-02-16,Rio Ave,Moreirense,1,2,18.0,6.0,6.0,3.0,7.0,1.0,PrimeiraLiga
+2026-02-20,Estrela,Tondela,0,2,15.0,11.0,3.0,5.0,5.0,3.0,PrimeiraLiga
+2026-02-21,Sp Braga,Guimaraes,3,2,7.0,9.0,7.0,4.0,0.0,2.0,PrimeiraLiga
+2026-02-21,Moreirense,Sp Lisbon,0,3,6.0,15.0,2.0,8.0,1.0,8.0,PrimeiraLiga
+2026-02-21,Alverca,Santa Clara,1,1,7.0,16.0,1.0,3.0,5.0,2.0,PrimeiraLiga
+2026-02-21,Arouca,Nacional,3,0,10.0,15.0,7.0,5.0,4.0,1.0,PrimeiraLiga
+2026-02-21,Benfica,AVS,3,0,22.0,3.0,9.0,0.0,10.0,1.0,PrimeiraLiga
+2026-02-22,Estoril,Gil Vicente,3,1,10.0,12.0,7.0,4.0,1.0,4.0,PrimeiraLiga
+2026-02-22,Porto,Rio Ave,1,0,16.0,6.0,3.0,1.0,10.0,1.0,PrimeiraLiga
+2026-02-23,Famalicao,Casa Pia,2,0,24.0,7.0,7.0,1.0,7.0,7.0,PrimeiraLiga
+2026-02-27,Porto,Arouca,3,1,20.0,7.0,7.0,1.0,5.0,1.0,PrimeiraLiga
+2026-02-27,Sp Lisbon,Estoril,3,0,14.0,8.0,7.0,3.0,4.0,1.0,PrimeiraLiga
+2026-02-28,AVS,Estrela,0,0,11.0,16.0,3.0,6.0,7.0,9.0,PrimeiraLiga
+2026-02-28,Nacional,Sp Braga,1,2,14.0,20.0,5.0,8.0,3.0,6.0,PrimeiraLiga
+2026-02-28,Guimaraes,Alverca,1,1,15.0,11.0,6.0,5.0,0.0,11.0,PrimeiraLiga
+2026-03-01,Casa Pia,Moreirense,1,1,7.0,12.0,2.0,6.0,1.0,7.0,PrimeiraLiga
+2026-03-01,Rio Ave,Famalicao,0,0,16.0,10.0,4.0,4.0,5.0,5.0,PrimeiraLiga
+2026-03-01,Tondela,Santa Clara,2,2,11.0,17.0,4.0,3.0,4.0,7.0,PrimeiraLiga
+2026-03-02,Gil Vicente,Benfica,1,2,13.0,11.0,5.0,3.0,5.0,3.0,PrimeiraLiga
+2026-03-06,Famalicao,Arouca,1,0,13.0,10.0,6.0,4.0,5.0,1.0,PrimeiraLiga
+2026-03-07,Alverca,AVS,0,0,17.0,12.0,2.0,2.0,8.0,0.0,PrimeiraLiga
+2026-03-07,Moreirense,Nacional,1,1,7.0,20.0,2.0,7.0,4.0,7.0,PrimeiraLiga
+2026-03-07,Sp Braga,Sp Lisbon,2,2,10.0,14.0,3.0,5.0,6.0,5.0,PrimeiraLiga
+2026-03-07,Estoril,Casa Pia,0,0,9.0,9.0,1.0,2.0,4.0,5.0,PrimeiraLiga
+2026-03-08,Estrela,Gil Vicente,2,2,9.0,19.0,5.0,6.0,0.0,8.0,PrimeiraLiga
+2026-03-08,Benfica,Porto,2,2,20.0,14.0,6.0,6.0,8.0,2.0,PrimeiraLiga
+2026-03-08,Santa Clara,Guimaraes,2,0,6.0,14.0,4.0,6.0,2.0,4.0,PrimeiraLiga
+2026-03-09,Tondela,Rio Ave,0,1,6.0,9.0,2.0,2.0,3.0,2.0,PrimeiraLiga
+2026-03-14,Gil Vicente,Alverca,2,2,10.0,17.0,6.0,6.0,3.0,7.0,PrimeiraLiga
+2026-03-14,Guimaraes,Famalicao,1,2,12.0,13.0,6.0,3.0,3.0,11.0,PrimeiraLiga
+2026-03-14,Arouca,Benfica,1,2,12.0,22.0,6.0,5.0,2.0,15.0,PrimeiraLiga
+2026-03-15,Nacional,Estoril,0,1,16.0,11.0,4.0,2.0,5.0,4.0,PrimeiraLiga
+2026-03-15,Rio Ave,Estrela,2,1,18.0,11.0,6.0,3.0,10.0,4.0,PrimeiraLiga
+2026-03-15,AVS,Santa Clara,0,1,10.0,12.0,2.0,3.0,4.0,6.0,PrimeiraLiga
+2026-03-15,Porto,Moreirense,3,0,17.0,3.0,9.0,2.0,4.0,1.0,PrimeiraLiga
+2026-03-20,Estrela,Casa Pia,4,0,23.0,8.0,8.0,2.0,6.0,1.0,PrimeiraLiga
+2026-03-21,Famalicao,Nacional,1,0,14.0,10.0,4.0,6.0,7.0,6.0,PrimeiraLiga
+2026-03-21,Moreirense,Arouca,0,1,7.0,14.0,2.0,2.0,3.0,7.0,PrimeiraLiga
+2026-03-21,Benfica,Guimaraes,3,0,12.0,16.0,4.0,2.0,4.0,8.0,PrimeiraLiga
+2026-03-21,Santa Clara,Gil Vicente,1,0,7.0,8.0,2.0,0.0,6.0,6.0,PrimeiraLiga
+2026-03-21,Tondela,AVS,0,0,14.0,9.0,3.0,2.0,7.0,6.0,PrimeiraLiga
+2026-03-22,Estoril,Rio Ave,1,2,13.0,13.0,4.0,8.0,11.0,7.0,PrimeiraLiga
+2026-03-22,Alverca,Sp Lisbon,1,4,12.0,15.0,4.0,9.0,3.0,1.0,PrimeiraLiga
+2026-03-22,Sp Braga,Porto,1,2,6.0,12.0,1.0,3.0,3.0,5.0,PrimeiraLiga
+2026-04-03,Gil Vicente,AVS,3,0,16.0,11.0,6.0,3.0,3.0,1.0,PrimeiraLiga
+2026-04-03,Guimaraes,Tondela,5,0,12.0,3.0,5.0,1.0,3.0,1.0,PrimeiraLiga
+2026-04-03,Sp Lisbon,Santa Clara,4,2,22.0,7.0,8.0,4.0,9.0,5.0,PrimeiraLiga
+2026-04-04,Porto,Famalicao,2,2,8.0,11.0,3.0,6.0,4.0,3.0,PrimeiraLiga
+2026-04-04,Rio Ave,Alverca,1,2,18.0,14.0,5.0,6.0,8.0,4.0,PrimeiraLiga
+2026-04-04,Nacional,Estrela,2,0,16.0,11.0,4.0,2.0,5.0,6.0,PrimeiraLiga
+2026-04-04,Moreirense,Sp Braga,0,1,12.0,10.0,2.0,7.0,4.0,9.0,PrimeiraLiga
+2026-04-06,Arouca,Estoril,3,2,12.0,12.0,4.0,3.0,3.0,3.0,PrimeiraLiga
+2026-04-06,Casa Pia,Benfica,1,1,8.0,18.0,2.0,3.0,3.0,12.0,PrimeiraLiga
+2026-04-10,Famalicao,Moreirense,1,1,18.0,2.0,7.0,1.0,13.0,0.0,PrimeiraLiga
+2026-04-11,AVS,Guimaraes,1,1,17.0,14.0,4.0,6.0,5.0,4.0,PrimeiraLiga
+2026-04-11,Santa Clara,Rio Ave,0,2,13.0,4.0,4.0,3.0,3.0,3.0,PrimeiraLiga
+2026-04-11,Estrela,Sp Lisbon,0,1,9.0,10.0,3.0,2.0,4.0,13.0,PrimeiraLiga
+2026-04-12,Alverca,Casa Pia,3,1,11.0,15.0,5.0,5.0,9.0,11.0,PrimeiraLiga
+2026-04-12,Benfica,Nacional,2,0,24.0,7.0,8.0,4.0,15.0,1.0,PrimeiraLiga
+2026-04-12,Sp Braga,Arouca,1,0,6.0,9.0,2.0,1.0,6.0,5.0,PrimeiraLiga
+2026-04-12,Estoril,Porto,1,3,8.0,20.0,3.0,5.0,1.0,8.0,PrimeiraLiga
+2026-04-13,Tondela,Gil Vicente,2,2,10.0,14.0,5.0,6.0,5.0,5.0,PrimeiraLiga
+2026-04-17,Rio Ave,AVS,2,2,20.0,13.0,8.0,7.0,4.0,9.0,PrimeiraLiga
+2026-04-18,Casa Pia,Santa Clara,0,0,10.0,5.0,3.0,2.0,4.0,6.0,PrimeiraLiga
+2026-04-18,Gil Vicente,Guimaraes,0,1,12.0,11.0,6.0,3.0,10.0,3.0,PrimeiraLiga
+2026-04-18,Nacional,Alverca,1,0,10.0,8.0,6.0,4.0,4.0,8.0,PrimeiraLiga
+2026-04-19,Arouca,Estrela,1,0,11.0,15.0,3.0,3.0,4.0,3.0,PrimeiraLiga
+2026-04-19,Sp Lisbon,Benfica,1,2,19.0,14.0,6.0,5.0,3.0,8.0,PrimeiraLiga
+2026-04-19,Porto,Tondela,2,0,22.0,5.0,8.0,3.0,8.0,3.0,PrimeiraLiga
+2026-04-19,Sp Braga,Famalicao,2,2,10.0,6.0,4.0,3.0,5.0,2.0,PrimeiraLiga
+2026-04-20,Moreirense,Estoril,1,0,11.0,4.0,4.0,1.0,5.0,1.0,PrimeiraLiga
+2026-04-23,Casa Pia,Sp Braga,0,1,7.0,8.0,1.0,2.0,4.0,5.0,PrimeiraLiga
+2026-04-24,Alverca,Arouca,2,1,7.0,14.0,3.0,3.0,6.0,3.0,PrimeiraLiga
+2026-04-25,Tondela,Nacional,0,2,22.0,17.0,5.0,6.0,8.0,7.0,PrimeiraLiga
+2026-04-25,Benfica,Moreirense,4,1,18.0,8.0,8.0,4.0,9.0,2.0,PrimeiraLiga
+2026-04-25,Guimaraes,Rio Ave,2,0,11.0,5.0,3.0,4.0,3.0,5.0,PrimeiraLiga
+2026-04-26,AVS,Sp Lisbon,1,1,11.0,20.0,4.0,8.0,0.0,9.0,PrimeiraLiga
+2026-04-26,Santa Clara,Sp Braga,2,1,14.0,3.0,3.0,2.0,4.0,1.0,PrimeiraLiga
+2026-04-26,Estoril,Famalicao,0,1,9.0,6.0,2.0,6.0,9.0,4.0,PrimeiraLiga
+2026-04-26,Estrela,Porto,1,2,11.0,11.0,3.0,4.0,0.0,6.0,PrimeiraLiga
+2026-04-27,Gil Vicente,Casa Pia,2,1,12.0,7.0,4.0,2.0,4.0,3.0,PrimeiraLiga
+2026-04-29,Sp Lisbon,Tondela,2,2,16.0,9.0,5.0,2.0,5.0,5.0,PrimeiraLiga
+2026-05-02,Arouca,Santa Clara,2,2,9.0,12.0,5.0,4.0,5.0,6.0,PrimeiraLiga
+2026-05-02,Moreirense,Estrela,3,2,14.0,10.0,5.0,3.0,1.0,4.0,PrimeiraLiga
+2026-05-02,Nacional,AVS,1,2,24.0,19.0,6.0,3.0,8.0,6.0,PrimeiraLiga
+2026-05-02,Famalicao,Benfica,2,2,15.0,8.0,5.0,3.0,6.0,4.0,PrimeiraLiga
+2026-05-02,Porto,Alverca,1,0,12.0,10.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2026-05-03,Casa Pia,Tondela,0,1,4.0,9.0,3.0,5.0,7.0,2.0,PrimeiraLiga
+2026-05-03,Sp Braga,Estoril,1,1,10.0,10.0,3.0,4.0,5.0,4.0,PrimeiraLiga
+2026-05-03,Rio Ave,Gil Vicente,0,0,18.0,13.0,2.0,2.0,9.0,7.0,PrimeiraLiga
+2026-05-04,Sp Lisbon,Guimaraes,5,1,14.0,13.0,10.0,5.0,1.0,7.0,PrimeiraLiga
+2026-05-10,AVS,Porto,3,1,9.0,20.0,5.0,4.0,3.0,7.0,PrimeiraLiga
+2026-05-10,Alverca,Estoril,1,1,8.0,11.0,1.0,3.0,4.0,4.0,PrimeiraLiga
+2026-05-11,Rio Ave,Sp Lisbon,1,4,12.0,16.0,3.0,5.0,5.0,6.0,PrimeiraLiga
+2026-05-11,Guimaraes,Casa Pia,0,1,15.0,11.0,2.0,5.0,6.0,4.0,PrimeiraLiga
+2026-05-11,Santa Clara,Nacional,2,0,12.0,12.0,2.0,1.0,4.0,6.0,PrimeiraLiga
+2026-05-11,Estrela,Famalicao,0,0,4.0,15.0,1.0,4.0,3.0,10.0,PrimeiraLiga
+2026-05-11,Benfica,Sp Braga,2,2,24.0,5.0,8.0,2.0,8.0,2.0,PrimeiraLiga
+2026-05-11,Gil Vicente,Arouca,1,3,15.0,13.0,5.0,6.0,6.0,2.0,PrimeiraLiga
+2026-05-11,Tondela,Moreirense,2,0,14.0,10.0,3.0,2.0,1.0,8.0,PrimeiraLiga
+2026-05-16,Sp Braga,Estrela,2,2,14.0,6.0,4.0,4.0,7.0,1.0,PrimeiraLiga
+2026-05-16,Estoril,Benfica,1,3,16.0,19.0,6.0,8.0,2.0,9.0,PrimeiraLiga
+2026-05-16,Nacional,Guimaraes,2,0,5.0,13.0,3.0,4.0,2.0,6.0,PrimeiraLiga
+2026-05-16,Famalicao,Alverca,1,0,11.0,7.0,2.0,1.0,6.0,5.0,PrimeiraLiga
+2026-05-16,Arouca,Tondela,3,1,16.0,11.0,4.0,2.0,5.0,6.0,PrimeiraLiga
+2026-05-16,Porto,Santa Clara,1,0,14.0,11.0,6.0,0.0,8.0,5.0,PrimeiraLiga
+2026-05-16,Moreirense,AVS,0,0,13.0,8.0,4.0,0.0,5.0,3.0,PrimeiraLiga
+2026-05-16,Casa Pia,Rio Ave,1,1,20.0,6.0,5.0,3.0,9.0,0.0,PrimeiraLiga
+2026-05-16,Sp Lisbon,Gil Vicente,3,0,15.0,10.0,5.0,1.0,6.0,1.0,PrimeiraLiga
 2019-08-24,Parma,Juventus,0,1,5.0,9.0,4.0,4.0,5.0,8.0,SerieA
 2019-08-24,Fiorentina,Napoli,3,4,10.0,8.0,6.0,6.0,4.0,5.0,SerieA
 2019-08-25,Sampdoria,Lazio,0,3,12.0,16.0,8.0,10.0,5.0,9.0,SerieA

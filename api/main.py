@@ -101,9 +101,9 @@ MAX_GOALS = 8  # troncature de la matrice de Poisson — au-delà, probabilité 
 
 # Alias courants observés dans l'usage réel (abréviations médiatiques,
 # noms officiels complets vs noms courts utilisés dans les données
-# sources). Couvre les 5 ligues du dataset (Ligue1, PremierLeague, LaLiga,
-# Bundesliga, SerieA) — vérifié contre la liste réelle des équipes dans
-# model_artifacts/*.json (cf. export_model_artifacts.py).
+# sources). Couvre les 6 ligues du dataset (Ligue1, PremierLeague, LaLiga,
+# Bundesliga, SerieA, PrimeiraLiga) — vérifié contre la liste réelle des
+# équipes dans model_artifacts/*.json (cf. export_model_artifacts.py).
 TEAM_ALIASES = {
     # --- Ligue 1 ---
     "psg": "Paris SG",
@@ -318,6 +318,49 @@ TEAM_ALIASES = {
 
     # --- Premier League (ajouts promotion 2025-26) ---
     "sunderland afc": "Sunderland",
+
+    # --- Liga Portugal (Primeira Liga) ---
+    "sporting": "Sp Lisbon",
+    "sporting cp": "Sp Lisbon",
+    "sporting clube de portugal": "Sp Lisbon",
+    "sporting lisbonne": "Sp Lisbon",
+    "sporting lisbon": "Sp Lisbon",
+    "scp": "Sp Lisbon",
+    "fc porto": "Porto",
+    "fcp": "Porto",
+    "sl benfica": "Benfica",
+    "slb": "Benfica",
+    "sc braga": "Sp Braga",
+    "braga": "Sp Braga",
+    "vitoria de guimaraes": "Guimaraes",
+    "vitória de guimarães": "Guimaraes",
+    "vitoria guimaraes": "Guimaraes",
+    "cd santa clara": "Santa Clara",
+    "cd nacional": "Nacional",
+    "gil vicente fc": "Gil Vicente",
+    "cd tondela": "Tondela",
+    "fc famalicao": "Famalicao",
+    "fc famalicão": "Famalicao",
+    "moreirense fc": "Moreirense",
+    "rio ave fc": "Rio Ave",
+    "sc farense": "Farense",
+    "boavista fc": "Boavista",
+    "fc arouca": "Arouca",
+    "fc pacos de ferreira": "Pacos Ferreira",
+    "pacos de ferreira": "Pacos Ferreira",
+    "gd estoril praia": "Estoril",
+    "estoril praia": "Estoril",
+    "cf estrela da amadora": "Estrela",
+    "estrela da amadora": "Estrela",
+    "portimonense sc": "Portimonense",
+    "cd aves": "Aves",
+    "desportivo aves": "Aves",
+    "fc vizela": "Vizela",
+    "casa pia ac": "Casa Pia",
+    "cf belenenses": "Belenenses",
+    "os belenenses": "Belenenses",
+    "vitoria de setubal": "Setubal",
+    "vitória de setúbal": "Setubal",
 }
 
 

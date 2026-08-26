@@ -1,6 +1,8 @@
 """
 update_raw_data.py — Actualise data/all_leagues_raw_with_stats.csv depuis le
-miroir GitHub datasets/football-datasets.
+miroir GitHub datasets/football-datasets (5 grands championnats) et,
+pour les ligues absentes de ce miroir, directement depuis football-data.co.uk
+(voir LEAGUE_DIRECT_CODES).
 =============================================================================
 
 Source vérifiée (voir README section "Source de données") :
@@ -15,6 +17,15 @@ d'origine (ou une source identique en amont, football-data.co.uk) de ce
 fichier. Aucune fabrication : la structure a été vérifiée en direct sur le
 dépôt avant d'écrire ce module (cf. season-2526.csv, 306 lignes, colonnes
 identiques).
+
+Ligues ajoutées après coup et absentes de ce miroir GitHub (ex. Primeira
+Liga portugaise) : téléchargées directement depuis football-data.co.uk
+(https://www.football-data.co.uk/mmz4281/XXYY/<code>.csv, mêmes colonnes
+mais dates en DD/MM/YYYY — voir download_direct_season). Vérifié en direct :
+football-data.co.uk couvre bien plus de championnats que le miroir GitHub
+(Eredivisie, Belgique, Écosse, Turquie, Grèce, Championship anglais, etc.)
+— ce module peut donc suivre d'autres ligues sans changer de source, en
+ajoutant simplement une entrée à LEAGUE_DIRECT_CODES.
 
 Stratégie de récupération : pas de suivi fin "quels matchs sont vraiment
 nouveaux" — on retélécharge simplement les fichiers de la saison EN COURS
@@ -60,6 +71,19 @@ LEAGUE_REPO_DIRS = {
     "Bundesliga": "bundesliga",
     "SerieA": "serie-a",
 }
+
+# Ligues absentes du miroir GitHub datasets/football-datasets (celui-ci ne
+# couvre que les "5 grands championnats" ci-dessus) — téléchargées
+# DIRECTEMENT depuis football-data.co.uk (source d'origine du miroir,
+# format identique : mêmes colonnes, mais dates en DD/MM/YYYY au lieu de
+# YYYY-MM-DD, voir download_direct_season). Nom de ligue interne -> code
+# division football-data.co.uk (ex. "P1" = Primeira Liga, voir
+# https://www.football-data.co.uk/portugalm.php).
+LEAGUE_DIRECT_CODES = {
+    "PrimeiraLiga": "P1",
+}
+
+DIRECT_BASE_URL = "https://www.football-data.co.uk/mmz4281"
 
 # Colonnes du dépôt source (format football-data.co.uk) -> nos colonnes.
 COLUMN_MAP = {
@@ -120,11 +144,42 @@ def download_league_season(league_repo_dir: str, season_code: str, timeout: int 
     return df
 
 
+def download_direct_season(division_code: str, season_code: str, timeout: int = 20) -> pd.DataFrame | None:
+    """
+    Équivalent de download_league_season() mais pour une ligue absente du
+    miroir GitHub (voir LEAGUE_DIRECT_CODES) — télécharge directement
+    depuis football-data.co.uk. Dates en DD/MM/YYYY (dayfirst=True,
+    contrairement au miroir GitHub qui est déjà en YYYY-MM-DD) : converties
+    en datetime ICI, avant tout concat avec les autres frames, pour ne
+    jamais dépendre de la détection automatique de format de pandas sur un
+    mélange de styles de dates.
+    """
+    url = f"{DIRECT_BASE_URL}/{season_code}/{division_code}.csv"
+    try:
+        df = pd.read_csv(url, storage_options={"timeout": timeout})
+    except Exception as e:
+        msg = str(e)
+        if "404" in msg or "Not Found" in msg or "HTTP Error 404" in msg:
+            logger.info(f"  {url} -> pas encore disponible (404), ignoré")
+            return None
+        raise RuntimeError(f"Échec de téléchargement de {url} : {e}") from e
+
+    missing = [c for c in COLUMN_MAP if c not in df.columns]
+    if missing:
+        raise ValueError(f"{url} : colonnes attendues manquantes {missing} — schéma source a peut-être changé")
+
+    df = df.rename(columns=COLUMN_MAP)[list(COLUMN_MAP.values())].copy()
+    df["date"] = pd.to_datetime(df["date"], dayfirst=True)
+    return df
+
+
 def fetch_latest_matches(reference_date: datetime | None = None) -> pd.DataFrame:
     """
-    Télécharge la saison courante + précédente pour les 5 ligues et
-    retourne un DataFrame unique au format attendu par le reste du
-    pipeline (mêmes colonnes que data/all_leagues_raw_with_stats.csv).
+    Télécharge la saison courante + précédente pour toutes les ligues
+    suivies (miroir GitHub pour les 5 grands championnats, football-data.co.uk
+    en direct pour les autres, voir LEAGUE_DIRECT_CODES) et retourne un
+    DataFrame unique au format attendu par le reste du pipeline (mêmes
+    colonnes que data/all_leagues_raw_with_stats.csv).
     """
     season_codes = current_and_previous_season_codes(reference_date)
     logger.info(f"Codes de saison recherchés : {season_codes}")
@@ -137,6 +192,16 @@ def fetch_latest_matches(reference_date: datetime | None = None) -> pd.DataFrame
             if df is None:
                 continue
             df = df.rename(columns=COLUMN_MAP)[list(COLUMN_MAP.values())].copy()
+            df["league"] = league
+            frames.append(df)
+            logger.info(f"  -> {len(df)} matchs")
+
+    for league, division_code in LEAGUE_DIRECT_CODES.items():
+        for season_code in season_codes:
+            logger.info(f"Téléchargement {league} — {division_code}.csv (saison {season_code}, football-data.co.uk) ...")
+            df = download_direct_season(division_code, season_code)
+            if df is None:
+                continue
             df["league"] = league
             frames.append(df)
             logger.info(f"  -> {len(df)} matchs")
@@ -198,7 +263,7 @@ def update_raw_data_file(raw_file: str = RAW_FILE, reference_date: datetime | No
                 "after": counts_after.get(league, 0),
                 "added": counts_after.get(league, 0) - counts_before.get(league, 0),
             }
-            for league in LEAGUE_REPO_DIRS
+            for league in {**LEAGUE_REPO_DIRS, **LEAGUE_DIRECT_CODES}
         },
     }
     return summary
