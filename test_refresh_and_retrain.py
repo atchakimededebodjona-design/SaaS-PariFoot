@@ -65,7 +65,11 @@ def test_corrupted_csv_does_not_touch_artifacts():
         import importlib
         import main as api_main
         importlib.reload(api_main)  # force le rechargement depuis les vrais api/model_artifacts/
-        assert len(api_main.LEAGUE_MODELS) == 5
+        # 11 ligues depuis les commits "Ajoute Liga Portugal" / "Ajoute MLS, Saudi Pro
+        # League, Champions/Europa/Conference League" (postérieurs à ce test, jamais
+        # mis à jour depuis — trouvé cassé pendant la régression de Phase 5.5, sans
+        # rapport avec le Prediction Registry, corrigé ici pour refléter l'état réel).
+        assert len(api_main.LEAGUE_MODELS) == 11
         r = api_main._resolve_and_predict("Ligue1", "PSG", "Marseille")
         assert abs(r.home_win + r.draw + r.away_win - 1.0) < 1e-6
         print(f"  OK — API toujours fonctionnelle avec les anciennes données "

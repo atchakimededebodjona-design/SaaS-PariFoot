@@ -138,7 +138,9 @@ def get_or_create_active_model_version(
     return version
 
 
-def log_prediction(session: Session, record: PredictionRecord, model_version_id: int) -> ModelPrediction:
+def log_prediction(
+    session: Session, record: PredictionRecord, model_version_id: int, *, kickoff_at: Optional[datetime] = None,
+) -> ModelPrediction:
     """
     Enregistre UNE prédiction via le contrat commun. Idempotent (§13) : si
     une ligne existe déjà pour (league, match_date, home_team, away_team,
@@ -149,7 +151,31 @@ def log_prediction(session: Session, record: PredictionRecord, model_version_id:
     N'appelle PAS session.commit() : ajoute et flush seulement (pour
     obtenir .id), laisse l'appelant grouper sa transaction — même
     discipline que deactivate_other_versions() dans team_rating.py.
+
+    `kickoff_at` (Phase 5.5, anti-data-leakage) : protection défense-en-
+    profondeur, optionnelle. app/ai/arena/scheduler.py filtre déjà les
+    fixtures dont `match_date <= now` AVANT même d'appeler cette fonction
+    (voir generate_live_predictions()) — cette vérification-ci ne duplique
+    pas ce filtre, elle protège le REGISTRE lui-même contre un futur
+    appelant qui oublierait de filtrer en amont. `predicted_at` n'est
+    jamais fourni par l'appelant (toujours `datetime.now()` au moment de
+    l'écriture, voir ModelPrediction.predicted_at) — on compare donc
+    l'heure réelle d'écriture à `kickoff_at`, jamais une valeur transmise
+    par l'appelant pour la prédiction elle-même (rien à falsifier).
+    Absent (None) par défaut : n'affecte aucun appelant existant qui ne le
+    fournit pas encore (main.py ne connaît aujourd'hui que la DATE du
+    coup d'envoi, pas l'heure — voir kickoff_date, hors périmètre de cette
+    phase, voir rapport).
     """
+    if kickoff_at is not None:
+        now = datetime.now(timezone.utc)
+        if now >= kickoff_at:
+            raise ValueError(
+                f"Prédiction refusée : coup d'envoi déjà passé (now={now.isoformat()} >= "
+                f"kickoff_at={kickoff_at.isoformat()}) pour {record.league} {record.home_team} vs "
+                f"{record.away_team} ({record.model_type}) — jamais autorisé (anti data-leakage)."
+            )
+
     existing = session.exec(
         select(ModelPrediction).where(
             ModelPrediction.league == record.league,
@@ -250,3 +276,77 @@ def resolve_prediction(row: ModelPrediction, home_goals: int, away_goals: int) -
     row.correct_btts = correct_btts
     row.correct_over_2_5 = correct_over_2_5
     row.status = "resolved"
+
+
+# ---------------------------------------------------------------------------
+# Recherche (Phase 5.5, §20) — service interne, pas d'endpoint public :
+# les besoins de lecture de l'Arena (service.py/monitoring.py/
+# live_validation.py/shadow_comparison.py) restent sur leurs propres
+# requêtes agrégées (GROUP BY, jointures de métriques) — ces 3 fonctions
+# couvrent les lectures PONCTUELLES (une prédiction, un match, un modèle),
+# qui n'existaient nulle part sous une forme réutilisable avant ce ticket.
+# ---------------------------------------------------------------------------
+
+def get_prediction_by_id(session: Session, prediction_id: int) -> Optional[ModelPrediction]:
+    """Récupère une prédiction par son identifiant. None si absente."""
+    return session.get(ModelPrediction, prediction_id)
+
+
+def get_predictions_by_match(
+    session: Session, league: str, match_date: date, home_team: str, away_team: str,
+) -> list[ModelPrediction]:
+    """
+    Toutes les prédictions (tous modèles, toutes versions, actives ET
+    shadow) enregistrées pour UN match donné — la vue "un match, tous les
+    modèles qui l'ont prédit" nécessaire à une comparaison Arena par match.
+    """
+    return session.exec(
+        select(ModelPrediction)
+        .where(
+            ModelPrediction.league == league,
+            ModelPrediction.match_date == match_date,
+            ModelPrediction.home_team == home_team,
+            ModelPrediction.away_team == away_team,
+        )
+        .order_by(ModelPrediction.model_type, ModelPrediction.model_version_id)
+    ).all()
+
+
+def get_predictions_by_model(
+    session: Session,
+    model_type: str,
+    *,
+    model_version_id: Optional[int] = None,
+    role: Optional[str] = None,
+    source: Optional[str] = None,
+    status: Optional[str] = None,
+    since: Optional[date] = None,
+    until: Optional[date] = None,
+) -> list[ModelPrediction]:
+    """
+    Toutes les prédictions d'UN modèle (optionnellement filtrées par
+    version/role/source/statut/fenêtre de dates — les dimensions de
+    recherche listées au §20 du ticket, "par modèle, par version, par
+    marché [voir note ci-dessous], par date"). Filtres additifs (AND),
+    tous optionnels — aucun filtre = tout l'historique du model_type.
+
+    Pas de filtre "marché" dédié : une ligne ModelPrediction porte déjà
+    TOUS les marchés modélisés par ce modèle (pas une ligne par marché,
+    voir docstring ModelPrediction) — "chercher par marché" revient donc à
+    filtrer le résultat sur `pick_btts`/`pick_over_2_5` non-null côté
+    appelant, jamais une requête SQL séparée à dupliquer ici.
+    """
+    query = select(ModelPrediction).where(ModelPrediction.model_type == model_type)
+    if model_version_id is not None:
+        query = query.where(ModelPrediction.model_version_id == model_version_id)
+    if role is not None:
+        query = query.where(ModelPrediction.role == role)
+    if source is not None:
+        query = query.where(ModelPrediction.source == source)
+    if status is not None:
+        query = query.where(ModelPrediction.status == status)
+    if since is not None:
+        query = query.where(ModelPrediction.match_date >= since)
+    if until is not None:
+        query = query.where(ModelPrediction.match_date <= until)
+    return session.exec(query.order_by(ModelPrediction.match_date.desc())).all()
