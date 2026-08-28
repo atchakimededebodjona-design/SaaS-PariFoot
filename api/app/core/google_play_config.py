@@ -47,7 +47,10 @@ Scope OAuth2 unique nécessaire : https://www.googleapis.com/auth/androidpublish
 (confirmé via la documentation officielle Google Play Developer API).
 """
 
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 GOOGLE_PLAY_PACKAGE_NAME = os.environ.get("GOOGLE_PLAY_PACKAGE_NAME", "")
 
@@ -71,4 +74,13 @@ if os.environ.get("ENV") == "production":
         "GOOGLE_PLAY_PACKAGE_NAME": GOOGLE_PLAY_PACKAGE_NAME,
     }.items() if not v]
     if missing:
-        raise RuntimeError(f"Variables Google Play manquantes en production : {missing}")
+        # Best-effort, comme _log_prediction/_log_model_prediction dans main.py :
+        # tant que Google Play Billing n'est pas configuré côté Railway, ce
+        # module ne doit jamais faire planter tout le service web au démarrage
+        # (voir app/billing/google_play_service.py, importé par
+        # app/billing/router.py, importé par main.py — un raise ici est fatal
+        # pour l'ensemble de l'API, pas seulement pour Google Play). Un
+        # RuntimeError explicite ferait plus de sens dans un module qui n'est
+        # importé qu'à l'usage réel (paresseux), pas ici où l'import est
+        # systématique.
+        logger.warning(f"Variables Google Play manquantes en production : {missing}")
