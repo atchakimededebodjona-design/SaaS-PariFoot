@@ -30,3 +30,10 @@ psycopg2-binary
 alembic
 slowapi
 email-validator
+# Google Play Billing (Phase 2) : authentification compte de service
+# (OAuth2 JWT bearer, scope androidpublisher) ET vérification des jetons
+# OIDC des notifications RTDN (google.oauth2.id_token.verify_oauth2_token) —
+# une seule bibliothèque pour les deux besoins, pas de SDK plus lourd
+# (google-api-python-client) : les appels HTTP eux-mêmes restent en httpx,
+# comme pour Chariow.
+google-auth

@@ -19,6 +19,9 @@ from app.core.database import resolve_database_url
 # dans SQLModel.metadata avant l'autogénération — jamais utilisés directement.
 from app.models.user import User  # noqa: F401
 from app.models.subscription import Subscription, ProcessedPulseDelivery  # noqa: F401
+from app.models.provider_subscription import ProviderSubscription  # noqa: F401
+from app.models.entitlement import Entitlement, EntitlementEvent  # noqa: F401
+from app.models.google_play_purchase import GooglePlayPurchase, ProcessedGoogleNotification  # noqa: F401
 from app.models.model_artifact import ModelArtifact  # noqa: F401
 from app.models.match import Match, MatchStats  # noqa: F401
 from app.models.team_rating import ModelVersion, TeamRating  # noqa: F401

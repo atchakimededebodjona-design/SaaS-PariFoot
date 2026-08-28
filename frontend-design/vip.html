@@ -112,9 +112,34 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-title">
-                <span>👑</span>
-                <span>Espace VIP</span>
+                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span>
+                    <span>xFoot</span>
+                    <span class="pro-badge">VIP</span>
+                </a>
             </div>
+            <nav class="desktop-nav">
+                <a href="index.html" class="desktop-nav-link">
+                    <span class="nav-icon">✨</span>
+                    <span>AI Analysis</span>
+                </a>
+                <a href="live.html" class="desktop-nav-link">
+                    <span class="nav-icon">⏱️</span>
+                    <span>Live x3</span>
+                </a>
+                <a href="history.html" class="desktop-nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Historique</span>
+                </a>
+                <a href="arena.html" class="desktop-nav-link">
+                    <span class="nav-icon">🏟️</span>
+                    <span>AI Arena</span>
+                </a>
+                <a href="vip.html" class="desktop-nav-link active">
+                    <span class="nav-icon">👑</span>
+                    <span>VIP</span>
+                </a>
+            </nav>
             <div class="header-actions">
                 <span class="user-email" id="user-email">...</span>
                 <button class="icon-btn" id="logout-btn" title="Déconnexion">
@@ -177,20 +202,49 @@
             </div>
 
             <h2 class="section-title vip-plans-section" style="font-size: 1.1rem; margin-bottom: 1rem;">Formules</h2>
-            <div class="plan-selector" style="margin-bottom: 1.5rem;">
-                <div class="plan-card vip-plan-preview">
-                    <h4>Mensuel</h4>
-                    <div class="price">1000 FCFA<span>/mois</span></div>
+
+            <!-- WEB : Chariow, inchangé (voir plan Phase 3 — "ne casse pas le parcours web") -->
+            <div id="vip-plans-web">
+                <div class="plan-selector" style="margin-bottom: 1.5rem;">
+                    <div class="plan-card vip-plan-preview">
+                        <h4>Mensuel</h4>
+                        <div class="price">1000 FCFA<span>/mois</span></div>
+                    </div>
+                    <div class="plan-card vip-plan-preview" style="border-color: var(--accent-gold); background: rgba(44, 217, 165, 0.08);">
+                        <h4>Annuel</h4>
+                        <div class="price">10000 FCFA<span>/an</span></div>
+                        <div class="badge">Économisez 2 mois</div>
+                    </div>
                 </div>
-                <div class="plan-card vip-plan-preview" style="border-color: var(--accent-gold); background: rgba(44, 217, 165, 0.08);">
-                    <h4>Annuel</h4>
-                    <div class="price">10000 FCFA<span>/an</span></div>
-                    <div class="badge">Économisez 2 mois</div>
-                </div>
+
+                <a href="billing.html" class="vip-cta-btn" id="vip-cta-btn">Débloquer l'accès VIP</a>
+                <p class="vip-note">Paiement sécurisé par Mobile Money via Chariow. Choix du plan et activation sur la page suivante.</p>
             </div>
 
-            <a href="billing.html" class="vip-cta-btn" id="vip-cta-btn">Débloquer l'accès VIP</a>
-            <p class="vip-note">Paiement sécurisé par Mobile Money via Chariow. Choix du plan et activation sur la page suivante.</p>
+            <!-- ANDROID : Google Play Billing (masqué par défaut, activé par JS
+                 uniquement si GooglePlayBilling.isAvailable() — voir script en
+                 bas de page). Prix affichés = ceux renvoyés par Google Play,
+                 jamais 1000/10000 FCFA codés en dur ici. -->
+            <div id="vip-plans-android" style="display: none;">
+                <div class="plan-selector" style="margin-bottom: 1rem;">
+                    <div class="plan-card vip-plan-preview">
+                        <h4>Mensuel</h4>
+                        <div class="price" id="android-price-monthly">…</div>
+                        <button class="vip-cta-btn" id="android-buy-monthly" style="margin-top: 0.75rem; padding: 0.6rem; font-size: 0.85rem;" disabled>Choisir</button>
+                    </div>
+                    <div class="plan-card vip-plan-preview" style="border-color: var(--accent-gold); background: rgba(44, 217, 165, 0.08);">
+                        <h4>Annuel</h4>
+                        <div class="price" id="android-price-yearly">…</div>
+                        <button class="vip-cta-btn" id="android-buy-yearly" style="margin-top: 0.75rem; padding: 0.6rem; font-size: 0.85rem;" disabled>Choisir</button>
+                    </div>
+                </div>
+                <p class="vip-note" id="android-message" style="display: none;"></p>
+                <button class="vip-cta-btn" id="android-restore-btn"
+                        style="background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); box-shadow: none;">
+                    Restaurer mes achats
+                </button>
+                <p class="vip-note">Paiement sécurisé via Google Play. Abonnement géré depuis Play Store &gt; Paiements et abonnements.</p>
+            </div>
 
         </main>
 
@@ -221,6 +275,7 @@
     </div>
 
     <script src="api.js"></script>
+    <script src="google-play-billing.js"></script>
     <script>
         requireAuth();
 
@@ -234,6 +289,7 @@
             }
         }
 
+        // WEB (Chariow) — inchangé.
         async function loadSubscriptionStatus() {
             const statusCard = document.getElementById('vip-status-card');
             const statusText = document.getElementById('vip-status-text');
@@ -260,13 +316,96 @@
             }
         }
 
+        // ANDROID (Google Play Billing) — GET /billing/entitlement, endpoint
+        // unifié multi-provider (voir Phase 3), jamais /billing/subscription
+        // (resté Chariow-only).
+        async function loadEntitlementStatusAndroid() {
+            const statusCard = document.getElementById('vip-status-card');
+            const statusText = document.getElementById('vip-status-text');
+            try {
+                const entitlement = await GooglePlayBilling.getEntitlement();
+                if (entitlement.premium) {
+                    statusCard.classList.add('active');
+                    const expiry = entitlement.premium_until
+                        ? new Date(entitlement.premium_until).toLocaleDateString('fr-FR')
+                        : null;
+                    statusText.innerHTML = `<strong>Abonnement VIP actif</strong>${expiry ? ` · expire le ${expiry}` : ''}`;
+                } else {
+                    statusCard.classList.remove('active');
+                    statusText.innerHTML = `<strong>Aucun abonnement actif</strong> — débloque l'IA complète dès maintenant`;
+                }
+            } catch (e) {
+                statusText.textContent = 'Impossible de charger ton statut d\'abonnement pour le moment.';
+            }
+        }
+
+        function showAndroidMessage(text, isError) {
+            const el = document.getElementById('android-message');
+            el.textContent = text;
+            el.style.color = isError ? 'var(--accent-warning)' : 'var(--accent-green)';
+            el.style.display = 'block';
+        }
+
+        async function setupAndroidBilling() {
+            document.getElementById('vip-plans-web').style.display = 'none';
+            document.getElementById('vip-plans-android').style.display = 'block';
+
+            const buyMonthlyBtn = document.getElementById('android-buy-monthly');
+            const buyYearlyBtn = document.getElementById('android-buy-yearly');
+
+            GooglePlayBilling.onPurchaseUpdate((status) => {
+                if (status.state === 'purchased' || status.state === 'restored') {
+                    showAndroidMessage(status.premium ? 'Abonnement VIP activé.' : "Achat vérifié, mais le Premium n'a pas pu être confirmé — réessaie plus tard.", !status.premium);
+                    loadEntitlementStatusAndroid();
+                } else if (status.state === 'pending') {
+                    showAndroidMessage(status.message, false);
+                } else if (status.state === 'canceled') {
+                    // Achat annulé par l'utilisateur — pas d'erreur à afficher.
+                } else if (status.state === 'error') {
+                    showAndroidMessage(status.message, true);
+                }
+            });
+
+            try {
+                await GooglePlayBilling.init();
+                const { monthly, yearly } = await GooglePlayBilling.getProducts();
+
+                if (monthly && monthly.pricingPhases[0]) {
+                    document.getElementById('android-price-monthly').textContent = monthly.pricingPhases[0].formattedPrice;
+                    buyMonthlyBtn.disabled = false;
+                    buyMonthlyBtn.addEventListener('click', () => GooglePlayBilling.purchase('monthly'));
+                }
+                if (yearly && yearly.pricingPhases[0]) {
+                    document.getElementById('android-price-yearly').textContent = yearly.pricingPhases[0].formattedPrice;
+                    buyYearlyBtn.disabled = false;
+                    buyYearlyBtn.addEventListener('click', () => GooglePlayBilling.purchase('yearly'));
+                }
+            } catch (e) {
+                showAndroidMessage("Connexion à Google Play impossible pour le moment.", true);
+            }
+
+            document.getElementById('android-restore-btn').addEventListener('click', () => {
+                GooglePlayBilling.restorePurchases().catch(() => showAndroidMessage('Restauration impossible pour le moment.', true));
+            });
+
+            await loadEntitlementStatusAndroid();
+            // Restauration silencieuse à l'ouverture — voir plan Phase 3,
+            // section "Restauration".
+            GooglePlayBilling.restorePurchases().catch(() => {});
+        }
+
         document.getElementById('logout-btn').addEventListener('click', () => {
             clearToken();
             window.location.href = 'login.html';
         });
 
         loadCurrentUser();
-        loadSubscriptionStatus();
+
+        if (GooglePlayBilling.isAvailable()) {
+            setupAndroidBilling();
+        } else {
+            loadSubscriptionStatus();
+        }
     </script>
 </body>
 </html>

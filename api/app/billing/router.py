@@ -57,7 +57,23 @@ from app.core.chariow_config import (
 )
 from app.auth.security import get_current_user
 from app.models.user import User
-from app.models.subscription import Subscription, ProcessedPulseDelivery
+from app.models.subscription import ProcessedPulseDelivery
+from app.models.provider_subscription import ProviderSubscription
+from app.models.entitlement import Entitlement
+from app.billing.entitlement_service import recompute_entitlement
+from app.models.google_play_purchase import ProcessedGoogleNotification
+from app.billing.google_play_service import (
+    GoogleApiError,
+    GooglePurchaseInvalid,
+    GoogleTokenOwnershipConflict,
+    RTDN_NOTIFICATION_TYPE_LABELS,
+    REVOKED_NOTIFICATION_TYPE,
+    decode_rtdn_envelope,
+    sync_known_google_purchase,
+    verify_and_sync_google_purchase,
+    verify_rtdn_oidc_token,
+    verify_rtdn_shared_secret,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -91,14 +107,25 @@ class ActivateLicenseRequest(BaseModel):
     license_key: str
 
 
-def _get_or_create_subscription(session: Session, user: User) -> Subscription:
-    """Récupère l'enregistrement Subscription de l'utilisateur, ou en crée
-    un vide (status='none') s'il n'existe pas encore. Contrairement à
-    Stripe, rien à créer côté Chariow à l'avance : les informations client
-    sont envoyées directement à chaque appel de checkout."""
-    sub = session.exec(select(Subscription).where(Subscription.user_id == user.id)).first()
+def _get_or_create_provider_subscription(session: Session, user: User) -> ProviderSubscription:
+    """Récupère la ligne ProviderSubscription(provider='chariow') de
+    l'utilisateur, ou en crée une vide (status='none') s'il n'en existe pas
+    encore. Contrairement à Stripe, rien à créer côté Chariow à l'avance :
+    les informations client sont envoyées directement à chaque appel de
+    checkout.
+
+    Remplace l'ancien _get_or_create_subscription (table Subscription,
+    conservée en lecture seule pour l'historique pré-migration, plus jamais
+    écrite — voir app/models/provider_subscription.py et
+    app/billing/backfill.py)."""
+    sub = session.exec(
+        select(ProviderSubscription).where(
+            ProviderSubscription.user_id == user.id,
+            ProviderSubscription.provider == "chariow",
+        )
+    ).first()
     if sub is None:
-        sub = Subscription(user_id=user.id, status="none")
+        sub = ProviderSubscription(user_id=user.id, provider="chariow", status="none")
         session.add(sub)
         session.commit()
         session.refresh(sub)
@@ -217,7 +244,7 @@ def create_checkout_session(
     if body.plan not in PRODUCT_IDS or not PRODUCT_IDS[body.plan]:
         raise HTTPException(status_code=400, detail=f"Plan inconnu ou non configuré : '{body.plan}'")
 
-    _get_or_create_subscription(session, current_user)
+    _get_or_create_provider_subscription(session, current_user)
 
     checkout_url = _create_chariow_checkout_link(
         product_id=PRODUCT_IDS[body.plan],
@@ -381,9 +408,10 @@ def activate_license(
         product_id = (license_data.get("product") or {}).get("id")
         plan = next((p for p, pid in PRODUCT_IDS.items() if pid == product_id), None)
 
-    sub = _get_or_create_subscription(session, current_user)
+    sub = _get_or_create_provider_subscription(session, current_user)
     sub.status = "active"
-    sub.chariow_license_key = body.license_key
+    sub.raw_status = "active"
+    sub.external_ref = body.license_key
     sub.plan = plan
     expires_at = _parse_datetime(license_data.get("expires_at"))
     if expires_at is not None:
@@ -393,9 +421,11 @@ def activate_license(
     session.add(sub)
     session.commit()
     session.refresh(sub)
+    recompute_entitlement(session, current_user.id, provider_subscription_id=sub.id,
+                           reason="chariow: activate-license (filet de secours)")
 
     return SubscriptionStatus(
-        status=sub.status, plan=sub.plan, is_active=sub.is_active,
+        status=sub.status, plan=sub.plan, is_active=sub.is_effectively_active,
         current_period_end=sub.current_period_end, days_until_expiry=sub.days_until_expiry,
     )
 
@@ -405,15 +435,53 @@ def get_subscription_status(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    sub = session.exec(select(Subscription).where(Subscription.user_id == current_user.id)).first()
+    sub = session.exec(
+        select(ProviderSubscription).where(
+            ProviderSubscription.user_id == current_user.id,
+            ProviderSubscription.provider == "chariow",
+        )
+    ).first()
     if sub is None:
         return SubscriptionStatus(
             status="none", plan=None, is_active=False,
             current_period_end=None, days_until_expiry=None,
         )
     return SubscriptionStatus(
-        status=sub.status, plan=sub.plan, is_active=sub.is_active,
+        status=sub.status, plan=sub.plan, is_active=sub.is_effectively_active,
         current_period_end=sub.current_period_end, days_until_expiry=sub.days_until_expiry,
+    )
+
+
+class EntitlementResponse(BaseModel):
+    premium: bool
+    premium_until: datetime | None
+    active_sources: list[str]
+
+
+@router.get("/entitlement", response_model=EntitlementResponse)
+def get_entitlement(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Endpoint générique multi-provider (Chariow + Google Play), destiné à
+    l'app Android en premier lieu mais réutilisable plus tard par le
+    frontend web. Lit UNIQUEMENT la table Entitlement (cache déjà tenu à
+    jour par recompute_entitlement à chaque changement de
+    ProviderSubscription, voir app/billing/entitlement_service.py) —
+    aucun recalcul ici, pour ne jamais faire diverger ce que cet endpoint
+    répond de ce que require_active_subscription vérifie réellement.
+
+    Ne renvoie aucune information sensible (pas de purchaseToken, pas de
+    clé de licence, pas de détail par provider au-delà de son nom).
+    """
+    entitlement = session.get(Entitlement, current_user.id)
+    if entitlement is None:
+        return EntitlementResponse(premium=False, premium_until=None, active_sources=[])
+    return EntitlementResponse(
+        premium=entitlement.premium,
+        premium_until=entitlement.premium_until,
+        active_sources=json.loads(entitlement.active_sources),
     )
 
 
@@ -451,7 +519,7 @@ def _parse_datetime(value) -> datetime | None:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def _find_subscription_by_email(session: Session, email: str | None) -> Subscription | None:
+def _find_provider_subscription_by_email(session: Session, email: str | None) -> ProviderSubscription | None:
     """
     Les Pulses license.* (activated/expired/revoked/nearing_expiry) ne
     portent PAS notre custom_metadata (confirmé via chariow.dev/en/guides/pulses
@@ -466,7 +534,21 @@ def _find_subscription_by_email(session: Session, email: str | None) -> Subscrip
     user = session.exec(select(User).where(User.email == email)).first()
     if user is None:
         return None
-    return session.exec(select(Subscription).where(Subscription.user_id == user.id)).first()
+    return session.exec(
+        select(ProviderSubscription).where(
+            ProviderSubscription.user_id == user.id,
+            ProviderSubscription.provider == "chariow",
+        )
+    ).first()
+
+
+def _strip_pii(body: dict) -> str:
+    """Sérialise le payload Pulse pour audit (ProviderSubscription.raw_payload)
+    en retirant l'objet "customer" (email/nom/téléphone) — déjà rattaché à
+    l'utilisateur via user_id (FK), inutile de le dupliquer dans une colonne
+    d'audit. Ne contient jamais de donnée bancaire (Chariow n'en envoie
+    jamais dans ses Pulses)."""
+    return json.dumps({k: v for k, v in body.items() if k != "customer"})
 
 
 @router.post("/pulse", status_code=status.HTTP_200_OK)
@@ -529,55 +611,224 @@ def _handle_successful_sale(session: Session, body: dict):
         return
     user_id = int(user_id)
 
-    sub = session.exec(select(Subscription).where(Subscription.user_id == user_id)).first()
+    sub = session.exec(
+        select(ProviderSubscription).where(
+            ProviderSubscription.user_id == user_id,
+            ProviderSubscription.provider == "chariow",
+        )
+    ).first()
     if sub is None:
         return  # ne devrait pas arriver (/billing/checkout crée toujours l'enregistrement avant la vente)
 
     sub.plan = custom_metadata.get("plan")
     sub.status = "active"
+    sub.raw_status = "active"
     # Nouvel achat/renouvellement : le compte à rebours précédent n'a plus cours.
     sub.days_until_expiry = None
+    sub.raw_payload = _strip_pii(body)
     sub.updated_at = datetime.now(timezone.utc)
     session.add(sub)
     session.commit()
+    session.refresh(sub)
+    recompute_entitlement(session, user_id, provider_subscription_id=sub.id, reason="chariow: successful.sale")
 
 
 def _handle_license_activated(session: Session, body: dict):
     """Complément de successful.sale : fournit la clé de licence et la date
     d'expiration, absentes du Pulse successful.sale. On relie via l'email du
-    client (pas de custom_metadata sur cet événement, cf. _find_subscription_by_email)."""
+    client (pas de custom_metadata sur cet événement, cf.
+    _find_provider_subscription_by_email)."""
     license_ = body.get("license") or {}
     customer = body.get("customer") or {}
-    sub = _find_subscription_by_email(session, customer.get("email"))
+    sub = _find_provider_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
-    sub.chariow_license_key = license_.get("key")
+    sub.external_ref = license_.get("key")
     sub.status = "active"
+    sub.raw_status = "active"
     expires_at = _parse_datetime(license_.get("expires_at"))
     if expires_at is not None:
         sub.current_period_end = expires_at
+    sub.raw_payload = _strip_pii(body)
     sub.updated_at = datetime.now(timezone.utc)
     session.add(sub)
     session.commit()
+    session.refresh(sub)
+    recompute_entitlement(session, sub.user_id, provider_subscription_id=sub.id, reason="chariow: license.activated")
 
 
 def _handle_license_status(session: Session, body: dict, *, new_status: str):
     customer = body.get("customer") or {}
-    sub = _find_subscription_by_email(session, customer.get("email"))
+    sub = _find_provider_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
     sub.status = new_status
+    sub.raw_status = new_status
+    if new_status == "revoked":
+        sub.revoked_or_refunded_at = datetime.now(timezone.utc)
+    sub.raw_payload = _strip_pii(body)
     sub.updated_at = datetime.now(timezone.utc)
     session.add(sub)
     session.commit()
+    session.refresh(sub)
+    recompute_entitlement(session, sub.user_id, provider_subscription_id=sub.id, reason=f"chariow: license.{new_status}")
 
 
 def _handle_license_nearing_expiry(session: Session, body: dict):
     customer = body.get("customer") or {}
-    sub = _find_subscription_by_email(session, customer.get("email"))
+    sub = _find_provider_subscription_by_email(session, customer.get("email"))
     if sub is None:
         return
     sub.days_until_expiry = body.get("days_until_expiry")
+    sub.raw_payload = _strip_pii(body)
     sub.updated_at = datetime.now(timezone.utc)
     session.add(sub)
     session.commit()
+    # Purement informatif (compte à rebours affiché côté frontend) — n'affecte
+    # jamais `status`/`is_effectively_active`, donc aucun recalcul d'entitlement.
+
+
+# ---------------------------------------------------------------------------
+# Google Play Billing (Phase 2) — provider indépendant, voir
+# app/billing/google_play_service.py pour l'implémentation complète
+# (validation serveur, anti-fraude, mapping ProviderSubscription/
+# GooglePlayPurchase, recalcul Entitlement). Chariow ci-dessus reste
+# entièrement inchangé.
+# ---------------------------------------------------------------------------
+
+class GoogleVerifyRequest(BaseModel):
+    product_id: str
+    purchase_token: str
+    # Optionnel : comparé à GOOGLE_PLAY_PACKAGE_NAME configuré côté serveur,
+    # mais JAMAIS utilisé comme valeur réelle envoyée à l'API Google (voir
+    # verify_and_sync_google_purchase) — un client ne choisit jamais quel
+    # package notre backend interroge.
+    package_name: str | None = None
+
+
+class GoogleVerifyResponse(BaseModel):
+    premium: bool
+    google_status: str
+    plan: str | None
+    expiry_time: datetime | None
+    acknowledgement_state: str
+
+
+@router.post("/google/verify", response_model=GoogleVerifyResponse)
+@limiter.limit("60/minute")
+def google_verify_purchase(
+    request: Request,
+    body: GoogleVerifyRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Point d'entrée unique pour un achat Google Play côté Android (pas encore
+    intégré cette phase — backend uniquement) : sert aussi bien un premier
+    achat qu'une restauration (queryPurchasesAsync côté client renverrait le
+    même purchase_token, cet endpoint est idempotent par construction) —
+    aucun endpoint /restore séparé n'est nécessaire (décision validée).
+
+    Ne fait JAMAIS confiance au statut envoyé par le client : tout repart
+    d'un appel serveur->Google (purchases.subscriptionsv2.get).
+    """
+    try:
+        provider_sub, purchase, entitlement = verify_and_sync_google_purchase(
+            session, current_user,
+            product_id=body.product_id, purchase_token=body.purchase_token,
+            package_name=body.package_name,
+        )
+    except GoogleTokenOwnershipConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except GooglePurchaseInvalid as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
+    except GoogleApiError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    return GoogleVerifyResponse(
+        premium=entitlement.premium if entitlement else False,
+        google_status=provider_sub.status,
+        plan=provider_sub.plan,
+        expiry_time=provider_sub.current_period_end,
+        acknowledgement_state=purchase.acknowledgement_state,
+    )
+
+
+def _already_processed_google_notification(session: Session, message_id: str) -> bool:
+    return session.exec(
+        select(ProcessedGoogleNotification).where(ProcessedGoogleNotification.pubsub_message_id == message_id)
+    ).first() is not None
+
+
+def _mark_google_notification_processed(session: Session, message_id: str, notification_type: str | None) -> None:
+    session.add(ProcessedGoogleNotification(pubsub_message_id=message_id, notification_type=notification_type))
+    session.commit()
+
+
+@router.post("/google/rtdn", status_code=status.HTTP_200_OK)
+async def google_rtdn(request: Request, session: Session = Depends(get_session)):
+    """
+    Réception des Real-time Developer Notifications Google Play — structure
+    backend uniquement cette phase, AUCUNE configuration Google Cloud
+    Pub/Sub réelle (consigne explicite). Authentification prévue en deux
+    couches, contrôlées par la configuration présente :
+
+      1. Vérification OIDC du jeton signé par Pub/Sub (chemin définitif une
+         fois une vraie souscription Push authentifiée configurée) — voir
+         verify_rtdn_oidc_token, non testable contre un vrai jeton sans
+         projet Google Cloud réel.
+      2. Secret partagé en query string (`?secret=...`, comparé à
+         GOOGLE_RTDN_SHARED_SECRET) — filet intérimaire pour les tests
+         locaux avant configuration Pub/Sub réelle.
+
+    Si aucune des deux n'est configurée/valide -> 401 (jamais d'endpoint
+    ouvert par défaut).
+
+    Ne fait JAMAIS confiance au statut contenu dans la notification elle-
+    même : sert uniquement de déclencheur pour rappeler l'API Google et
+    resynchroniser l'état réel (voir sync_known_google_purchase).
+    """
+    audience = str(request.url).split("?")[0]
+    authenticated = verify_rtdn_oidc_token(request.headers.get("authorization"), audience) or \
+        verify_rtdn_shared_secret(request.query_params.get("secret"))
+    if not authenticated:
+        raise HTTPException(status_code=401, detail="Authentification RTDN invalide.")
+
+    body = await request.json()
+    message = body.get("message") or {}
+    message_id = message.get("messageId")
+    if message_id and _already_processed_google_notification(session, message_id):
+        return {"received": True, "duplicate": True}
+
+    try:
+        notification = decode_rtdn_envelope(body)
+    except GooglePurchaseInvalid as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
+
+    subscription_notification = notification.get("subscriptionNotification")
+    notification_type_label = None
+    if subscription_notification:
+        purchase_token = subscription_notification.get("purchaseToken")
+        notification_type_int = subscription_notification.get("notificationType")
+        notification_type_label = RTDN_NOTIFICATION_TYPE_LABELS.get(notification_type_int, str(notification_type_int))
+        forced_status = "revoked" if notification_type_int == REVOKED_NOTIFICATION_TYPE else None
+
+        try:
+            sync_known_google_purchase(
+                session, purchase_token,
+                notification_type=notification_type_label, forced_status=forced_status,
+            )
+        except GoogleApiError as exc:
+            logger.error("Google RTDN: resynchronisation impossible pour %s (%s) — message non marqué traité.",
+                         purchase_token, exc)
+            raise HTTPException(status_code=502, detail=str(exc))
+        except GooglePurchaseInvalid as exc:
+            logger.warning("Google RTDN: %s", exc)
+    # oneTimeProductNotification/voidedPurchaseNotification/testNotification :
+    # hors périmètre (Xfoot ne vend que des abonnements) — accusés de
+    # réception sans action, jamais d'erreur (Pub/Sub réessaierait sinon).
+
+    if message_id:
+        _mark_google_notification_processed(session, message_id, notification_type_label)
+
+    return {"received": True}

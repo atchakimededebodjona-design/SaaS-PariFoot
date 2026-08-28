@@ -14,7 +14,7 @@ Forme des payloads Pulse confirmée via chariow.dev/en/guides/pulses (pas de
 wrapper "data" ; successful.sale porte sale.custom_metadata mais ni clé de
 licence ni date d'expiration ; license.activated porte license.key/expires_at
 mais pas de custom_metadata — la liaison à un utilisateur s'y fait via
-customer.email, cf. app/billing/router.py::_find_subscription_by_email).
+customer.email, cf. app/billing/router.py::_find_provider_subscription_by_email).
 
 Remplace l'ancien test_billing.py (Stripe) — remplacé par Chariow (audience
 ouest-africaine, Mobile Money natif). Pas de test de portail client : Chariow
@@ -51,7 +51,7 @@ from sqlmodel import Session, select
 
 from main import app
 from app.core.database import engine
-from app.models.subscription import Subscription
+from app.models.provider_subscription import ProviderSubscription
 from app.billing.router import _create_chariow_checkout_link, _fetch_chariow_license
 
 PULSE_SECRET = os.environ["CHARIOW_PULSE_SECRET"]
@@ -95,9 +95,18 @@ def get_auth_token(client) -> tuple[int, str]:
     return user_id, r.json()["access_token"]
 
 
-def get_subscription_row(user_id: int) -> Subscription | None:
+def get_subscription_row(user_id: int) -> ProviderSubscription | None:
+    """Lit désormais ProviderSubscription(provider='chariow') — l'ancienne
+    table Subscription n'est plus écrite depuis la migration Phase 1
+    (voir app/billing/backfill.py), elle ne reste que pour l'historique
+    pré-migration."""
     with Session(engine) as session:
-        return session.exec(select(Subscription).where(Subscription.user_id == user_id)).first()
+        return session.exec(
+            select(ProviderSubscription).where(
+                ProviderSubscription.user_id == user_id,
+                ProviderSubscription.provider == "chariow",
+            )
+        ).first()
 
 
 def test_subscription_status_before_any_payment(client, token):
@@ -271,9 +280,9 @@ def test_pulse_successful_sale_activates(client, user_id):
     # Le sale ne porte ni clé de licence ni date d'expiration (elles arrivent
     # avec license.activated juste après) — l'accès est déjà débloqué (is_active
     # est True dès que current_period_end est None) mais ces deux champs restent vides.
-    assert sub.chariow_license_key is None
+    assert sub.external_ref is None
     assert sub.current_period_end is None
-    assert sub.is_active is True
+    assert sub.is_effectively_active is True
     print(f"  [OK] Pulse successful.sale (signature réelle) -> status='active', is_active=True "
           f"(clé de licence/expiration pas encore connues, en attente de license.activated)")
 
@@ -286,10 +295,10 @@ def test_pulse_license_activated_updates_expiry(client, user_id):
 
     sub = get_subscription_row(user_id)
     assert sub.status == "active"
-    assert sub.chariow_license_key == "lic_test_456"
+    assert sub.external_ref == "lic_test_456"
     assert sub.current_period_end.isoformat().startswith("2026-10-02")
     print(f"  [OK] Pulse license.activated (complément, relié via customer.email) -> "
-          f"chariow_license_key={sub.chariow_license_key}, expire le {sub.current_period_end.isoformat()}")
+          f"chariow_license_key={sub.external_ref}, expire le {sub.current_period_end.isoformat()}")
 
 
 def test_pulse_nearing_expiry_sets_days_until_expiry(client, user_id, token):
@@ -341,7 +350,7 @@ def test_pulse_license_expired(client, user_id):
 
     sub = get_subscription_row(user_id)
     assert sub.status == "expired"
-    assert sub.is_active is False
+    assert sub.is_effectively_active is False
     print(f"  [OK] Pulse license.expired -> status='expired', is_active=False")
 
 
@@ -351,7 +360,7 @@ def test_pulse_license_revoked(client, user_id):
 
     sub = get_subscription_row(user_id)
     assert sub.status == "revoked"
-    assert sub.is_active is False
+    assert sub.is_effectively_active is False
     print(f"  [OK] Pulse license.revoked -> status='revoked', is_active=False")
 
 
@@ -431,10 +440,10 @@ def test_activate_license_active_matches_user(client, user_id, token):
     assert body["plan"] == "monthly"
 
     sub = get_subscription_row(user_id)
-    assert sub.chariow_license_key == "lic_manual_test"
+    assert sub.external_ref == "lic_manual_test"
     assert sub.current_period_end.isoformat().startswith("2027-01-01")
     print(f"  [OK] clé active + metadata.user_id correspondant -> 200, abonnement activé "
-          f"(chariow_license_key={sub.chariow_license_key})")
+          f"(chariow_license_key={sub.external_ref})")
 
 
 def test_activate_license_user_mismatch_403(client, token):
@@ -526,7 +535,7 @@ def test_activate_license_email_fallback_when_no_metadata(client, user_id, token
                          headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 200, r.text
     sub = get_subscription_row(user_id)
-    assert sub.chariow_license_key == "lic_legacy_test"
+    assert sub.external_ref == "lic_legacy_test"
     print(f"  [OK] metadata absente + customer.email correspondant -> 200, repli email accepté")
 
 

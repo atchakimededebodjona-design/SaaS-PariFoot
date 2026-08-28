@@ -1155,3 +1155,217 @@ body {
     transition: 0s;
 }
 
+/* ==========================================================================
+   Desktop Navigation & Responsive Modern Layout
+   ========================================================================== */
+
+.desktop-nav {
+    display: none;
+}
+
+.desktop-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.desktop-nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.desktop-nav-link.active {
+    color: #FFFFFF;
+    background: linear-gradient(135deg, rgba(44, 217, 165, 0.18) 0%, rgba(21, 25, 37, 0.95) 100%);
+    border-color: var(--accent-gold);
+    box-shadow: 0 4px 14px rgba(44, 217, 165, 0.15);
+}
+
+.desktop-nav-link .nav-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* ─── Tablet & Desktop (>= 768px) ─── */
+@media (min-width: 768px) {
+    body {
+        background: radial-gradient(circle at 50% 0%, rgba(44, 217, 165, 0.05) 0%, var(--bg-main) 60%);
+        min-height: 100vh;
+    }
+
+    /* Expand the App Shell */
+    .app-container {
+        max-width: 1280px;
+        min-height: 100vh;
+        margin: 0 auto;
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+        border-left: 1px solid rgba(255, 255, 255, 0.04);
+        border-right: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    /* Header with desktop navigation */
+    .app-header {
+        padding: 1.25rem 2.5rem;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .desktop-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    /* Hide mobile bottom navigation on desktop */
+    .bottom-nav {
+        display: none !important;
+    }
+
+    /* Content spacing */
+    .app-content {
+        padding: 2rem 2.5rem 4rem 2.5rem;
+    }
+
+    .header {
+        max-width: 1280px;
+        padding: 1.5rem 2.5rem 0 2.5rem;
+    }
+
+    .main-content {
+        max-width: 1280px;
+        padding: 2rem 2.5rem 3rem 2.5rem;
+    }
+
+    .main-content.with-nav {
+        padding-bottom: 3rem;
+        min-height: calc(100vh - 76px);
+    }
+
+    /* League Pills: wrap smoothly */
+    .league-nav-container {
+        flex-wrap: wrap;
+        overflow-x: visible;
+        gap: 0.6rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .league-pill {
+        padding: 0.6rem 1.1rem;
+        font-size: 0.85rem;
+    }
+
+    /* Fixtures List: Multi-column responsive grid */
+    .fixtures-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    /* Prediction Custom Form */
+    #custom-match-section .filter-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    #custom-match-section .btn-predict {
+        margin-bottom: 0;
+        height: 100%;
+        padding: 0 1.5rem;
+    }
+
+    /* History Accuracy Hero */
+    .accuracy-hero {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 2rem;
+        align-items: center;
+        text-align: left;
+        padding: 2rem 2.5rem;
+    }
+
+    .accuracy-main {
+        align-items: flex-start;
+        margin-bottom: 0;
+        border-right: 1px solid var(--border-color);
+        padding-right: 1.5rem;
+    }
+
+    .accuracy-sub-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 0;
+    }
+
+    /* Live Matches Grid */
+    #live-matches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    /* VIP & Feature Grids */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .vip-hero {
+        padding: 2.5rem 2rem;
+    }
+
+    .vip-hero h1 {
+        font-size: 1.7rem;
+    }
+
+    /* Ensemble Form in Arena */
+    #ensemble-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    #ensemble-form .btn-predict {
+        margin-bottom: 0;
+        height: 100%;
+        padding: 0 1.5rem;
+    }
+
+    /* Billing & Login Panels */
+    .billing-form {
+        max-width: 650px;
+        margin: 0 auto;
+    }
+}
+
+/* ─── Large Desktop Screens (>= 1200px) ─── */
+@media (min-width: 1200px) {
+    .fixtures-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .feature-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .accuracy-sub-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+

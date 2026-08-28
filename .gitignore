@@ -5,3 +5,6 @@ logs/
 *.tmp
 .env
 *.db
+*.db.backup*
+*.db.backup-*
+

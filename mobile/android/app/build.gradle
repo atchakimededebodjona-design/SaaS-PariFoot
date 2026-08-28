@@ -40,6 +40,15 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+
+    // Google Play Billing (Phase 3) — API Java classique du BillingClient
+    // (callbacks), pas les extensions Kotlin/coroutines "billing-ktx" :
+    // le projet n'a aucun toolchain Kotlin configuré (voir GooglePlayBillingPlugin.java),
+    // et l'API Java reste pleinement supportée par la Billing Library 9.1.0.
+    // Conforme à l'obligation Google Play (Billing Library 8+ pour toute
+    // app/mise à jour à partir du 31 août 2026 — vérifié contre la doc
+    // officielle Android Developers avant de choisir cette version).
+    implementation "com.android.billingclient:billing:9.1.0"
 }
 
 apply from: 'capacitor.build.gradle'
