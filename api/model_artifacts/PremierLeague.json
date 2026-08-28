@@ -32,7 +32,9 @@
     "Watford": -0.39952558818117373,
     "West Brom": -0.32022825418981726,
     "West Ham": 0.029725056217171024,
-    "Wolves": -0.22361129924419865
+    "Wolves": -0.22361129924419865,
+    "Hull City": -0.12025288106236087,
+    "Coventry": 0.049337784633266324
   },
   "defense": {
     "Arsenal": 0.40287560805483935,
@@ -62,7 +64,9 @@
     "Watford": -0.49188624463048264,
     "West Brom": -0.46992921691727374,
     "West Ham": -0.272242343474388,
-    "Wolves": -0.29053903614864157
+    "Wolves": -0.29053903614864157,
+    "Hull City": -0.5383245838581932,
+    "Coventry": -0.12708171025446913
   },
   "teams": [
     "Arsenal",
@@ -92,9 +96,33 @@
     "Watford",
     "West Brom",
     "West Ham",
-    "Wolves"
+    "Wolves",
+    "Hull City",
+    "Coventry"
   ],
   "trained_on_matches": 2660,
   "trained_at": "2026-08-03T19:13:06.259457+00:00",
-  "data_up_to": "2026-05-24T00:00:00"
+  "data_up_to": "2026-05-24T00:00:00",
+  "seeded_teams": {
+    "Hull City": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "E1",
+      "source_season": "2526",
+      "source_team_name": "Hull",
+      "source_attack_percentile": 0.782608695652174,
+      "source_defense_percentile": 0.2608695652173913,
+      "seeded_at": "2026-08-28T21:48:34.437315+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    },
+    "Coventry": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "E1",
+      "source_season": "2526",
+      "source_team_name": "Coventry",
+      "source_attack_percentile": 1.0,
+      "source_defense_percentile": 1.0,
+      "seeded_at": "2026-08-28T21:48:34.437379+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    }
+  }
 }

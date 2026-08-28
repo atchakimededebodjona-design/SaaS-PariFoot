@@ -31,7 +31,8 @@
     "Stuttgart": 0.396397060411531,
     "Union Berlin": -0.09167593748064387,
     "Werder Bremen": -0.043461958970892556,
-    "Wolfsburg": 0.0493490183305562
+    "Wolfsburg": 0.0493490183305562,
+    "SV Elversberg": -0.043461958970892556
   },
   "defense": {
     "Augsburg": -0.2377871069306769,
@@ -60,7 +61,8 @@
     "Stuttgart": -0.11289728942485158,
     "Union Berlin": -0.1850097688670058,
     "Werder Bremen": -0.243823942457042,
-    "Wolfsburg": -0.29508150957433016
+    "Wolfsburg": -0.29508150957433016,
+    "SV Elversberg": -0.26095412404182255
   },
   "teams": [
     "Augsburg",
@@ -89,9 +91,22 @@
     "Stuttgart",
     "Union Berlin",
     "Werder Bremen",
-    "Wolfsburg"
+    "Wolfsburg",
+    "SV Elversberg"
   ],
   "trained_on_matches": 2142,
   "trained_at": "2026-08-03T19:13:03.321704+00:00",
-  "data_up_to": "2026-05-16T00:00:00"
+  "data_up_to": "2026-05-16T00:00:00",
+  "seeded_teams": {
+    "SV Elversberg": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "D2",
+      "source_season": "2526",
+      "source_team_name": "Elversberg",
+      "source_attack_percentile": 1.0,
+      "source_defense_percentile": 0.9411764705882353,
+      "seeded_at": "2026-08-28T21:48:36.222450+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    }
+  }
 }

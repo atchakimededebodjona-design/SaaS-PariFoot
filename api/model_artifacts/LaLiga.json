@@ -32,7 +32,10 @@
     "Valencia": 0.01843758362749204,
     "Valladolid": -0.4372680595451369,
     "Vallecano": -0.1185718840695099,
-    "Villarreal": 0.44934241581341705
+    "Villarreal": 0.44934241581341705,
+    "Malaga": -0.03695438647602184,
+    "Deportivo La Coruna": -0.10946725631463483,
+    "Racing Santander": 0.0113875267497201
   },
   "defense": {
     "Alaves": -0.04700796049231932,
@@ -62,7 +65,10 @@
     "Valencia": -0.030914203776561656,
     "Valladolid": -0.49171870042810956,
     "Vallecano": 0.10233772245766952,
-    "Villarreal": -0.0030809433455110317
+    "Villarreal": -0.0030809433455110317,
+    "Malaga": -0.1748497039665881,
+    "Deportivo La Coruna": -0.11147590467428381,
+    "Racing Santander": -0.40722030137170384
   },
   "teams": [
     "Alaves",
@@ -92,9 +98,44 @@
     "Valencia",
     "Valladolid",
     "Vallecano",
-    "Villarreal"
+    "Villarreal",
+    "Malaga",
+    "Deportivo La Coruna",
+    "Racing Santander"
   ],
   "trained_on_matches": 2660,
   "trained_at": "2026-08-03T19:13:04.190036+00:00",
-  "data_up_to": "2026-05-24T00:00:00"
+  "data_up_to": "2026-05-24T00:00:00",
+  "seeded_teams": {
+    "Malaga": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "SP2",
+      "source_season": "2526",
+      "source_team_name": "Malaga",
+      "source_attack_percentile": 0.9047619047619048,
+      "source_defense_percentile": 0.7142857142857143,
+      "seeded_at": "2026-08-28T21:48:35.377637+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    },
+    "Deportivo La Coruna": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "SP2",
+      "source_season": "2526",
+      "source_team_name": "La Coruna",
+      "source_attack_percentile": 0.7619047619047619,
+      "source_defense_percentile": 0.8571428571428571,
+      "seeded_at": "2026-08-28T21:48:35.377691+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    },
+    "Racing Santander": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "SP2",
+      "source_season": "2526",
+      "source_team_name": "Santander",
+      "source_attack_percentile": 1.0,
+      "source_defense_percentile": 0.19047619047619047,
+      "seeded_at": "2026-08-28T21:48:35.377725+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    }
+  }
 }

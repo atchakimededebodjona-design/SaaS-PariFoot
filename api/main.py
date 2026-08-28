@@ -134,6 +134,7 @@ TEAM_ALIASES = {
     "stade de reims": "Reims",
     "rc lens": "Lens",
     "stade brestois": "Brest",
+    "stade brestois 29": "Brest",  # nom exact renvoyé par API-Football (trouvé lors de l'audit du 2026-08-28)
     "paris football club": "Paris FC",
     "fc metz": "Metz",
     "angers sco": "Angers",
@@ -145,6 +146,7 @@ TEAM_ALIASES = {
     "amiens sc": "Amiens",
     "nimes olympique": "Nimes",
     "es troyes ac": "Troyes",
+    "estac troyes": "Troyes",  # nom exact renvoyé par API-Football (trouvé lors de l'audit du 2026-08-28)
 
     # --- Premier League ---
     "man utd": "Man United",
@@ -236,6 +238,7 @@ TEAM_ALIASES = {
     "köln": "FC Koln",
     "cologne": "FC Koln",
     "1 fc koln": "FC Koln",
+    "1. fc koln": "FC Koln",  # _normalize() ne retire pas la ponctuation (le "." reste) — trouvé lors de l'audit du 2026-08-28, fixture réelle API-Football "1. FC Köln"
     "fc cologne": "FC Koln",
     "hertha berlin": "Hertha",
     "hertha bsc": "Hertha",
@@ -335,6 +338,7 @@ TEAM_ALIASES = {
     "vitoria de guimaraes": "Guimaraes",
     "vitória de guimarães": "Guimaraes",
     "vitoria guimaraes": "Guimaraes",
+    "vitoria sc": "Guimaraes",  # nom exact renvoyé par API-Football (trouvé lors de l'audit du 2026-08-28)
     "cd santa clara": "Santa Clara",
     "cd nacional": "Nacional",
     "gil vicente fc": "Gil Vicente",

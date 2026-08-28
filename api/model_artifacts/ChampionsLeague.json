@@ -229,7 +229,10 @@
     "Villarreal": -0.03817829185930759,
     "Virtus": -1.2128940496119425,
     "Zenit Saint Petersburg": 0.410900285193146,
-    "Zrinjski": -0.6303633155924453
+    "Zrinjski": -0.6303633155924453,
+    "AS Roma": 1.0832463348009518,
+    "Como": 1.200408752616847,
+    "Real Betis": 0.9660839169850561
   },
   "defense": {
     "AC Milan": 0.8555320312168319,
@@ -456,7 +459,10 @@
     "Villarreal": 0.17521229305888358,
     "Virtus": -1.3872849948726487,
     "Zenit Saint Petersburg": 0.2701122889844746,
-    "Zrinjski": -0.49489131130959885
+    "Zrinjski": -0.49489131130959885,
+    "AS Roma": 1.2492159286418842,
+    "Como": 1.1299630515498489,
+    "Real Betis": 0.8914572973657782
   },
   "teams": [
     "AC Milan",
@@ -683,9 +689,38 @@
     "Villarreal",
     "Virtus",
     "Zenit Saint Petersburg",
-    "Zrinjski"
+    "Zrinjski",
+    "AS Roma",
+    "Como",
+    "Real Betis"
   ],
   "trained_on_matches": 1611,
   "trained_at": "2026-08-26T18:51:01.032482+00:00",
-  "data_up_to": "2026-08-25T00:00:00"
+  "data_up_to": "2026-08-25T00:00:00",
+  "seeded_teams": {
+    "AS Roma": {
+      "method": "domestic_league_percentile_calibration",
+      "source_league": "SerieA",
+      "source_team_name": "Roma",
+      "source_attack_percentile": 0.9,
+      "source_defense_percentile": 0.9,
+      "note": "Club deja etabli en SerieA, absent uniquement du namespace ChampionsLeague -- note deduite du percentile national (etendue complete, pas de plafond bas contrairement aux equipes nouvellement promues, voir scripts/seed_promoted_teams.py)."
+    },
+    "Como": {
+      "method": "domestic_league_percentile_calibration",
+      "source_league": "SerieA",
+      "source_team_name": "Como",
+      "source_attack_percentile": 0.9333333333333333,
+      "source_defense_percentile": 0.8666666666666667,
+      "note": "Club deja etabli en SerieA, absent uniquement du namespace ChampionsLeague -- note deduite du percentile national (etendue complete, pas de plafond bas contrairement aux equipes nouvellement promues, voir scripts/seed_promoted_teams.py)."
+    },
+    "Real Betis": {
+      "method": "domestic_league_percentile_calibration",
+      "source_league": "LaLiga",
+      "source_team_name": "Betis",
+      "source_attack_percentile": 0.8666666666666667,
+      "source_defense_percentile": 0.8,
+      "note": "Club deja etabli en LaLiga, absent uniquement du namespace ChampionsLeague -- note deduite du percentile national (etendue complete, pas de plafond bas contrairement aux equipes nouvellement promues, voir scripts/seed_promoted_teams.py)."
+    }
+  }
 }

@@ -85,7 +85,18 @@ class _FastDixonColesL2:
         self.teams_, self.attack_, self.defense_ = [], {}, {}
         self.home_advantage_, self.rho_ = 0.0, 0.0
 
-    def fit(self, matches: pd.DataFrame, reference_date=None):
+    def fit(self, matches: pd.DataFrame, reference_date=None, init_params=None):
+        """
+        `init_params` (optionnel) : point de départ de l'optimisation SLSQP.
+        None (défaut, comportement inchangé pour tous les appelants
+        existants) -> zéros, comme avant ce paramètre. Ajouté pour
+        scripts/seed_promoted_teams.py, qui retente avec un point de départ
+        perturbé quand SLSQP échoue sur une "Singular matrix C" (observé sur
+        Ligue 2 2025-26) avant de se rabattre sur un proxy plus simple — ne
+        change jamais le comportement de export_model_artifacts.py /
+        refresh_and_retrain.py (production), qui n'appellent jamais fit()
+        avec cet argument.
+        """
         matches = matches.copy()
         matches["date"] = pd.to_datetime(matches["date"])
         reference_date = reference_date or matches["date"].max()
@@ -113,7 +124,8 @@ class _FastDixonColesL2:
             penalty = self.l2_reg * (np.sum(attack ** 2) + np.sum(defense ** 2))
             return -log_lik + penalty
 
-        init_params = np.concatenate([np.zeros(n), np.zeros(n), [0.2], [-0.05]])
+        if init_params is None:
+            init_params = np.concatenate([np.zeros(n), np.zeros(n), [0.2], [-0.05]])
         # Contrainte d'identifiabilité unique — voir note en tête de fichier.
         constraints = [{"type": "eq", "fun": lambda p: np.mean(p[:n])}]
 

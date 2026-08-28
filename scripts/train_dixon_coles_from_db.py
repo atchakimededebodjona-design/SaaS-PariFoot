@@ -72,7 +72,13 @@ def compare_to_production(db_artifacts: dict) -> dict:
 
         team_set_db = set(db_artifact["teams"])
         team_set_prod = set(prod["teams"])
-        missing = team_set_prod - team_set_db
+        # Équipes ajoutées par scripts/seed_promoted_teams.py (équipes promues
+        # sans aucun match encore dans leur nouvelle division — tracées dans
+        # la clé "seeded_teams" de l'artefact JSON) : par construction absentes
+        # à la fois du CSV ET de la base match/match_stats (même limite de
+        # données des deux côtés), jamais une vraie divergence CSV-vs-DB.
+        seeded = set(prod.get("seeded_teams", {}).keys())
+        missing = team_set_prod - team_set_db - seeded
         extra = team_set_db - team_set_prod
 
         attack_diffs = {t: abs(db_artifact["attack"][t] - prod["attack"][t])

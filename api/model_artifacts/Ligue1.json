@@ -32,7 +32,8 @@
     "St Etienne": -0.029328615110897134,
     "Strasbourg": 0.2581487041454678,
     "Toulouse": 0.08928747057216292,
-    "Troyes": -0.15576146190499962
+    "Troyes": -0.15576146190499962,
+    "Le Mans": -0.18634712512931195
   },
   "defense": {
     "Ajaccio": -0.450950766912428,
@@ -62,7 +63,8 @@
     "St Etienne": -0.5246145009359967,
     "Strasbourg": -0.08490408657690227,
     "Toulouse": -0.05046783331598664,
-    "Troyes": -0.40565043833595105
+    "Troyes": -0.40565043833595105,
+    "Le Mans": -0.17138280413352142
   },
   "teams": [
     "Ajaccio",
@@ -92,9 +94,22 @@
     "St Etienne",
     "Strasbourg",
     "Toulouse",
-    "Troyes"
+    "Troyes",
+    "Le Mans"
   ],
   "trained_on_matches": 2337,
   "trained_at": "2026-08-03T19:13:05.214247+00:00",
-  "data_up_to": "2026-05-17T00:00:00"
+  "data_up_to": "2026-05-17T00:00:00",
+  "seeded_teams": {
+    "Le Mans": {
+      "method": "lower_division_percentile_calibration",
+      "source_division": "F2",
+      "source_season": "2526",
+      "source_team_name": "Le Mans",
+      "source_attack_percentile": 0.7647058823529411,
+      "source_defense_percentile": 0.9411764705882353,
+      "seeded_at": "2026-08-28T21:48:36.979699+00:00",
+      "note": "Amorce conservatrice (moitié basse de la distribution cible) — sera remplacée par une vraie note dès que des matchs réels existeront dans data/all_leagues_raw_with_stats.csv (voir refresh_and_retrain.py, cron hebdomadaire)."
+    }
+  }
 }
