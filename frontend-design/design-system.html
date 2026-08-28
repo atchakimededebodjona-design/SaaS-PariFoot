@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Design System V1</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Scoped à cette page — c'est un catalogue interne, jamais exposé à
+           un utilisateur final (pas de lien depuis la nav des 7 pages
+           produit), donc pas besoin de requireAuth()/api.js. Réutilise
+           .app-container/.app-header pour rester sur le même système
+           responsive déjà validé (Responsive Audit + Fix V1), avec un
+           plafond plus large (1440px) puisqu'un catalogue de composants a
+           besoin de plus de place qu'un dashboard mobile-first classique. */
+        .app-container { max-width: 1440px; }
+        @media (min-width: 768px) {
+            .app-container { max-width: 1440px; }
+        }
+
+        .ds-section { margin-bottom: 3rem; }
+        .ds-section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--x-primary);
+            margin-bottom: 0.4rem;
+        }
+        .ds-section-desc {
+            color: var(--x-text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            max-width: 640px;
+        }
+        .ds-row { display: flex; flex-wrap: wrap; gap: 0.85rem; align-items: center; }
+        .ds-col { display: flex; flex-direction: column; gap: 0.85rem; }
+
+        .ds-swatch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .ds-swatch {
+            border: 1px solid var(--x-border);
+            border-radius: var(--x-radius-md);
+            overflow: hidden;
+        }
+        .ds-swatch-color { height: 64px; }
+        .ds-swatch-label { padding: 0.6rem 0.75rem; }
+        .ds-swatch-name { font-size: 0.78rem; font-weight: 700; display: block; }
+        .ds-swatch-value { font-size: 0.68rem; color: var(--x-text-muted); font-family: monospace; }
+
+        .ds-radius-demo, .ds-shadow-demo {
+            width: 90px; height: 90px;
+            background: var(--x-surface-2);
+            border: 1px solid var(--x-border);
+            display: flex; align-items: flex-end; justify-content: center;
+            padding-bottom: 0.5rem;
+            font-size: 0.68rem;
+            color: var(--x-text-muted);
+        }
+
+        .ds-space-demo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+        .ds-space-bar { background: var(--x-primary); height: 14px; border-radius: 3px; }
+        .ds-space-label { font-size: 0.75rem; color: var(--x-text-muted); font-family: monospace; width: 90px; }
+
+        .ds-type-row {
+            border-top: 1px solid var(--x-border);
+            padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .ds-type-row:first-child { border-top: none; }
+        .ds-type-meta { font-size: 0.7rem; color: var(--x-text-muted); font-family: monospace; }
+
+        .ds-preview-box {
+            background: rgba(0,0,0,0.15);
+            border: 1px dashed var(--x-border);
+            border-radius: var(--x-radius-md);
+            padding: 1.25rem;
+        }
+
+        .ds-badge-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <header class="app-header">
+            <div class="header-title">
+                <span>⚽</span>
+                <span>xFoot</span>
+                <span class="pro-badge">DESIGN SYSTEM</span>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="x-btn x-btn-ghost x-btn-sm">← Retour à l'app</a>
+            </div>
+        </header>
+
+        <main class="app-content" style="padding-top: 1.5rem;">
+
+            <h1 class="x-display" style="margin-bottom: 0.4rem;">Xfoot Design System</h1>
+            <p class="x-body-sm" style="margin-bottom: 2.5rem; max-width: 640px;">
+                Catalogue visuel interne (non lié depuis l'application) — fondations réutilisables pour les futures
+                interfaces Xfoot. Football analytics + IA + data, jamais un habillage de bookmaker : précision,
+                confiance, sobriété. Toutes les classes ci-dessous sont préfixées <code>.x-</code> et n'affectent
+                aucune page existante.
+            </p>
+
+            <!-- ============ COLORS ============ -->
+            <section class="ds-section" id="colors">
+                <div class="ds-section-title">01 · Colors</div>
+                <p class="ds-section-desc">Une seule source de vérité (<code>:root</code>) — surfaces, texte, marque, et 4 couleurs sémantiques jamais réutilisées l'une pour l'autre.</p>
+
+                <p class="x-label" style="margin-bottom:0.6rem;">Surfaces</p>
+                <div class="ds-swatch-grid" style="margin-bottom:1.5rem;">
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-bg);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">bg</span><span class="ds-swatch-value">--x-bg</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-surface);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">surface</span><span class="ds-swatch-value">--x-surface</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-surface-2);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">surface-2</span><span class="ds-swatch-value">--x-surface-2</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-text);"></div><div class="ds-swatch-label"><span class="ds-swatch-name" style="color:#000;">text</span><span class="ds-swatch-value">--x-text</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-text-muted);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">text-muted</span><span class="ds-swatch-value">--x-text-muted</span></div></div>
+                </div>
+
+                <p class="x-label" style="margin-bottom:0.6rem;">Marque</p>
+                <div class="ds-swatch-grid" style="margin-bottom:1.5rem;">
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-primary);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">primary</span><span class="ds-swatch-value">--x-primary</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-primary-hover);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">primary-hover</span><span class="ds-swatch-value">--x-primary-hover</span></div></div>
+                </div>
+
+                <p class="x-label" style="margin-bottom:0.6rem;">Sémantique</p>
+                <div class="ds-swatch-grid">
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-success);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">success</span><span class="ds-swatch-value">--x-success</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-warning);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">warning</span><span class="ds-swatch-value">--x-warning</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-danger);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">danger</span><span class="ds-swatch-value">--x-danger</span></div></div>
+                    <div class="ds-swatch"><div class="ds-swatch-color" style="background:var(--x-info);"></div><div class="ds-swatch-label"><span class="ds-swatch-name">info</span><span class="ds-swatch-value">--x-info</span></div></div>
+                </div>
+            </section>
+
+            <!-- ============ RADIUS & SHADOWS & SPACING ============ -->
+            <section class="ds-section" id="foundations">
+                <div class="ds-section-title">02 · Radius, Shadows &amp; Spacing</div>
+                <p class="ds-section-desc">Échelles fixes — cards/boutons/inputs/badges piochent exclusivement dans ces valeurs.</p>
+
+                <div class="ds-row" style="margin-bottom: 2rem;">
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-sm);">sm · 8px</div>
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-md);">md · 12px</div>
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-lg);">lg · 20px</div>
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-pill);">pill</div>
+                </div>
+
+                <div class="ds-row" style="margin-bottom: 2rem;">
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-md); box-shadow:var(--x-shadow-sm); border:none;">shadow-sm</div>
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-md); box-shadow:var(--x-shadow-md); border:none;">shadow-md</div>
+                    <div class="ds-radius-demo" style="border-radius:var(--x-radius-md); box-shadow:var(--x-shadow-lg); border:none;">shadow-lg</div>
+                </div>
+
+                <div class="ds-col">
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-1 (4px)</span><div class="ds-space-bar" style="width:4px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-2 (8px)</span><div class="ds-space-bar" style="width:8px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-3 (12px)</span><div class="ds-space-bar" style="width:12px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-4 (16px)</span><div class="ds-space-bar" style="width:16px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-5 (20px)</span><div class="ds-space-bar" style="width:20px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-6 (24px)</span><div class="ds-space-bar" style="width:24px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-8 (32px)</span><div class="ds-space-bar" style="width:32px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-10 (40px)</span><div class="ds-space-bar" style="width:40px;"></div></div>
+                    <div class="ds-space-demo"><span class="ds-space-label">--x-space-12 (48px)</span><div class="ds-space-bar" style="width:48px;"></div></div>
+                </div>
+            </section>
+
+            <!-- ============ TYPOGRAPHY ============ -->
+            <section class="ds-section" id="typography">
+                <div class="ds-section-title">03 · Typography</div>
+                <p class="ds-section-desc">Inter, hiérarchie complète — testée lisible du mobile 375px au desktop large.</p>
+
+                <div class="ds-type-row"><div class="x-display">Display — Xfoot AI Arena</div><span class="ds-type-meta">.x-display · 2rem → 2.75rem / 800</span></div>
+                <div class="ds-type-row"><div class="x-h1">H1 — Performance des modèles</div><span class="ds-type-meta">.x-h1 · 1.5rem → 1.9rem / 800</span></div>
+                <div class="ds-type-row"><div class="x-h2">H2 — Matchs de la semaine</div><span class="ds-type-meta">.x-h2 · 1.2rem → 1.4rem / 700</span></div>
+                <div class="ds-type-row"><div class="x-h3">H3 — Détail par modèle</div><span class="ds-type-meta">.x-h3 · 1rem / 700</span></div>
+                <div class="ds-type-row"><div class="x-body">Body — Combine les modèles réellement disponibles en direct sur ce match, pondérés par performance réelle.</div><span class="ds-type-meta">.x-body · 0.95rem / 400</span></div>
+                <div class="ds-type-row"><div class="x-body-sm">Body Small — Basé sur 412 prédictions résolues.</div><span class="ds-type-meta">.x-body-sm · 0.85rem / 400</span></div>
+                <div class="ds-type-row"><div class="x-caption">Caption — Dernière mise à jour il y a 4 minutes</div><span class="ds-type-meta">.x-caption · 0.75rem / 500</span></div>
+                <div class="ds-type-row"><div class="x-label">Label — Confidence Score</div><span class="ds-type-meta">.x-label · 0.72rem / 700 / uppercase</span></div>
+                <div class="ds-type-row"><div class="x-kpi">73.2%</div><span class="ds-type-meta">.x-kpi · 2.4rem → 3rem / 800 / tabular-nums</span></div>
+            </section>
+
+            <!-- ============ BUTTONS ============ -->
+            <section class="ds-section" id="buttons">
+                <div class="ds-section-title">04 · Buttons</div>
+                <p class="ds-section-desc">5 variantes × 3 tailles. Zone tactile ≥44px sur md/lg. Focus clavier visible (Tab pour tester).</p>
+
+                <div class="ds-col">
+                    <div class="ds-row">
+                        <button class="x-btn x-btn-primary x-btn-sm">Primary sm</button>
+                        <button class="x-btn x-btn-primary x-btn-md">Primary md</button>
+                        <button class="x-btn x-btn-primary x-btn-lg">Primary lg</button>
+                        <button class="x-btn x-btn-primary x-btn-md" disabled>Disabled</button>
+                    </div>
+                    <div class="ds-row">
+                        <button class="x-btn x-btn-secondary x-btn-sm">Secondary sm</button>
+                        <button class="x-btn x-btn-secondary x-btn-md">Secondary md</button>
+                        <button class="x-btn x-btn-secondary x-btn-lg">Secondary lg</button>
+                    </div>
+                    <div class="ds-row">
+                        <button class="x-btn x-btn-ghost x-btn-sm">Ghost sm</button>
+                        <button class="x-btn x-btn-ghost x-btn-md">Ghost md</button>
+                        <button class="x-btn x-btn-ghost x-btn-lg">Ghost lg</button>
+                    </div>
+                    <div class="ds-row">
+                        <button class="x-btn x-btn-danger x-btn-md">Danger</button>
+                        <button class="x-btn x-btn-success x-btn-md">Success</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ INPUTS ============ -->
+            <section class="ds-section" id="inputs">
+                <div class="ds-section-title">05 · Inputs</div>
+                <p class="ds-section-desc">États normal / focus (cliquer dedans) / error / disabled.</p>
+
+                <div class="ds-row" style="align-items: flex-start;">
+                    <div class="x-field" style="width: 220px;">
+                        <label class="x-label">Équipe domicile</label>
+                        <input class="x-input" placeholder="Rechercher…">
+                    </div>
+                    <div class="x-field" style="width: 220px;">
+                        <label class="x-label">Ligue</label>
+                        <select class="x-select">
+                            <option>Ligue 1</option>
+                            <option>LaLiga</option>
+                            <option>Premier League</option>
+                        </select>
+                    </div>
+                    <div class="x-field" style="width: 220px;">
+                        <label class="x-label">Email (erreur)</label>
+                        <input class="x-input x-input-error" value="pas-un-email">
+                        <span class="x-field-error">Adresse email invalide.</span>
+                    </div>
+                    <div class="x-field" style="width: 220px;">
+                        <label class="x-label">Désactivé</label>
+                        <input class="x-input" value="Verrouillé" disabled>
+                    </div>
+                </div>
+                <div class="x-field" style="max-width: 460px; margin-top: 1rem;">
+                    <label class="x-label">Note (textarea)</label>
+                    <textarea class="x-textarea" placeholder="Commentaire libre…"></textarea>
+                </div>
+                <div class="x-search" style="max-width: 320px; margin-top: 1rem;">
+                    <span class="x-search-icon">🔍</span>
+                    <input class="x-input" placeholder="Rechercher un match, une équipe…">
+                </div>
+            </section>
+
+            <!-- ============ CARDS ============ -->
+            <section class="ds-section" id="cards">
+                <div class="ds-section-title">06 · Cards</div>
+                <p class="ds-section-desc">Standard · KPI · Match · Prediction · AI.</p>
+
+                <div class="x-grid">
+                    <div class="x-card">
+                        <div class="x-h3" style="margin-bottom:0.5rem;">Standard Card</div>
+                        <p class="x-body-sm">Conteneur générique pour toute information — réglages, notes, contenu libre.</p>
+                    </div>
+
+                    <div class="x-card-kpi">
+                        <span class="x-label">Accuracy 1X2</span>
+                        <span class="x-kpi">68.4%</span>
+                        <span class="x-card-kpi-trend up">▲ +2.1 pts vs mois dernier</span>
+                    </div>
+
+                    <div class="x-card-match">
+                        <div class="x-match-meta"><span>🇪🇸 LaLiga</span><span>Sam. 21 nov · 21:00</span></div>
+                        <div class="x-match">
+                            <div class="x-team"><div class="x-team-logo">RM</div><span class="x-team-name">Real Madrid</span></div>
+                            <span class="x-match-score">2 - 1</span>
+                            <div class="x-team" style="flex-direction: row-reverse;"><div class="x-team-logo">BA</div><span class="x-team-name">Barcelona</span></div>
+                        </div>
+                    </div>
+
+                    <div class="x-card-prediction">
+                        <div class="x-card-header"><span class="x-h3" style="margin:0;">Prédiction IA</span><span class="x-ai-tag">⚡ Xfoot AI</span></div>
+                        <div class="x-prediction-row"><span class="x-prediction-market">1X2</span><span class="x-prediction-value">Domicile</span></div>
+                        <div class="x-prediction-row"><span class="x-prediction-market">Probabilité</span><span class="x-prediction-value">58.2%</span></div>
+                        <div class="x-prediction-row"><span class="x-prediction-market">Value</span><span class="x-ai-value-tag positive">+7.4%</span></div>
+                    </div>
+
+                    <div class="x-card-ai">
+                        <div class="x-card-header"><span class="x-ai-tag">⚡ Xfoot AI</span><span class="x-badge x-badge-live"><span class="x-live-dot"></span>Live</span></div>
+                        <p class="x-body-sm" style="margin-bottom:1rem;">Ensemble multi-modèles (Dixon-Coles, Elo, XGBoost, LightGBM), pondéré par performance réelle.</p>
+                        <div class="x-ai-score"><span class="x-ai-score-value">82</span><span class="x-ai-score-label">Confidence Score</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ BADGES ============ -->
+            <section class="ds-section" id="badges">
+                <div class="ds-section-title">07 · Badges</div>
+                <p class="ds-section-desc">Un statut = une couleur, fixée une fois pour toutes.</p>
+                <div class="ds-badge-grid">
+                    <span class="x-badge x-badge-active">Active</span>
+                    <span class="x-badge x-badge-inactive">Inactive</span>
+                    <span class="x-badge x-badge-live"><span class="x-live-dot"></span>Live</span>
+                    <span class="x-badge x-badge-pending">Pending</span>
+                    <span class="x-badge x-badge-success">Success</span>
+                    <span class="x-badge x-badge-warning">Warning</span>
+                    <span class="x-badge x-badge-error">Error</span>
+                    <span class="x-badge x-badge-premium">Premium</span>
+                    <span class="x-badge x-badge-ai">AI</span>
+                </div>
+            </section>
+
+            <!-- ============ TABLE ============ -->
+            <section class="ds-section" id="table">
+                <div class="ds-section-title">08 · Table</div>
+                <p class="ds-section-desc">Header, rows, hover, sélection, vide, chargement. Scroll horizontal maîtrisé sous 640px.</p>
+
+                <div class="x-table-wrap" style="margin-bottom: 1rem;">
+                    <table class="x-table">
+                        <thead><tr><th>Modèle</th><th>Accuracy</th><th>Log Loss</th><th>Sample</th></tr></thead>
+                        <tbody>
+                            <tr class="x-row-selected"><td>Dixon-Coles</td><td>0.6423</td><td>0.5821</td><td>1240</td></tr>
+                            <tr><td>XGBoost</td><td>0.6198</td><td>0.6012</td><td>980</td></tr>
+                            <tr><td>Elo</td><td>0.5934</td><td>0.6304</td><td>1240</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="ds-row">
+                    <div class="x-table-wrap" style="flex:1; min-width:220px;"><div class="x-table-empty">Aucune donnée pour l'instant.</div></div>
+                    <div class="x-table-wrap" style="flex:1; min-width:220px;"><div class="x-table-loading">Chargement…</div></div>
+                </div>
+            </section>
+
+            <!-- ============ PROGRESS / CONFIDENCE ============ -->
+            <section class="ds-section" id="progress">
+                <div class="ds-section-title">09 · Progress &amp; Confidence</div>
+                <p class="ds-section-desc">Barres CSS pures — aucune librairie de graphiques nécessaire.</p>
+
+                <div class="ds-col" style="max-width: 420px; margin-bottom: 1.5rem;">
+                    <div class="x-confidence">
+                        <div class="x-confidence-track x-progress"><div class="x-progress-bar" style="width:82%;"></div></div>
+                        <span class="x-confidence-value">82%</span>
+                    </div>
+                    <div class="x-confidence">
+                        <div class="x-confidence-track x-progress"><div class="x-progress-bar warning" style="width:54%;"></div></div>
+                        <span class="x-confidence-value">54%</span>
+                    </div>
+                    <div class="x-confidence">
+                        <div class="x-confidence-track x-progress"><div class="x-progress-bar danger" style="width:23%;"></div></div>
+                        <span class="x-confidence-value">23%</span>
+                    </div>
+                </div>
+
+                <div style="max-width: 420px; margin-bottom: 1.5rem;">
+                    <div class="x-probability-row"><span>Domicile</span><div class="x-probability-bar"><div class="x-probability-fill" style="width:58%;"></div></div><span>58%</span></div>
+                    <div class="x-probability-row"><span>Nul</span><div class="x-probability-bar"><div class="x-probability-fill" style="width:24%;"></div></div><span>24%</span></div>
+                    <div class="x-probability-row"><span>Extérieur</span><div class="x-probability-bar"><div class="x-probability-fill" style="width:18%;"></div></div><span>18%</span></div>
+                </div>
+
+                <div class="x-bar-chart" style="max-width: 320px;">
+                    <div class="x-bar" style="height:40%;"></div>
+                    <div class="x-bar" style="height:65%;"></div>
+                    <div class="x-bar muted" style="height:30%;"></div>
+                    <div class="x-bar" style="height:80%;"></div>
+                    <div class="x-bar" style="height:55%;"></div>
+                    <div class="x-bar muted" style="height:45%;"></div>
+                </div>
+            </section>
+
+            <!-- ============ FOOTBALL COMPONENTS ============ -->
+            <section class="ds-section" id="football">
+                <div class="ds-section-title">10 · Football Components</div>
+                <p class="ds-section-desc">Team · Match · Prediction · League.</p>
+
+                <div class="x-grid">
+                    <div class="ds-preview-box">
+                        <p class="x-label" style="margin-bottom:0.75rem;">Team</p>
+                        <div class="x-team">
+                            <div class="x-team-logo">PSG</div>
+                            <div><span class="x-team-name">Paris SG</span><br><span class="x-team-rating">Elo 1924</span></div>
+                        </div>
+                    </div>
+                    <div class="ds-preview-box">
+                        <p class="x-label" style="margin-bottom:0.75rem;">League</p>
+                        <div class="x-league">
+                            <div class="x-team-logo">🇫🇷</div>
+                            <div><span class="x-league-name">Ligue 1</span><br><span class="x-league-country">France</span></div>
+                            <span class="x-badge x-badge-active" style="margin-left:auto;">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ AI COMPONENTS ============ -->
+            <section class="ds-section" id="ai">
+                <div class="ds-section-title">11 · Xfoot AI Visual Language</div>
+                <p class="ds-section-desc">Score · Confidence · Value · Arena Signal — un seul vocabulaire visuel, jamais un effet différent d'une page à l'autre.</p>
+
+                <div class="ds-row">
+                    <span class="x-ai-tag">⚡ Xfoot AI</span>
+                    <span class="x-ai-value-tag positive">Value +7.4%</span>
+                    <span class="x-ai-value-tag neutral">Value 0.0%</span>
+                    <span class="x-ai-value-tag negative">Value -3.1%</span>
+                    <div class="x-ai-signal"><span class="x-ai-signal-dot"></span>Signal actif — modèle LIVE</div>
+                </div>
+                <div class="ds-row" style="margin-top:1rem;">
+                    <div class="x-ai-score"><span class="x-ai-score-value">91</span><span class="x-ai-score-label">Xfoot AI Score</span></div>
+                    <div class="x-ai-score"><span class="x-ai-score-value">82%</span><span class="x-ai-score-label">Confidence</span></div>
+                </div>
+            </section>
+
+            <!-- ============ NAVIGATION (preview) ============ -->
+            <section class="ds-section" id="navigation">
+                <div class="ds-section-title">12 · Navigation (aperçu, non branché)</div>
+                <p class="ds-section-desc">Prépare le futur système Sidebar (desktop) + Drawer (mobile) — aperçu statique uniquement, les 7 pages actuelles gardent leur nav corrigée en Responsive Fix V1.</p>
+
+                <div style="display:flex; border:1px solid var(--x-border); border-radius: var(--x-radius-lg); overflow:hidden; max-width: 640px;">
+                    <nav class="x-sidebar" style="border-right:1px solid var(--x-border);">
+                        <a href="#" class="x-sidebar-link active">📊 Dashboard</a>
+                        <a href="#" class="x-sidebar-link">🏟️ AI Arena</a>
+                        <a href="#" class="x-sidebar-link">⏱️ Live</a>
+                        <a href="#" class="x-sidebar-link">👑 VIP</a>
+                    </nav>
+                    <div style="flex:1; padding: 1.5rem; background: var(--x-bg);">
+                        <button class="x-drawer-trigger" id="ds-drawer-btn" aria-label="Ouvrir le menu">☰</button>
+                        <p class="x-body-sm">Contenu de page (aperçu). Sous 767px, la sidebar disparaît et le déclencheur ☰ apparaît (redimensionne la fenêtre pour tester).</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+</body>
+</html>

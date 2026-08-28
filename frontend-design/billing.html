@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xFoot - Abonnement</title>
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=11">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -20,7 +20,7 @@
 
     <header class="header">
         <div class="logo">
-            <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+            <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
                 <span class="icon">⚽</span> xFoot
             </a>
         </div>
@@ -48,7 +48,7 @@
         </nav>
         <div class="header-actions">
             <span class="email" id="user-email">…</span>
-            <a href="index.html" class="btn-outline" style="text-decoration: none;">Dashboard</a>
+            <a href="dashboard.html" class="btn-outline" style="text-decoration: none;">Dashboard</a>
         </div>
     </header>
 
@@ -171,7 +171,9 @@
             const response = await apiFetch('/auth/me');
             const user = await response.json();
             currentUserEmail = user.email;
-            document.getElementById('user-email').textContent = user.name || user.email;
+            const userEmailNode = document.getElementById('user-email');
+            userEmailNode.textContent = user.name || user.email;
+            userEmailNode.title = user.email;
         }
 
         async function loadSubscriptionStatus() {

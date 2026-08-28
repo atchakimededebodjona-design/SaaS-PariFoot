@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xFoot - AI Arena</title>
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=11">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* Scoped à cette page — pas de nouvelle identité visuelle, juste un
@@ -128,7 +128,7 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-title">
-                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
                     <span>⚽</span>
                     <span>xFoot</span>
                     <span class="pro-badge">ARENA</span>
@@ -323,7 +323,10 @@
             const userEmailEl = document.getElementById('user-email');
             
             if (currentUser) {
-                if (userEmailEl) userEmailEl.textContent = currentUser.name || currentUser.email.split('@')[0];
+                if (userEmailEl) {
+                    userEmailEl.textContent = currentUser.name || currentUser.email.split('@')[0];
+                    userEmailEl.title = currentUser.email;
+                }
                 
                 if (currentUser.is_admin) {
                     if (roleBadge) {
@@ -528,7 +531,9 @@
             try {
                 const response = await apiFetch('/auth/me');
                 const user = await response.json();
-                document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
+                const userEmailNode = document.getElementById('user-email');
+                userEmailNode.textContent = user.name || user.email.split('@')[0];
+                userEmailNode.title = user.email;
             } catch (e) {
                 console.error("Auth error", e);
             }

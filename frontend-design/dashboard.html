@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Scoped à cette page — compose uniquement avec les classes .x-*
+           du Design System (styles.css) + le shell .app-container/.app-header/
+           .bottom-nav déjà validé (Responsive Audit + Fix V1). Rien de
+           nouveau n'est introduit ici qui ne devrait pas, à terme, migrer
+           dans styles.css si un autre écran en a besoin. */
+        .dash-hero {
+            background: linear-gradient(145deg, rgba(44, 217, 165, 0.08) 0%, var(--x-surface) 70%);
+            border: 1px solid var(--x-border);
+            border-radius: var(--x-radius-lg);
+            padding: var(--x-space-6) var(--x-space-5);
+            margin-bottom: var(--x-space-6);
+        }
+        .dash-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--x-space-5);
+            margin-top: var(--x-space-4);
+        }
+        .dash-hero-meta-item { display: flex; flex-direction: column; gap: 0.15rem; }
+
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: var(--x-space-4);
+            gap: var(--x-space-3);
+        }
+
+        .dash-empty {
+            text-align: center;
+            padding: var(--x-space-8) var(--x-space-4);
+            color: var(--x-text-muted);
+            border: 1px dashed var(--x-border);
+            border-radius: var(--x-radius-lg);
+        }
+        .dash-empty .dash-empty-icon { font-size: 1.8rem; display: block; margin-bottom: 0.6rem; }
+
+        .dash-quick-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--x-space-3);
+        }
+        .dash-quick-link {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            background: var(--x-surface);
+            border: 1px solid var(--x-border);
+            border-radius: var(--x-radius-md);
+            padding: var(--x-space-4);
+            text-decoration: none;
+            color: var(--x-text);
+            min-height: 44px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .dash-quick-link:hover { border-color: var(--x-primary-border); transform: translateY(-2px); }
+        .dash-quick-link.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .dash-quick-icon { font-size: 1.3rem; }
+
+        .dash-kpi-value-na { color: var(--x-text-muted); }
+
+        @media (min-width: 768px) {
+            .dash-quick-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+
+        /* Cette page a 6 liens de nav (Dashboard + les 5 existants) contre 5
+           sur les 7 autres pages — le palier icônes-seules global de
+           styles.css (768–899px, dimensionné pour 5 liens, voir Responsive
+           Fix V1) ne suffit plus à 1024×768 avec un 6e lien en libellé
+           complet (mesuré : 137px de débordement sur .header-actions).
+           Étendu ICI, scoped à dashboard.html uniquement — les 7 pages
+           existantes gardent leur palier 768–899px inchangé. */
+        @media (min-width: 900px) and (max-width: 1199px) {
+            .desktop-nav-link span:not(.nav-icon) { display: none; }
+            .app-header { padding: 1.25rem 1.25rem; }
+            .desktop-nav { gap: 0.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header — même structure que les 7 pages existantes (corrigée en
+             Responsive Fix V1), avec "Dashboard" comme 6e entrée puisque
+             cette page a sa propre nav (les 7 pages existantes ne sont PAS
+             modifiées, voir rapport). -->
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span>
+                    <span>xFoot</span>
+                    <span class="pro-badge">HOME</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="index.html" class="desktop-nav-link">
+                    <span class="nav-icon">✨</span>
+                    <span>AI Analysis</span>
+                </a>
+                <a href="live.html" class="desktop-nav-link">
+                    <span class="nav-icon">⏱️</span>
+                    <span>Live x3</span>
+                </a>
+                <a href="history.html" class="desktop-nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Historique</span>
+                </a>
+                <a href="arena.html" class="desktop-nav-link">
+                    <span class="nav-icon">🏟️</span>
+                    <span>AI Arena</span>
+                </a>
+                <a href="vip.html" class="desktop-nav-link">
+                    <span class="nav-icon">👑</span>
+                    <span>VIP</span>
+                </a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+
+            <!-- ============ HERO ============ -->
+            <div class="dash-hero">
+                <span class="x-ai-tag">⚡ XFOOT</span>
+                <h1 class="x-h1" style="margin-top: 0.6rem; margin-bottom: 0.2rem;">Football intelligence, powered by data.</h1>
+                <p class="x-body-sm" id="hero-date"></p>
+                <div class="dash-hero-meta" id="hero-meta">
+                    <div class="dash-hero-meta-item">
+                        <span class="x-caption">Matchs aujourd'hui</span>
+                        <span class="x-h3" id="hero-matches-count">—</span>
+                    </div>
+                    <div class="dash-hero-meta-item">
+                        <span class="x-caption">Prédictions disponibles</span>
+                        <span class="x-h3" id="hero-predictions-count">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ KPI SECTION ============ -->
+            <section class="dash-section">
+                <div class="x-grid">
+                    <div class="x-card-kpi">
+                        <span class="x-label">Today's Matches</span>
+                        <span class="x-kpi" id="kpi-matches">—</span>
+                    </div>
+                    <div class="x-card-kpi">
+                        <span class="x-label">Predictions</span>
+                        <span class="x-kpi" id="kpi-predictions">—</span>
+                    </div>
+                    <div class="x-card-kpi">
+                        <span class="x-label">Confidence</span>
+                        <span class="x-kpi dash-kpi-value-na">N/A</span>
+                        <span class="x-caption">Bientôt disponible (Confidence Engine)</span>
+                    </div>
+                    <div class="x-card-kpi">
+                        <span class="x-label">Accuracy 1X2</span>
+                        <span class="x-kpi" id="kpi-accuracy">—</span>
+                        <span class="x-caption" id="kpi-accuracy-sample"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ XFOOT AI RADAR PREVIEW ============ -->
+            <section class="dash-section" id="radar">
+                <div class="dash-section-header">
+                    <h2 class="x-h2">🔥 Xfoot AI Radar</h2>
+                    <span class="x-badge x-badge-pending">Coming soon</span>
+                </div>
+                <div class="dash-empty">
+                    <span class="dash-empty-icon">📡</span>
+                    <p class="x-body">Xfoot AI Radar — Coming soon.</p>
+                    <p class="x-caption" style="margin-top: 0.4rem;">Détection automatique des meilleurs signaux (probabilité, confiance, value) sur l'ensemble des matchs — pas encore branché à un moteur réel, aucun signal n'est simulé ici.</p>
+                </div>
+            </section>
+
+            <!-- ============ TODAY'S MATCHES ============ -->
+            <section class="dash-section" id="matches-section">
+                <div class="dash-section-header">
+                    <h2 class="x-h2">⚽ Today's Matches</h2>
+                    <a href="index.html" class="x-btn x-btn-ghost x-btn-sm">Voir tout →</a>
+                </div>
+                <div id="matches-loading" class="x-body-sm">Chargement des matchs…</div>
+                <div id="matches-error" class="x-field-error" style="display:none;"></div>
+                <div id="matches-empty" class="dash-empty" style="display:none;">
+                    <span class="dash-empty-icon">📭</span>
+                    <p class="x-body">No matches available today.</p>
+                </div>
+                <div id="matches-content" class="x-grid" style="display:none;"></div>
+            </section>
+
+            <!-- ============ XFOOT PREDICTIONS PREVIEW ============ -->
+            <section class="dash-section" id="predictions-section">
+                <div class="dash-section-header">
+                    <h2 class="x-h2">🎯 Xfoot Predictions</h2>
+                    <a href="index.html" class="x-btn x-btn-ghost x-btn-sm">Générer →</a>
+                </div>
+                <div id="predictions-loading" class="x-body-sm">Chargement des prédictions…</div>
+                <div id="predictions-error" class="x-field-error" style="display:none;"></div>
+                <div id="predictions-empty" class="dash-empty" style="display:none;">
+                    <span class="dash-empty-icon">🎯</span>
+                    <p class="x-body">No predictions available yet today.</p>
+                    <p class="x-caption" style="margin-top:0.4rem;">Génère un pronostic depuis "AI Analysis" pour qu'il apparaisse ici.</p>
+                </div>
+                <div id="predictions-content" class="x-grid" style="display:none;"></div>
+            </section>
+
+            <!-- ============ MODEL PERFORMANCE PREVIEW ============ -->
+            <section class="dash-section" id="modelperf-section">
+                <div class="dash-section-header">
+                    <h2 class="x-h2">🤖 Model Performance</h2>
+                    <a href="arena.html" class="x-btn x-btn-ghost x-btn-sm">AI Arena →</a>
+                </div>
+                <div id="modelperf-loading" class="x-body-sm">Chargement des performances…</div>
+                <div id="modelperf-error" class="x-field-error" style="display:none;"></div>
+                <div id="modelperf-content" style="display:none;"></div>
+            </section>
+
+            <!-- ============ QUICK ACCESS ============ -->
+            <section class="dash-section" id="quick-access">
+                <div class="dash-section-header"><h2 class="x-h2">Quick Access</h2></div>
+                <div class="dash-quick-grid">
+                    <a href="index.html" class="dash-quick-link"><span class="dash-quick-icon">✨</span><span class="x-body-sm" style="color:var(--x-text);">Predictions</span></a>
+                    <a href="live.html" class="dash-quick-link"><span class="dash-quick-icon">⏱️</span><span class="x-body-sm" style="color:var(--x-text);">Live Matches</span></a>
+                    <a href="arena.html" class="dash-quick-link"><span class="dash-quick-icon">🏟️</span><span class="x-body-sm" style="color:var(--x-text);">AI Arena</span></a>
+                    <a href="history.html" class="dash-quick-link"><span class="dash-quick-icon">📊</span><span class="x-body-sm" style="color:var(--x-text);">Analytics</span></a>
+                    <a href="#" class="dash-quick-link disabled" aria-disabled="true"><span class="dash-quick-icon">🔥</span><span class="x-body-sm" style="color:var(--x-text);">AI Radar <span class="x-caption">(soon)</span></span></a>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <span class="nav-icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="history.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Historique</span>
+            </a>
+            <a href="live.html" class="nav-item">
+                <span class="nav-icon">⏱️</span>
+                <span>Live x3</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">✨</span>
+                <span>AI Analysis</span>
+            </a>
+            <a href="arena.html" class="nav-item">
+                <span class="nav-icon">🏟️</span>
+                <span>AI Arena</span>
+            </a>
+            <a href="vip.html" class="nav-item">
+                <span class="nav-icon">👑</span>
+                <span>VIP</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const LEAGUE_META = {
+            LaLiga: { name: 'LaLiga', flag: '🇪🇸' },
+            PremierLeague: { name: 'Premier League', flag: '🏴' },
+            Ligue1: { name: 'Ligue 1', flag: '🇫🇷' },
+            Bundesliga: { name: 'Bundesliga', flag: '🇩🇪' },
+            SerieA: { name: 'Serie A', flag: '🇮🇹' },
+            PrimeiraLiga: { name: 'Liga Portugal', flag: '🇵🇹' },
+            MLS: { name: 'MLS', flag: '🇺🇸' },
+            SaudiProLeague: { name: 'Saudi Pro League', flag: '🇸🇦' },
+            ChampionsLeague: { name: 'Champions League', flag: '⭐' },
+            EuropaLeague: { name: 'Europa League', flag: '🟠' },
+            ConferenceLeague: { name: 'Conference League', flag: '🟢' },
+        };
+        const PICK_1X2_LABELS = { home: 'Domicile', draw: 'Nul', away: 'Extérieur' };
+        const MODEL_LABELS = { dixon_coles: 'Dixon-Coles', elo: 'Elo', xgboost: 'XGBoost', lightgbm: 'LightGBM' };
+        const LIVE_STATUS_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P'];
+
+        function getInitials(name) {
+            if (!name) return '??';
+            const parts = name.trim().split(' ');
+            return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+        }
+        function isSameLocalDay(isoString, ref) {
+            if (!isoString) return false;
+            const d = new Date(isoString);
+            return d.toDateString() === ref.toDateString();
+        }
+        function formatTime(isoString) {
+            const d = new Date(isoString);
+            return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+        function pct(v) { return v === null || v === undefined ? '—' : `${(v * 100).toFixed(1)}%`; }
+
+        const today = new Date();
+
+        /* ─── Header : identique aux 7 pages existantes ─── */
+        async function loadCurrentUser() {
+            try {
+                const response = await apiFetch('/auth/me');
+                const user = await response.json();
+                document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
+                document.getElementById('user-email').title = user.email;
+            } catch (e) {
+                console.error('Auth error', e);
+            }
+        }
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            clearToken();
+            window.location.href = 'login.html';
+        });
+
+        /* ─── Hero : date du jour, pas de donnée inventée ─── */
+        document.getElementById('hero-date').textContent = today.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        /* ─── Today's Matches + KPI "Today's Matches" : GET /fixtures/week,
+           un seul appel, réutilisé pour la section ET le KPI (§17). ─── */
+        function renderMatchCard(fix) {
+            const homeInitial = getInitials(fix.home_team);
+            const awayInitial = getInitials(fix.away_team);
+            const homeLogo = fix.home_logo ? `<img src="${fix.home_logo}" alt="" loading="lazy" style="width:20px;height:20px;object-fit:contain;" onerror="this.outerHTML='${homeInitial}'">` : homeInitial;
+            const awayLogo = fix.away_logo ? `<img src="${fix.away_logo}" alt="" loading="lazy" style="width:20px;height:20px;object-fit:contain;" onerror="this.outerHTML='${awayInitial}'">` : awayInitial;
+            const meta = LEAGUE_META[fix.league] || { name: fix.league, flag: '⚽' };
+            const isLive = LIVE_STATUS_CODES.includes(fix.status);
+            const statusBadge = isLive
+                ? '<span class="x-badge x-badge-live"><span class="x-live-dot"></span>Live</span>'
+                : (fix.status === 'FT' ? '<span class="x-badge x-badge-inactive">Terminé</span>' : `<span class="x-badge x-badge-pending">${formatTime(fix.kickoff)}</span>`);
+            return `
+                <div class="x-card-match">
+                    <div class="x-match-meta"><span>${meta.flag} ${meta.name}</span>${statusBadge}</div>
+                    <div class="x-match">
+                        <div class="x-team"><div class="x-team-logo">${homeLogo}</div><span class="x-team-name">${fix.home_team}</span></div>
+                        <span class="x-match-score" style="opacity:${isLive || fix.status === 'FT' ? 1 : 0.4};">${isLive || fix.status === 'FT' ? '—' : 'VS'}</span>
+                        <div class="x-team" style="flex-direction:row-reverse; text-align:right;"><div class="x-team-logo">${awayLogo}</div><span class="x-team-name">${fix.away_team}</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let todayFixturesFlat = [];
+
+        async function loadMatches() {
+            const loadingEl = document.getElementById('matches-loading');
+            const errorEl = document.getElementById('matches-error');
+            const emptyEl = document.getElementById('matches-empty');
+            const contentEl = document.getElementById('matches-content');
+            try {
+                const response = await apiFetch('/fixtures/week');
+                if (!response.ok) throw new Error(`Erreur (${response.status})`);
+                const data = await response.json();
+                const byLeague = data.fixtures_by_league || {};
+                todayFixturesFlat = Object.values(byLeague)
+                    .flat()
+                    .filter(fix => isSameLocalDay(fix.kickoff, today))
+                    .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff));
+
+                document.getElementById('hero-matches-count').textContent = todayFixturesFlat.length;
+                document.getElementById('kpi-matches').textContent = todayFixturesFlat.length;
+
+                loadingEl.style.display = 'none';
+                if (todayFixturesFlat.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    contentEl.innerHTML = todayFixturesFlat.slice(0, 6).map(renderMatchCard).join('');
+                    contentEl.style.display = 'grid';
+                }
+            } catch (e) {
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'No matches available — ' + (e.message || 'erreur de chargement.');
+                errorEl.style.display = 'block';
+                document.getElementById('kpi-matches').textContent = 'N/A';
+            }
+        }
+
+        /* ─── Predictions Preview + KPI "Predictions"/"Accuracy" :
+           GET /predictions/history?days=1, un seul appel, réutilisé pour
+           la section ET les 2 KPI (§17). Aucune probabilité/confidence/
+           value affichée : cet endpoint ne les renvoie pas (voir
+           PredictionHistoryMatch côté API) — jamais inventées (§9). ─── */
+        function renderPredictionCard(p) {
+            const meta = LEAGUE_META[p.league] || { name: p.league, flag: '⚽' };
+            const resolved = p.result !== null && p.result !== undefined;
+            return `
+                <div class="x-card-prediction">
+                    <div class="x-card-header">
+                        <span class="x-body-sm" style="color:var(--x-text);">${meta.flag} ${p.home_team} vs ${p.away_team}</span>
+                        <span class="x-ai-tag">⚡ Xfoot AI</span>
+                    </div>
+                    <div class="x-prediction-row"><span class="x-prediction-market">1X2</span><span class="x-prediction-value">${PICK_1X2_LABELS[p.pick_1x2] || p.pick_1x2}</span></div>
+                    <div class="x-prediction-row"><span class="x-prediction-market">Statut</span><span class="x-prediction-value">${resolved ? `${p.result.home_goals} - ${p.result.away_goals}` : 'À venir'}</span></div>
+                </div>
+            `;
+        }
+
+        async function loadPredictions() {
+            const loadingEl = document.getElementById('predictions-loading');
+            const errorEl = document.getElementById('predictions-error');
+            const emptyEl = document.getElementById('predictions-empty');
+            const contentEl = document.getElementById('predictions-content');
+            try {
+                const response = await apiFetch('/predictions/history?days=1');
+                if (!response.ok) throw new Error(`Erreur (${response.status})`);
+                const data = await response.json();
+
+                const todayStr = today.toDateString();
+                const todayMatches = (data.days || [])
+                    .filter(day => new Date(day.date).toDateString() === todayStr)
+                    .flatMap(day => day.matches);
+
+                document.getElementById('hero-predictions-count').textContent = todayMatches.length;
+                document.getElementById('kpi-predictions').textContent = todayMatches.length;
+
+                const acc = data.accuracy;
+                if (acc && acc.sample_size > 0) {
+                    document.getElementById('kpi-accuracy').textContent = pct(acc.overall_1x2);
+                    document.getElementById('kpi-accuracy-sample').textContent = `sur ${acc.sample_size} prédiction(s) résolue(s)`;
+                } else {
+                    document.getElementById('kpi-accuracy').textContent = 'N/A';
+                    document.getElementById('kpi-accuracy-sample').textContent = 'Pas encore de prédiction résolue';
+                }
+
+                loadingEl.style.display = 'none';
+                if (todayMatches.length === 0) {
+                    emptyEl.style.display = 'block';
+                } else {
+                    contentEl.innerHTML = todayMatches.slice(0, 6).map(renderPredictionCard).join('');
+                    contentEl.style.display = 'grid';
+                }
+            } catch (e) {
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'No predictions available — ' + (e.message || 'erreur de chargement.');
+                errorEl.style.display = 'block';
+                document.getElementById('kpi-predictions').textContent = 'N/A';
+                document.getElementById('kpi-accuracy').textContent = 'N/A';
+            }
+        }
+
+        /* ─── Model Performance Preview : GET /models/benchmark, même
+           source et mêmes règles que l'Arena (NOT AVAILABLE visible,
+           jamais de "best model" fabriqué — §10). ─── */
+        function na(value, digits, suffix) {
+            suffix = suffix || '';
+            return value === null || value === undefined ? '<td class="na" style="color:var(--x-text-muted);">N/A</td>' : `<td>${value.toFixed(digits)}${suffix}</td>`;
+        }
+        async function loadModelPerformance() {
+            const loadingEl = document.getElementById('modelperf-loading');
+            const errorEl = document.getElementById('modelperf-error');
+            const contentEl = document.getElementById('modelperf-content');
+            try {
+                const response = await apiFetch('/models/benchmark');
+                if (!response.ok) throw new Error(`Erreur (${response.status})`);
+                const bench = await response.json();
+                const models = (bench.markets && bench.markets['1X2'] && bench.markets['1X2'].models) || [];
+
+                if (models.length === 0) {
+                    contentEl.innerHTML = `<div class="dash-empty"><span class="dash-empty-icon">🤖</span><p class="x-body">Model performance data not available yet.</p></div>`;
+                } else {
+                    const rows = models.map(m => `
+                        <tr class="${m.is_active ? 'x-row-selected' : ''}">
+                            <td>${MODEL_LABELS[m.model_type] || m.model_type}</td>
+                            ${na(m.accuracy !== null ? m.accuracy * 100 : null, 1, '%')}
+                            ${na(m.log_loss, 4)}
+                            <td>${m.sample_size}</td>
+                        </tr>
+                    `).join('');
+                    contentEl.innerHTML = `
+                        <div class="x-table-wrap">
+                            <table class="x-table">
+                                <thead><tr><th>Model</th><th>Accuracy</th><th>Log Loss</th><th>Sample</th></tr></thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                        <p class="x-caption" style="margin-top:0.6rem;">Marché 1X2 · seuil minimum pour désigner un meilleur modèle : ${bench.min_benchmark_sample_size} prédictions résolues · <a href="arena.html" style="color:var(--x-primary);">détail complet dans AI Arena →</a></p>
+                    `;
+                }
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+            } catch (e) {
+                loadingEl.style.display = 'none';
+                errorEl.textContent = 'Model performance data not available yet — ' + (e.message || 'erreur de chargement.');
+                errorEl.style.display = 'block';
+            }
+        }
+
+        loadCurrentUser();
+        loadMatches();
+        loadPredictions();
+        loadModelPerformance();
+    </script>
+</body>
+</html>

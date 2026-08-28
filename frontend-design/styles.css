@@ -1,17 +1,86 @@
+/* ==========================================================================
+   XFOOT TOKENS — Design System V1
+   Source unique de vérité pour couleurs/espacements/rayons/ombres/typo.
+   Les variables historiques ci-dessous (--bg-main, --accent-gold, etc.)
+   restent définies et redeviennent de simples alias vers ces tokens — les
+   7 pages existantes (jamais réécrites dans cette phase, voir DESIGN
+   SYSTEM V1 §22/23) continuent de fonctionner à l'identique, pixel pour
+   pixel, tout en étant maintenant réellement adossées au même système de
+   tokens plutôt qu'à des valeurs figées.
+   ========================================================================== */
 :root {
-    --bg-main: #0B0E16;
-    --bg-card: #151925;
-    --bg-card-hover: #1C2130;
-    --text-primary: #FFFFFF;
-    --text-secondary: #7C8493;
-    --accent-gold: #2CD9A5;
-    --accent-gold-hover: #22B589;
-    --accent-green: #2CD9A5;
-    --accent-red: #FF4D4D;
-    --accent-blue: #3E63DD;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-gold: rgba(44, 217, 165, 0.3);
-    --accent-warning: var(--accent-red);
+    /* --- Surfaces --- */
+    --x-bg: #0B0E16;
+    --x-surface: #151925;
+    --x-surface-2: #1C2130;
+    --x-border: rgba(255, 255, 255, 0.08);
+
+    /* --- Texte --- */
+    --x-text: #FFFFFF;
+    --x-text-muted: #7C8493;
+
+    /* --- Marque (identité Xfoot : le "vert Xfoot", pas un "or" malgré le
+       nom historique --accent-gold — clarifié ici sans renommer l'ancien
+       nom pour ne rien casser) --- */
+    --x-primary: #2CD9A5;
+    --x-primary-hover: #22B589;
+    --x-primary-border: rgba(44, 217, 165, 0.3);
+
+    /* --- Sémantique (4 usages distincts, jamais réutilisés l'un pour
+       l'autre dans le nouveau système — voir §5 du prompt) --- */
+    --x-success: #2CD9A5;
+    --x-warning: #E0A82E;
+    --x-danger: #FF4D4D;
+    --x-info: #6E8AFF; /* pas #3E63DD (ancienne valeur --accent-blue, jamais utilisée sur les 7 pages
+       existantes — vérifié par grep) : contraste insuffisant en texte sur badge (3.27:1, sous le seuil
+       AA 4.5:1) ; #6E8AFF mesuré à 5.11:1, vérifié via Playwright sur .x-badge-ai */
+
+    /* --- Rayons --- */
+    --x-radius-sm: 8px;
+    --x-radius-md: 12px;
+    --x-radius-lg: 20px;
+    --x-radius-pill: 999px;
+
+    /* --- Ombres : hiérarchie neutre et discrète (jamais colorée/glossy —
+       voir §9 du prompt, "premium et data-oriented, pas glossy") --- */
+    --x-shadow-none: none;
+    --x-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --x-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --x-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+
+    /* --- Espacements (échelle 4/8/12/16/20/24/32/40/48, voir §7) --- */
+    --x-space-1: 4px;
+    --x-space-2: 8px;
+    --x-space-3: 12px;
+    --x-space-4: 16px;
+    --x-space-5: 20px;
+    --x-space-6: 24px;
+    --x-space-8: 32px;
+    --x-space-10: 40px;
+    --x-space-12: 48px;
+
+    /* --- Typographie --- */
+    --x-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    /* --- Compatibilité — anciennes variables, désormais de simples alias --- */
+    --bg-main: var(--x-bg);
+    --bg-card: var(--x-surface);
+    --bg-card-hover: var(--x-surface-2);
+    --text-primary: var(--x-text);
+    --text-secondary: var(--x-text-muted);
+    --accent-gold: var(--x-primary);
+    --accent-gold-hover: var(--x-primary-hover);
+    --accent-green: var(--x-primary);
+    --accent-red: var(--x-danger);
+    --accent-blue: var(--x-info);
+    --border-color: var(--x-border);
+    --border-gold: var(--x-primary-border);
+    /* --accent-warning sert en réalité de couleur d'ERREUR sur
+       login/billing/index/vip (messages de formulaire), jamais de
+       "warning" au sens propre — conservé sur --x-danger pour ne changer
+       aucune page existante. --x-warning (ambre) est le vrai token
+       "warning", disponible séparément pour les nouveaux composants. */
+    --accent-warning: var(--x-danger);
 }
 
 * {
@@ -84,11 +153,20 @@ body {
     color: var(--text-primary);
     font-size: 1.2rem;
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .user-email {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Main Content Area */
@@ -623,6 +701,12 @@ body {
 .email {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .main-content {
@@ -676,7 +760,7 @@ body {
 
 .prediction-form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1rem;
 }
 
@@ -767,6 +851,14 @@ body {
 
 .btn-warning:hover {
     opacity: 0.9;
+}
+
+.password-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .password-toggle:hover {
@@ -1173,6 +1265,7 @@ body {
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
+    white-space: nowrap;
     transition: all 0.2s ease;
     border: 1px solid transparent;
 }
@@ -1351,6 +1444,45 @@ body {
         max-width: 650px;
         margin: 0 auto;
     }
+
+    /* .prediction-form repasse à 2 colonnes à partir de 768px — login.html
+       (form#auth-form) garde 1 colonne partout via son style inline
+       grid-template-columns:1fr, plus spécifique, donc non affecté ici. */
+    .prediction-form {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ─── Tablette portrait (768–899px) : nav desktop compacte ───
+   Entre 768px (bascule desktop) et ~900px, logo + 5 liens nav + email/
+   badge/déconnexion ne tiennent plus sur une seule ligne (mesuré : jusqu'à
+   107px de débordement sur arena.html à 768×1024, .header-actions poussé
+   hors du viewport et invisible car body a overflow-x:hidden). Palier
+   intermédiaire : nav en icônes seules (mêmes émojis, déjà auto-porteurs,
+   cohérent avec le principe "icônes compréhensibles" plutôt que texte
+   tronqué) + espacements resserrés. Revient à la nav complète à partir de
+   900px, où elle tient déjà confortablement (vérifié à 1024×768). */
+@media (min-width: 768px) and (max-width: 899px) {
+    .app-header {
+        padding: 1.25rem 1rem;
+        gap: 0.75rem;
+    }
+
+    .desktop-nav {
+        gap: 0.15rem;
+    }
+
+    .desktop-nav-link {
+        padding: 0.5rem 0.55rem;
+    }
+
+    .desktop-nav-link span:not(.nav-icon) {
+        display: none;
+    }
+
+    .header-actions {
+        gap: 0.5rem;
+    }
 }
 
 /* ─── Large Desktop Screens (>= 1200px) ─── */
@@ -1366,6 +1498,583 @@ body {
     .accuracy-sub-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* ============================================================================
+   ============================================================================
+   XFOOT DESIGN SYSTEM V1
+   Fondations visuelles réutilisables (classes .x-*, toutes additives).
+   Rien ci-dessous ne modifie ou ne supprime une règle existante au-dessus —
+   les 7 pages actuelles (index/history/live/arena/vip/billing/login)
+   continuent d'utiliser exclusivement leurs classes historiques et ne sont
+   pas affectées par cette section. Catalogue visuel : design-system.html.
+   ============================================================================
+   ============================================================================ */
+
+/* ==========================================================================
+   XFOOT TYPOGRAPHY
+   Mobile-first : Display/H1/H2/KPI grossissent légèrement à partir de
+   768px, Body/Caption/Label restent stables (priorité lisibilité mobile).
+   ========================================================================== */
+.x-display {
+    font-family: var(--x-font);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--x-text);
+}
+.x-h1 {
+    font-family: var(--x-font);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--x-text);
+}
+.x-h2 {
+    font-family: var(--x-font);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--x-text);
+}
+.x-h3 {
+    font-family: var(--x-font);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--x-text);
+}
+.x-body {
+    font-family: var(--x-font);
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--x-text);
+}
+.x-body-sm {
+    font-family: var(--x-font);
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--x-text-muted);
+}
+.x-caption {
+    font-family: var(--x-font);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--x-text-muted);
+}
+.x-label {
+    font-family: var(--x-font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--x-text-muted);
+}
+.x-kpi {
+    font-family: var(--x-font);
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--x-primary);
+}
+@media (min-width: 768px) {
+    .x-display { font-size: 2.75rem; }
+    .x-h1 { font-size: 1.9rem; }
+    .x-h2 { font-size: 1.4rem; }
+    .x-kpi { font-size: 3rem; }
+}
+
+/* ==========================================================================
+   XFOOT BUTTONS
+   .btn-predict/.btn-primary/.btn-outline (pages existantes) restent
+   inchangés — pas migrés dans cette phase (voir prompt §23).
+   ========================================================================== */
+.x-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--x-font);
+    font-weight: 700;
+    border-radius: var(--x-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.x-btn:focus-visible {
+    outline: 2px solid var(--x-primary);
+    outline-offset: 2px;
+}
+.x-btn:disabled,
+.x-btn[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Tailles — sm/md respectent ≈44px de zone tactile ; sm (36px) est réservé
+   aux contextes desktop denses (tables, toolbars), jamais l'action
+   principale d'un écran mobile. */
+.x-btn-sm { min-height: 36px; padding: 0 0.85rem; font-size: 0.8rem; }
+.x-btn-md { min-height: 44px; padding: 0 1.25rem; font-size: 0.9rem; }
+.x-btn-lg { min-height: 52px; padding: 0 1.75rem; font-size: 1rem; }
+
+.x-btn-primary {
+    background: var(--x-primary);
+    color: #04140F;
+    box-shadow: var(--x-shadow-sm);
+}
+.x-btn-primary:hover { background: var(--x-primary-hover); }
+.x-btn-primary:active { transform: scale(0.98); }
+
+.x-btn-secondary {
+    background: var(--x-surface-2);
+    color: var(--x-text);
+    border-color: var(--x-border);
+}
+.x-btn-secondary:hover { border-color: var(--x-primary-border); }
+.x-btn-secondary:active { transform: scale(0.98); }
+
+.x-btn-ghost {
+    background: transparent;
+    color: var(--x-text-muted);
+    border-color: transparent;
+}
+.x-btn-ghost:hover { color: var(--x-text); background: rgba(255, 255, 255, 0.05); }
+
+.x-btn-danger {
+    background: rgba(255, 77, 77, 0.12);
+    color: var(--x-danger);
+    border-color: rgba(255, 77, 77, 0.3);
+}
+.x-btn-danger:hover { background: var(--x-danger); color: #1A0505; }
+
+.x-btn-success {
+    background: rgba(44, 217, 165, 0.12);
+    color: var(--x-success);
+    border-color: rgba(44, 217, 165, 0.3);
+}
+.x-btn-success:hover { background: var(--x-success); color: #04140F; }
+
+/* ==========================================================================
+   XFOOT INPUTS
+   ========================================================================== */
+.x-field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.x-input,
+.x-select,
+.x-textarea {
+    width: 100%;
+    min-height: 44px;
+    background: var(--x-surface);
+    border: 1px solid var(--x-border);
+    color: var(--x-text);
+    border-radius: var(--x-radius-md);
+    padding: 0.7rem 1rem;
+    font-family: var(--x-font);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+.x-textarea { min-height: 100px; resize: vertical; }
+
+.x-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%238E93A6%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.x-input:focus, .x-select:focus, .x-textarea:focus { border-color: var(--x-primary); }
+.x-input.x-input-error, .x-select.x-input-error, .x-textarea.x-input-error { border-color: var(--x-danger); }
+.x-input:disabled, .x-select:disabled, .x-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+.x-input::placeholder, .x-textarea::placeholder { color: var(--x-text-muted); }
+
+.x-field-error { font-size: 0.78rem; color: var(--x-danger); }
+
+.x-search { position: relative; }
+.x-search .x-input { padding-left: 2.6rem; }
+.x-search-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--x-text-muted);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   XFOOT CARDS
+   ========================================================================== */
+.x-card {
+    background: var(--x-surface);
+    border: 1px solid var(--x-border);
+    border-radius: var(--x-radius-lg);
+    padding: var(--x-space-5);
+    box-shadow: var(--x-shadow-sm);
+}
+
+.x-card-kpi {
+    background: var(--x-surface);
+    border: 1px solid var(--x-border);
+    border-radius: var(--x-radius-lg);
+    padding: var(--x-space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--x-space-2);
+}
+.x-card-kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.x-card-kpi-trend.up { color: var(--x-success); }
+.x-card-kpi-trend.down { color: var(--x-danger); }
+
+.x-card-match {
+    background: var(--x-surface);
+    border: 1px solid var(--x-border);
+    border-radius: var(--x-radius-lg);
+    padding: var(--x-space-4) var(--x-space-5);
+}
+
+.x-card-prediction {
+    background: var(--x-surface);
+    border: 1px solid var(--x-primary-border);
+    border-radius: var(--x-radius-lg);
+    padding: var(--x-space-5);
+}
+
+.x-card-ai {
+    background: linear-gradient(145deg, var(--x-surface) 0%, #10141F 100%);
+    border: 1px solid var(--x-primary-border);
+    border-radius: var(--x-radius-lg);
+    padding: var(--x-space-5);
+    position: relative;
+}
+
+.x-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--x-space-4);
+}
+
+/* ==========================================================================
+   XFOOT BADGES
+   Un statut = une couleur, jamais réattribuée différemment ailleurs.
+   ========================================================================== */
+.x-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--x-radius-pill);
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.x-badge-active   { background: rgba(44, 217, 165, 0.15); color: var(--x-success); border-color: rgba(44, 217, 165, 0.3); }
+.x-badge-inactive { background: rgba(142, 147, 166, 0.12); color: var(--x-text-muted); border-color: var(--x-border); }
+.x-badge-live     { background: rgba(255, 77, 77, 0.15); color: var(--x-danger); border-color: rgba(255, 77, 77, 0.3); }
+.x-badge-pending  { background: rgba(142, 147, 166, 0.15); color: var(--x-text-muted); border-color: var(--x-border); }
+.x-badge-success  { background: rgba(44, 217, 165, 0.15); color: var(--x-success); border-color: rgba(44, 217, 165, 0.3); }
+.x-badge-warning  { background: rgba(224, 168, 46, 0.15); color: var(--x-warning); border-color: rgba(224, 168, 46, 0.3); }
+.x-badge-error    { background: rgba(255, 77, 77, 0.15); color: var(--x-danger); border-color: rgba(255, 77, 77, 0.3); }
+.x-badge-premium  { background: rgba(224, 168, 46, 0.15); color: var(--x-warning); border-color: rgba(224, 168, 46, 0.3); }
+.x-badge-ai       { background: rgba(110, 138, 255, 0.15); color: var(--x-info); border-color: rgba(110, 138, 255, 0.3); }
+
+.x-badge-live .x-live-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--x-danger);
+    animation: xLivePulse 1.6s ease-in-out infinite;
+}
+@keyframes xLivePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .x-badge-live .x-live-dot { animation: none; } }
+
+/* ==========================================================================
+   XFOOT TABLES
+   ========================================================================== */
+.x-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--x-border);
+    border-radius: var(--x-radius-md);
+}
+.x-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.x-table th, .x-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    white-space: nowrap;
+}
+.x-table thead th {
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--x-text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+}
+.x-table tbody tr { border-top: 1px solid var(--x-border); transition: background 0.15s ease; }
+.x-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.x-table tbody tr.x-row-selected { background: rgba(44, 217, 165, 0.06); }
+.x-table-empty, .x-table-loading {
+    padding: var(--x-space-8) var(--x-space-4);
+    text-align: center;
+    color: var(--x-text-muted);
+    font-size: 0.85rem;
+}
+
+/* Bascule optionnelle en cards sous 640px, pour les futures tables qui
+   l'utiliseront (.arena-table existant, inchangé, garde son propre scroll
+   horizontal déjà correct — voir Responsive Audit §6). */
+.x-table-stack thead { display: none; }
+@media (max-width: 639px) {
+    .x-table-stack, .x-table-stack tbody, .x-table-stack tr, .x-table-stack td { display: block; width: 100%; }
+    .x-table-stack tr { border: 1px solid var(--x-border); border-radius: var(--x-radius-md); margin-bottom: var(--x-space-3); padding: var(--x-space-3); }
+    .x-table-stack td { display: flex; justify-content: space-between; gap: var(--x-space-3); padding: 0.35rem 0; border: none; white-space: normal; }
+    .x-table-stack td::before { content: attr(data-label); color: var(--x-text-muted); font-weight: 600; font-size: 0.75rem; }
+}
+
+/* ==========================================================================
+   XFOOT NAVIGATION (préparation)
+   Prépare le futur système Sidebar (desktop) + Drawer (mobile), PAS
+   branché sur les 7 pages actuelles (qui gardent leur bottom-nav + pills
+   de header, corrigés en Responsive Fix V1) — visible uniquement en
+   aperçu dans design-system.html.
+   ========================================================================== */
+.x-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--x-space-1);
+    width: 240px;
+    background: var(--x-surface);
+    border-right: 1px solid var(--x-border);
+    padding: var(--x-space-4);
+}
+.x-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: var(--x-space-3);
+    padding: 0.65rem var(--x-space-3);
+    border-radius: var(--x-radius-md);
+    color: var(--x-text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    min-height: 44px;
+}
+.x-sidebar-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--x-text); }
+.x-sidebar-link.active { background: rgba(44, 217, 165, 0.12); color: var(--x-text); border: 1px solid var(--x-primary-border); }
+
+.x-drawer-trigger { display: none; }
+@media (max-width: 767px) {
+    .x-sidebar { display: none; }
+    .x-drawer-trigger {
+        display: inline-flex;
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        background: var(--x-surface-2);
+        border: 1px solid var(--x-border);
+        border-radius: var(--x-radius-md);
+        color: var(--x-text);
+    }
+}
+
+/* ==========================================================================
+   XFOOT DATA VISUALIZATION
+   CSS pur, aucune librairie ajoutée (le site n'en a jamais eu besoin).
+   ========================================================================== */
+.x-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--x-radius-pill);
+    overflow: hidden;
+}
+.x-progress-bar {
+    height: 100%;
+    border-radius: var(--x-radius-pill);
+    background: var(--x-primary);
+    transition: width 0.4s ease;
+}
+.x-progress-bar.warning { background: var(--x-warning); }
+.x-progress-bar.danger { background: var(--x-danger); }
+
+.x-confidence { display: flex; align-items: center; gap: var(--x-space-3); }
+.x-confidence-track { flex: 1; }
+.x-confidence-value {
+    font-size: 0.85rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+    text-align: right;
+}
+
+.x-probability-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--x-space-3);
+    font-size: 0.85rem;
+    padding: 0.4rem 0;
+}
+.x-probability-row .x-probability-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--x-radius-pill);
+    overflow: hidden;
+}
+.x-probability-row .x-probability-fill {
+    height: 100%;
+    background: var(--x-primary);
+    border-radius: var(--x-radius-pill);
+}
+
+.x-bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--x-space-2);
+    height: 120px;
+    padding-top: var(--x-space-3);
+}
+.x-bar-chart .x-bar {
+    flex: 1;
+    background: var(--x-primary);
+    border-radius: var(--x-radius-sm) var(--x-radius-sm) 0 0;
+    min-height: 4px;
+}
+.x-bar-chart .x-bar.muted { background: var(--x-surface-2); }
+
+.x-sparkline { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+.x-sparkline .x-bar { width: 4px; background: var(--x-primary-border); border-radius: 2px; }
+.x-sparkline .x-bar.current { background: var(--x-primary); }
+
+/* ==========================================================================
+   XFOOT FOOTBALL COMPONENTS
+   ========================================================================== */
+.x-team { display: flex; align-items: center; gap: var(--x-space-3); }
+.x-team-logo {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--x-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 800;
+    flex-shrink: 0;
+}
+.x-team-logo img { width: 20px; height: 20px; object-fit: contain; }
+.x-team-name { font-weight: 700; font-size: 0.88rem; }
+.x-team-rating { font-size: 0.72rem; color: var(--x-text-muted); }
+
+.x-match { display: flex; align-items: center; justify-content: space-between; gap: var(--x-space-3); }
+.x-match-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--x-text-muted);
+    margin-bottom: var(--x-space-2);
+}
+.x-match-score {
+    font-size: 1rem; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--x-border);
+    border-radius: var(--x-radius-sm);
+    padding: 0.25rem 0.6rem;
+}
+
+.x-prediction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-top: 1px solid var(--x-border);
+    font-size: 0.85rem;
+}
+.x-prediction-row:first-child { border-top: none; }
+.x-prediction-market { color: var(--x-text-muted); }
+.x-prediction-value { font-weight: 800; }
+
+.x-league { display: flex; align-items: center; gap: var(--x-space-3); }
+.x-league-logo { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+.x-league-name { font-weight: 700; font-size: 0.85rem; }
+.x-league-country { font-size: 0.72rem; color: var(--x-text-muted); }
+
+/* ==========================================================================
+   XFOOT AI VISUAL LANGUAGE
+   Un seul langage visuel pour tout ce qui vient de l'IA Xfoot (Score,
+   Confidence, Value, Model, Arena, Signal). Pas d'effet excessif : pas de
+   glow massif, pas de gradient partout — un marqueur "XFOOT AI" + la
+   couleur --x-primary utilisée avec parcimonie (prompt §18).
+   ========================================================================== */
+.x-ai-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--x-primary);
+    background: rgba(44, 217, 165, 0.1);
+    border: 1px solid var(--x-primary-border);
+    border-radius: var(--x-radius-pill);
+    padding: 0.2rem 0.6rem;
+}
+
+.x-ai-score { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-align: center; }
+.x-ai-score-value { font-size: 1.6rem; font-weight: 800; color: var(--x-primary); font-variant-numeric: tabular-nums; }
+.x-ai-score-label { font-size: 0.68rem; color: var(--x-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.x-ai-value-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--x-radius-sm);
+}
+.x-ai-value-tag.positive { color: var(--x-success); background: rgba(44, 217, 165, 0.1); }
+.x-ai-value-tag.neutral { color: var(--x-text-muted); background: rgba(142, 147, 166, 0.1); }
+.x-ai-value-tag.negative { color: var(--x-danger); background: rgba(255, 77, 77, 0.1); }
+
+.x-ai-signal { display: flex; align-items: center; gap: var(--x-space-2); font-size: 0.8rem; }
+.x-ai-signal-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--x-primary); flex-shrink: 0; }
+
+/* ==========================================================================
+   XFOOT DESIGN SYSTEM — Responsive utilities (mobile-first, mêmes
+   breakpoints que le reste du site : 768px / 1200px)
+   ========================================================================== */
+.x-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--x-space-4);
+}
+@media (min-width: 768px) {
+    .x-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+@media (min-width: 1200px) {
+    .x-grid-3 { grid-template-columns: repeat(3, 1fr); }
 }
 
 

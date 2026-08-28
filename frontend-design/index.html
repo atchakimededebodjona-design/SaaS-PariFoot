@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xFoot - Analyse IA & Matchs de la Semaine</title>
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=11">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -13,7 +13,7 @@
         <!-- Header -->
         <header class="app-header">
             <div class="header-title">
-                <a href="index.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
                     <span>⚽</span>
                     <span>xFoot</span>
                     <span class="pro-badge">SITE</span>
@@ -296,10 +296,10 @@
                 const homeInitial = getInitials(fix.home_team);
                 const awayInitial = getInitials(fix.away_team);
                 const homeLogoHtml = fix.home_logo 
-                    ? `<img src="${fix.home_logo}" alt="${fix.home_team}" onerror="this.outerHTML='${homeInitial}'">` 
+                    ? `<img src="${fix.home_logo}" alt="${fix.home_team}" loading="lazy" onerror="this.outerHTML='${homeInitial}'">`
                     : homeInitial;
-                const awayLogoHtml = fix.away_logo 
-                    ? `<img src="${fix.away_logo}" alt="${fix.away_team}" onerror="this.outerHTML='${awayInitial}'">` 
+                const awayLogoHtml = fix.away_logo
+                    ? `<img src="${fix.away_logo}" alt="${fix.away_team}" loading="lazy" onerror="this.outerHTML='${awayInitial}'">`
                     : awayInitial;
 
                 const delayClass = `animate-delay-${(idx % 3) + 1}`;
@@ -552,7 +552,9 @@
             try {
                 const user = await getCurrentUser();
                 if (user) {
-                    document.getElementById('user-email').textContent = user.name || user.email.split('@')[0];
+                    const userEmailNode = document.getElementById('user-email');
+                    userEmailNode.textContent = user.name || user.email.split('@')[0];
+                    userEmailNode.title = user.email;
                 }
             } catch (e) {
                 console.error("Auth error", e);
