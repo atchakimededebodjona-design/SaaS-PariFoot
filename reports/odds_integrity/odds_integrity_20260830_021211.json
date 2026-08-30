@@ -1,0 +1,289 @@
+{
+  "run_id": "20260830_021211",
+  "generated_at": "2026-08-30T02:12:11.410005+00:00",
+  "temporal_integrity": "🔴 NOT VERIFIED",
+  "odds_signal": "🟡 HISTORICAL BUT UNVERIFIED",
+  "central_finding": "football-data.co.uk ne fournit AUCUN timestamp par observation de cote (colonne 'Time' = heure de coup d'envoi du match, jamais un instant d'observation de la cote). Les 3 séries utilisées en Phase 8D (pré-clôture, clôture, consensus) sont donc classées HISTORICAL_BUT_UNTIMESTAMPED à 100% — zéro observation TEMPORALLY_VERIFIED, quel que soit le cutoff théorique testé.",
+  "column_audit": {
+    "files_checked": 35,
+    "time_like_columns_found": [
+      "Time"
+    ],
+    "odds_timestamp_column_exists": false,
+    "conclusion": "Aucune colonne de timestamp d'odds trouvée (seule 'Time' = heure de coup d'envoi du match) sur l'ensemble des fichiers en cache."
+  },
+  "kickoff_precision": {
+    "total_rows": 12459,
+    "rows_with_kickoff_time": 12459,
+    "coverage_pct": 100.0,
+    "timezone_status": "UNKNOWN / NEEDS CONFIRMATION — football-data.co.uk ne documente pas la timezone de la colonne Time (heure locale probable, jamais supposée UTC/CET sans preuve — voir §25).",
+    "xfoot_match_date_precision": "Match.date en base Xfoot ne conserve AUCUNE heure (minuit systématique, confirmé Phase 8A) — la précision Date+Time n'existe que dans le CSV source, jamais dans `match`."
+  },
+  "dataset": {
+    "total_xfoot_matches": 12459,
+    "mapped": 12459,
+    "valid_pre_1x2": 12454,
+    "invalid_1x2_odds": 5
+  },
+  "mapping_quality": {
+    "rows_read": 12459,
+    "missing_date_or_teams": 0,
+    "unmapped": 0,
+    "mapped": 12459,
+    "invalid_1x2_odds": 5,
+    "invalid_ou25_odds": 9,
+    "duplicate_mapped": 0,
+    "future_date": 0
+  },
+  "classification_per_series": {
+    "pre_1x2": {
+      "TEMPORALLY_VERIFIED": 0,
+      "HISTORICAL_BUT_UNTIMESTAMPED": 12454,
+      "TIMESTAMPED_BUT_AFTER_CUTOFF": 0,
+      "UNKNOWN": 0,
+      "REJECTED": 5
+    },
+    "close_1x2": {
+      "TEMPORALLY_VERIFIED": 0,
+      "HISTORICAL_BUT_UNTIMESTAMPED": 12458,
+      "TIMESTAMPED_BUT_AFTER_CUTOFF": 0,
+      "UNKNOWN": 0,
+      "REJECTED": 1
+    },
+    "consensus_1x2": {
+      "TEMPORALLY_VERIFIED": 0,
+      "HISTORICAL_BUT_UNTIMESTAMPED": 12458,
+      "TIMESTAMPED_BUT_AFTER_CUTOFF": 0,
+      "UNKNOWN": 0,
+      "REJECTED": 1
+    }
+  },
+  "temporal_coverage": [
+    {
+      "cutoff": "T-24h",
+      "total_matches": 12459,
+      "verified": 0,
+      "unverified": 12454,
+      "future": 0,
+      "unknown": 0,
+      "rejected": 5,
+      "coverage_pct": 0.0
+    },
+    {
+      "cutoff": "T-12h",
+      "total_matches": 12459,
+      "verified": 0,
+      "unverified": 12454,
+      "future": 0,
+      "unknown": 0,
+      "rejected": 5,
+      "coverage_pct": 0.0
+    },
+    {
+      "cutoff": "T-6h",
+      "total_matches": 12459,
+      "verified": 0,
+      "unverified": 12454,
+      "future": 0,
+      "unknown": 0,
+      "rejected": 5,
+      "coverage_pct": 0.0
+    },
+    {
+      "cutoff": "T-3h",
+      "total_matches": 12459,
+      "verified": 0,
+      "unverified": 12454,
+      "future": 0,
+      "unknown": 0,
+      "rejected": 5,
+      "coverage_pct": 0.0
+    },
+    {
+      "cutoff": "T-1h",
+      "total_matches": 12459,
+      "verified": 0,
+      "unverified": 12454,
+      "future": 0,
+      "unknown": 0,
+      "rejected": 5,
+      "coverage_pct": 0.0
+    }
+  ],
+  "historical_reconstruction": [
+    {
+      "cutoff": "T-24h",
+      "reconstruction": "NO",
+      "evidence": "Aucun timestamp mesuré par observation — seule une méthodologie de collecte documentée (§5/§29 rapport Phase 8D) existe, jamais un snapshot daté.",
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    },
+    {
+      "cutoff": "T-12h",
+      "reconstruction": "NO",
+      "evidence": "Aucun timestamp mesuré par observation — seule une méthodologie de collecte documentée (§5/§29 rapport Phase 8D) existe, jamais un snapshot daté.",
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    },
+    {
+      "cutoff": "T-6h",
+      "reconstruction": "NO",
+      "evidence": "Aucun timestamp mesuré par observation — seule une méthodologie de collecte documentée (§5/§29 rapport Phase 8D) existe, jamais un snapshot daté.",
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    },
+    {
+      "cutoff": "T-3h",
+      "reconstruction": "NO",
+      "evidence": "Aucun timestamp mesuré par observation — seule une méthodologie de collecte documentée (§5/§29 rapport Phase 8D) existe, jamais un snapshot daté.",
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    },
+    {
+      "cutoff": "T-1h",
+      "reconstruction": "NO",
+      "evidence": "Aucun timestamp mesuré par observation — seule une méthodologie de collecte documentée (§5/§29 rapport Phase 8D) existe, jamais un snapshot daté.",
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    }
+  ],
+  "bookmaker_quality": [
+    {
+      "bookmaker": "Bet365 (pré-clôture)",
+      "matches": 12459,
+      "timestamped": 0,
+      "safe": 0,
+      "unknown": 12454,
+      "coverage_pct": 99.95986836824785,
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    },
+    {
+      "bookmaker": "Bet365 (clôture)",
+      "matches": 12459,
+      "timestamped": 0,
+      "safe": 0,
+      "unknown": 12458,
+      "coverage_pct": 99.99197367364957,
+      "verdict": "HISTORICAL_BUT_UNTIMESTAMPED"
+    }
+  ],
+  "consensus_quality": [
+    {
+      "cutoff": "T-24h",
+      "matches": 12459,
+      "bookmakers": "UNKNOWN (consensus opaque, source pré-calculée)",
+      "safe_consensus": 0,
+      "unsafe": 12458,
+      "unknown": 1,
+      "verdict": "UNSAFE — provenance temporelle du consensus non vérifiable (§18)"
+    },
+    {
+      "cutoff": "T-12h",
+      "matches": 12459,
+      "bookmakers": "UNKNOWN (consensus opaque, source pré-calculée)",
+      "safe_consensus": 0,
+      "unsafe": 12458,
+      "unknown": 1,
+      "verdict": "UNSAFE — provenance temporelle du consensus non vérifiable (§18)"
+    },
+    {
+      "cutoff": "T-6h",
+      "matches": 12459,
+      "bookmakers": "UNKNOWN (consensus opaque, source pré-calculée)",
+      "safe_consensus": 0,
+      "unsafe": 12458,
+      "unknown": 1,
+      "verdict": "UNSAFE — provenance temporelle du consensus non vérifiable (§18)"
+    },
+    {
+      "cutoff": "T-3h",
+      "matches": 12459,
+      "bookmakers": "UNKNOWN (consensus opaque, source pré-calculée)",
+      "safe_consensus": 0,
+      "unsafe": 12458,
+      "unknown": 1,
+      "verdict": "UNSAFE — provenance temporelle du consensus non vérifiable (§18)"
+    },
+    {
+      "cutoff": "T-1h",
+      "matches": 12459,
+      "bookmakers": "UNKNOWN (consensus opaque, source pré-calculée)",
+      "safe_consensus": 0,
+      "unsafe": 12458,
+      "unknown": 1,
+      "verdict": "UNSAFE — provenance temporelle du consensus non vérifiable (§18)"
+    }
+  ],
+  "phase8d_reassessment": {
+    "found": true,
+    "source_report": "C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\odds\\odds_backtest_20260830_020051.json",
+    "original_verdicts": {
+      "EXPERIMENT_0_BASELINE": "BASELINE",
+      "EXPERIMENT_1_ODDS_1X2": "BETTER",
+      "EXPERIMENT_2_ODDS_OVERROUND": "BETTER",
+      "EXPERIMENT_3_MARKET_CONSENSUS": "BETTER",
+      "EXPERIMENT_4_ODDS_MOVEMENT": "BETTER",
+      "EXPERIMENT_5_ODDS_FULL": "BETTER"
+    },
+    "temporally_verified_verdicts": {
+      "EXPERIMENT_0_BASELINE": "BASELINE",
+      "EXPERIMENT_1_ODDS_1X2": "HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT",
+      "EXPERIMENT_2_ODDS_OVERROUND": "HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT",
+      "EXPERIMENT_3_MARKET_CONSENSUS": "HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT",
+      "EXPERIMENT_4_ODDS_MOVEMENT": "HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT",
+      "EXPERIMENT_5_ODDS_FULL": "HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT"
+    },
+    "note": "Aucun résultat Phase 8D n'est supprimé (§37) — chaque verdict BETTER est requalifié HISTORICAL_SIGNAL_BUT_TEMPORAL_VALIDATION_INSUFFICIENT : le signal statistique observé en Phase 8D reste réel sur les données telles quelles, mais ne peut PAS être prouvé disponible avant un cutoff pré-match précis, faute de timestamp mesuré dans la source."
+  },
+  "decision_matrix": [
+    {
+      "condition": "Timestamp verified + sufficient sample",
+      "decision": "VALIDATE"
+    },
+    {
+      "condition": "Timestamp verified + insufficient sample",
+      "decision": "NEEDS_MORE_DATA"
+    },
+    {
+      "condition": "Historical but no timestamp",
+      "decision": "UNVERIFIED — cas réel de ce dataset"
+    },
+    {
+      "condition": "Future information detected",
+      "decision": "REJECT"
+    },
+    {
+      "condition": "Ambiguous provenance",
+      "decision": "UNKNOWN"
+    },
+    {
+      "condition": "Leakage detected",
+      "decision": "REJECT"
+    }
+  ],
+  "recommendation": "SEEK_TIMESTAMPED_ODDS_SOURCE",
+  "limitations": [
+    "Cette phase ne peut PAS prouver qu'aucune fuite n'a eu lieu en Phase 8D — elle prouve seulement que la source ne permet NI de la confirmer NI de l'exclure (absence totale de timestamp mesuré).",
+    "5 des 11 ligues Xfoot uniquement (mêmes que Phase 8D) — aucune conclusion étendue.",
+    "La timezone de la colonne Time (kickoff) n'est pas documentée officiellement par football-data.co.uk — traitée comme UNKNOWN, jamais supposée UTC/CET.",
+    "Le consensus 'Avg' de football-data.co.uk est une valeur pré-calculée par la source — sa composition exacte (bookmakers inclus, instant de calcul) n'est pas documentée et ne peut pas être reconstruite.",
+    "Aucune donnée synthétique n'a été utilisée pour les tableaux produits sur les DONNÉES RÉELLES — uniquement pour les tests unitaires adversariaux (api/test_odds_integrity_core.py), clairement séparés du rapport."
+  ],
+  "recommendations_phase_8f": [
+    "Si Xfoot souhaite poursuivre sur les odds : rechercher spécifiquement un fournisseur avec un timestamp mesuré par observation (ex. The Odds API depuis juin 2020, identifié en Phase 8C) plutôt que football-data.co.uk.",
+    "Toute vérification de couverture ligues/saisons d'un tel fournisseur doit se faire par un appel API réel (clé gratuite), pas par une lecture de documentation seule.",
+    "Ne jamais promouvoir le résultat Phase 8D vers une intégration production tant qu'un signal temporellement vérifié n'a pas été observé."
+  ],
+  "db_counts_before": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_counts_after": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_unchanged": true
+}
