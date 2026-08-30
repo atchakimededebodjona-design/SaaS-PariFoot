@@ -1,0 +1,1433 @@
+{
+  "run_id": "20260830_020051",
+  "generated_at": "2026-08-30T02:00:51.841059+00:00",
+  "seed": 42,
+  "n_folds": 4,
+  "odds_data_status": "🟡 PARTIAL",
+  "odds_feature_status": "🟢 RESEARCH CANDIDATE",
+  "dataset": {
+    "total_xfoot_matches": 11912,
+    "matches_with_odds": 11907,
+    "coverage_pct": 99.95802552048355,
+    "leagues": [
+      "PremierLeague",
+      "LaLiga",
+      "Bundesliga",
+      "SerieA",
+      "Ligue1"
+    ],
+    "period_start": "2019-10-25 00:00:00",
+    "period_end": "2026-05-24 00:00:00"
+  },
+  "coverage_by_league": [
+    {
+      "league": "PremierLeague",
+      "total": 2552,
+      "with_odds": 2552,
+      "coverage_pct": 100.0
+    },
+    {
+      "league": "LaLiga",
+      "total": 2551,
+      "with_odds": 2551,
+      "coverage_pct": 100.0
+    },
+    {
+      "league": "Bundesliga",
+      "total": 2033,
+      "with_odds": 2033,
+      "coverage_pct": 100.0
+    },
+    {
+      "league": "SerieA",
+      "total": 2547,
+      "with_odds": 2544,
+      "coverage_pct": 99.88221436984688
+    },
+    {
+      "league": "Ligue1",
+      "total": 2229,
+      "with_odds": 2227,
+      "coverage_pct": 99.91027366532077
+    }
+  ],
+  "quality": {
+    "rows_read": 12459,
+    "missing_date_or_teams": 0,
+    "unmapped": 0,
+    "mapped": 12459,
+    "invalid_1x2_odds": 5,
+    "invalid_ou25_odds": 9,
+    "duplicate_mapped": 0,
+    "future_date": 0
+  },
+  "avg_overround": 0.054832296533675356,
+  "comparisons": {
+    "EXPERIMENT_1_ODDS_1X2": {
+      "n_paired": 9526,
+      "verdict": "BETTER",
+      "delta_log_loss": {
+        "sample_size": 9526,
+        "mean_diff": 0.015,
+        "ci_low": 0.01141,
+        "ci_high": 0.01869,
+        "significant": true
+      },
+      "delta_brier": {
+        "sample_size": 9526,
+        "mean_diff": 0.01031,
+        "ci_low": 0.00793,
+        "ci_high": 0.01266,
+        "significant": true
+      },
+      "mcnemar": {
+        "b": 361,
+        "c": 470,
+        "statistic": 14.0361,
+        "p_value": 0.0002,
+        "significant": true
+      },
+      "folds_improved": 4,
+      "folds_worsened": 0,
+      "folds_equal": 0,
+      "n_eval_folds": 4
+    },
+    "EXPERIMENT_2_ODDS_OVERROUND": {
+      "n_paired": 9526,
+      "verdict": "BETTER",
+      "delta_log_loss": {
+        "sample_size": 9526,
+        "mean_diff": 0.01448,
+        "ci_low": 0.01092,
+        "ci_high": 0.01821,
+        "significant": true
+      },
+      "delta_brier": {
+        "sample_size": 9526,
+        "mean_diff": 0.01,
+        "ci_low": 0.00767,
+        "ci_high": 0.01249,
+        "significant": true
+      },
+      "mcnemar": {
+        "b": 345,
+        "c": 456,
+        "statistic": 15.1061,
+        "p_value": 0.0001,
+        "significant": true
+      },
+      "folds_improved": 4,
+      "folds_worsened": 0,
+      "folds_equal": 0,
+      "n_eval_folds": 4
+    },
+    "EXPERIMENT_3_MARKET_CONSENSUS": {
+      "n_paired": 9526,
+      "verdict": "BETTER",
+      "delta_log_loss": {
+        "sample_size": 9526,
+        "mean_diff": 0.01635,
+        "ci_low": 0.01261,
+        "ci_high": 0.01999,
+        "significant": true
+      },
+      "delta_brier": {
+        "sample_size": 9526,
+        "mean_diff": 0.01111,
+        "ci_low": 0.0086,
+        "ci_high": 0.01354,
+        "significant": true
+      },
+      "mcnemar": {
+        "b": 337,
+        "c": 453,
+        "statistic": 16.7405,
+        "p_value": 0.0,
+        "significant": true
+      },
+      "folds_improved": 4,
+      "folds_worsened": 0,
+      "folds_equal": 0,
+      "n_eval_folds": 4
+    },
+    "EXPERIMENT_4_ODDS_MOVEMENT": {
+      "n_paired": 9526,
+      "verdict": "BETTER",
+      "delta_log_loss": {
+        "sample_size": 9526,
+        "mean_diff": 0.00318,
+        "ci_low": 0.00111,
+        "ci_high": 0.00521,
+        "significant": true
+      },
+      "delta_brier": {
+        "sample_size": 9526,
+        "mean_diff": 0.00204,
+        "ci_low": 0.0007,
+        "ci_high": 0.00337,
+        "significant": true
+      },
+      "mcnemar": {
+        "b": 216,
+        "c": 233,
+        "statistic": 0.5702,
+        "p_value": 0.4502,
+        "significant": false
+      },
+      "folds_improved": 4,
+      "folds_worsened": 0,
+      "folds_equal": 0,
+      "n_eval_folds": 4
+    },
+    "EXPERIMENT_5_ODDS_FULL": {
+      "n_paired": 9526,
+      "verdict": "BETTER",
+      "delta_log_loss": {
+        "sample_size": 9526,
+        "mean_diff": 0.01513,
+        "ci_low": 0.01142,
+        "ci_high": 0.01895,
+        "significant": true
+      },
+      "delta_brier": {
+        "sample_size": 9526,
+        "mean_diff": 0.01029,
+        "ci_low": 0.00779,
+        "ci_high": 0.01278,
+        "significant": true
+      },
+      "mcnemar": {
+        "b": 348,
+        "c": 468,
+        "statistic": 17.3542,
+        "p_value": 0.0,
+        "significant": true
+      },
+      "folds_improved": 4,
+      "folds_worsened": 0,
+      "folds_equal": 0,
+      "n_eval_folds": 4
+    }
+  },
+  "group_verdicts": {
+    "EXPERIMENT_0_BASELINE": "BASELINE",
+    "EXPERIMENT_1_ODDS_1X2": "BETTER",
+    "EXPERIMENT_2_ODDS_OVERROUND": "BETTER",
+    "EXPERIMENT_3_MARKET_CONSENSUS": "BETTER",
+    "EXPERIMENT_4_ODDS_MOVEMENT": "BETTER",
+    "EXPERIMENT_5_ODDS_FULL": "BETTER"
+  },
+  "league_results": [
+    {
+      "league": "PremierLeague",
+      "n": 2027,
+      "baseline_ll": 0.9991,
+      "odds_ll": 0.98311,
+      "delta": "+0.0160",
+      "status": "BETTER"
+    },
+    {
+      "league": "LaLiga",
+      "n": 2036,
+      "baseline_ll": 0.98549,
+      "odds_ll": 0.97237,
+      "delta": "+0.0131",
+      "status": "BETTER"
+    },
+    {
+      "league": "Bundesliga",
+      "n": 1629,
+      "baseline_ll": 1.00461,
+      "odds_ll": 0.98828,
+      "delta": "+0.0163",
+      "status": "BETTER"
+    },
+    {
+      "league": "SerieA",
+      "n": 2042,
+      "baseline_ll": 0.99077,
+      "odds_ll": 0.98106,
+      "delta": "+0.0097",
+      "status": "BETTER"
+    },
+    {
+      "league": "Ligue1",
+      "n": 1792,
+      "baseline_ll": 1.01332,
+      "odds_ll": 0.99179,
+      "delta": "+0.0215",
+      "status": "BETTER"
+    }
+  ],
+  "market_results": [
+    {
+      "market": "1X2",
+      "n": 11907,
+      "baseline": 0.99802,
+      "odds": 0.98289,
+      "delta": "+0.0151",
+      "status": "BETTER"
+    },
+    {
+      "market": "BTTS",
+      "n": 0,
+      "baseline": null,
+      "odds": null,
+      "delta": "N/A",
+      "status": "INSUFFICIENT_DATA (BTTS absent de football-data.co.uk, confirmé Phase 8C)"
+    },
+    {
+      "market": "OVER_UNDER_2_5",
+      "n": 11902,
+      "baseline": null,
+      "odds": null,
+      "delta": "N/A",
+      "status": "NOT_TESTED (hors périmètre minimal de ce run — feature odds O/U calculée et disponible dans le dataset, expérimentation dédiée laissée à une itération future si le signal 1X2 le justifie)"
+    }
+  ],
+  "odds_vs_market": [
+    {
+      "market": "1X2",
+      "n": 11907,
+      "market_ll": 0.97008,
+      "xfoot_ll": 0.99802,
+      "xfoot_odds_ll": 0.98289
+    }
+  ],
+  "db_counts_before": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_counts_after": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_unchanged": true,
+  "results_summary": "Verdicts par expérience : {'EXPERIMENT_0_BASELINE': 'BASELINE', 'EXPERIMENT_1_ODDS_1X2': 'BETTER', 'EXPERIMENT_2_ODDS_OVERROUND': 'BETTER', 'EXPERIMENT_3_MARKET_CONSENSUS': 'BETTER', 'EXPERIMENT_4_ODDS_MOVEMENT': 'BETTER', 'EXPERIMENT_5_ODDS_FULL': 'BETTER'}.",
+  "limitations": [
+    "football-data.co.uk ne couvre que 5 des 11 ligues Xfoot (les 5 déjà en base locale) — aucune conclusion étendue à MLS/Saudi Pro League/coupes européennes.",
+    "Aucun timestamp mesuré par ligne — pré-clôture/clôture classés CAUTION (jamais SAFE), horizons T-24h/T-12h/T-6h/T-3h/T-1h non testables (§6).",
+    "BTTS absent de la source, marché non testé.",
+    "OVER_UNDER_2_5 : feature calculée mais expérimentation walk-forward dédiée non exécutée dans ce run (périmètre minimal).",
+    "Dataset apparié plus petit que le baseline complet Phase 8B (11907 vs 11912) — comparaisons systématiquement appariées (§22), jamais baseline_N vs odds_N direct.",
+    "Marge retirée par méthode proportionnelle simple (§13) — pas de méthode plus sophistiquée (Shin, etc.) testée."
+  ],
+  "recommendation": "RESEARCH_CANDIDATE — jamais promu automatiquement (§59/§60), voir Experiments/Statistical Tests pour le détail chiffré.",
+  "recommendations_phase_8e": [
+    "Si une intégration future est envisagée : lever d'abord le doute légal sur football-data.co.uk (licence non confirmée, Phase 8C) avant tout usage prolongé.",
+    "Étendre le test à O/U 2.5 (feature déjà calculée dans ce dataset) si le signal 1X2 s'avère prometteur sur un run élargi.",
+    "Envisager un timestamp plus fin (fournisseur payant, ex. The Odds API depuis 2020) uniquement si ce prototype démontre un signal réel — jamais avant."
+  ],
+  "experiments": {
+    "EXPERIMENT_0_BASELINE": {
+      "name": "EXPERIMENT_0_BASELINE",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 1.00871,
+          "brier": 0.60072,
+          "accuracy": 0.50945,
+          "accuracy_ci": [
+            0.4894,
+            0.5295
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99632,
+          "brier": 0.59237,
+          "accuracy": 0.52961,
+          "accuracy_ci": [
+            0.5095,
+            0.5496
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99522,
+          "brier": 0.59441,
+          "accuracy": 0.51995,
+          "accuracy_ci": [
+            0.4999,
+            0.54
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.99184,
+          "brier": 0.59071,
+          "accuracy": 0.52329,
+          "accuracy_ci": [
+            0.5032,
+            0.5433
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.99802,
+        "brier": 0.59455,
+        "accuracy": 0.52058,
+        "accuracy_ci": [
+          0.5105,
+          0.5306
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 19.801
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 18.605
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 4.344
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 3.959
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 3.365
+        },
+        {
+          "feature": "away_corners_diff_avg",
+          "gain_pct": 3.253
+        },
+        {
+          "feature": "away_shots_target_diff_avg",
+          "gain_pct": 3.083
+        },
+        {
+          "feature": "home_shots_target_diff_avg",
+          "gain_pct": 2.975
+        },
+        {
+          "feature": "home_corners_diff_avg",
+          "gain_pct": 2.903
+        },
+        {
+          "feature": "home_form_goals_conceded_avg",
+          "gain_pct": 2.816
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 2.796
+        },
+        {
+          "feature": "away_days_since_last_match",
+          "gain_pct": 2.756
+        },
+        {
+          "feature": "dc_over_2_5",
+          "gain_pct": 2.646
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 2.575
+        },
+        {
+          "feature": "away_form_goals_conceded_avg",
+          "gain_pct": 2.537
+        }
+      ]
+    },
+    "EXPERIMENT_1_ODDS_1X2": {
+      "name": "EXPERIMENT_1_ODDS_1X2",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak",
+        "odds_norm_home",
+        "odds_norm_draw",
+        "odds_norm_away"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99108,
+          "brier": 0.58889,
+          "accuracy": 0.52541,
+          "accuracy_ci": [
+            0.5053,
+            0.5454
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.9837,
+          "brier": 0.58414,
+          "accuracy": 0.53129,
+          "accuracy_ci": [
+            0.5112,
+            0.5513
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.97608,
+          "brier": 0.58111,
+          "accuracy": 0.53087,
+          "accuracy_ci": [
+            0.5108,
+            0.5508
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.98125,
+          "brier": 0.58284,
+          "accuracy": 0.5405,
+          "accuracy_ci": [
+            0.5204,
+            0.5604
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.98303,
+        "brier": 0.58424,
+        "accuracy": 0.53202,
+        "accuracy_ci": [
+          0.522,
+          0.542
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "odds_norm_away",
+          "gain_pct": 21.041
+        },
+        {
+          "feature": "odds_norm_home",
+          "gain_pct": 16.966
+        },
+        {
+          "feature": "odds_norm_draw",
+          "gain_pct": 5.001
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 2.791
+        },
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 2.701
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 2.7
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 2.651
+        },
+        {
+          "feature": "home_days_since_last_match",
+          "gain_pct": 2.628
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 2.558
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 2.518
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 2.508
+        },
+        {
+          "feature": "dc_over_2_5",
+          "gain_pct": 2.441
+        },
+        {
+          "feature": "away_days_since_last_match",
+          "gain_pct": 2.357
+        },
+        {
+          "feature": "away_shots_target_diff_avg",
+          "gain_pct": 2.352
+        },
+        {
+          "feature": "home_shots_target_diff_avg",
+          "gain_pct": 2.343
+        }
+      ]
+    },
+    "EXPERIMENT_2_ODDS_OVERROUND": {
+      "name": "EXPERIMENT_2_ODDS_OVERROUND",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak",
+        "odds_norm_home",
+        "odds_norm_draw",
+        "odds_norm_away",
+        "odds_overround"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99219,
+          "brier": 0.58951,
+          "accuracy": 0.52373,
+          "accuracy_ci": [
+            0.5036,
+            0.5437
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.98399,
+          "brier": 0.5846,
+          "accuracy": 0.53213,
+          "accuracy_ci": [
+            0.5121,
+            0.5521
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.97611,
+          "brier": 0.58095,
+          "accuracy": 0.53507,
+          "accuracy_ci": [
+            0.515,
+            0.555
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.98191,
+          "brier": 0.58316,
+          "accuracy": 0.53798,
+          "accuracy_ci": [
+            0.5179,
+            0.5579
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.98355,
+        "brier": 0.58455,
+        "accuracy": 0.53223,
+        "accuracy_ci": [
+          0.5222,
+          0.5422
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "odds_norm_away",
+          "gain_pct": 21.454
+        },
+        {
+          "feature": "odds_norm_home",
+          "gain_pct": 16.788
+        },
+        {
+          "feature": "odds_norm_draw",
+          "gain_pct": 4.921
+        },
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 2.696
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 2.685
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 2.668
+        },
+        {
+          "feature": "home_days_since_last_match",
+          "gain_pct": 2.498
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 2.486
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 2.426
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 2.41
+        },
+        {
+          "feature": "dc_over_2_5",
+          "gain_pct": 2.376
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 2.375
+        },
+        {
+          "feature": "away_corners_diff_avg",
+          "gain_pct": 2.316
+        },
+        {
+          "feature": "away_days_since_last_match",
+          "gain_pct": 2.263
+        },
+        {
+          "feature": "home_shots_target_diff_avg",
+          "gain_pct": 2.255
+        }
+      ]
+    },
+    "EXPERIMENT_3_MARKET_CONSENSUS": {
+      "name": "EXPERIMENT_3_MARKET_CONSENSUS",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak",
+        "odds_consensus_norm_home",
+        "odds_consensus_norm_draw",
+        "odds_consensus_norm_away",
+        "odds_consensus_overround"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.98911,
+          "brier": 0.5878,
+          "accuracy": 0.52289,
+          "accuracy_ci": [
+            0.5028,
+            0.5429
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.98344,
+          "brier": 0.58425,
+          "accuracy": 0.53171,
+          "accuracy_ci": [
+            0.5116,
+            0.5517
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.97605,
+          "brier": 0.58083,
+          "accuracy": 0.53843,
+          "accuracy_ci": [
+            0.5184,
+            0.5584
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.9781,
+          "brier": 0.5809,
+          "accuracy": 0.53798,
+          "accuracy_ci": [
+            0.5179,
+            0.5579
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.98167,
+        "brier": 0.58344,
+        "accuracy": 0.53275,
+        "accuracy_ci": [
+          0.5227,
+          0.5428
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "odds_consensus_norm_away",
+          "gain_pct": 23.195
+        },
+        {
+          "feature": "odds_consensus_norm_home",
+          "gain_pct": 13.727
+        },
+        {
+          "feature": "odds_consensus_norm_draw",
+          "gain_pct": 5.46
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 2.912
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 2.812
+        },
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 2.536
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 2.498
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 2.477
+        },
+        {
+          "feature": "dc_over_2_5",
+          "gain_pct": 2.443
+        },
+        {
+          "feature": "away_corners_diff_avg",
+          "gain_pct": 2.399
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 2.38
+        },
+        {
+          "feature": "home_shots_target_diff_avg",
+          "gain_pct": 2.373
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 2.369
+        },
+        {
+          "feature": "home_days_since_last_match",
+          "gain_pct": 2.304
+        },
+        {
+          "feature": "home_form_goals_conceded_avg",
+          "gain_pct": 2.297
+        }
+      ]
+    },
+    "EXPERIMENT_4_ODDS_MOVEMENT": {
+      "name": "EXPERIMENT_4_ODDS_MOVEMENT",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak",
+        "odds_movement_home",
+        "odds_movement_draw",
+        "odds_movement_away"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 1.00041,
+          "brier": 0.59618,
+          "accuracy": 0.51827,
+          "accuracy_ci": [
+            0.4982,
+            0.5383
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99547,
+          "brier": 0.59155,
+          "accuracy": 0.52751,
+          "accuracy_ci": [
+            0.5074,
+            0.5475
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99389,
+          "brier": 0.59318,
+          "accuracy": 0.52121,
+          "accuracy_ci": [
+            0.5011,
+            0.5412
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.98961,
+          "brier": 0.58913,
+          "accuracy": 0.52245,
+          "accuracy_ci": [
+            0.5024,
+            0.5425
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.99484,
+        "brier": 0.59251,
+        "accuracy": 0.52236,
+        "accuracy_ci": [
+          0.5123,
+          0.5324
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 18.942
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 18.166
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 3.869
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 3.567
+        },
+        {
+          "feature": "odds_movement_away",
+          "gain_pct": 3.039
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 2.973
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 2.927
+        },
+        {
+          "feature": "away_corners_diff_avg",
+          "gain_pct": 2.912
+        },
+        {
+          "feature": "away_shots_target_diff_avg",
+          "gain_pct": 2.761
+        },
+        {
+          "feature": "home_shots_target_diff_avg",
+          "gain_pct": 2.697
+        },
+        {
+          "feature": "odds_movement_home",
+          "gain_pct": 2.606
+        },
+        {
+          "feature": "home_corners_diff_avg",
+          "gain_pct": 2.564
+        },
+        {
+          "feature": "dc_over_2_5",
+          "gain_pct": 2.452
+        },
+        {
+          "feature": "home_form_goals_conceded_avg",
+          "gain_pct": 2.366
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 2.355
+        }
+      ]
+    },
+    "EXPERIMENT_5_ODDS_FULL": {
+      "name": "EXPERIMENT_5_ODDS_FULL",
+      "feature_columns": [
+        "home_form_points_avg",
+        "home_form_goals_scored_avg",
+        "home_form_goals_conceded_avg",
+        "away_form_points_avg",
+        "away_form_goals_scored_avg",
+        "away_form_goals_conceded_avg",
+        "home_days_since_last_match",
+        "away_days_since_last_match",
+        "home_returning_from_break",
+        "away_returning_from_break",
+        "h2h_matches_found",
+        "h2h_home_win_rate",
+        "dc_home_win",
+        "dc_draw",
+        "dc_away_win",
+        "dc_over_2_5",
+        "dc_under_2_5",
+        "home_shots_diff_avg",
+        "away_shots_diff_avg",
+        "home_shots_target_diff_avg",
+        "away_shots_target_diff_avg",
+        "home_corners_diff_avg",
+        "away_corners_diff_avg",
+        "home_current_streak",
+        "away_current_streak",
+        "odds_norm_home",
+        "odds_norm_draw",
+        "odds_norm_away",
+        "odds_overround",
+        "odds_consensus_norm_home",
+        "odds_consensus_norm_draw",
+        "odds_consensus_norm_away",
+        "odds_consensus_overround"
+      ],
+      "folds": [
+        {
+          "fold": 0,
+          "start": 2381,
+          "end": 4762,
+          "available": true,
+          "n_train": 2281,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2021-02-27 00:00:00",
+          "date_end": "2022-05-14 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.99368,
+          "brier": 0.59052,
+          "accuracy": 0.52247,
+          "accuracy_ci": [
+            0.5024,
+            0.5425
+          ]
+        },
+        {
+          "fold": 1,
+          "start": 4762,
+          "end": 7143,
+          "available": true,
+          "n_train": 4662,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2022-05-14 00:00:00",
+          "date_end": "2023-11-04 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.98287,
+          "brier": 0.58377,
+          "accuracy": 0.53045,
+          "accuracy_ci": [
+            0.5104,
+            0.5504
+          ]
+        },
+        {
+          "fold": 2,
+          "start": 7143,
+          "end": 9524,
+          "available": true,
+          "n_train": 7043,
+          "n_val": 100,
+          "n_test": 2381,
+          "date_start": "2023-11-04 00:00:00",
+          "date_end": "2025-02-16 00:00:00",
+          "sample_size": 2381,
+          "log_loss": 0.97645,
+          "brier": 0.58152,
+          "accuracy": 0.53969,
+          "accuracy_ci": [
+            0.5196,
+            0.5596
+          ]
+        },
+        {
+          "fold": 3,
+          "start": 9524,
+          "end": 11907,
+          "available": true,
+          "n_train": 9424,
+          "n_val": 100,
+          "n_test": 2383,
+          "date_start": "2025-02-16 00:00:00",
+          "date_end": "2026-05-24 00:00:00",
+          "sample_size": 2383,
+          "log_loss": 0.97857,
+          "brier": 0.58124,
+          "accuracy": 0.54008,
+          "accuracy_ci": [
+            0.52,
+            0.56
+          ]
+        }
+      ],
+      "overall": {
+        "sample_size": 9526,
+        "log_loss": 0.98289,
+        "brier": 0.58426,
+        "accuracy": 0.53317,
+        "accuracy_ci": [
+          0.5231,
+          0.5432
+        ]
+      },
+      "feature_importance": [
+        {
+          "feature": "odds_norm_away",
+          "gain_pct": 14.672
+        },
+        {
+          "feature": "odds_consensus_norm_away",
+          "gain_pct": 13.252
+        },
+        {
+          "feature": "odds_norm_home",
+          "gain_pct": 13.21
+        },
+        {
+          "feature": "odds_consensus_norm_home",
+          "gain_pct": 8.478
+        },
+        {
+          "feature": "odds_norm_draw",
+          "gain_pct": 3.768
+        },
+        {
+          "feature": "odds_consensus_norm_draw",
+          "gain_pct": 2.863
+        },
+        {
+          "feature": "dc_draw",
+          "gain_pct": 2.064
+        },
+        {
+          "feature": "dc_home_win",
+          "gain_pct": 2.042
+        },
+        {
+          "feature": "dc_away_win",
+          "gain_pct": 1.939
+        },
+        {
+          "feature": "home_days_since_last_match",
+          "gain_pct": 1.814
+        },
+        {
+          "feature": "dc_under_2_5",
+          "gain_pct": 1.802
+        },
+        {
+          "feature": "home_shots_diff_avg",
+          "gain_pct": 1.778
+        },
+        {
+          "feature": "home_form_points_avg",
+          "gain_pct": 1.777
+        },
+        {
+          "feature": "h2h_home_win_rate",
+          "gain_pct": 1.763
+        },
+        {
+          "feature": "away_shots_diff_avg",
+          "gain_pct": 1.752
+        }
+      ]
+    }
+  }
+}
