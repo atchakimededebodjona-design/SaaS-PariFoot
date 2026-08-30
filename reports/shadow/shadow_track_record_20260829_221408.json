@@ -1,0 +1,369 @@
+{
+  "status": "no_shadow_data",
+  "run_id": "20260829_221408",
+  "generated_at": "2026-08-29T22:14:08.992751+00:00",
+  "since": null,
+  "until": null,
+  "league": null,
+  "markets": [
+    "1X2",
+    "BTTS",
+    "OVER_UNDER_2_5"
+  ],
+  "comparisons": {
+    "1X2": {
+      "status": "no_shadow_data",
+      "market": "1X2",
+      "sample_size": 0,
+      "production": null,
+      "shadow": null,
+      "delta": null,
+      "significance": null,
+      "conclusion": "INSUFFICIENT_DATA"
+    },
+    "BTTS": {
+      "status": "no_shadow_data",
+      "market": "BTTS",
+      "sample_size": 0,
+      "production": null,
+      "shadow": null,
+      "delta": null,
+      "significance": null,
+      "conclusion": "INSUFFICIENT_DATA"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "no_shadow_data",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "production": null,
+      "shadow": null,
+      "delta": null,
+      "significance": null,
+      "conclusion": "INSUFFICIENT_DATA"
+    }
+  },
+  "cumulative": {
+    "1X2": [],
+    "BTTS": [],
+    "OVER_UNDER_2_5": []
+  },
+  "rolling_windows": {
+    "1X2": {
+      "last_100": {
+        "status": "no_shadow_data",
+        "market": "1X2",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_250": {
+        "status": "no_shadow_data",
+        "market": "1X2",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_500": {
+        "status": "no_shadow_data",
+        "market": "1X2",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_30_days": {
+        "status": "no_shadow_data",
+        "market": "1X2",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_90_days": {
+        "status": "no_shadow_data",
+        "market": "1X2",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      }
+    },
+    "BTTS": {
+      "last_100": {
+        "status": "no_shadow_data",
+        "market": "BTTS",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_250": {
+        "status": "no_shadow_data",
+        "market": "BTTS",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_500": {
+        "status": "no_shadow_data",
+        "market": "BTTS",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_30_days": {
+        "status": "no_shadow_data",
+        "market": "BTTS",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_90_days": {
+        "status": "no_shadow_data",
+        "market": "BTTS",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      }
+    },
+    "OVER_UNDER_2_5": {
+      "last_100": {
+        "status": "no_shadow_data",
+        "market": "OVER_UNDER_2_5",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_250": {
+        "status": "no_shadow_data",
+        "market": "OVER_UNDER_2_5",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_500": {
+        "status": "no_shadow_data",
+        "market": "OVER_UNDER_2_5",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_30_days": {
+        "status": "no_shadow_data",
+        "market": "OVER_UNDER_2_5",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      },
+      "last_90_days": {
+        "status": "no_shadow_data",
+        "market": "OVER_UNDER_2_5",
+        "sample_size": 0,
+        "accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "accuracy_ci": [
+          null,
+          null
+        ],
+        "since": null,
+        "until": null,
+        "league": null
+      }
+    }
+  },
+  "selection_distribution": {
+    "1X2": {
+      "status": "no_shadow_data",
+      "total_selected": 0,
+      "counts": {},
+      "distribution": {}
+    },
+    "BTTS": {
+      "status": "no_shadow_data",
+      "total_selected": 0,
+      "counts": {},
+      "distribution": {}
+    },
+    "OVER_UNDER_2_5": {
+      "status": "no_shadow_data",
+      "total_selected": 0,
+      "counts": {},
+      "distribution": {}
+    }
+  },
+  "stability_tracking": {
+    "1X2": {
+      "status": "ok",
+      "per_model": {},
+      "unattributed": {
+        "insufficient_data": 1,
+        "no_identifiable_candidate": 0
+      }
+    },
+    "BTTS": {
+      "status": "ok",
+      "per_model": {},
+      "unattributed": {
+        "insufficient_data": 1,
+        "no_identifiable_candidate": 0
+      }
+    },
+    "OVER_UNDER_2_5": {
+      "status": "ok",
+      "per_model": {},
+      "unattributed": {
+        "insufficient_data": 1,
+        "no_identifiable_candidate": 0
+      }
+    }
+  },
+  "calibration_tracking": {
+    "1X2": {
+      "status": "no_shadow_data",
+      "choice_counts": {},
+      "choice_frequency": {}
+    },
+    "BTTS": {
+      "status": "no_shadow_data",
+      "choice_counts": {},
+      "choice_frequency": {}
+    },
+    "OVER_UNDER_2_5": {
+      "status": "no_shadow_data",
+      "choice_counts": {},
+      "choice_frequency": {}
+    }
+  },
+  "raw_vs_calibrated": {
+    "1X2": {
+      "status": "no_shadow_data",
+      "market": "1X2",
+      "sample_size": 0
+    },
+    "BTTS": {
+      "status": "no_shadow_data",
+      "market": "BTTS",
+      "sample_size": 0
+    },
+    "OVER_UNDER_2_5": {
+      "status": "no_shadow_data",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0
+    }
+  },
+  "limitations": [
+    "Le mode SHADOW LIVE (scripts/model_selection_shadow.py --mode live) ne produit des prédictions que pour des fixtures déjà 'pending' en production (model_predictions) — aucun nouvel appel réseau/fixture n'est jamais effectué par cette phase ; l'échantillon dépend donc entièrement de l'activité réelle de la production entre deux exécutions.",
+    "Les fenêtres glissantes 'last_N' peuvent afficher un échantillon identique si moins de N prédictions résolues existent au total — toujours vérifier sample_size avant de comparer deux fenêtres entre elles.",
+    "Seuil de significativité pratique utilisé pour toutes les conclusions : 1% relatif sur log_loss (même seuil que la calibration, Phase 6)."
+  ],
+  "conclusion": "NO SHADOW DATA — aucune prédiction shadow résolue n'existe encore."
+}

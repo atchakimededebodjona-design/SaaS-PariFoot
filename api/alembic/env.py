@@ -28,6 +28,8 @@ from app.models.team_rating import ModelVersion, TeamRating  # noqa: F401
 from app.models.prediction_log import PredictionLog  # noqa: F401
 from app.models.model_prediction import ModelPrediction  # noqa: F401
 from app.models.model_promotion_event import ModelPromotionEvent  # noqa: F401
+from app.models.model_selection_decision import ModelSelectionDecision  # noqa: F401
+from app.models.shadow_selection_prediction import ShadowSelectionPrediction  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
