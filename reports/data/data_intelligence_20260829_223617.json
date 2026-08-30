@@ -1,0 +1,801 @@
+{
+  "status": "ok",
+  "run_id": "20260829_223617",
+  "generated_at": "2026-08-29T22:36:17.652135+00:00",
+  "data_sources_inventory": [
+    {
+      "source": "match (DB, ex-CSV all_leagues_raw_with_stats.csv)",
+      "exists": true,
+      "historical": true,
+      "timestamped": "Date seule, sans heure (naïve) — aucune heure de coup d'envoi persistée",
+      "quality": "Bonne (NOT NULL sur les champs clés)",
+      "usable": true
+    },
+    {
+      "source": "match_stats (tirs/corners)",
+      "exists": true,
+      "historical": true,
+      "timestamped": "Hérité de match.date",
+      "quality": "Partielle — voir couverture réelle calculée ci-dessous",
+      "usable": true
+    },
+    {
+      "source": "team_ratings (Elo, Dixon-Coles)",
+      "exists": true,
+      "historical": "Snapshot le plus récent uniquement, pas de série temporelle",
+      "timestamped": "computed_at",
+      "quality": "Bonne pour l'usage servi, pas pour une reconstruction historique arbitraire",
+      "usable": true
+    },
+    {
+      "source": "api/model_artifacts/*.json (Dixon-Coles production)",
+      "exists": true,
+      "historical": "Snapshot le plus récent uniquement",
+      "timestamped": "data_up_to",
+      "quality": "Bonne",
+      "usable": true
+    },
+    {
+      "source": "model_predictions / prediction_log",
+      "exists": true,
+      "historical": true,
+      "timestamped": "predicted_at / created_at",
+      "quality": "Bonne",
+      "usable": true
+    },
+    {
+      "source": "API-Football (fixtures, scores, logos)",
+      "exists": true,
+      "historical": false,
+      "timestamped": "fixture.date (UTC, avec heure)",
+      "quality": "Externe, dépend de la disponibilité réseau/quota",
+      "usable": "Live uniquement, jamais pour l'historique persisté"
+    },
+    {
+      "source": "Bookmaker odds",
+      "exists": false,
+      "historical": "N/A",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    },
+    {
+      "source": "Injuries / suspensions",
+      "exists": false,
+      "historical": "N/A",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    },
+    {
+      "source": "Lineups",
+      "exists": false,
+      "historical": "N/A",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    },
+    {
+      "source": "Weather",
+      "exists": false,
+      "historical": "N/A",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    },
+    {
+      "source": "Standings / league table",
+      "exists": false,
+      "historical": "N/A (calculable par agrégation, non implémenté)",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    },
+    {
+      "source": "season / season_id",
+      "exists": false,
+      "historical": "N/A (dérivable, jamais persisté)",
+      "timestamped": "N/A",
+      "quality": "N/A",
+      "usable": false
+    }
+  ],
+  "match_coverage": {
+    "total_matches": 12459,
+    "leagues": [
+      "Bundesliga",
+      "LaLiga",
+      "Ligue1",
+      "PremierLeague",
+      "SerieA"
+    ],
+    "n_leagues": 5,
+    "date_min": "2019-08-09 00:00:00",
+    "date_max": "2026-05-24 00:00:00",
+    "match_stats_rows": 12459,
+    "match_stats_complete": 12458,
+    "match_stats_coverage_ratio": 0.9999,
+    "per_league_match_count": {
+      "Bundesliga": 2142,
+      "LaLiga": 2660,
+      "Ligue1": 2337,
+      "PremierLeague": 2660,
+      "SerieA": 2660
+    }
+  },
+  "model_prediction_coverage": {
+    "by_model_type": {
+      "dixon_coles": {
+        "total": 2,
+        "resolved": 0
+      },
+      "elo": {
+        "total": 1502,
+        "resolved": 1500
+      },
+      "ensemble": {
+        "total": 902,
+        "resolved": 900
+      },
+      "lightgbm": {
+        "total": 602,
+        "resolved": 600
+      },
+      "xgboost": {
+        "total": 602,
+        "resolved": 600
+      }
+    },
+    "model_versions": 15,
+    "team_ratings": 568
+  },
+  "availability_matrix": [
+    {
+      "family": "Team Strength",
+      "source": "export_model_artifacts.py",
+      "historical": true,
+      "timestamped": true,
+      "coverage": "Une valeur par équipe/ligue, snapshot LE PLUS RÉCENT uniquement (pas de série temporelle persistée).",
+      "leakage_risk": "CAUTION"
+    },
+    {
+      "family": "Form",
+      "source": "api/app/ai/engine/live_features.py::build_live_features",
+      "historical": true,
+      "timestamped": true,
+      "coverage": "match (2019-08→2026-05, 11 ligues) — disponible dès qu'un match antérieur existe pour l'équipe.",
+      "leakage_risk": "SAFE"
+    },
+    {
+      "family": "Goals",
+      "source": "api/app/ai/engine/live_features.py::build_live_features",
+      "historical": true,
+      "timestamped": true,
+      "coverage": "match (2019-08→2026-05, 11 ligues) — disponible dès qu'un match antérieur existe pour l'équipe.",
+      "leakage_risk": "SAFE"
+    },
+    {
+      "family": "Head-to-Head",
+      "source": "api/app/ai/engine/live_features.py::build_live_features",
+      "historical": true,
+      "timestamped": true,
+      "coverage": "0 à 5 selon l'historique réel des confrontations.",
+      "leakage_risk": "SAFE"
+    },
+    {
+      "family": "Ranking",
+      "source": "NOT AVAILABLE — aucune table de classement/standings dans le",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "Calculable par agrégation de `match` (points cumulés par équipe avant chaque date) — jamais implémenté.",
+      "leakage_risk": "CAUTION"
+    },
+    {
+      "family": "Schedule/Rest",
+      "source": "api/app/ai/engine/live_features.py::build_live_features",
+      "historical": true,
+      "timestamped": true,
+      "coverage": "Disponible dès qu'un match antérieur existe.",
+      "leakage_risk": "SAFE"
+    },
+    {
+      "family": "Injuries",
+      "source": "NOT AVAILABLE — confirmé absent",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Suspensions",
+      "source": "NOT AVAILABLE — confirmé absent",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Lineups",
+      "source": "NOT AVAILABLE — confirmé absent, aucun endpoint lineups jama",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Odds",
+      "source": "NOT AVAILABLE — aucune donnée de cote nulle part dans le dép",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Odds Movement",
+      "source": "NOT AVAILABLE — nécessite plusieurs snapshots de cotes dans ",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Market Probability",
+      "source": "NOT AVAILABLE — dépend d'odds_opening/closing, elles-mêmes a",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    },
+    {
+      "family": "Weather",
+      "source": "NOT AVAILABLE — confirmé absent, aucune source météo dans le",
+      "historical": false,
+      "timestamped": true,
+      "coverage": "NOT AVAILABLE.",
+      "leakage_risk": "REJECTED"
+    }
+  ],
+  "feature_registry": [
+    {
+      "feature": "injuries",
+      "source": "NOT AVAILABLE — confirmé absent",
+      "type": "N/A",
+      "cutoff": "Règle FUTURE si intégré : le rapport de blessure doit être p",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "league_standing",
+      "source": "NOT AVAILABLE — aucune table de classement/standin",
+      "type": "derived (int)",
+      "cutoff": "Serait SAFE si calculé strictement sur les matchs antérieurs",
+      "leakage": "CAUTION",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "lineups",
+      "source": "NOT AVAILABLE — confirmé absent, aucun endpoint li",
+      "type": "N/A",
+      "cutoff": "§20 du prompt : une composition publiée ~60 min avant le mat",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "suspensions",
+      "source": "NOT AVAILABLE — confirmé absent",
+      "type": "N/A",
+      "cutoff": "N/A",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "weather",
+      "source": "NOT AVAILABLE — confirmé absent, aucune source mét",
+      "type": "N/A",
+      "cutoff": "§26 du prompt : une PRÉVISION disponible avant kickoff serai",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "away_current_streak",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_form_goals_conceded_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_form_goals_scored_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_form_points_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_current_streak",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_form_goals_conceded_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_form_goals_scored_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_form_points_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "h2h_home_win_rate",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "h2h_matches_found",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "int",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "implied_probability",
+      "source": "NOT AVAILABLE — dépend d'odds_opening/closing, ell",
+      "type": "float",
+      "cutoff": "Hériterait de la règle de la cote source (odds_opening SAFE ",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "odds_closing",
+      "source": "NOT AVAILABLE — voir odds_opening.",
+      "type": "float",
+      "cutoff": "REJECTED par construction pour toute prédiction faite avant ",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "odds_movement",
+      "source": "NOT AVAILABLE — nécessite plusieurs snapshots de c",
+      "type": "float",
+      "cutoff": "Chaque snapshot utilisé devrait individuellement être antéri",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "odds_opening",
+      "source": "NOT AVAILABLE — aucune donnée de cote nulle part d",
+      "type": "float",
+      "cutoff": "Règle FUTURE si intégré un jour : odds_timestamp doit être <",
+      "leakage": "REJECTED",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "away_team",
+      "source": "api/app/models/match.py::Match.away_team.",
+      "type": "categorical (str)",
+      "cutoff": "N/A",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_team",
+      "source": "api/app/models/match.py::Match.home_team.",
+      "type": "categorical (str)",
+      "cutoff": "N/A",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "league",
+      "source": "api/app/models/match.py::Match.league",
+      "type": "categorical (str)",
+      "cutoff": "N/A",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "match_date",
+      "source": "api/app/models/match.py::Match.date",
+      "type": "date",
+      "cutoff": "N/A — c'est la référence temporelle elle-même.",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "season",
+      "source": "AUCUNE colonne season/season_id nulle part dans le",
+      "type": "derived (int, année de début)",
+      "cutoff": "Dérivable de Match.date, jamais du futur — SAFE si calculée ",
+      "leakage": "CAUTION",
+      "status": "EXPERIMENTAL",
+      "traffic_light": "YELLOW"
+    },
+    {
+      "feature": "away_corners_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_shots_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_shots_target_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_corners_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_shots_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_shots_target_diff_avg",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_days_since_last_match",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "away_returning_from_break",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "int (0/1)",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_days_since_last_match",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "home_returning_from_break",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "int (0/1)",
+      "cutoff": "Match.date < as_of (borne stricte) — appliqué dans chaque re",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "matches_last_14_days",
+      "source": "NOT AVAILABLE en tant que feature — même remarque ",
+      "type": "derived (int)",
+      "cutoff": "Serait SAFE (même principe).",
+      "leakage": "CAUTION",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "matches_last_7_days",
+      "source": "NOT AVAILABLE en tant que feature — dérivable de M",
+      "type": "derived (int)",
+      "cutoff": "Serait SAFE (même requête que _team_matches_before, bornée à",
+      "leakage": "CAUTION",
+      "status": "MISSING",
+      "traffic_light": "RED"
+    },
+    {
+      "feature": "dc_away_win",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Approximation DOCUMENTÉE (pas un fit tronqué à as_of) : réut",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "dc_draw",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Approximation DOCUMENTÉE (pas un fit tronqué à as_of) : réut",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "dc_home_win",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Approximation DOCUMENTÉE (pas un fit tronqué à as_of) : réut",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "dc_over_2_5",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Approximation DOCUMENTÉE (pas un fit tronqué à as_of) : réut",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "dc_under_2_5",
+      "source": "api/app/ai/engine/live_features.py::build_live_fea",
+      "type": "float",
+      "cutoff": "Approximation DOCUMENTÉE (pas un fit tronqué à as_of) : réut",
+      "leakage": "SAFE",
+      "status": "PRODUCTION",
+      "traffic_light": "GREEN"
+    },
+    {
+      "feature": "dixon_coles_attack",
+      "source": "export_model_artifacts.py",
+      "type": "float",
+      "cutoff": "SAFE pour servir une prédiction (l'artefact n'a appris que d",
+      "leakage": "CAUTION",
+      "status": "PRODUCTION",
+      "traffic_light": "YELLOW"
+    },
+    {
+      "feature": "dixon_coles_defense",
+      "source": "export_model_artifacts.py",
+      "type": "float",
+      "cutoff": "Identique à dixon_coles_attack.",
+      "leakage": "CAUTION",
+      "status": "PRODUCTION",
+      "traffic_light": "YELLOW"
+    },
+    {
+      "feature": "dixon_coles_home_advantage",
+      "source": "export_model_artifacts.py",
+      "type": "float",
+      "cutoff": "Identique à dixon_coles_attack.",
+      "leakage": "CAUTION",
+      "status": "PRODUCTION",
+      "traffic_light": "YELLOW"
+    },
+    {
+      "feature": "dixon_coles_rho",
+      "source": "export_model_artifacts.py",
+      "type": "float",
+      "cutoff": "Identique à dixon_coles_attack.",
+      "leakage": "CAUTION",
+      "status": "PRODUCTION",
+      "traffic_light": "YELLOW"
+    },
+    {
+      "feature": "elo_rating",
+      "source": "api/app/ai/engine/elo.py::EloEngine",
+      "type": "float",
+      "cutoff": "SAFE pour servir (rating pré-match par construction dans wal",
+      "leakage": "CAUTION",
+      "status": "PRODUCTION",
+      "traffic_light": "YELLOW"
+    }
+  ],
+  "status_counts": {
+    "AVAILABLE": 0,
+    "PARTIAL": 0,
+    "MISSING": 11,
+    "EXPERIMENTAL": 1,
+    "REJECTED": 0,
+    "PRODUCTION": 34
+  },
+  "leakage_counts": {
+    "SAFE": 29,
+    "CAUTION": 9,
+    "LEAKAGE_RISK": 0,
+    "REJECTED": 8
+  },
+  "traffic_light_counts": {
+    "GREEN": 29,
+    "YELLOW": 6,
+    "RED": 11
+  },
+  "registry_validation_problems": [],
+  "priority_matrix": [
+    {
+      "feature": "season",
+      "quality": "NOT AVAILABLE en tant que champ stocké. Une règle ",
+      "coverage": "dérivable",
+      "leakage_risk": "CAUTION",
+      "priority": "P1"
+    },
+    {
+      "feature": "league_standing",
+      "quality": "Calculable par agrégation de `match` (points cumul",
+      "coverage": "N/A",
+      "leakage_risk": "CAUTION",
+      "priority": "P1"
+    },
+    {
+      "feature": "matches_last_7_days",
+      "quality": "Calculable, non implémenté.",
+      "coverage": "N/A",
+      "leakage_risk": "CAUTION",
+      "priority": "P2"
+    },
+    {
+      "feature": "matches_last_14_days",
+      "quality": "Calculable, non implémenté.",
+      "coverage": "N/A",
+      "leakage_risk": "CAUTION",
+      "priority": "P2"
+    },
+    {
+      "feature": "odds_opening",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P2"
+    },
+    {
+      "feature": "injuries",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P2"
+    },
+    {
+      "feature": "lineups",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P2"
+    },
+    {
+      "feature": "odds_closing",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P3"
+    },
+    {
+      "feature": "implied_probability",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P3"
+    },
+    {
+      "feature": "odds_movement",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P3"
+    },
+    {
+      "feature": "suspensions",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P3"
+    },
+    {
+      "feature": "weather",
+      "quality": "NOT AVAILABLE.",
+      "coverage": "N/A",
+      "leakage_risk": "REJECTED",
+      "priority": "P3"
+    }
+  ],
+  "team_league_normalization": "\nAucun identifiant canonique d'équipe (`team_id`) n'existe dans le dépôt — chaque référence à une équipe est une\nchaîne de caractères exacte. DEUX mécanismes de normalisation fuzzy INDÉPENDANTS coexistent :\n\n1. `api/app/core/team_name_matching.py` — 18 alias codés en dur, normalisation NFKD/minuscule, repli\n   `difflib.SequenceMatcher.ratio() >= 0.6`. Résout SILENCIEUSEMENT sur un match fuzzy (booléen simple,\n   `names_match()`), utilisé pour rapprocher les noms d'équipes API-Football lors de la résolution de résultats.\n2. `api/main.py` (~300 lignes, `TEAM_ALIASES` + `resolve_team_name()`) — table d'alias totalement séparée, même\n   seuil fuzzy 0.6, mais NE résout JAMAIS silencieusement en fuzzy : retourne toujours des suggestions à l'appelant.\n\nCes deux tables ne sont pas synchronisées entre elles — une correction apportée à l'une ne se propage pas à\nl'autre. Risque de faux positif documenté ici (seuil 0.6 sur des noms de clubs courts et proches) mais NON corrigé\ndans cette phase (audit uniquement, aucune modification du code de normalisation).\n\nLa normalisation de LIGUE, à l'inverse, est un dictionnaire EXACT {nom: id API-Football} (11 ligues) — aucun\nrisque de faux positif, mais toute compétition hors de cette liste est silencieusement ignorée partout où les\nfixtures sont ingérées.\n",
+  "feature_correlation_notes": "\nRevue manuelle (§36 du prompt — pas de calcul de corrélation automatisé, qui nécessiterait de rejouer tout le\npipeline de features sur l'historique complet, hors périmètre \"audit léger\" de cette phase) :\n\n- `dc_home_win`/`dc_draw`/`dc_away_win` (Dixon-Coles) et `home_form_points_avg`/`away_form_points_avg` sont deux\n  proxies DIFFÉRENTS de la force relative des équipes (l'un un modèle statistique appris sur tout l'historique de\n  la ligue, l'autre une moyenne glissante sur 5 matchs) — corrélation attendue, mais pas une duplication\n  d'information au sens strict (fenêtres temporelles et méthodes différentes).\n- `home_current_streak` et `home_form_points_avg` capturent tous deux une notion de \"forme récente\" mais sur des\n  définitions différentes (série signée vs moyenne de points) — candidats à une revue de redondance si un futur\n  travail de sélection de features est entrepris, jamais tranché ici.\n- Aucune paire de colonnes strictement identique (même définition, deux noms) n'a été identifiée dans les 25\n  features de production.\n",
+  "limitations": [
+    "match.date n'a jamais d'heure de coup d'envoi (100% des lignes historiques à minuit) — toute règle de cutoff au jour près, jamais à l'heure près, pour l'historique persisté.",
+    "Aucun identifiant canonique d'équipe — deux tables d'alias fuzzy indépendantes et non synchronisées (voir section Team Normalization).",
+    "Les ratings Dixon-Coles/Elo en base (team_ratings, api/model_artifacts) ne sont que des snapshots les plus récents — aucune série temporelle n'est persistée ; seule research.py::build_dixon_coles_walk_forward reconstruit un état historique fidèle à une date arbitraire (recherche/backtest uniquement).",
+    "La base `match` de CET environnement ne couvre que 5 ligue(s) (Bundesliga, LaLiga, Ligue1, PremierLeague, SerieA) — 6 ligue(s) présente(s) dans data/all_leagues_raw_with_stats.csv (ChampionsLeague, ConferenceLeague, EuropaLeague, MLS, PrimeiraLiga, SaudiProLeague) n'y sont PAS chargées. Couverture match_stats calculée ci-dessus (0.9999) porte donc UNIQUEMENT sur ce sous-ensemble déjà chargé, pas sur le CSV source complet (dont la couverture réelle est nettement plus faible, ~57%, sur les ligues ajoutées plus récemment).",
+    "Aucune donnée de marché (cotes), contextuelle (blessures/compositions/météo) n'existe dans le dépôt — documenté comme SOURCE CANDIDATE (§45), aucune intégration décidée dans cette phase."
+  ],
+  "verdicts": {
+    "data_foundation": "READY",
+    "feature_registry": "READY",
+    "external_data_candidates": [
+      "odds (P2, nécessite un fournisseur externe)",
+      "injuries (P2, endpoint API-Football /injuries jamais appelé)",
+      "league_standing (P1, calculable par agrégation, aucune source externe requise)",
+      "season (P1, dérivable par règle documentée, aucune source externe requise)"
+    ],
+    "production": "NO PRODUCTION CHANGES"
+  },
+  "conclusion": "46 features documentées (34 en production, 11 absentes documentées). Fondation de données : READY. Registre de features : READY. Aucune modification de production."
+}
