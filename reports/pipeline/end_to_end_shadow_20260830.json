@@ -1,0 +1,347 @@
+{
+  "run_id": "20260830_191546",
+  "generated_at": "2026-08-30T19:15:46.319644+00:00",
+  "phase": "8J",
+  "kind": "end_to_end_shadow_pipeline_v1",
+  "rule": "RESEARCH + SHADOW ONLY. NO PRODUCTION INTEGRATION. NO ODDS PROVIDER CALLED.",
+  "architecture": {
+    "package": "api/app/ai/pipeline/",
+    "modules": [
+      "__init__.py",
+      "schemas.py",
+      "orchestrator.py",
+      "shadow.py"
+    ],
+    "test_file": "api/test_end_to_end_pipeline.py",
+    "report_script": "scripts/end_to_end_shadow_research.py",
+    "reused_not_reimplemented": [
+      "app.ai.decision.decision.assess_decision (Phase 8I) — Quality+Decision en un seul appel",
+      "app.ai.value.core.build_value_signal (Phase 8H) — Value stage",
+      "app.ai.arena.service._compute_market_metrics (Phase 5) — preuve de compatibilité Track Record"
+    ],
+    "called_by_production": false
+  },
+  "pipeline_stages": [
+    "Prediction (input)",
+    "Quality (Phase 8I, via assess_decision)",
+    "Decision (Phase 8I)",
+    "Value (Phase 8H, conditionnel)",
+    "Final Status (orchestrateur)"
+  ],
+  "final_statuses": [
+    "VALUE_CANDIDATE",
+    "NO_VALUE",
+    "RESEARCH_ONLY",
+    "INSUFFICIENT_DATA",
+    "INELIGIBLE",
+    "UNKNOWN",
+    "NOT_AVAILABLE",
+    "TEMPORALLY_UNSAFE",
+    "INVALID_ODDS",
+    "REJECTED"
+  ],
+  "value_stage_statuses": [
+    "EVALUATED",
+    "SKIPPED_NO_ODDS",
+    "SKIPPED_DECISION_INELIGIBLE",
+    "SKIPPED_DECISION_INSUFFICIENT_DATA",
+    "SKIPPED_DECISION_UNKNOWN",
+    "SKIPPED_NO_MODEL_PROBABILITY"
+  ],
+  "synthetic_batch": {
+    "data_marking": "SYNTHETIC",
+    "results": [
+      {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "VALUE_CANDIDATE",
+        "decision_eligibility": "ELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [],
+        "error": null
+      },
+      {
+        "match_id": 2,
+        "market": "BTTS",
+        "final_status": "VALUE_CANDIDATE",
+        "decision_eligibility": "ELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [],
+        "error": null
+      },
+      {
+        "match_id": 3,
+        "market": "OVER_UNDER_2_5",
+        "final_status": "VALUE_CANDIDATE",
+        "decision_eligibility": "ELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [],
+        "error": null
+      }
+    ],
+    "all_value_candidates": true
+  },
+  "no_odds_batch": {
+    "summary": {
+      "match_id": 1,
+      "market": "1X2",
+      "final_status": "INELIGIBLE",
+      "decision_eligibility": "INELIGIBLE",
+      "confidence_overall": "INELIGIBLE",
+      "value_status": null,
+      "value_stage_status": "SKIPPED_NO_ODDS",
+      "reasons": [
+        "TEMPORAL_UNKNOWN"
+      ],
+      "error": null
+    },
+    "value_is_none": true,
+    "never_value_candidate": true,
+    "no_exception_raised": true
+  },
+  "adversarial_batch": {
+    "cases": {
+      "invalid_odds_1.0": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INSUFFICIENT_DATA",
+        "decision_eligibility": "INSUFFICIENT_DATA",
+        "confidence_overall": "HIGH",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INSUFFICIENT_DATA",
+        "reasons": [
+          "MARKET_UNAVAILABLE"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "invalid_odds_0.0": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INSUFFICIENT_DATA",
+        "decision_eligibility": "INSUFFICIENT_DATA",
+        "confidence_overall": "HIGH",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INSUFFICIENT_DATA",
+        "reasons": [
+          "MARKET_UNAVAILABLE"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "invalid_odds_-1.5": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INSUFFICIENT_DATA",
+        "decision_eligibility": "INSUFFICIENT_DATA",
+        "confidence_overall": "HIGH",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INSUFFICIENT_DATA",
+        "reasons": [
+          "MARKET_UNAVAILABLE"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "invalid_probability_sum_1_40": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INELIGIBLE",
+        "decision_eligibility": "INELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INELIGIBLE",
+        "reasons": [
+          "INVALID_PROBABILITY"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "future_information_favorable_ev": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INELIGIBLE",
+        "decision_eligibility": "INELIGIBLE",
+        "confidence_overall": "INELIGIBLE",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INELIGIBLE",
+        "reasons": [
+          "FUTURE_INFORMATION"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "unknown_timestamp": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "INELIGIBLE",
+        "decision_eligibility": "INELIGIBLE",
+        "confidence_overall": "INELIGIBLE",
+        "value_status": null,
+        "value_stage_status": "SKIPPED_DECISION_INELIGIBLE",
+        "reasons": [
+          "TEMPORAL_UNKNOWN"
+        ],
+        "error": null,
+        "pass": true
+      },
+      "historical_unverified": {
+        "match_id": 1,
+        "market": "1X2",
+        "final_status": "RESEARCH_ONLY",
+        "decision_eligibility": "RESEARCH_ONLY",
+        "confidence_overall": "MEDIUM",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [
+          "HISTORICAL_UNVERIFIED"
+        ],
+        "error": null,
+        "pass": true
+      }
+    },
+    "all_pass": true
+  },
+  "provenance_checks": {
+    "expected": {
+      "model_source": "xgboost",
+      "model_version": "xfoot-xgboost-v1",
+      "calibration_source": "isotonic",
+      "feature_snapshot": "snapshot-id",
+      "odds_source": "SYNTHETIC",
+      "odds_timestamp": "2026-01-01 06:00:00+00:00",
+      "cutoff_timestamp": "2026-01-01 12:00:00+00:00"
+    },
+    "got": {
+      "model_source": "xgboost",
+      "model_version": "xfoot-xgboost-v1",
+      "calibration_source": "isotonic",
+      "feature_snapshot": "snapshot-id",
+      "odds_source": "SYNTHETIC",
+      "odds_timestamp": "2026-01-01 06:00:00+00:00",
+      "cutoff_timestamp": "2026-01-01 12:00:00+00:00"
+    },
+    "intact": true
+  },
+  "determinism_checks": {
+    "same_input_same_output": true
+  },
+  "error_isolation": {
+    "results": [
+      {
+        "match_id": 10,
+        "market": "1X2",
+        "final_status": "VALUE_CANDIDATE",
+        "decision_eligibility": "ELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [],
+        "error": null
+      },
+      {
+        "match_id": 11,
+        "market": "1X2",
+        "final_status": "REJECTED",
+        "decision_eligibility": null,
+        "confidence_overall": null,
+        "value_status": null,
+        "value_stage_status": "SKIPPED_NO_ODDS",
+        "reasons": [
+          "PIPELINE_ERROR: ValueError(\"PipelineInput.as_of (ou kickoff) doit être fourni explicitement — jamais déduit de l'heure système (§17/§28/§44 du prompt Phase 8J).\")"
+        ],
+        "error": "ValueError(\"PipelineInput.as_of (ou kickoff) doit être fourni explicitement — jamais déduit de l'heure système (§17/§28/§44 du prompt Phase 8J).\")"
+      },
+      {
+        "match_id": 12,
+        "market": "1X2",
+        "final_status": "VALUE_CANDIDATE",
+        "decision_eligibility": "ELIGIBLE",
+        "confidence_overall": "HIGH",
+        "value_status": "POSITIVE_VALUE",
+        "value_stage_status": "EVALUATED",
+        "reasons": [],
+        "error": null
+      }
+    ],
+    "a_ok": true,
+    "b_isolated": true,
+    "c_ok": true
+  },
+  "track_record_compatibility": {
+    "observation_shape": [
+      "p_true",
+      "probs",
+      "actual",
+      "correct"
+    ],
+    "compatible_with_service_compute_market_metrics": true,
+    "limitation": "compute_track_record/compute_cumulative_track_record/compute_selection_distribution/compute_stability_tracking/compute_calibration_tracking (Phase 7) interrogent TOUTES directement shadow_selection_predictions via une Session SQLModel — aucune n'accepte une liste d'observations externes. Une intégration complète nécessiterait d'écrire dans shadow_selection_predictions (mécanisme réel : scripts/model_selection_shadow.py), explicitement hors périmètre de cette phase (aucune écriture production). Compatibilité prouvée au niveau de la FORME uniquement."
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    }
+  },
+  "tests_green": true,
+  "the_odds_api_status": "SUPPORT_REQUIRED (Phase 8G.2) — non appelé dans cette phase.",
+  "no_user_betting_signal": true,
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "production_files_modified": false,
+  "final_verdict": "END_TO_END_SHADOW_READY",
+  "next_step": "PHASE 8J VALIDÉE. Le pipeline Quality->Decision->Value est traçable, déterministe et sûr en RECHERCHE/SHADOW. Prochaine étape possible : persister des PipelineAssessment réels (matchs déjà résolus) dans shadow_selection_predictions via scripts/model_selection_shadow.py pour un vrai Track Record — hors périmètre de cette phase (aucune écriture production ici).",
+  "git_status_porcelain": "?? api/app/ai/decision/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n"
+}

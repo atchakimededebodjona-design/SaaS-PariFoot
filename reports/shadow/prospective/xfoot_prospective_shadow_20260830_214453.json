@@ -1,0 +1,371 @@
+{
+  "run_id": "20260830_214417",
+  "generated_at": "2026-08-30T21:44:17.022270+00:00",
+  "phase": "9.2",
+  "kind": "prospective_shadow_evidence_accumulation_v1",
+  "rule": "REAL-WORLD SHADOW ONLY. MODE_1_SHADOW_ONLY. NO PRODUCTION ACTIVATION. NO NEW PREDICTION. NO NETWORK.",
+  "as_of": "2026-08-30T21:44:17.022288+00:00",
+  "dry_run": true,
+  "market": "1X2",
+  "resolve_requested": false,
+  "capture_outcome": {
+    "blocked": false,
+    "as_of": "2026-08-30T21:44:17.022288+00:00",
+    "candidates": 0,
+    "captured": 0,
+    "duplicates_prevented": 0,
+    "rejected": [],
+    "errors": [],
+    "mismatches": [],
+    "captured_records": []
+  },
+  "resolution_summary": {
+    "skipped": "NOT_REQUESTED_OR_DRY_RUN"
+  },
+  "evidence_ledger": {
+    "total_real_observations": 0,
+    "by_resolution_status": {},
+    "conflicts": 0,
+    "distinct_models": [],
+    "distinct_leagues": [],
+    "distinct_markets": [],
+    "period_covered": {
+      "earliest_kickoff": null,
+      "latest_kickoff": null
+    },
+    "last_observation_captured_at": null,
+    "maturity": "NO_DATA",
+    "as_of_span": {
+      "earliest": null,
+      "latest": null
+    }
+  },
+  "evidence_status": "NO_DATA",
+  "capture_quality": {
+    "CAPTURED": 0,
+    "REJECTED": 0,
+    "BLOCKED": 0,
+    "CONFLICT": 0,
+    "RESOLVED": 0,
+    "PENDING": 0
+  },
+  "track_record": {
+    "1X2": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "1X2",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "BTTS": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "BTTS",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "value_tracking": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+    }
+  },
+  "shadow_health_status": "NO_DATA",
+  "shadow_health": {
+    "as_of": "2026-08-30T21:44:17.022288+00:00",
+    "status": "NO_DATA",
+    "future_fixtures": 0,
+    "pending_predictions": 0,
+    "capturable": 0,
+    "captured": 0,
+    "pending_shadow": 0,
+    "resolved_shadow": 0,
+    "conflicts": 0,
+    "invalid": 0,
+    "errors": 0,
+    "stale_predictions": null,
+    "late_predictions": "KICKOFF_TIME_UNKNOWN — voir Limitations (aucune heure de coup d'envoi réelle persistée)",
+    "missing_provenance": 0,
+    "temporal_unknown": 0,
+    "no_odds": 0,
+    "missed_capture_candidates": 0,
+    "reality": {
+      "measured_at": "2026-08-30T21:44:17.277970+00:00",
+      "total_matches_in_db": 0,
+      "future_fixtures": 0,
+      "pending_model_predictions": 0,
+      "resolved_model_predictions": 0,
+      "backtest_model_predictions_available_as_shadow_candidates": 0,
+      "shadow_live_data": "NONE_AVAILABLE"
+    },
+    "fixture_coverage": {
+      "future_fixtures": 0,
+      "pending_predictions": 0,
+      "coverage": null,
+      "status": "NO_DATA"
+    },
+    "capture_coverage": {
+      "eligible": 0,
+      "captured": 0,
+      "coverage": null,
+      "status": "INSUFFICIENT_DATA"
+    },
+    "missed_captures_detail": [],
+    "temporal_health": {
+      "temporal_safe": 0,
+      "temporal_unknown": 0,
+      "temporal_rejected": 0,
+      "late_capture": 0,
+      "future_information_attempts": 0,
+      "by_status": {
+        "TEMPORALLY_VERIFIED": 0,
+        "HISTORICAL_UNVERIFIED": 0,
+        "FUTURE_INFORMATION": 0,
+        "UNKNOWN": 0
+      }
+    },
+    "provenance_health": {
+      "complete": 0,
+      "partial": 0,
+      "missing": 0,
+      "total": 0
+    },
+    "consistency_health": {
+      "checked": 0,
+      "model_mismatches": 0,
+      "probability_mismatches": 0,
+      "details": []
+    },
+    "store_integrity": {
+      "status": "OK",
+      "valid_json": true,
+      "record_count": 0,
+      "duplicate_keys_found": 0,
+      "records_with_invalid_timestamps": 0
+    },
+    "resolution_health": {
+      "counts": {
+        "PENDING": 0,
+        "RESOLVED": 0,
+        "CONFLICT": 0,
+        "UNRESOLVED": 0,
+        "INVALID": 0
+      },
+      "resolution_latency_hours": {
+        "status": "INSUFFICIENT_DATA"
+      }
+    },
+    "played_but_pending": [],
+    "track_record_health": {
+      "per_market": {
+        "1X2": {
+          "status": "INSUFFICIENT_DATA",
+          "market": "1X2",
+          "sample_size": 0,
+          "reason": "no_shadow_data"
+        },
+        "BTTS": {
+          "status": "INSUFFICIENT_DATA",
+          "market": "BTTS",
+          "sample_size": 0,
+          "reason": "no_shadow_data"
+        },
+        "OVER_UNDER_2_5": {
+          "status": "INSUFFICIENT_DATA",
+          "market": "OVER_UNDER_2_5",
+          "sample_size": 0,
+          "reason": "no_shadow_data"
+        }
+      },
+      "maturity": "NO_DATA",
+      "maturity_thresholds": {
+        "EARLY_DATA": 10,
+        "TRACKING": 30,
+        "STATISTICALLY_INFORMATIVE": 100
+      }
+    },
+    "value_health": {
+      "odds_available": false,
+      "no_odds_count": 0,
+      "odds_unverified_count": 0,
+      "odds_verified_count": 0,
+      "value_candidate_count": 0,
+      "value_tracking": {
+        "status": "NOT_AVAILABLE",
+        "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+      }
+    },
+    "feature_health": {
+      "feature_registry": {
+        "production": 34,
+        "experimental": 1,
+        "missing": 11
+      },
+      "shadow_records_with_low_data_quality": 0,
+      "shadow_records_with_unknown_data_quality": 0
+    },
+    "invalid_probabilities": [],
+    "alerts": [
+      {
+        "category": "NO_DATA",
+        "severity": "INFO",
+        "key": "no_data",
+        "message": "Aucune donnée prospective actuellement disponible pour évaluer le fonctionnement opérationnel du Shadow.",
+        "evidence": {
+          "measured_at": "2026-08-30T21:44:17.277970+00:00",
+          "total_matches_in_db": 0,
+          "future_fixtures": 0,
+          "pending_model_predictions": 0,
+          "resolved_model_predictions": 0,
+          "backtest_model_predictions_available_as_shadow_candidates": 0,
+          "shadow_live_data": "NONE_AVAILABLE"
+        }
+      }
+    ]
+  },
+  "readiness_impact": {
+    "TRACK_RECORD": {
+      "before": "NOT_AVAILABLE",
+      "after": "NOT_AVAILABLE",
+      "changed": false
+    },
+    "PROVENANCE": {
+      "before": "NOT_AVAILABLE",
+      "after": "NOT_AVAILABLE",
+      "changed": false
+    },
+    "MONITORING": {
+      "before": "CONDITIONAL",
+      "after": "CONDITIONAL",
+      "changed": false
+    },
+    "SHADOW": {
+      "before": "PASS",
+      "after": "PASS",
+      "changed": false
+    },
+    "TEMPORAL_INTEGRITY": {
+      "before": "PASS",
+      "after": "PASS",
+      "changed": false
+    },
+    "ODDS": {
+      "before": "NOT_AVAILABLE",
+      "after": "NOT_AVAILABLE",
+      "changed": false
+    },
+    "VALUE": {
+      "before": "CONDITIONAL",
+      "after": "CONDITIONAL",
+      "changed": false
+    }
+  },
+  "readiness_before_verdict": "NO_GO",
+  "readiness_after_verdict": "NO_GO",
+  "backup_path": null,
+  "backup_validated": null,
+  "db_safety": {
+    "before": {
+      "match": 0,
+      "match_stats": 0,
+      "model_predictions": 0,
+      "model_versions": 0,
+      "prediction_log": 3,
+      "team_ratings": 0
+    },
+    "after": {
+      "match": 0,
+      "match_stats": 0,
+      "model_predictions": 0,
+      "model_versions": 0,
+      "prediction_log": 3,
+      "team_ratings": 0
+    },
+    "unchanged": true
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_feature_engineering_v1.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_historical_replay.py": {
+      "returncode": 0,
+      "summary_line": "22/22 tests OK",
+      "pass": true
+    },
+    "test_live_shadow_track.py": {
+      "returncode": 0,
+      "summary_line": "18/18 tests OK",
+      "pass": true
+    },
+    "test_shadow_monitoring.py": {
+      "returncode": 0,
+      "summary_line": "29/29 tests OK",
+      "pass": true
+    },
+    "test_production_readiness.py": {
+      "returncode": 0,
+      "summary_line": "59 passed, 0 failed (sur 59 assertions)",
+      "pass": true
+    },
+    "test_safety_controls.py": {
+      "returncode": 0,
+      "summary_line": "76 passed, 0 failed (sur 76 assertions, 40 scénarios)",
+      "pass": true
+    }
+  },
+  "this_phase_tests": {
+    "returncode": 0,
+    "summary_line": "71 passed, 0 failed (sur 71 assertions, 37 scénarios)",
+    "pass": true
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/historical/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/readiness/\n?? api/app/ai/safety/\n?? api/app/ai/shadow/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_historical_replay.py\n?? api/test_live_shadow_track.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_production_readiness.py\n?? api/test_prospective_shadow.py\n?? api/test_safety_controls.py\n?? api/test_shadow_monitoring.py\n?? api/test_shadow_operational.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/phase9/\n?? reports/phase9_1/\n?? reports/pipeline/\n?? reports/replay/\n?? reports/shadow/live/\n?? reports/shadow/monitoring/\n?? reports/shadow/prospective/\n?? reports/shadow/shadow_decision_store.json\n?? reports/shadow/shadow_operational_validation_20260830.json\n?? reports/shadow/shadow_operational_validation_20260830.md\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/historical_replay_audit.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/production_readiness.py\n?? scripts/prospective_shadow.py\n?? scripts/safety_control.py\n?? scripts/shadow_live_track.py\n?? scripts/shadow_monitor.py\n?? scripts/shadow_operational_validation.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "git_diff_names": "",
+  "production_files_modified": false,
+  "tests_green": true,
+  "final_verdict": "INSUFFICIENT_REAL_DATA",
+  "the_odds_api_status": "SUPPORT_REQUIRED — non appelé dans cette phase.",
+  "no_user_betting_signal": true,
+  "mode": "MODE_1_SHADOW_ONLY",
+  "production_activation": "BLOCKED"
+}

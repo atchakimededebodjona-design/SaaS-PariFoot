@@ -1,0 +1,270 @@
+{
+  "run_id": "20260830_113136",
+  "generated_at": "2026-08-30T11:31:36.757923+00:00",
+  "phase": "8H",
+  "kind": "value_engine_foundation_v1",
+  "rule": "RESEARCH + SHADOW ONLY. NO PRODUCTION INTEGRATION. NO ODDS PROVIDER CALLED.",
+  "architecture": {
+    "package": "api/app/ai/value/",
+    "modules": [
+      "__init__.py",
+      "schemas.py",
+      "quality.py",
+      "core.py",
+      "provider.py"
+    ],
+    "test_file": "api/test_value_engine.py",
+    "report_script": "scripts/value_engine_research.py",
+    "called_by_production": false,
+    "note": "Aucun module de api/main.py, scheduler.py, orchestrator.py, service.py, ensemble.py, models_common.py ou promotion.py n'importe api/app/ai/value/."
+  },
+  "input_contract": [
+    "ModelProbability",
+    "MarketProbability",
+    "OddsSnapshot",
+    "TemporalMetadata",
+    "PredictionQuality",
+    "ValueSignal",
+    "ValueThresholds"
+  ],
+  "temporal_statuses": [
+    "TEMPORALLY_VERIFIED",
+    "HISTORICAL_UNVERIFIED",
+    "FUTURE_INFORMATION",
+    "UNKNOWN"
+  ],
+  "value_types": [
+    "POSITIVE_VALUE",
+    "NEUTRAL",
+    "NEGATIVE_VALUE",
+    "INSUFFICIENT_DATA",
+    "TEMPORALLY_UNSAFE",
+    "INVALID_ODDS"
+  ],
+  "rejection_reasons": [
+    "NO_ODDS",
+    "INVALID_ODDS",
+    "NO_MODEL_PROBABILITY",
+    "INSUFFICIENT_DATA",
+    "TEMPORAL_UNVERIFIED",
+    "FUTURE_INFORMATION",
+    "LOW_EDGE",
+    "LOW_EV",
+    "LOW_CONFIDENCE",
+    "STALE_ODDS"
+  ],
+  "demonstrations": {
+    "market_1x2_example": {
+      "raw": {
+        "home_win": 0.5555555555555556,
+        "draw": 0.2777777777777778,
+        "away_win": 0.2222222222222222
+      },
+      "normalized": {
+        "home_win": 0.5263157894736842,
+        "draw": 0.2631578947368421,
+        "away_win": 0.21052631578947367
+      },
+      "overround": 0.05555555555555558
+    },
+    "overround_prompt_example": {
+      "raw": {
+        "home": 0.5,
+        "draw": 0.3,
+        "away": 0.25
+      },
+      "normalized": {
+        "home": 0.47619047619047616,
+        "draw": 0.2857142857142857,
+        "away": 0.23809523809523808
+      },
+      "overround": 0.050000000000000044
+    },
+    "value_signals_generated": 5,
+    "value_signals_by_status": {
+      "POSITIVE_VALUE": 2,
+      "NEUTRAL": 0,
+      "NEGATIVE_VALUE": 0,
+      "INSUFFICIENT_DATA": 3,
+      "TEMPORALLY_UNSAFE": 0,
+      "INVALID_ODDS": 0
+    },
+    "ranked_by_ev_then_edge": [
+      {
+        "model_probability": 0.6,
+        "expected_value": 0.19999999999999996,
+        "edge": 0.0736842105263158
+      },
+      {
+        "model_probability": 0.55,
+        "expected_value": 0.10000000000000009,
+        "edge": 0.023684210526315863
+      },
+      {
+        "model_probability": 0.5,
+        "expected_value": 0.0,
+        "edge": -0.02631578947368418
+      },
+      {
+        "model_probability": 0.45,
+        "expected_value": -0.09999999999999998,
+        "edge": -0.07631578947368417
+      },
+      {
+        "model_probability": 0.4,
+        "expected_value": -0.19999999999999996,
+        "edge": -0.12631578947368416
+      }
+    ],
+    "threshold_grid_size": 30,
+    "threshold_grid_sample": [
+      {
+        "min_edge": 0.01,
+        "min_ev": 0.01,
+        "n_candidates": 2
+      },
+      {
+        "min_edge": 0.01,
+        "min_ev": 0.02,
+        "n_candidates": 2
+      },
+      {
+        "min_edge": 0.01,
+        "min_ev": 0.03,
+        "n_candidates": 2
+      },
+      {
+        "min_edge": 0.01,
+        "min_ev": 0.05,
+        "n_candidates": 2
+      },
+      {
+        "min_edge": 0.01,
+        "min_ev": 0.1,
+        "n_candidates": 2
+      }
+    ]
+  },
+  "synthetic_cases": [
+    {
+      "case": "A",
+      "input": "p_model=0.60, odds=2.00",
+      "expected": "EV=+20%",
+      "status": "POSITIVE_VALUE",
+      "ev": 0.19999999999999996,
+      "pass": true
+    },
+    {
+      "case": "B",
+      "input": "p_model=0.45, odds=2.00",
+      "expected": "EV=-10%",
+      "status": "INSUFFICIENT_DATA",
+      "ev": -0.09999999999999998,
+      "pass": true
+    },
+    {
+      "case": "C",
+      "input": "future odds (after cutoff)",
+      "expected": "TEMPORALLY_UNSAFE",
+      "status": "TEMPORALLY_UNSAFE",
+      "reason": "FUTURE_INFORMATION",
+      "pass": true
+    },
+    {
+      "case": "D",
+      "input": "unknown timestamp",
+      "expected": "TEMPORAL_UNVERIFIED",
+      "status": "TEMPORALLY_UNSAFE",
+      "reason": "TEMPORAL_UNVERIFIED",
+      "pass": true
+    },
+    {
+      "case": "E",
+      "input": "invalid odds <= 1",
+      "expected": "INVALID_ODDS",
+      "status": "INVALID_ODDS",
+      "reason": "INVALID_ODDS",
+      "pass": true
+    }
+  ],
+  "adversarial_tests": {
+    "snapshot_exclusion_tests": {
+      "14:00": {
+        "got": "TEMPORALLY_VERIFIED",
+        "expected": "TEMPORALLY_VERIFIED",
+        "pass": true
+      },
+      "18:30": {
+        "got": "FUTURE_INFORMATION",
+        "expected": "FUTURE_INFORMATION",
+        "pass": true
+      },
+      "19:45": {
+        "got": "FUTURE_INFORMATION",
+        "expected": "FUTURE_INFORMATION",
+        "pass": true
+      },
+      "20:10": {
+        "got": "FUTURE_INFORMATION",
+        "expected": "FUTURE_INFORMATION",
+        "pass": true
+      }
+    },
+    "snapshot_tests_all_pass": true,
+    "consensus_test": {
+      "included": [
+        "A",
+        "B"
+      ],
+      "excluded": [
+        "C"
+      ],
+      "pass": true
+    },
+    "all_adversarial_tests_pass": true
+  },
+  "threshold_framework": {
+    "parameters": [
+      "min_edge",
+      "min_ev",
+      "min_probability",
+      "min_confidence",
+      "max_odds_age_hours"
+    ],
+    "research_default": {
+      "min_edge": 0.0,
+      "min_ev": 0.0,
+      "min_probability": 0.0,
+      "min_confidence": 0.0,
+      "max_odds_age_hours": Infinity
+    },
+    "note": "RESEARCH_DEFAULT — jamais un seuil de production. Grille de recherche : EDGE_GRID=(0.01, 0.02, 0.03, 0.05, 0.07, 0.1), EV_GRID=(0.01, 0.02, 0.03, 0.05, 0.1)"
+  },
+  "statistical_value_validation": "NOT_AVAILABLE",
+  "statistical_value_validation_reason": "Aucune donnée odds réellement temporellement vérifiée disponible (Phase 8G.2 : SUPPORT_REQUIRED, The Odds API non intégré).",
+  "the_odds_api_status": "SUPPORT_REQUIRED (Phase 8G.2) — NON intégré, aucun appel effectué dans cette phase.",
+  "football_data_co_uk_status": "HISTORICAL_BUT_UNTIMESTAMPED (Phase 8D/8E) — jamais utilisé comme source temporellement sûre dans ce module.",
+  "tests_green": true,
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "final_decision": "FOUNDATION_READY",
+  "next_step": "Recommandation : PHASE 8I, uniquement après validation de cette fondation. La Phase 8I devra traiter la prochaine priorité réelle de Xfoot (ex. lever SUPPORT_REQUIRED sur The Odds API, ou une autre source de données) SANS supposer que The Odds API sera le fournisseur final.",
+  "git_status_porcelain": "?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/value/\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/odds_providers/\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n"
+}

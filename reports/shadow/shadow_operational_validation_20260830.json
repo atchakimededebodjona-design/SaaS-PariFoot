@@ -1,0 +1,277 @@
+{
+  "run_id": "20260830_193411",
+  "generated_at": "2026-08-30T19:34:11.365436+00:00",
+  "phase": "8K",
+  "kind": "shadow_decision_tracking_v1",
+  "rule": "REAL DATA + SHADOW ONLY. NO PRODUCTION DECISION. NO ODDS PROVIDER CALLED.",
+  "mode": "both",
+  "resolve_requested": true,
+  "data_reality": {
+    "measured_at": "2026-08-30T19:34:11.372031+00:00",
+    "total_matches_in_db": 12459,
+    "future_fixtures": 0,
+    "pending_model_predictions": 10,
+    "resolved_model_predictions": 3600,
+    "backtest_model_predictions_available_as_shadow_candidates": 3600,
+    "shadow_live_data": "NONE_AVAILABLE"
+  },
+  "local_live_data": "NONE_AVAILABLE",
+  "live_mode_result": {
+    "status": "NO_SHADOW_FIXTURES",
+    "reality": {
+      "measured_at": "2026-08-30T19:34:11.374886+00:00",
+      "total_matches_in_db": 12459,
+      "future_fixtures": 0,
+      "pending_model_predictions": 10,
+      "resolved_model_predictions": 3600,
+      "backtest_model_predictions_available_as_shadow_candidates": 3600,
+      "shadow_live_data": "NONE_AVAILABLE"
+    }
+  },
+  "historical_replay_result": {
+    "attempted": 20,
+    "created": 0,
+    "duplicates_prevented": 0,
+    "skipped": [
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T19:46:13.344919+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T21:02:38.713611+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T22:46:30.306489+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T21:53:10.432035+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T22:40:28.176435+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:17:55.126590+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "lightgbm",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T20:21:42.585912+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "lightgbm",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:16:38.168281+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "xgboost",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T20:21:37.040996+00:00"
+      },
+      {
+        "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+        "model_type": "xgboost",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:16:32.790666+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T19:46:13.344919+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T21:02:38.713611+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "elo",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T22:46:30.306489+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T21:53:10.432035+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T22:40:28.176435+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "ensemble",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:17:55.126590+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "lightgbm",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T20:21:42.585912+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "lightgbm",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:16:38.168281+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "xgboost",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T20:21:37.040996+00:00"
+      },
+      {
+        "match": "PremierLeague:2026-05-24:Brighton-Man United",
+        "model_type": "xgboost",
+        "reason": "MODEL_VERSION_TRAINED_AFTER_AS_OF",
+        "trained_at": "2026-08-18T23:16:32.790666+00:00"
+      }
+    ],
+    "records": []
+  },
+  "idempotence_check": {
+    "records_before_second_pass": 0,
+    "records_after_second_pass": 0,
+    "new_records_in_second_pass": 0,
+    "idempotent": true
+  },
+  "resolution_summary": {
+    "resolved": 0,
+    "conflicts": 0,
+    "unresolved": 0,
+    "invalid": 0,
+    "still_pending": 0,
+    "skipped_already_resolved": 0
+  },
+  "double_resolution_immutability_check": {
+    "unchanged_after_second_resolution": true
+  },
+  "track_record": {
+    "1X2": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "1X2",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "BTTS": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "BTTS",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "value_tracking": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+    }
+  },
+  "operational_health": {
+    "records_created": 0,
+    "duplicates_prevented": 0,
+    "records_resolved": 0,
+    "unresolved": 0,
+    "conflicts": 0,
+    "invalid": 0,
+    "pending": 0,
+    "pipeline_errors": 0,
+    "no_odds": 0,
+    "temporal_unknown": 0,
+    "total_records_in_store": 0
+  },
+  "storage_decision": "JSON file store (reports/shadow/shadow_decision_store.json) — NO new SQL table/migration this phase, see api/app/ai/shadow/schemas.py module docstring for the full justification.",
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    }
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/shadow/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_shadow_operational.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/pipeline/\n?? reports/shadow/shadow_decision_store.json\n?? reports/shadow/shadow_operational_validation_20260830.json\n?? reports/shadow/shadow_operational_validation_20260830.md\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/shadow_operational_validation.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "production_files_modified": false,
+  "tests_green": true,
+  "final_verdict": "INSUFFICIENT_REAL_DATA",
+  "the_odds_api_status": "SUPPORT_REQUIRED (Phase 8G.2) — non appelé dans cette phase.",
+  "no_user_betting_signal": true
+}

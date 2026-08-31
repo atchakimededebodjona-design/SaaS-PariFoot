@@ -1,0 +1,65 @@
+{
+  "run_id": "20260830_104639",
+  "generated_at": "2026-08-30T10:46:39.024214+00:00",
+  "phase": "8G",
+  "kind": "smoke_test_v1",
+  "credentials_status": "CREDENTIAL_AVAILABLE",
+  "env_var_name": "THE_ODDS_API_KEY",
+  "code_version": "phase8g-smoke-v1",
+  "network_calls_made": 2,
+  "target_match": {
+    "league": "SerieA",
+    "home_team": "Verona",
+    "away_team": "Roma",
+    "kickoff_date": "2026-05-24",
+    "kickoff_datetime": "2026-05-24T19:45:00+00:00",
+    "kickoff_source": "FOOTBALL_DATA_CO_UK_CACHE_PHASE_8D",
+    "sport_key": "soccer_italy_serie_a"
+  },
+  "cutoff": {
+    "horizon_hours": 24,
+    "cutoff_datetime": "2026-05-23T19:45:00+00:00",
+    "requested_date_param": "2026-05-23T19:45:00Z"
+  },
+  "sports_call": {
+    "status_code": 200,
+    "auth_ok": true,
+    "sport_key_listed": true,
+    "x_requests_remaining": "500",
+    "x_requests_used": "0"
+  },
+  "historical_call": {
+    "status_code": 401,
+    "snapshot_timestamp_present": false,
+    "snapshot_timestamp": null,
+    "previous_timestamp": null,
+    "next_timestamp": null,
+    "events_returned_total": 0,
+    "our_event_found": false,
+    "our_event_bookmakers_count": 0,
+    "x_requests_remaining": "500",
+    "x_requests_used": "0",
+    "x_requests_last": "0"
+  },
+  "first_bookmaker_observation": null,
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "conclusion": "Appel historique échoué (status=401) — snapshot non exploitable pour ce match/cutoff."
+}

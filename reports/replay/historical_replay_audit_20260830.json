@@ -1,0 +1,883 @@
+{
+  "run_id": "20260830_194650",
+  "generated_at": "2026-08-30T19:46:50.787871+00:00",
+  "phase": "8L",
+  "kind": "historical_model_snapshot_replay_v1",
+  "rule": "RESEARCH ONLY. NO PRODUCTION CHANGE. NO MODEL CREATION. NO CALIBRATION TRAINING.",
+  "model_version_inventory": [
+    {
+      "model_version_id": 1,
+      "model_type": "xgboost",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-16 22:21:41.386351",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 2,
+      "model_type": "lightgbm",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-16 22:21:46.726761",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 3,
+      "model_type": "elo",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 19:45:16.690669",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 142,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 4,
+      "model_type": "elo",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 19:46:13.344919",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 142,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 5,
+      "model_type": "xgboost",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 20:21:37.040996",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 6,
+      "model_type": "lightgbm",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 20:21:42.585912",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 7,
+      "model_type": "elo",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 21:02:38.713611",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": true,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 142,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 8,
+      "model_type": "ensemble",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 21:53:10.432035",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 9,
+      "model_type": "dixon_coles",
+      "status": "active",
+      "is_active": true,
+      "trained_at": "2026-08-18 21:59:40.998657",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 10,
+      "model_type": "ensemble",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 22:40:28.176435",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 11,
+      "model_type": "elo",
+      "status": "active",
+      "is_active": true,
+      "trained_at": "2026-08-18 22:46:30.306489",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": true,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 142,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 12,
+      "model_type": "xgboost",
+      "status": "active",
+      "is_active": true,
+      "trained_at": "2026-08-18 23:16:32.790666",
+      "artifact_present_in_db": true,
+      "artifact_length": 406574,
+      "config_present": true,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 13,
+      "model_type": "lightgbm",
+      "status": "active",
+      "is_active": true,
+      "trained_at": "2026-08-18 23:16:38.168281",
+      "artifact_present_in_db": true,
+      "artifact_length": 186648,
+      "config_present": true,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 14,
+      "model_type": "ensemble",
+      "status": "active",
+      "is_active": true,
+      "trained_at": "2026-08-18 23:17:38.220237",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    },
+    {
+      "model_version_id": 15,
+      "model_type": "ensemble",
+      "status": "retired",
+      "is_active": false,
+      "trained_at": "2026-08-18 23:17:55.126590",
+      "artifact_present_in_db": false,
+      "artifact_length": 0,
+      "config_present": false,
+      "feature_version": null,
+      "training_period_start": null,
+      "training_period_end": null,
+      "team_ratings_count": 0,
+      "source": "model_versions (DB)"
+    }
+  ],
+  "artifact_file_inventory": [
+    {
+      "path": "api\\model_artifacts\\Bundesliga.json",
+      "league": "Bundesliga",
+      "size_bytes": 3723,
+      "sha256": "a12afebcc9c041f884951f221a1c86e62013cac68118b9b99eeaaeb0e13d67f3",
+      "filesystem_mtime": "2026-08-28T21:48:36.222350+00:00",
+      "embedded_trained_at": "2026-08-03T19:13:03.321704+00:00",
+      "embedded_data_up_to": "2026-05-16T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\ChampionsLeague.json",
+      "league": "ChampionsLeague",
+      "size_bytes": 25176,
+      "sha256": "eb576e99acf968d519f9beb74a577779b0005811eeb743a1ab87e21cea08efb8",
+      "filesystem_mtime": "2026-08-28T21:50:25.213683+00:00",
+      "embedded_trained_at": "2026-08-26T18:51:01.032482+00:00",
+      "embedded_data_up_to": "2026-08-25T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\ConferenceLeague.json",
+      "league": "ConferenceLeague",
+      "size_bytes": 40439,
+      "sha256": "c0c4da0484cf19e94734c95ef50533d7ff905fdc2559643524db4e8b2528e834",
+      "filesystem_mtime": "2026-08-26T18:51:45.930095+00:00",
+      "embedded_trained_at": "2026-08-26T18:51:45.927561+00:00",
+      "embedded_data_up_to": "2026-08-20T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\EuropaLeague.json",
+      "league": "EuropaLeague",
+      "size_bytes": 38476,
+      "sha256": "7f804f3ecb541cb01fa1ae6d75770548f7ce7765f3fa944f396099aa8bad7475",
+      "filesystem_mtime": "2026-08-26T18:51:22.434806+00:00",
+      "embedded_trained_at": "2026-08-26T18:51:22.438738+00:00",
+      "embedded_data_up_to": "2026-08-20T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\LaLiga.json",
+      "league": "LaLiga",
+      "size_bytes": 5063,
+      "sha256": "d62789213fcba84f185cc0424312a20efbe604d22dd2653f62754d0722058094",
+      "filesystem_mtime": "2026-08-28T21:48:35.378122+00:00",
+      "embedded_trained_at": "2026-08-03T19:13:04.190036+00:00",
+      "embedded_data_up_to": "2026-05-24T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\Ligue1.json",
+      "league": "Ligue1",
+      "size_bytes": 3549,
+      "sha256": "a81bcca0506f44bf0561e6c6203007cdf148d947e32393d31a59dc8e36516d57",
+      "filesystem_mtime": "2026-08-28T21:48:36.981810+00:00",
+      "embedded_trained_at": "2026-08-03T19:13:05.214247+00:00",
+      "embedded_data_up_to": "2026-05-17T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\MLS.json",
+      "league": "MLS",
+      "size_bytes": 3711,
+      "sha256": "6f9bcd701e828a299e97334498d2369494f3ae8e9d08bb8aae298d06a807e264",
+      "filesystem_mtime": "2026-08-26T18:50:48.013477+00:00",
+      "embedded_trained_at": "2026-08-26T18:50:48.027123+00:00",
+      "embedded_data_up_to": "2026-08-23T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\PremierLeague.json",
+      "league": "PremierLeague",
+      "size_bytes": 4400,
+      "sha256": "c033f81c4b835c0792a4ad898caff41914fc4bfc64d8a79e64f5fcdda162f136",
+      "filesystem_mtime": "2026-08-28T21:48:34.437846+00:00",
+      "embedded_trained_at": "2026-08-03T19:13:06.259457+00:00",
+      "embedded_data_up_to": "2026-05-24T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\PrimeiraLiga.json",
+      "league": "PrimeiraLiga",
+      "size_bytes": 2944,
+      "sha256": "2960fa31eaf630525e624d57b0f9155cabd05d9f9e254fbda4ad9fa47dd86e92",
+      "filesystem_mtime": "2026-08-26T17:16:54.314060+00:00",
+      "embedded_trained_at": "2026-08-26T17:16:54.328814+00:00",
+      "embedded_data_up_to": "2026-05-16T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\SaudiProLeague.json",
+      "league": "SaudiProLeague",
+      "size_bytes": 3169,
+      "sha256": "92377c91447d66d60464ead7ad929d74d6872424626aa5bc059bfa6553253619",
+      "filesystem_mtime": "2026-08-26T18:50:48.813728+00:00",
+      "embedded_trained_at": "2026-08-26T18:50:48.814733+00:00",
+      "embedded_data_up_to": "2026-08-26T00:00:00"
+    },
+    {
+      "path": "api\\model_artifacts\\SerieA.json",
+      "league": "SerieA",
+      "size_bytes": 3096,
+      "sha256": "df6b3c4e50002e49de5a1c8bcf495103b81d23bdf163d470808949c3f992b401",
+      "filesystem_mtime": "2026-08-08T22:23:27.960873+00:00",
+      "embedded_trained_at": "2026-08-03T19:13:07.414380+00:00",
+      "embedded_data_up_to": "2026-05-24T00:00:00"
+    }
+  ],
+  "calibration_inventory": [
+    {
+      "model_version_id": 1,
+      "model_type": "xgboost",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 2,
+      "model_type": "lightgbm",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 3,
+      "model_type": "elo",
+      "method": null,
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 4,
+      "model_type": "elo",
+      "method": null,
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 5,
+      "model_type": "xgboost",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 6,
+      "model_type": "lightgbm",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 7,
+      "model_type": "elo",
+      "method": "elo_ordered_logit",
+      "created_at": "2026-08-18 21:02:38.713611",
+      "availability": "AVAILABLE"
+    },
+    {
+      "model_version_id": 8,
+      "model_type": "ensemble",
+      "method": null,
+      "created_at": null,
+      "availability": "NOT_AVAILABLE"
+    },
+    {
+      "model_version_id": 9,
+      "model_type": "dixon_coles",
+      "method": "n/a_probability_is_the_model",
+      "created_at": null,
+      "availability": "NOT_AVAILABLE"
+    },
+    {
+      "model_version_id": 10,
+      "model_type": "ensemble",
+      "method": null,
+      "created_at": null,
+      "availability": "NOT_AVAILABLE"
+    },
+    {
+      "model_version_id": 11,
+      "model_type": "elo",
+      "method": "elo_ordered_logit",
+      "created_at": "2026-08-18 22:46:30.306489",
+      "availability": "AVAILABLE"
+    },
+    {
+      "model_version_id": 12,
+      "model_type": "xgboost",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 13,
+      "model_type": "lightgbm",
+      "method": "none_persisted",
+      "created_at": null,
+      "availability": "CALIBRATION_MISSING"
+    },
+    {
+      "model_version_id": 14,
+      "model_type": "ensemble",
+      "method": null,
+      "created_at": null,
+      "availability": "NOT_AVAILABLE"
+    },
+    {
+      "model_version_id": 15,
+      "model_type": "ensemble",
+      "method": null,
+      "created_at": null,
+      "availability": "NOT_AVAILABLE"
+    }
+  ],
+  "feature_registry_summary": {
+    "production": 34,
+    "experimental": 1,
+    "missing": 11,
+    "total": 46
+  },
+  "exhaustive_model_gate_proof": {
+    "proven": true,
+    "latest_match_date": "2026-05-24T00:00:00",
+    "earliest_model_trained_at": "2026-08-16T22:21:41.386351",
+    "conclusion": "PROUVÉ : la ModelVersion la plus ANCIENNE (trained_at le plus bas) a été entraînée APRÈS le match le plus RÉCENT de toute la base — donc TOUTE paire (match, ModelVersion) de ce dépôt échoue le gate §5 (MODEL_TRAINED_AFTER_AS_OF), sans exception, sans avoir besoin de tester chaque paire individuellement."
+  },
+  "full_dataset_coverage": {
+    "total_matches": 12459,
+    "total_model_versions": 15,
+    "total_pairs_evaluated": 186885,
+    "verdict_counts": {
+      "REPLAYABLE": 0,
+      "NOT_REPLAYABLE": 186885,
+      "PARTIAL": 0,
+      "UNKNOWN": 0
+    },
+    "rejection_reason_counts": {
+      "MODEL_TRAINED_AFTER_AS_OF": 186885
+    },
+    "by_league": {
+      "Bundesliga": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 32130,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "LaLiga": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 39900,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "Ligue1": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 35055,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "PremierLeague": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 39900,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "SerieA": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 39900,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      }
+    },
+    "by_model_type": {
+      "xgboost": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 37377,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "lightgbm": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 37377,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "elo": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 49836,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "ensemble": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 49836,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      },
+      "dixon_coles": {
+        "REPLAYABLE": 0,
+        "NOT_REPLAYABLE": 12459,
+        "PARTIAL": 0,
+        "UNKNOWN": 0
+      }
+    },
+    "replay_coverage": 0.0,
+    "replay_coverage_status": "ok"
+  },
+  "twenty_match_sample": [
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T19:46:13.344919",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T21:02:38.713611",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T22:46:30.306489",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T21:53:10.432035",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T22:40:28.176435",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T23:17:55.126590",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "lightgbm",
+      "model_trained_at": "2026-08-18T20:21:42.585912",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "lightgbm",
+      "model_trained_at": "2026-08-18T23:16:38.168281",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "xgboost",
+      "model_trained_at": "2026-08-18T20:21:37.040996",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "LaLiga:2026-05-24:Villarreal-Ath Madrid",
+      "league": "LaLiga",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "xgboost",
+      "model_trained_at": "2026-08-18T23:16:32.790666",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T19:46:13.344919",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T21:02:38.713611",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "elo",
+      "model_trained_at": "2026-08-18T22:46:30.306489",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T21:53:10.432035",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T22:40:28.176435",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "ensemble",
+      "model_trained_at": "2026-08-18T23:17:55.126590",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "lightgbm",
+      "model_trained_at": "2026-08-18T20:21:42.585912",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "lightgbm",
+      "model_trained_at": "2026-08-18T23:16:38.168281",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "xgboost",
+      "model_trained_at": "2026-08-18T20:21:37.040996",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    },
+    {
+      "match": "PremierLeague:2026-05-24:Brighton-Man United",
+      "league": "PremierLeague",
+      "kickoff": "2026-05-24T00:00:00+00:00",
+      "as_of": "2026-05-23T18:00:00+00:00",
+      "candidate_model": "xgboost",
+      "model_trained_at": "2026-08-18T23:16:32.790666",
+      "feature_set_status": "PRODUCTION",
+      "calibration": "RESEARCH_WITHOUT_CALIBRATION",
+      "verdict": "NOT_REPLAYABLE",
+      "reasons": [
+        "MODEL_TRAINED_AFTER_AS_OF"
+      ]
+    }
+  ],
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_historical_replay.py": {
+      "returncode": 0,
+      "summary_line": "22/22 tests OK",
+      "pass": true
+    }
+  },
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/historical/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/shadow/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_historical_replay.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_shadow_operational.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/pipeline/\n?? reports/shadow/shadow_decision_store.json\n?? reports/shadow/shadow_operational_validation_20260830.json\n?? reports/shadow/shadow_operational_validation_20260830.md\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/historical_replay_audit.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/shadow_operational_validation.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "git_diff_names": "",
+  "production_files_modified": false,
+  "final_verdict": "HISTORICAL_REPLAY_NOT_AVAILABLE",
+  "verdict_reason": "Preuve exhaustive (§25/§26) : 186885 paires (match, ModelVersion) évaluées sur l'intégralité du dataset local — {'REPLAYABLE': 0, 'NOT_REPLAYABLE': 186885, 'PARTIAL': 0, 'UNKNOWN': 0} — 0 REPLAYABLE. Toutes les ModelVersion actuelles ont été (ré)entraînées après le dernier match connu (voir §7/§14). Un HISTORICAL_REPLAY_NOT_AVAILABLE honnête est préféré à un faux backtest (§51)."
+}

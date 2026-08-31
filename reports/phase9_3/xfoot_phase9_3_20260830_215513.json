@@ -1,0 +1,49 @@
+{
+  "run_id": "20260830_215513",
+  "generated_at": "2026-08-30T21:55:13Z",
+  "phase": "9.3",
+  "kind": "shadow_evidence_activation_gate_reassessment_v1",
+  "rule": "READ-ONLY REASSESSMENT. MODE_1_SHADOW_ONLY. NO PRODUCTION ACTIVATION. NO AUTOMATIC GATE OVERRIDE.",
+  "execution_status": "CODE_COMPLETE_UNVERIFIED_THIS_SESSION",
+  "execution_status_reason": "Same auto-mode safety classifier as Phase 9.1/9.2 continues to block all Python execution in this session, for reasons its own message describes as unrelated to code content. Non-Python commands (git, date) kept working and are the only facts below marked 'confirmed via execution.' Nothing in this phase -- the test suite, the CLI, a real reassessment run -- was executed this session.",
+  "architecture": {
+    "new_module": "api/app/ai/shadow/evidence.py",
+    "reused_unchanged": [
+      "app.ai.shadow.prospective.is_real_prospective/compute_evidence_ledger (Phase 9.2)",
+      "app.ai.shadow.metrics.compute_shadow_track_record/classify_maturity/value_tracking_status (Phase 8K/8M/8N)",
+      "app.ai.shadow.monitoring.compute_provenance_health/compute_consistency_health/compute_shadow_health (Phase 8N)",
+      "app.ai.shadow.replay.measure_data_reality (Phase 8K)",
+      "app.ai.arena.track_record.compare_production_vs_shadow (Phase 7 -- see note below)",
+      "app.ai.readiness.matrix.evaluate_production_readiness (Phase 9)",
+      "app.ai.safety.kill_switch.assert_production_allowed (Phase 9.1, READ-ONLY call only -- never trigger()/reset())"
+    ],
+    "new_functions": [
+      "classify_data_marking() -- Sec.3/4, re-derives is_real_prospective() per stored record by re-fetching the original ModelPrediction.predicted_at via record.match_id (never persisted on ShadowDecisionRecord itself, a genuine gap discovered during design)",
+      "compute_full_evidence_ledger() -- Sec.2, extends Phase 9.2's ledger with data-marking classes, provenance/consistency counts (via reused monitoring.py functions), distinct model_versions, first/latest observation",
+      "compute_model_version_tracking() -- Sec.9",
+      "compute_temporal_drift() -- Sec.10, early/middle/recent windows, each computed independently via compute_shadow_track_record, never an average-of-averages",
+      "compute_breakdown() -- Sec.11, by league/model, guarded by min_sample_size, never silently promotes an under-sampled bucket",
+      "build_activation_matrix() -- Sec.16, a static documentary dict for MODE_1..MODE_4, never selects or activates anything",
+      "identify_activation_blockers() -- Sec.17, derived directly from a real evaluate_production_readiness() call, never a hand-maintained list that could drift from the real gates",
+      "compute_data_gaps() -- Sec.20"
+    ],
+    "cli_created": "scripts/phase9_3_reassessment.py (--as-of, --json, --markdown; strictly read-only)",
+    "tests_created": "api/test_phase9_3.py (40 scenarios)",
+    "important_finding": "Sec.12's 'compare_production_vs_shadow' already exists (api/app/ai/arena/track_record.py, Phase 7) -- but it reads a COMPLETELY DIFFERENT data source (the shadow_selection_predictions SQL table, populated by scripts/model_selection_shadow.py's Model Selection Engine) than the ShadowDecisionStore this phase and Phase 8K-9.2 have been accumulating into. Both are legitimately called 'Shadow' in this codebase but are structurally unrelated. Reused as-is per the instruction, reported as a separate section (Sec.14), and explicitly never conflated with the ShadowDecisionStore evidence in this report."
+  },
+  "code_review_findings": [
+    "Bug found and fixed while authoring the test suite: the default test fixture's provenance dict omits odds_source (realistic -- most captures never have odds), which compute_provenance_health (Phase 8N, reused unchanged) requires as one of 5 fields for PROVENANCE_COMPLETE. The 'provenance complete' test originally used the default fixture and would have asserted a false PROVENANCE_COMPLETE==1 that could never actually occur with the default; fixed by constructing an explicit complete-provenance record for that one test.",
+    "Design decision, not a bug: ShadowDecisionRecord never persists prediction_timestamp -- classify_data_marking() re-derives it by re-fetching the original ModelPrediction row via record.match_id (same pattern already used by monitoring.py::compute_consistency_health, not a new pattern)."
+  ],
+  "db_safety": {
+    "git_status_short_confirmed_via_execution": true,
+    "git_diff_stat_empty_confirmed_via_execution": true,
+    "note": "Confirmed via real, executed `git status --short` / `git diff --stat` (non-Python). No tracked file modified."
+  },
+  "expected_real_data_reality": "Phase 9.2 confirmed evidence_status=NO_DATA (0 captures, 0 candidates) via a real dry-run. Nothing in this phase captures new data -- it is a pure reassessment layer over whatever the store already holds. A real run today would therefore almost certainly report total_observations=0, maturity=NO_DATA, and final_verdict=INSUFFICIENT_REAL_DATA. Stated as an expectation, not a result.",
+  "current_expected_verdict": "INSUFFICIENT_REAL_DATA (expected, not executed) -- honest status of THIS report is CODE_COMPLETE_UNVERIFIED_THIS_SESSION.",
+  "mode": "MODE_1_SHADOW_ONLY",
+  "production_activation": "BLOCKED",
+  "no_user_betting_signal": true,
+  "next_step_required": "Run `python api/test_phase9_3.py`, the full regression suite (14 prior suites, see scripts/phase9_3_reassessment.py::REGRESSION_SUITES), and `python scripts/phase9_3_reassessment.py` against the real api/app.db -- either directly, in a fresh session, or with auto mode switched off -- then regenerate this report with real results."
+}

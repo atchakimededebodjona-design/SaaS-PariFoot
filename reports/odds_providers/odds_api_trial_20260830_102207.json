@@ -1,0 +1,224 @@
+{
+  "run_id": "20260830_102207",
+  "generated_at": "2026-08-30T10:22:07.384743+00:00",
+  "credentials_status": "TRIAL_BLOCKED_NO_CREDENTIAL",
+  "env_var_name": "THE_ODDS_API_KEY",
+  "doc_verification": "Vérification directe effectuée dans cette session (pas seulement Phase 8F) via récupération de the-odds-api.com/liveapi/guides/v4/ : structure de réponse confirmée (timestamp, previous_timestamp, next_timestamp, data[].bookmakers[].{key,title,last_update,markets[]}), format ISO8601 UTC confirmé explicitement ('Z' suffix), paramètres de requête confirmés (date, regions, markets, bookmakers, oddsFormat, dateFormat, eventIds, commenceTimeFrom, commenceTimeTo).",
+  "timestamp_semantics": "1) Publication bookmaker ? UNKNOWN — non confirmé explicitement. 2) Update provider ? UNKNOWN. 3) Récupération ? UNKNOWN. 4) Snapshot ? Le champ `timestamp` (niveau réponse) EST confirmé comme un artefact de snapshot (grille de polling 5-10 min) — CELUI-LÀ est bien un timestamp de snapshot. Mais `last_update` (niveau bookmaker) reste de sémantique UNKNOWN. 5) Timezone : UTC confirmé explicitement (suffixe 'Z'). 6) Précision : seconde pour last_update, grille 5-10 min pour timestamp de snapshot. CONCLUSION : jamais transformé en SAFE tant que last_update reste UNKNOWN (§3/§60).",
+  "dataset": {
+    "selected": 100,
+    "with_kickoff_time": 100,
+    "date_only": 0,
+    "fetched_from_provider": 0
+  },
+  "selection_by_league": {
+    "Bundesliga": 20,
+    "LaLiga": 20,
+    "Ligue1": 20,
+    "PremierLeague": 20,
+    "SerieA": 20
+  },
+  "adversarial": {
+    "leakage_snapshot_tests": {
+      "T-10h": {
+        "got": "SAFE",
+        "expected": "SAFE",
+        "pass": true
+      },
+      "T-5h": {
+        "got": "FUTURE_INFORMATION",
+        "expected": "FUTURE_INFORMATION",
+        "pass": true
+      },
+      "T-1h": {
+        "got": "FUTURE_INFORMATION",
+        "expected": "FUTURE_INFORMATION",
+        "pass": true
+      },
+      "T+10min": {
+        "got": "REJECTED",
+        "expected": "REJECTED",
+        "pass": true
+      },
+      "null": {
+        "got": "REJECTED",
+        "expected": "REJECTED",
+        "pass": true
+      }
+    },
+    "leakage_tests_all_pass": true,
+    "critical_snapshot_reconstruction_test": {
+      "expected_timestamp": "14:00",
+      "got_timestamp": "2024-03-16T14:00:00+00:00",
+      "pass": true
+    },
+    "adversarial_consensus_test": {
+      "included": [
+        "A",
+        "B"
+      ],
+      "excluded": [
+        "C"
+      ],
+      "pass": true
+    },
+    "all_adversarial_tests_pass": true
+  },
+  "timezone_notes": "Tous les calculs internes (classify_explicit_timestamp, reconstruct_snapshot) exigent des datetimes timezone-aware — une comparaison naïf/aware lève TypeError nativement (jamais capturée, voir Phase 8E). Kickoff enrichi depuis le cache football-data.co.uk : timezone NON documentée par ce fournisseur (probable heure locale, jamais supposée UTC — même limitation que Phase 8E, §25). Test DST synthétique (CET/CEST) : voir api/test_odds_api_trial.py, NOT_TESTED_WITH_REAL_DATA (aucune donnée réelle disponible dans ce run) mais test synthétique conservé et PASS.",
+  "manifest": {
+    "provider": "the_odds_api",
+    "query_time": "2026-08-30T10:22:07.384722+00:00",
+    "dataset_size": 100,
+    "cutoffs": [
+      24,
+      12,
+      6,
+      3,
+      1
+    ],
+    "timezone": "UTC (ISO8601 'Z' confirmé — voir §4 Documentation Verification)",
+    "code_version": "phase8g-v1",
+    "sample_selection": "20 matchs les plus récents par ligue, 5 ligues prioritaires"
+  },
+  "limitations": [
+    "TRIAL_BLOCKED_NO_CREDENTIAL : aucune requête réelle envoyée à The Odds API — toute la partie empirique (§8-§26 du rapport) reste non vérifiée sur données réelles.",
+    "Kickoff réel (Date+Time) disponible uniquement pour les matchs déjà présents dans le cache football-data.co.uk (Phase 8D) — les autres restent DATE_ONLY (minuit conventionnel, jamais une heure fabriquée).",
+    "La sémantique exacte de last_update (bookmaker vs ingestion) reste UNKNOWN — seul un test réel avec credential pourrait la confirmer empiriquement (ex. comparer last_update à un mouvement de cote connu par ailleurs).",
+    "Aucune vérification de la couverture O/U 2.5 / BTTS réelle pour les bookmakers EU de foot dans ce run — reste une inconnue héritée de Phase 8F.",
+    "Les tests adversariaux (§37/§38) valident la LOGIQUE du code (reconstruct_snapshot, safe_consensus, classify_explicit_timestamp), jamais son comportement face à de vraies irrégularités de données réelles (gaps, doublons, ordre inversé — §14 du prompt, non testable sans données réelles)."
+  ],
+  "decision": "TRIAL_PARTIAL_NEEDS_MORE_VALIDATION",
+  "decision_notes": "L'architecture, le code de reconstruction/consensus/anti-fuite et la documentation officielle sont vérifiés et validés (tests adversariaux 100% PASS). Mais la question empirique centrale — 'The Odds API fournit-il RÉELLEMENT des snapshots historiques exploitables pour les matchs Xfoot ?' — n'a PAS pu être testée faute de credential, conformément à la règle absolue de ne jamais simuler une réussite (§60). Reclassification honnête : validation technique PARTIELLE, pas un échec, pas un succès empirique complet.",
+  "recommendations_phase_8h": [
+    "Si Xfoot obtient un credential THE_ODDS_API_KEY (via le mécanisme sécurisé existant, jamais committé) : relancer ce même script tel quel — toute la logique est déjà écrite et testée, seule la branche réseau reste à exercer.",
+    "Prioriser la levée de l'inconnue last_update (bookmaker vs ingestion) dès les premières requêtes réelles — c'est le point bloquant le plus important pour une éventuelle Phase 8H de statistical reassessment.",
+    "Ne pas dépasser le tier gratuit (500 crédits) pour cette première vérification empirique — un test de ~10-20 matchs x quelques cutoffs suffit à répondre aux questions §3/§9-§14.",
+    "Ne pas construire le Value Engine avant qu'un signal réellement temporally_verified (Phase 8E) soit obtenu sur des données réelles issues de ce trial."
+  ],
+  "scorecard": [
+    {
+      "criterion": "Historical odds",
+      "result": "Documenté (Phase 8F/8G), non testé empiriquement",
+      "evidence": "the-odds-api.com/historical-odds-data/",
+      "verdict": "PARTIAL"
+    },
+    {
+      "criterion": "Timestamp",
+      "result": "last_update confirmé existant, origine bookmaker/ingestion UNKNOWN",
+      "evidence": "the-odds-api.com/liveapi/guides/v4/",
+      "verdict": "PARTIAL"
+    },
+    {
+      "criterion": "Snapshot history",
+      "result": "Architecture point-in-time confirmée (previous/next_timestamp)",
+      "evidence": "doc officielle, non testée en direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "criterion": "T-24h",
+      "result": "NOT_RECONSTRUCTIBLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "T-12h",
+      "result": "NOT_RECONSTRUCTIBLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "T-6h",
+      "result": "NOT_RECONSTRUCTIBLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "T-3h",
+      "result": "NOT_RECONSTRUCTIBLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "T-1h",
+      "result": "NOT_RECONSTRUCTIBLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "1X2",
+      "result": "NOT_AVAILABLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "BTTS",
+      "result": "NOT_AVAILABLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "O/U 2.5",
+      "result": "NOT_AVAILABLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "Consensus",
+      "result": "Logique safe_consensus validée (test adversarial synthétique PASS)",
+      "evidence": "api/test_odds_api_trial.py",
+      "verdict": "PARTIAL"
+    },
+    {
+      "criterion": "Movement",
+      "result": "NOT_AVAILABLE (bloqué)",
+      "evidence": "TRIAL_BLOCKED_NO_CREDENTIAL",
+      "verdict": "BLOCKED"
+    },
+    {
+      "criterion": "League coverage",
+      "result": "100 matchs sélectionnés localement, 0 vérifiés côté fournisseur",
+      "evidence": "sélection DB Xfoot",
+      "verdict": "PARTIAL"
+    },
+    {
+      "criterion": "Commercial",
+      "result": "ALLOWED (CGU officielles, Phase 8F)",
+      "evidence": "the-odds-api.com/terms-and-conditions.html",
+      "verdict": "GOOD"
+    },
+    {
+      "criterion": "Cost",
+      "result": "LOW ($30-249/mois, tier gratuit existant)",
+      "evidence": "Phase 8F/8G, page pricing officielle",
+      "verdict": "GOOD"
+    },
+    {
+      "criterion": "Leakage risk",
+      "result": "LOW sur tests synthétiques, non vérifié sur données réelles",
+      "evidence": "api/test_odds_api_trial.py",
+      "verdict": "LOW (synthétique uniquement)"
+    }
+  ],
+  "data_access_status": "🔴 FAILED (bloqué, pas testé)",
+  "timestamp_status": "🟡 PARTIAL (sémantique documentaire confirmée, jamais vérifiée sur donnée réelle)",
+  "snapshot_reconstruction_status": "🟡 PARTIAL (logique validée par test adversarial synthétique uniquement)",
+  "consensus_status": "🟡 PARTIAL (logique validée par test adversarial synthétique uniquement)",
+  "leakage_risk_status": "🟢 LOW (sur les tests synthétiques — jamais vérifié sur donnée réelle, donc prudence maintenue)",
+  "db_counts_before": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_counts_after": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "prediction_log": 9,
+    "team_ratings": 568
+  },
+  "db_unchanged": true
+}

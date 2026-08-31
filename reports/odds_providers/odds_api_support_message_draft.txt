@@ -1,0 +1,15 @@
+Subject: Historical Odds access on the 20K plan — pre-purchase question
+
+Hi,
+
+Before subscribing, I'd like to confirm a few points about Historical Odds access on the 20K credits/month plan ($30/month):
+
+1. Does the $30/month 20K credits plan include access to the Historical Odds API endpoint, including historical snapshots using previous_timestamp and next_timestamp?
+2. Is Historical Odds available on the 20K plan?
+3. Is there any additional Historical Odds fee beyond the plan's monthly price?
+4. Are historical snapshots billed at the standard 10x credit multiplier (10 x markets x regions), same as documented for the historical odds endpoint in general?
+5. Does the 20K plan allow commercial SaaS usage for derived betting features (e.g. features computed from historical odds and used inside a paid product), consistent with your general Terms and Conditions on commercial use and no-resale-as-standalone-data-product?
+
+For context: our current Starter (free) key returns 401 Unauthorized on GET /v4/historical/sports/{sport}/odds while GET /v4/sports succeeds normally, which is why we're asking before upgrading.
+
+Thanks in advance for clarifying.

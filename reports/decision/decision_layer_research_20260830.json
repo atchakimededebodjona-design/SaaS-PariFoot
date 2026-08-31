@@ -1,0 +1,355 @@
+{
+  "run_id": "20260830_114339",
+  "generated_at": "2026-08-30T11:43:39.519489+00:00",
+  "phase": "8I",
+  "kind": "decision_layer_v1",
+  "rule": "RESEARCH + SHADOW ONLY. NO PRODUCTION PROMOTION. NO ODDS PROVIDER CALLED.",
+  "architecture": {
+    "package": "api/app/ai/decision/",
+    "modules": [
+      "__init__.py",
+      "schemas.py",
+      "quality.py",
+      "confidence.py",
+      "eligibility.py",
+      "decision.py"
+    ],
+    "test_file": "api/test_decision_layer.py",
+    "report_script": "scripts/decision_layer_research.py",
+    "called_by_production": false,
+    "note": "Aucun module de api/main.py, scheduler.py, orchestrator.py, service.py, ensemble.py, models_common.py, promotion.py, ou api/app/ai/value/ n'importe api/app/ai/decision/."
+  },
+  "quality_dimensions": {
+    "model_quality": {
+      "statuses": [
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ],
+      "reused_from": "app.ai.arena.model_selection.SelectionDecision (Phase 6)"
+    },
+    "calibration_quality": {
+      "statuses": [
+        "CALIBRATED",
+        "UNCALIBRATED",
+        "INSUFFICIENT_DATA",
+        "UNKNOWN"
+      ],
+      "reused_from": "app.ai.arena.calibration_engine.CalibrationResult (Phase 6)"
+    },
+    "data_quality": {
+      "statuses": [
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ],
+      "reused_from": "app.ai.features.snapshot.snapshot_coverage (Phase 8A)"
+    },
+    "temporal_quality": {
+      "statuses": [
+        "TEMPORALLY_VERIFIED",
+        "HISTORICAL_UNVERIFIED",
+        "FUTURE_INFORMATION",
+        "UNKNOWN"
+      ],
+      "reused_from": "app.ai.value.quality.classify_temporal_status (Phase 8H) — IDENTIQUE"
+    },
+    "sample_quality": {
+      "statuses": [
+        "SUFFICIENT",
+        "LIMITED",
+        "INSUFFICIENT",
+        "UNKNOWN"
+      ],
+      "reused_from": "N/A — nouveau, basé uniquement sur la taille d'échantillon"
+    },
+    "market_quality": {
+      "statuses": [
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "NOT_AVAILABLE",
+        "UNKNOWN"
+      ],
+      "reused_from": "app.ai.value.core.compute_market_probabilities (Phase 8H)"
+    }
+  },
+  "confidence_framework": {
+    "overall_statuses": [
+      "HIGH",
+      "MEDIUM",
+      "LOW",
+      "UNKNOWN",
+      "INELIGIBLE"
+    ],
+    "no_compensation_rule": "model_quality=LOW -> LOW inconditionnellement ; toute dimension UNKNOWN (hors market) -> UNKNOWN ; temporal FUTURE_INFORMATION/UNKNOWN -> INELIGIBLE — jamais rattrapé par une autre dimension excellente (§12).",
+    "research_score": "Expérimental (§26), jamais nommé confidence, jamais requis — voir confidence.compute_research_score."
+  },
+  "eligibility_gates": {
+    "gate_names": [
+      "GATE_DATA",
+      "GATE_MODEL",
+      "GATE_CALIBRATION",
+      "GATE_TEMPORAL",
+      "GATE_SAMPLE",
+      "GATE_MARKET"
+    ],
+    "gate_order_displayed": [
+      "GATE_DATA",
+      "GATE_MODEL",
+      "GATE_CALIBRATION",
+      "GATE_TEMPORAL",
+      "GATE_SAMPLE",
+      "GATE_MARKET"
+    ],
+    "overall_precedence": "GATE_TEMPORAL (FAIL puis UNKNOWN) en premier -> GATE_MODEL FAIL -> GATE_DATA/GATE_SAMPLE/GATE_MARKET FAIL -> HISTORICAL_UNVERIFIED -> RESEARCH_ONLY -> tout gate UNKNOWN restant -> UNKNOWN -> sinon ELIGIBLE."
+  },
+  "rejection_reasons": [
+    "NO_MODEL",
+    "MODEL_UNSTABLE",
+    "MODEL_INSUFFICIENT_DATA",
+    "CALIBRATION_UNAVAILABLE",
+    "DATA_INCOMPLETE",
+    "DATA_STALE",
+    "TEMPORAL_UNKNOWN",
+    "FUTURE_INFORMATION",
+    "HISTORICAL_UNVERIFIED",
+    "INSUFFICIENT_SAMPLE",
+    "MARKET_UNAVAILABLE",
+    "MISSING_PROBABILITY",
+    "INVALID_PROBABILITY"
+  ],
+  "synthetic_cases": [
+    {
+      "case": "A",
+      "description": "Tous les composants bons",
+      "expected": "HIGH / ELIGIBLE",
+      "got_confidence": "HIGH",
+      "got_eligibility": "ELIGIBLE",
+      "pass": true
+    },
+    {
+      "case": "B",
+      "description": "Model excellent + calibration inconnue",
+      "expected": "jamais HIGH automatiquement",
+      "got_confidence": "UNKNOWN",
+      "got_eligibility": "UNKNOWN",
+      "pass": true
+    },
+    {
+      "case": "C",
+      "description": "Future information",
+      "expected": "INELIGIBLE",
+      "got_eligibility": "INELIGIBLE",
+      "pass": true
+    },
+    {
+      "case": "D",
+      "description": "Temporal UNKNOWN",
+      "expected": "INELIGIBLE",
+      "got_eligibility": "INELIGIBLE",
+      "pass": true
+    },
+    {
+      "case": "E",
+      "description": "Historical unverified",
+      "expected": "RESEARCH_ONLY",
+      "got_eligibility": "RESEARCH_ONLY",
+      "pass": true
+    },
+    {
+      "case": "F",
+      "description": "Sample insuffisant",
+      "expected": "INSUFFICIENT_DATA",
+      "got_eligibility": "INSUFFICIENT_DATA",
+      "pass": true
+    },
+    {
+      "case": "G",
+      "description": "Invalid probability",
+      "expected": "INELIGIBLE",
+      "got_eligibility": "INELIGIBLE",
+      "pass": true
+    },
+    {
+      "case": "H",
+      "description": "Missing feature critique",
+      "expected": "INELIGIBLE ou INSUFFICIENT_DATA (règle documentée)",
+      "got_eligibility": "INSUFFICIENT_DATA",
+      "pass": true
+    }
+  ],
+  "adversarial_tests": {
+    "test_33_high_probability_cannot_bypass_unknown_temporal": {
+      "input": "model_quality=HIGH, probability=0.70, edge implicite absent du contrat, temporal=UNKNOWN",
+      "expected": "NOT ELIGIBLE",
+      "got": "INELIGIBLE",
+      "pass": true
+    },
+    "test_34_all_high_but_future_information": {
+      "input": "model/calibration/data/sample = HIGH, future_information=TRUE",
+      "expected": "INELIGIBLE",
+      "got": "INELIGIBLE",
+      "pass": true
+    },
+    "all_pass": true
+  },
+  "determinism": {
+    "same_input_same_output": true
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_feature_engineering_v1.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    }
+  },
+  "sample_decision_assessment": {
+    "eligibility": "ELIGIBLE",
+    "confidence_overall": "HIGH",
+    "quality_dimensions": {
+      "model_quality": "HIGH",
+      "calibration_quality": "CALIBRATED",
+      "data_quality": "HIGH",
+      "temporal_quality": "TEMPORALLY_VERIFIED",
+      "sample_quality": "SUFFICIENT",
+      "market_quality": "NOT_AVAILABLE"
+    },
+    "gates": [
+      {
+        "name": "GATE_DATA",
+        "status": "PASS",
+        "reason": null
+      },
+      {
+        "name": "GATE_MODEL",
+        "status": "PASS",
+        "reason": null
+      },
+      {
+        "name": "GATE_CALIBRATION",
+        "status": "PASS",
+        "reason": null
+      },
+      {
+        "name": "GATE_TEMPORAL",
+        "status": "PASS",
+        "reason": null
+      },
+      {
+        "name": "GATE_SAMPLE",
+        "status": "PASS",
+        "reason": null
+      },
+      {
+        "name": "GATE_MARKET",
+        "status": "NOT_APPLICABLE",
+        "reason": null
+      }
+    ],
+    "value_engine_interface_payload": {
+      "prediction_id": 1,
+      "market": "1X2",
+      "probability": 0.55,
+      "eligibility": "ELIGIBLE",
+      "confidence_overall_status": "HIGH",
+      "temporal_status": "TEMPORALLY_VERIFIED",
+      "research_only": false,
+      "timestamp": "2026-01-01 12:00:00+00:00"
+    }
+  },
+  "tests_green": true,
+  "the_odds_api_status": "SUPPORT_REQUIRED (Phase 8G.2) — non appelé dans cette phase.",
+  "no_user_betting_signal": true,
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "final_decision": "FOUNDATION_READY",
+  "next_step": "PHASE 8I VALIDÉE. Prochaine phase possible : SHADOW DECISION TRACKING (persistance des DecisionAssessment sur des prédictions réelles, en shadow) et intégration progressive de données réellement disponibles — à ne construire QUE si un besoin réel est démontré (§47).",
+  "scorecard": [
+    {
+      "component": "Model Quality",
+      "status": "READY",
+      "evidence": "Réutilise SelectionDecision (Phase 6), UNKNOWN jamais HIGH par défaut — voir test_model_quality_never_high_without_decision"
+    },
+    {
+      "component": "Calibration",
+      "status": "READY",
+      "evidence": "Réutilise CalibrationResult (Phase 6), CALIBRATED seulement si verdict=HELPFUL — voir test_calibration_quality_requires_helpful_verdict"
+    },
+    {
+      "component": "Data Quality",
+      "status": "READY",
+      "evidence": "Réutilise snapshot_coverage (Phase 8A) — voir test_data_quality_reuses_feature_registry_coverage"
+    },
+    {
+      "component": "Temporal Quality",
+      "status": "READY",
+      "evidence": "Identique à Phase 8H (classify_temporal_status), tests adversariaux §33/§34 PASS"
+    },
+    {
+      "component": "Sample Quality",
+      "status": "READY",
+      "evidence": "Taille uniquement, jamais confondu avec la performance — voir test_sample_quality_never_confuses_size_with_accuracy"
+    },
+    {
+      "component": "Market Quality",
+      "status": "READY (NOT_AVAILABLE attendu)",
+      "evidence": "Réutilise compute_market_probabilities (Phase 8H) ; NOT_AVAILABLE tant que The Odds API non intégré"
+    },
+    {
+      "component": "Confidence",
+      "status": "READY",
+      "evidence": "34/34 tests, no-compensation vérifiée (Cases A/B + adversarial §33/§34), statuts : ['HIGH', 'MEDIUM', 'LOW', 'UNKNOWN', 'INELIGIBLE']"
+    },
+    {
+      "component": "Eligibility",
+      "status": "READY",
+      "evidence": "6 hard gates toujours retournés, précédence documentée, Cases A-H couverts"
+    },
+    {
+      "component": "Value Interface",
+      "status": "READY (contrat documenté, non connecté)",
+      "evidence": "to_value_engine_input() — api/app/ai/value/ jamais importé par decision.py (§30)"
+    }
+  ],
+  "git_status_porcelain": "?? api/app/ai/decision/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/odds_providers/\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n"
+}

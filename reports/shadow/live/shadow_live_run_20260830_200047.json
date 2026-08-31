@@ -1,0 +1,159 @@
+{
+  "run_id": "20260830_200028",
+  "generated_at": "2026-08-30T20:00:28.669791+00:00",
+  "phase": "8M",
+  "kind": "live_shadow_track_record_v1",
+  "rule": "REAL FUTURE DATA + SHADOW ONLY. NO PRODUCTION DECISION. NO ODDS PROVIDER CALLED.",
+  "as_of": "2026-08-30T20:00:28.669796+00:00",
+  "dry_run": false,
+  "resolve_requested": true,
+  "shadow_readiness": {
+    "as_of": "2026-08-30T20:00:28.669796+00:00",
+    "future_fixtures_in_db": 0,
+    "pending_predictions_total": 10,
+    "candidates_discovered": 0,
+    "capturable": 0,
+    "rejected": 0,
+    "rejected_detail": [],
+    "shadow_live_data": "NONE_AVAILABLE"
+  },
+  "capture_outcome": {
+    "candidates": 0,
+    "captured": 0,
+    "duplicates_prevented": 0,
+    "rejected": [],
+    "errors": [],
+    "mismatches": [],
+    "captured_records": []
+  },
+  "resolution_summary": {
+    "resolved": 0,
+    "conflicts": 0,
+    "unresolved": 0,
+    "invalid": 0,
+    "still_pending": 0,
+    "skipped_already_resolved": 0
+  },
+  "track_record": {
+    "1X2": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "1X2",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "BTTS": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "BTTS",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "value_tracking": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+    }
+  },
+  "maturity_state": "NO_DATA",
+  "maturity_thresholds": {
+    "EARLY_DATA": 10,
+    "TRACKING": 30,
+    "STATISTICALLY_INFORMATIVE": 100
+  },
+  "operational_health": {
+    "candidates": 0,
+    "captured": 0,
+    "duplicates_prevented": 0,
+    "rejected": 0,
+    "errors": 0,
+    "mismatches": 0,
+    "pending": 0,
+    "resolved": 0,
+    "conflicts": 0,
+    "unresolved": 0,
+    "invalid": 0,
+    "provenance_missing": 0,
+    "temporal_unknown": 0,
+    "no_odds": 0,
+    "total_records_in_store": 0
+  },
+  "storage_path": "C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\shadow\\shadow_decision_store.json",
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_historical_replay.py": {
+      "returncode": 0,
+      "summary_line": "22/22 tests OK",
+      "pass": true
+    },
+    "test_live_shadow_track.py": {
+      "returncode": 0,
+      "summary_line": "18/18 tests OK",
+      "pass": true
+    }
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/historical/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/shadow/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_historical_replay.py\n?? api/test_live_shadow_track.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_shadow_operational.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/pipeline/\n?? reports/replay/\n?? reports/shadow/live/\n?? reports/shadow/shadow_decision_store.json\n?? reports/shadow/shadow_operational_validation_20260830.json\n?? reports/shadow/shadow_operational_validation_20260830.md\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/historical_replay_audit.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/shadow_live_track.py\n?? scripts/shadow_operational_validation.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "git_diff_names": "",
+  "production_files_modified": false,
+  "tests_green": true,
+  "final_verdict": "INSUFFICIENT_REAL_DATA",
+  "the_odds_api_status": "SUPPORT_REQUIRED — non appelé dans cette phase.",
+  "no_user_betting_signal": true
+}

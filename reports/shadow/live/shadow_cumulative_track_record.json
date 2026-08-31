@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-08-30T20:00:47.454169+00:00",
+  "total_shadow_decisions": 0,
+  "pending": 0,
+  "resolved": 0,
+  "conflicts": 0,
+  "invalid": 0,
+  "track_record": {
+    "1X2": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "1X2",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "BTTS": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "BTTS",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "value_tracking": {
+      "status": "NOT_AVAILABLE",
+      "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+    }
+  },
+  "maturity_state": "NO_DATA",
+  "maturity_thresholds": {
+    "EARLY_DATA": 10,
+    "TRACKING": 30,
+    "STATISTICALLY_INFORMATIVE": 100
+  },
+  "by_league": {},
+  "by_market": {
+    "1X2": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "1X2",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "BTTS": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "BTTS",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    },
+    "OVER_UNDER_2_5": {
+      "status": "INSUFFICIENT_DATA",
+      "market": "OVER_UNDER_2_5",
+      "sample_size": 0,
+      "reason": "no_shadow_data"
+    }
+  },
+  "by_model": {}
+}

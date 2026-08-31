@@ -1,0 +1,855 @@
+{
+  "run_id": "20260830_203744",
+  "generated_at": "2026-08-30T20:37:44.758890+00:00",
+  "phase": "9",
+  "kind": "production_readiness_controlled_activation_v1",
+  "rule": "EVALUATION ONLY. NO PRODUCTION ACTIVATION. NO BETTING SIGNAL. NO USER RECOMMENDATION. NO MODEL CHANGE.",
+  "as_of": "2026-08-30T20:37:44.758895+00:00",
+  "dry_run": false,
+  "final_verdict": "NO_GO",
+  "recommended_mode": "MODE_1_SHADOW_ONLY",
+  "critical_gate_failures": [
+    "PROVENANCE",
+    "ROLLBACK",
+    "MONITORING",
+    "TRACK_RECORD"
+  ],
+  "gates": [
+    {
+      "name": "MODEL",
+      "status": "PASS",
+      "critical": true,
+      "evidence": {
+        "per_model_type": {
+          "dixon_coles": {
+            "active_version": "xfoot-dixon-coles-v1",
+            "trained_at": "2026-08-18T21:59:40.998657",
+            "availability_vs_as_of": "AVAILABLE",
+            "has_artifact_field": false
+          },
+          "elo": {
+            "active_version": "xfoot-elo-v4",
+            "trained_at": "2026-08-18T22:46:30.306489",
+            "availability_vs_as_of": "AVAILABLE",
+            "has_artifact_field": false
+          },
+          "xgboost": {
+            "active_version": "xfoot-xgboost-v3",
+            "trained_at": "2026-08-18T23:16:32.790666",
+            "availability_vs_as_of": "AVAILABLE",
+            "has_artifact_field": true
+          },
+          "lightgbm": {
+            "active_version": "xfoot-lightgbm-v3",
+            "trained_at": "2026-08-18T23:16:38.168281",
+            "availability_vs_as_of": "AVAILABLE",
+            "has_artifact_field": true
+          },
+          "ensemble": {
+            "active_version": "xfoot-ensemble-v3",
+            "trained_at": "2026-08-18T23:17:38.220237",
+            "availability_vs_as_of": "AVAILABLE",
+            "has_artifact_field": false
+          }
+        }
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "MODEL_VERSION",
+      "status": "PASS",
+      "critical": true,
+      "evidence": {
+        "active_count": 5,
+        "active_versions": [
+          {
+            "name": "xfoot-dixon-coles-v1",
+            "model_type": "dixon_coles",
+            "trained_at": "2026-08-18T21:59:40.998657"
+          },
+          {
+            "name": "xfoot-elo-v4",
+            "model_type": "elo",
+            "trained_at": "2026-08-18T22:46:30.306489"
+          },
+          {
+            "name": "xfoot-xgboost-v3",
+            "model_type": "xgboost",
+            "trained_at": "2026-08-18T23:16:32.790666"
+          },
+          {
+            "name": "xfoot-lightgbm-v3",
+            "model_type": "lightgbm",
+            "trained_at": "2026-08-18T23:16:38.168281"
+          },
+          {
+            "name": "xfoot-ensemble-v3",
+            "model_type": "ensemble",
+            "trained_at": "2026-08-18T23:17:38.220237"
+          }
+        ],
+        "filesystem_artifacts_found": 11,
+        "dixon_coles_active_without_any_filesystem_artifact": false
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "DATA",
+      "status": "CONDITIONAL",
+      "critical": false,
+      "evidence": {
+        "measured_at": "2026-08-30T20:37:44.787001+00:00",
+        "total_matches_in_db": 12459,
+        "future_fixtures": 0,
+        "pending_model_predictions": 10,
+        "resolved_model_predictions": 3600,
+        "backtest_model_predictions_available_as_shadow_candidates": 3600,
+        "shadow_live_data": "NONE_AVAILABLE"
+      },
+      "blocking_reason": "0 fixture future — aucune donnée prospective disponible actuellement.",
+      "required_action": "Ré-évaluer quand des fixtures futures existent (§21/§41)."
+    },
+    {
+      "name": "FEATURES",
+      "status": "CONDITIONAL",
+      "critical": false,
+      "evidence": {
+        "registry_size": 46,
+        "traffic_light_counts": {
+          "GREEN": 29,
+          "YELLOW": 6,
+          "RED": 11
+        },
+        "validation_errors": []
+      },
+      "blocking_reason": null,
+      "required_action": "11 feature(s) RED (MISSING/REJECTED/LEAKAGE_RISK) — vérifier qu'aucune n'est utilisée par un modèle actif avant activation étendue."
+    },
+    {
+      "name": "TEMPORAL_INTEGRITY",
+      "status": "PASS",
+      "critical": true,
+      "evidence": {
+        "as_of": "2026-08-30T20:37:44.758895+00:00",
+        "checked_active_versions": [
+          {
+            "model_type": "dixon_coles",
+            "version": "xfoot-dixon-coles-v1",
+            "status": "AVAILABLE"
+          },
+          {
+            "model_type": "elo",
+            "version": "xfoot-elo-v4",
+            "status": "AVAILABLE"
+          },
+          {
+            "model_type": "xgboost",
+            "version": "xfoot-xgboost-v3",
+            "status": "AVAILABLE"
+          },
+          {
+            "model_type": "lightgbm",
+            "version": "xfoot-lightgbm-v3",
+            "status": "AVAILABLE"
+          },
+          {
+            "model_type": "ensemble",
+            "version": "xfoot-ensemble-v3",
+            "status": "AVAILABLE"
+          }
+        ],
+        "violations": [],
+        "phase_8l_exhaustive_proof_report": "reports\\replay\\historical_replay_audit_20260830.json",
+        "phase_8l_replay_verdict": "HISTORICAL_REPLAY_NOT_AVAILABLE",
+        "mechanism_test_coverage": "test_decision_layer.py (GATE_TEMPORAL, 34/34), test_value_engine.py (classify_temporal_status, 36/36), test_end_to_end_pipeline.py (21/21)"
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "CALIBRATION",
+      "status": "NOT_AVAILABLE",
+      "critical": false,
+      "evidence": {
+        "model_selection_decisions_total": 3,
+        "model_selection_decisions_with_calibration_verdict": 0,
+        "calibration_verdicts": [],
+        "calibration_inventory_entries": 15
+      },
+      "blocking_reason": "Aucune décision avec calibration_verdict renseigné.",
+      "required_action": null
+    },
+    {
+      "name": "SAMPLE_SIZE",
+      "status": "FAIL",
+      "critical": false,
+      "evidence": {
+        "model_selection_decisions": [
+          {
+            "market": "1X2",
+            "status": "insufficient_data",
+            "windows_evaluated": 4,
+            "selected_model_type": null
+          },
+          {
+            "market": "BTTS",
+            "status": "insufficient_data",
+            "windows_evaluated": 4,
+            "selected_model_type": null
+          },
+          {
+            "market": "OVER_UNDER_2_5",
+            "status": "insufficient_data",
+            "windows_evaluated": 4,
+            "selected_model_type": null
+          }
+        ]
+      },
+      "blocking_reason": "3 décision(s) marquée(s) insufficient_data/unstable.",
+      "required_action": null
+    },
+    {
+      "name": "STATISTICAL_EVIDENCE",
+      "status": "FAIL",
+      "critical": false,
+      "evidence": {
+        "total_decisions": 3,
+        "selected": 0,
+        "not_significant": 0,
+        "multiple_testing_note": "§13 : décisions produites par plusieurs runs/fenêtres/marchés (Phase 6/8B) — aucune conclusion de victoire isolée n'est promue ici sans traverser le Model Selection Engine complet (déjà corrigé pour comparaisons multiples via ses propres seuils, voir app/ai/arena/model_selection.py)."
+      },
+      "blocking_reason": "Aucune décision 'selected' — pas de preuve statistique suffisante pour un candidat.",
+      "required_action": null
+    },
+    {
+      "name": "ODDS",
+      "status": "NOT_AVAILABLE",
+      "critical": false,
+      "evidence": {
+        "phase_8g2_report": "reports\\odds_providers\\odds_api_access_confirmation_20260830.json",
+        "decision": "SUPPORT_REQUIRED",
+        "confidence_level": "LOW-MEDIUM",
+        "support_message_status": "DRAFTED_NOT_SENT"
+      },
+      "blocking_reason": "The Odds API : accès Historical Odds sur le plan payant non confirmé par le fournisseur (SUPPORT_REQUIRED, Phase 8G.2).",
+      "required_action": "Envoyer le message support déjà rédigé (support_message_draft) et obtenir une réponse écrite avant tout achat/intégration."
+    },
+    {
+      "name": "VALUE",
+      "status": "CONDITIONAL",
+      "critical": false,
+      "evidence": {
+        "value_tracking_status": {
+          "status": "NOT_AVAILABLE",
+          "reason": "Aucune odds TEMPORALLY_VERIFIED disponible (The Odds API SUPPORT_REQUIRED, Phase 8G.2) — jamais football-data.co.uk utilisé comme preuve temporelle (§18)."
+        },
+        "odds_gate_status": "NOT_AVAILABLE",
+        "code_status": "FOUNDATION_READY (api/app/ai/value/, 36/36 tests) — jamais consommé par un flux de production."
+      },
+      "blocking_reason": "Value Engine ne peut produire de signal de production sans odds temporellement vérifiées (§17 : jamais si temporal quality != TEMPORALLY_VERIFIED).",
+      "required_action": "VALUE_PRODUCTION reste BLOCKED tant que ODDS != PASS (§15)."
+    },
+    {
+      "name": "DECISION",
+      "status": "CONDITIONAL",
+      "critical": false,
+      "evidence": {
+        "code_status": "FOUNDATION_READY (api/app/ai/decision/, 34/34 tests)",
+        "real_shadow_decisions_evaluated": 0
+      },
+      "blocking_reason": null,
+      "required_action": "Aucune décision Phase 8I n'a encore été exercée sur une donnée RÉELLE prospective (0 shadow decision REAL capturée) — mécanisme testé, jamais éprouvé en conditions réelles."
+    },
+    {
+      "name": "SHADOW",
+      "status": "PASS",
+      "critical": false,
+      "evidence": {
+        "store_path_exists": true,
+        "records_total": 0,
+        "operational_test_coverage": "test_shadow_operational.py (25/25), test_live_shadow_track.py (18/18)"
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "TRACK_RECORD",
+      "status": "NOT_AVAILABLE",
+      "critical": true,
+      "evidence": {
+        "real_prospective_track_record_sample_size": 0,
+        "maturity": "NO_DATA",
+        "note": "§21 : les backtests historiques (Phase 6/7/8B) et les tests synthétiques (Phase 8I/8J/8K) ne comptent PAS ici — uniquement des ShadowDecisionRecord data_marking=REAL et RESOLVED."
+      },
+      "blocking_reason": "REAL_PROSPECTIVE_TRACK_RECORD = NOT_AVAILABLE (0 observation réelle résolue).",
+      "required_action": "Attendre l'accumulation de shadow decisions RÉELLES résolues (Phase 8M/8N) — aucun raccourci possible (§21/§52)."
+    },
+    {
+      "name": "MONITORING",
+      "status": "CONDITIONAL",
+      "critical": true,
+      "evidence": {
+        "shadow_health_status": "NO_DATA",
+        "alerts_count": 1,
+        "test_coverage": "test_shadow_monitoring.py (29/29)"
+      },
+      "blocking_reason": null,
+      "required_action": "Monitoring opérationnel mais sans données réelles suffisantes à observer actuellement."
+    },
+    {
+      "name": "PROVENANCE",
+      "status": "NOT_AVAILABLE",
+      "critical": true,
+      "evidence": {
+        "reason": "Aucun ShadowDecisionRecord — provenance jamais exercée sur donnée réelle."
+      },
+      "blocking_reason": null,
+      "required_action": "Vérifier la provenance dès la première capture réelle."
+    },
+    {
+      "name": "DATABASE_SAFETY",
+      "status": "PASS",
+      "critical": true,
+      "evidence": {
+        "tables_matrix": {
+          "match": "READ",
+          "match_stats": "READ",
+          "model_predictions": "READ",
+          "model_versions": "READ",
+          "prediction_log": "READ",
+          "team_ratings": "NOT_APPLICABLE",
+          "model_selection_decisions": "READ",
+          "shadow_store_json_file": "READ_WRITE (fichier local, jamais SQL)"
+        },
+        "row_counts_at_evaluation_time": {
+          "match": 12459,
+          "match_stats": 12459,
+          "model_predictions": 3610,
+          "model_versions": 15,
+          "prediction_log": 9
+        },
+        "static_scan": "grep session.add|session.commit|execute(update/insert/delete) sur api/app/ai/{value,decision,pipeline,shadow,historical,readiness} -> 0 résultat (vérifié manuellement, Phase 9 §1)."
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "ROLLBACK",
+      "status": "NOT_AVAILABLE",
+      "critical": true,
+      "evidence": {
+        "mechanism": "app/ai/arena/promotion.py::apply_promotion + get_active_version (production existante, Phase 9/10 du propre historique du dépôt) — désactive l'ancienne version (status=retired, deactivated_at) et réactive via une nouvelle promotion.",
+        "model_promotion_events_in_db": 0
+      },
+      "blocking_reason": "Mécanisme de rollback présent dans le code mais 0 ModelPromotionEvent réel en base — jamais empiriquement exercé (§39 : 'aucune case cochée sans preuve').",
+      "required_action": "Exécuter un cycle promote/rollback réel (ou un test adversarial dédié, §28) et vérifier get_active_version() avant/après."
+    },
+    {
+      "name": "OBSERVABILITY",
+      "status": "NOT_AVAILABLE",
+      "critical": false,
+      "evidence": {
+        "required_trace_events": [
+          "prediction_generated",
+          "prediction_captured",
+          "decision_assessed",
+          "signal_blocked",
+          "signal_eligible",
+          "resolution",
+          "error",
+          "rollback",
+          "kill_switch"
+        ],
+        "coverage": {
+          "prediction_generated": "model_predictions (Phase 6, production)",
+          "prediction_captured": "ShadowDecisionRecord (Phase 8K)",
+          "decision_assessed": "PipelineAssessment (Phase 8J)",
+          "signal_blocked": "PipelineAssessment.final_status in (INELIGIBLE, INSUFFICIENT_DATA, ...) (Phase 8J)",
+          "signal_eligible": "PipelineAssessment.final_status in (VALUE_CANDIDATE, NO_VALUE, RESEARCH_ONLY) (Phase 8J)",
+          "resolution": "ShadowResolution (Phase 8K)",
+          "error": "ShadowDecisionRecord/PipelineAssessment.error, ERROR_CATEGORIES (Phase 8J/8K)",
+          "rollback": "model_promotion_events (0 ligne(s) réelle(s)) — existe mais jamais exercé pour un rollback réel",
+          "kill_switch": null
+        }
+      },
+      "blocking_reason": "Aucun mécanisme de kill switch (§24) n'existe dans le code actuel (aucune occurrence de kill_switch/circuit breaker trouvée dans api/app ou scripts) — 8/9 événements tracables, kill_switch absent.",
+      "required_action": "Implémenter un kill switch réel (arrêt de flux, préservation des preuves, aucune modification rétroactive) avant tout MODE 3/4 (§24)."
+    },
+    {
+      "name": "SECURITY",
+      "status": "PASS",
+      "critical": false,
+      "evidence": {
+        "git_grep_hits_scanned": 8,
+        "suspicious_after_filtering": [],
+        "env_gitignored": true
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "LEGAL_PROVIDER_STATUS",
+      "status": "NOT_AVAILABLE",
+      "critical": false,
+      "evidence": {
+        "technically_available": "UNKNOWN (SUPPORT_REQUIRED, Phase 8G.2)",
+        "commercially_allowed": "UNKNOWN — question 5 du message support rédigé (usage commercial SaaS dérivé) jamais posée/répondue à ce jour.",
+        "legal_review_required": true,
+        "report": "reports\\odds_providers\\odds_api_access_confirmation_20260830.json"
+      },
+      "blocking_reason": "Statut légal/commercial du fournisseur d'odds non confirmé — le libellé 'commercial use allowed' générique n'a jamais été vérifié pour ce cas d'usage précis (§32).",
+      "required_action": "Obtenir une confirmation écrite du fournisseur avant toute intégration payante ou usage commercial dérivé."
+    },
+    {
+      "name": "API_EXPOSURE",
+      "status": "PASS",
+      "critical": false,
+      "evidence": {
+        "scanned_file": "api/main.py",
+        "research_packages_checked": [
+          "app.ai.shadow",
+          "app.ai.value",
+          "app.ai.decision",
+          "app.ai.pipeline",
+          "app.ai.historical",
+          "app.ai.readiness"
+        ],
+        "imports_found": []
+      },
+      "blocking_reason": null,
+      "required_action": null
+    },
+    {
+      "name": "FRONTEND_EXPOSURE",
+      "status": "PASS",
+      "critical": false,
+      "evidence": {
+        "scanned_dir": "frontend-design/",
+        "markers_checked": [
+          "ValueSignal",
+          "DecisionAssessment",
+          "ShadowDecisionRecord",
+          "PipelineAssessment",
+          "TEMPORALLY_VERIFIED",
+          "VALUE_CANDIDATE",
+          "shadow_decision_store",
+          "GATE_TEMPORAL"
+        ],
+        "hits": {},
+        "note": "Les occurrences de 'shadow' dans arena.html/vip.html (box-shadow CSS, 'Live Shadow Comparison' Phase 11 pré-existante) sont un concept PRODUCTION distinct, sans rapport avec Shadow Decision Tracking (Phase 8K-8N) — vérifié manuellement (Phase 9 §1)."
+      },
+      "blocking_reason": null,
+      "required_action": null
+    }
+  ],
+  "checklist": [
+    {
+      "key": "model_approved",
+      "checked": true,
+      "evidence": "gate MODEL status=PASS"
+    },
+    {
+      "key": "artifact_verified",
+      "checked": true,
+      "evidence": "gate MODEL_VERSION status=PASS"
+    },
+    {
+      "key": "feature_set_verified",
+      "checked": false,
+      "evidence": "gate FEATURES status=CONDITIONAL"
+    },
+    {
+      "key": "temporal_integrity_verified",
+      "checked": true,
+      "evidence": "gate TEMPORAL_INTEGRITY status=PASS"
+    },
+    {
+      "key": "calibration_verified",
+      "checked": false,
+      "evidence": "gate CALIBRATION status=NOT_AVAILABLE — Aucune décision avec calibration_verdict renseigné."
+    },
+    {
+      "key": "statistical_evidence_sufficient",
+      "checked": false,
+      "evidence": "gate STATISTICAL_EVIDENCE status=FAIL — Aucune décision 'selected' — pas de preuve statistique suffisante pour un candidat."
+    },
+    {
+      "key": "prospective_track_record_sufficient",
+      "checked": false,
+      "evidence": "gate TRACK_RECORD status=NOT_AVAILABLE — REAL_PROSPECTIVE_TRACK_RECORD = NOT_AVAILABLE (0 observation réelle résolue)."
+    },
+    {
+      "key": "odds_verified",
+      "checked": false,
+      "evidence": "gate ODDS status=NOT_AVAILABLE — The Odds API : accès Historical Odds sur le plan payant non confirmé par le fournisseur (SUPPORT_REQUIRED, Phase 8G.2)."
+    },
+    {
+      "key": "value_engine_validated",
+      "checked": false,
+      "evidence": "gate VALUE status=CONDITIONAL — Value Engine ne peut produire de signal de production sans odds temporellement vérifiées (§17 : jamais si temporal quality != TEMPORALLY_VERIFIED)."
+    },
+    {
+      "key": "decision_layer_validated",
+      "checked": false,
+      "evidence": "gate DECISION status=CONDITIONAL"
+    },
+    {
+      "key": "shadow_healthy",
+      "checked": true,
+      "evidence": "gate SHADOW status=PASS"
+    },
+    {
+      "key": "monitoring_healthy",
+      "checked": false,
+      "evidence": "gate MONITORING status=CONDITIONAL"
+    },
+    {
+      "key": "rollback_tested",
+      "checked": false,
+      "evidence": "gate ROLLBACK status=NOT_AVAILABLE — Mécanisme de rollback présent dans le code mais 0 ModelPromotionEvent réel en base — jamais empiriquement exercé (§39 : 'aucune case cochée sans preuve')."
+    },
+    {
+      "key": "kill_switch_tested",
+      "checked": false,
+      "evidence": "Aucun mécanisme de kill switch implémenté dans le code actuel (voir gate OBSERVABILITY) — jamais testable tant qu'il n'existe pas."
+    },
+    {
+      "key": "database_isolation_verified",
+      "checked": true,
+      "evidence": "gate DATABASE_SAFETY status=PASS"
+    },
+    {
+      "key": "api_exposure_verified",
+      "checked": true,
+      "evidence": "gate API_EXPOSURE status=PASS"
+    },
+    {
+      "key": "frontend_exposure_verified",
+      "checked": true,
+      "evidence": "gate FRONTEND_EXPOSURE status=PASS"
+    },
+    {
+      "key": "security_verified",
+      "checked": true,
+      "evidence": "gate SECURITY status=PASS"
+    },
+    {
+      "key": "legal_provider_review_complete",
+      "checked": false,
+      "evidence": "gate LEGAL_PROVIDER_STATUS status=NOT_AVAILABLE — Statut légal/commercial du fournisseur d'odds non confirmé — le libellé 'commercial use allowed' générique n'a jamais été vérifié pour ce cas d'usage précis (§32)."
+    }
+  ],
+  "promotion_readiness": [
+    {
+      "model_type": "dixon_coles",
+      "status": "PROMOTION_NOT_ELIGIBLE",
+      "reasons": [
+        "TRACK_RECORD=NOT_AVAILABLE (NO_DATA) — REAL_PROSPECTIVE_TRACK_RECORD insuffisant.",
+        "STATISTICAL_EVIDENCE=FAIL — preuve issue de backtests/recherche, pas de suivi prospectif réel."
+      ],
+      "evidence": {
+        "track_record_maturity": "NO_DATA",
+        "statistical_evidence_status": "FAIL"
+      }
+    },
+    {
+      "model_type": "elo",
+      "status": "PROMOTION_NOT_ELIGIBLE",
+      "reasons": [
+        "TRACK_RECORD=NOT_AVAILABLE (NO_DATA) — REAL_PROSPECTIVE_TRACK_RECORD insuffisant.",
+        "STATISTICAL_EVIDENCE=FAIL — preuve issue de backtests/recherche, pas de suivi prospectif réel."
+      ],
+      "evidence": {
+        "track_record_maturity": "NO_DATA",
+        "statistical_evidence_status": "FAIL"
+      }
+    },
+    {
+      "model_type": "xgboost",
+      "status": "PROMOTION_NOT_ELIGIBLE",
+      "reasons": [
+        "TRACK_RECORD=NOT_AVAILABLE (NO_DATA) — REAL_PROSPECTIVE_TRACK_RECORD insuffisant.",
+        "STATISTICAL_EVIDENCE=FAIL — preuve issue de backtests/recherche, pas de suivi prospectif réel."
+      ],
+      "evidence": {
+        "track_record_maturity": "NO_DATA",
+        "statistical_evidence_status": "FAIL"
+      }
+    },
+    {
+      "model_type": "lightgbm",
+      "status": "PROMOTION_NOT_ELIGIBLE",
+      "reasons": [
+        "TRACK_RECORD=NOT_AVAILABLE (NO_DATA) — REAL_PROSPECTIVE_TRACK_RECORD insuffisant.",
+        "STATISTICAL_EVIDENCE=FAIL — preuve issue de backtests/recherche, pas de suivi prospectif réel."
+      ],
+      "evidence": {
+        "track_record_maturity": "NO_DATA",
+        "statistical_evidence_status": "FAIL"
+      }
+    },
+    {
+      "model_type": "ensemble",
+      "status": "PROMOTION_NOT_ELIGIBLE",
+      "reasons": [
+        "TRACK_RECORD=NOT_AVAILABLE (NO_DATA) — REAL_PROSPECTIVE_TRACK_RECORD insuffisant.",
+        "STATISTICAL_EVIDENCE=FAIL — preuve issue de backtests/recherche, pas de suivi prospectif réel."
+      ],
+      "evidence": {
+        "track_record_maturity": "NO_DATA",
+        "statistical_evidence_status": "FAIL"
+      }
+    }
+  ],
+  "open_risks": [
+    "DATA: 0 fixture future — aucune donnée prospective disponible actuellement.",
+    "CALIBRATION: Aucune décision avec calibration_verdict renseigné.",
+    "SAMPLE_SIZE: 3 décision(s) marquée(s) insufficient_data/unstable.",
+    "STATISTICAL_EVIDENCE: Aucune décision 'selected' — pas de preuve statistique suffisante pour un candidat.",
+    "ODDS: The Odds API : accès Historical Odds sur le plan payant non confirmé par le fournisseur (SUPPORT_REQUIRED, Phase 8G.2).",
+    "VALUE: Value Engine ne peut produire de signal de production sans odds temporellement vérifiées (§17 : jamais si temporal quality != TEMPORALLY_VERIFIED).",
+    "TRACK_RECORD: REAL_PROSPECTIVE_TRACK_RECORD = NOT_AVAILABLE (0 observation réelle résolue).",
+    "ROLLBACK: Mécanisme de rollback présent dans le code mais 0 ModelPromotionEvent réel en base — jamais empiriquement exercé (§39 : 'aucune case cochée sans preuve').",
+    "OBSERVABILITY: Aucun mécanisme de kill switch (§24) n'existe dans le code actuel (aucune occurrence de kill_switch/circuit breaker trouvée dans api/app ou scripts) — 8/9 événements tracables, kill_switch absent.",
+    "LEGAL_PROVIDER_STATUS: Statut légal/commercial du fournisseur d'odds non confirmé — le libellé 'commercial use allowed' générique n'a jamais été vérifié pour ce cas d'usage précis (§32)."
+  ],
+  "blocking_conditions": [
+    "TRACK_RECORD: REAL_PROSPECTIVE_TRACK_RECORD = NOT_AVAILABLE (0 observation réelle résolue).",
+    "ROLLBACK: Mécanisme de rollback présent dans le code mais 0 ModelPromotionEvent réel en base — jamais empiriquement exercé (§39 : 'aucune case cochée sans preuve')."
+  ],
+  "conditions_required_now": [
+    "Aucune activation MODE_3/MODE_4 sans nouvelle exécution de cette évaluation (§37 dry-run, §50 déterminisme)."
+  ],
+  "conditions_required_before_production": [
+    "Attendre l'accumulation de shadow decisions RÉELLES résolues (Phase 8M/8N) — aucun raccourci possible (§21/§52).",
+    "Monitoring opérationnel mais sans données réelles suffisantes à observer actuellement.",
+    "Vérifier la provenance dès la première capture réelle.",
+    "Exécuter un cycle promote/rollback réel (ou un test adversarial dédié, §28) et vérifier get_active_version() avant/après."
+  ],
+  "conditions_optional_future": [
+    "Ré-évaluer quand des fixtures futures existent (§21/§41).",
+    "11 feature(s) RED (MISSING/REJECTED/LEAKAGE_RISK) — vérifier qu'aucune n'est utilisée par un modèle actif avant activation étendue.",
+    "Envoyer le message support déjà rédigé (support_message_draft) et obtenir une réponse écrite avant tout achat/intégration.",
+    "VALUE_PRODUCTION reste BLOCKED tant que ODDS != PASS (§15).",
+    "Aucune décision Phase 8I n'a encore été exercée sur une donnée RÉELLE prospective (0 shadow decision REAL capturée) — mécanisme testé, jamais éprouvé en conditions réelles.",
+    "Implémenter un kill switch réel (arrêt de flux, préservation des preuves, aucune modification rétroactive) avant tout MODE 3/4 (§24).",
+    "Obtenir une confirmation écrite du fournisseur avant toute intégration payante ou usage commercial dérivé."
+  ],
+  "phase10_readiness": {
+    "ready": [
+      "MODEL",
+      "MODEL_VERSION",
+      "TEMPORAL_INTEGRITY",
+      "SHADOW",
+      "DATABASE_SAFETY",
+      "SECURITY",
+      "API_EXPOSURE",
+      "FRONTEND_EXPOSURE"
+    ],
+    "blocked": [
+      "SAMPLE_SIZE",
+      "STATISTICAL_EVIDENCE"
+    ],
+    "missing_real_data": [
+      "CALIBRATION",
+      "ODDS",
+      "TRACK_RECORD",
+      "PROVENANCE",
+      "ROLLBACK",
+      "OBSERVABILITY",
+      "LEGAL_PROVIDER_STATUS"
+    ],
+    "open_risks": [
+      "DATA: 0 fixture future — aucune donnée prospective disponible actuellement.",
+      "CALIBRATION: Aucune décision avec calibration_verdict renseigné.",
+      "SAMPLE_SIZE: 3 décision(s) marquée(s) insufficient_data/unstable.",
+      "STATISTICAL_EVIDENCE: Aucune décision 'selected' — pas de preuve statistique suffisante pour un candidat.",
+      "ODDS: The Odds API : accès Historical Odds sur le plan payant non confirmé par le fournisseur (SUPPORT_REQUIRED, Phase 8G.2).",
+      "VALUE: Value Engine ne peut produire de signal de production sans odds temporellement vérifiées (§17 : jamais si temporal quality != TEMPORALLY_VERIFIED).",
+      "TRACK_RECORD: REAL_PROSPECTIVE_TRACK_RECORD = NOT_AVAILABLE (0 observation réelle résolue).",
+      "ROLLBACK: Mécanisme de rollback présent dans le code mais 0 ModelPromotionEvent réel en base — jamais empiriquement exercé (§39 : 'aucune case cochée sans preuve').",
+      "OBSERVABILITY: Aucun mécanisme de kill switch (§24) n'existe dans le code actuel (aucune occurrence de kill_switch/circuit breaker trouvée dans api/app ou scripts) — 8/9 événements tracables, kill_switch absent.",
+      "LEGAL_PROVIDER_STATUS: Statut légal/commercial du fournisseur d'odds non confirmé — le libellé 'commercial use allowed' générique n'a jamais été vérifié pour ce cas d'usage précis (§32)."
+    ],
+    "conditions_before_any_production_activation": [
+      "Attendre l'accumulation de shadow decisions RÉELLES résolues (Phase 8M/8N) — aucun raccourci possible (§21/§52).",
+      "Monitoring opérationnel mais sans données réelles suffisantes à observer actuellement.",
+      "Vérifier la provenance dès la première capture réelle.",
+      "Exécuter un cycle promote/rollback réel (ou un test adversarial dédié, §28) et vérifier get_active_version() avant/après."
+    ],
+    "decisions_requiring_explicit_human_approval": [
+      "Achat/upgrade The Odds API (§16 : jamais automatique).",
+      "Toute intégration réelle d'un fournisseur d'odds (§16).",
+      "Passage à MODE_3/MODE_4 (§22/§47 : jamais automatique).",
+      "Implémentation et test du kill switch (§24) avant toute activation au-delà de MODE_1."
+    ]
+  },
+  "db_safety_matrix": {
+    "matrix": {
+      "match": "READ",
+      "match_stats": "READ",
+      "model_predictions": "READ",
+      "model_versions": "READ",
+      "prediction_log": "READ",
+      "team_ratings": "NOT_APPLICABLE",
+      "model_selection_decisions": "READ",
+      "shadow_store_json_file": "READ_WRITE (fichier local, jamais SQL)"
+    },
+    "row_counts": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9
+    }
+  },
+  "activation_modes": [
+    "MODE_0_DISABLED",
+    "MODE_1_SHADOW_ONLY",
+    "MODE_2_INTERNAL_RESEARCH",
+    "MODE_3_LIMITED_PRODUCTION",
+    "MODE_4_FULL_PRODUCTION"
+  ],
+  "limited_production_plan": {
+    "note": "Conceptuel uniquement (§23) — jamais appliqué par cette phase, jamais une preuve statistique.",
+    "markets": "1X2 uniquement au démarrage (jamais BTTS/OVER_UNDER simultanément — réduit la surface d'erreur initiale).",
+    "leagues": "1 ligue avec la plus grande couverture historique (Ligue1, 12 459 matchs au 30/08/2026) — jamais toutes les ligues d'un coup.",
+    "volume": "Research/observation uniquement tant que TRACK_RECORD < STATISTICALLY_INFORMATIVE (>=100, seuil déjà documenté Phase 8M/8N).",
+    "frequency": "Alignée sur le scheduler existant (DEFAULT_LIVE_PREDICTION_WINDOW_HOURS=48h) — jamais un rythme inventé pour cette phase.",
+    "exposure": "0 — aucun signal de pari n'est présenté à un utilisateur avant MODE_3 explicitement décidé (§47).",
+    "stop_conditions": [
+      "Tout KILL_SWITCH_TRIGGERS déclenché (§24).",
+      "MONITORING gate != PASS.",
+      "TRACK_RECORD régresse sous EARLY_DATA."
+    ]
+  },
+  "rollback_procedure": {
+    "disable": "MODE_1_SHADOW_ONLY (revenir au statu quo actuel — aucune action requise, c'est l'état par défaut).",
+    "revert_to_previous_model": "app/ai/arena/promotion.py::apply_promotion(session, previous_version) — mécanisme production EXISTANT (déjà utilisé par POST /models/promotion/promote, require_admin). Jamais encore exercé pour un rollback réel (0 ModelPromotionEvent en base, voir gate ROLLBACK).",
+    "revert_to_shadow_only": "Aucun code de production ne consomme actuellement api/app/ai/{value,decision,pipeline,shadow,historical} (confirmé, gate API_EXPOSURE) — un rollback vers Shadow-only ne nécessite donc AUCUNE modification de code, seulement l'absence d'activation d'un futur point d'intégration.",
+    "verify_rollback_worked": "get_active_version(session, model_type) doit retourner la version attendue ; model_promotion_events doit contenir une ligne decision='promoted' pour cette version ; aucune ligne model_predictions produite après le rollback ne doit référencer l'ancienne version.",
+    "never_delete_history": "apply_promotion ne supprime jamais une ligne — l'ancienne version passe status='retired', jamais effacée (voir team_rating.py)."
+  },
+  "kill_switch_design": {
+    "status": "NOT_IMPLEMENTED — constaté par gate OBSERVABILITY (aucune occurrence de kill_switch/circuit breaker dans le code).",
+    "triggers": [
+      "TEMPORAL_LEAK",
+      "MODEL_MISMATCH",
+      "PROVENANCE_MISSING",
+      "STORE_CORRUPTION",
+      "PROBABILITY_MISMATCH",
+      "DECISION_MISMATCH",
+      "PRODUCTION_DB_MUTATION",
+      "ODDS_TIMESTAMP_INVALID"
+    ],
+    "required_behavior": "Arrêter le flux concerné, préserver les preuves (jamais une suppression), ne jamais modifier rétroactivement une décision déjà prise (§24).",
+    "required_before_mode_3_or_4": true
+  },
+  "fail_safe_rule": {
+    "rule": "NO SIGNAL, jamais BEST GUESS (§26).",
+    "applies_to": [
+      "erreur",
+      "timeout",
+      "données absentes",
+      "provenance absente",
+      "timestamp inconnu",
+      "calibration absente"
+    ],
+    "already_enforced_by": [
+      "app/ai/decision/eligibility.py::evaluate_eligibility (UNKNOWN jamais promu à ELIGIBLE, Phase 8I, 34/34 tests)",
+      "app/ai/value/core.py::build_value_signal (NO_ODDS/INVALID_ODDS/INSUFFICIENT_DATA avant tout calcul, Phase 8H, 36/36 tests)",
+      "app/ai/pipeline/shadow.py::run_shadow_batch (isolation d'erreur par match, jamais un crash de batch, Phase 8J, 21/21 tests)"
+    ]
+  },
+  "db_purity": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_feature_engineering_v1.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_historical_replay.py": {
+      "returncode": 0,
+      "summary_line": "22/22 tests OK",
+      "pass": true
+    },
+    "test_live_shadow_track.py": {
+      "returncode": 0,
+      "summary_line": "18/18 tests OK",
+      "pass": true
+    },
+    "test_shadow_monitoring.py": {
+      "returncode": 0,
+      "summary_line": "29/29 tests OK",
+      "pass": true
+    },
+    "test_production_readiness.py": {
+      "returncode": 0,
+      "summary_line": "57 passed, 0 failed (sur 57 assertions)",
+      "pass": true
+    }
+  },
+  "git_status_short": "?? api/app/ai/decision/\n?? api/app/ai/historical/\n?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/app/ai/pipeline/\n?? api/app/ai/readiness/\n?? api/app/ai/shadow/\n?? api/app/ai/value/\n?? api/test_decision_layer.py\n?? api/test_end_to_end_pipeline.py\n?? api/test_historical_replay.py\n?? api/test_live_shadow_track.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_production_readiness.py\n?? api/test_shadow_monitoring.py\n?? api/test_shadow_operational.py\n?? api/test_timestamped_odds_provider_audit.py\n?? api/test_value_engine.py\n?? reports/decision/\n?? reports/odds_providers/\n?? reports/pipeline/\n?? reports/replay/\n?? reports/shadow/live/\n?? reports/shadow/monitoring/\n?? reports/shadow/shadow_decision_store.json\n?? reports/shadow/shadow_operational_validation_20260830.json\n?? reports/shadow/shadow_operational_validation_20260830.md\n?? reports/value_engine/\n?? scripts/decision_layer_research.py\n?? scripts/end_to_end_shadow_research.py\n?? scripts/historical_replay_audit.py\n?? scripts/odds_api_access_confirmation.py\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/production_readiness.py\n?? scripts/shadow_live_track.py\n?? scripts/shadow_monitor.py\n?? scripts/shadow_operational_validation.py\n?? scripts/timestamped_odds_provider_audit.py\n?? scripts/value_engine_research.py\n",
+  "git_diff_stat": "",
+  "git_diff_names": "",
+  "production_files_modified": false,
+  "tests_green": true,
+  "the_odds_api_status": "SUPPORT_REQUIRED — non appelé dans cette phase (§45).",
+  "no_user_betting_signal": true,
+  "data_marking": "REAL (lecture de api/app.db et du store persisté) — voir Limitations pour toute donnée SYNTHETIC utilisée uniquement dans les tests."
+}

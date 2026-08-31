@@ -1,0 +1,41 @@
+{
+  "run_id": "20260830_213954",
+  "generated_at": "2026-08-30T21:39:54Z",
+  "phase": "9.2",
+  "kind": "prospective_shadow_evidence_accumulation_v1",
+  "rule": "REAL-WORLD SHADOW ONLY. MODE_1_SHADOW_ONLY. NO PRODUCTION ACTIVATION. NO NEW PREDICTION.",
+  "execution_status": "CODE_COMPLETE_UNVERIFIED_THIS_SESSION",
+  "execution_status_reason": "Same auto-mode safety classifier from Phase 9.1 (unrelated to code content per its own message) continues to block all Python execution in this session. Non-Python commands (git, ls, date) kept working and were used for every fact this report claims as confirmed. No test suite, no script run, no real capture was executed this session -- this report does not claim otherwise anywhere below.",
+  "architecture": {
+    "new_module": "api/app/ai/shadow/prospective.py",
+    "new_functions": [
+      "is_real_prospective() -- Sec.11 formal definition; returns CONSISTENT_WITH_PLACEHOLDER_KICKOFF (never a bare REAL_PROSPECTIVE) because exact kickoff time is structurally unavailable in this schema",
+      "compute_as_of_window_label() -- Sec.4 informational T-24h/T-12h/T-6h/T-1h bucketing, computed against the same midnight-of-match_date placeholder already used throughout live.py/resolution.py -- never presented as proof",
+      "acquire_capture_lock() -- Sec.29 exclusive file lock (O_CREAT|O_EXCL, portable), BLOCKs on contention, never auto-cleans a stale lock",
+      "run_prospective_capture() -- one as_of per call (real-world usage: run periodically as wall-clock time passes), lock-protected, reuses discover_live_candidates/assess_capture_eligibility/build_pipeline_input_for_live/check_production_consistency/capture_shadow_decision unchanged",
+      "compute_evidence_ledger() -- Sec.18, derived from the existing ShadowDecisionStore, no new table",
+      "classify_capture_quality() -- Sec.19",
+      "backup_store()/restore_and_validate() -- Sec.27, copy-based, validated via the existing ShadowDecisionStore.load() corruption check",
+      "compute_readiness_impact() -- Sec.49 pure before/after gate diff"
+    ],
+    "cli_created": "scripts/prospective_shadow.py (--as-of, --dry-run, --resolve, --market, --json, --markdown)",
+    "tests_created": "api/test_prospective_shadow.py (40 scenarios)",
+    "design_decision_multi_as_of": "Sec.4 explicitly allows one real run per as_of ('the fixture may produce several Shadow observations if the tracking policy explicitly allows it') -- rather than generating synthetic T-24h/T-12h/T-6h/T-1h snapshots inside a single real run (which would require a genuine kickoff HOUR the schema does not have -- ModelPrediction.match_date is typed `date`, confirmed by direct model inspection), the capability is proven via tests using explicit distinct as_of values, and real accumulation happens by invoking the script periodically as real time passes."
+  },
+  "code_review_findings": [
+    "Hardened acquire_capture_lock() to clean up the lock file on any unexpected error during creation (e.g. disk full) rather than only on the expected FileExistsError contention path -- found by re-reading the function a second time, not by execution.",
+    "Fixed a determinism-test bug during authoring (test_deterministic_output originally used datetime.now(UTC) inside the loop for both as_of and predicted_at, which would make its own two 'independent runs' differ by construction and fail the very determinism it was meant to prove) -- replaced with fixed timestamps before this report was written."
+  ],
+  "db_safety": {
+    "git_status_short_confirmed_via_execution": true,
+    "git_diff_stat_empty_confirmed_via_execution": true,
+    "git_diff_name_only_empty_confirmed_via_execution": true,
+    "note": "Confirmed via real, executed `git status --short` / `git diff --stat` / `git diff --name-only` (non-Python, unaffected by the block). No tracked file modified."
+  },
+  "expected_real_data_reality": "Every prior phase (8M, 8N, 9) independently confirmed future_fixtures=0 in api/app.db as of 2026-08-30 -- pending model_predictions rows are all stale (match_date in the past relative to any current as_of). A real run of scripts/prospective_shadow.py today would therefore almost certainly discover 0 candidates and report INSUFFICIENT_REAL_DATA -- this is not run here, and this expectation is stated as an expectation, not a result.",
+  "current_expected_verdict": "INSUFFICIENT_REAL_DATA (expected, not executed) -- but the honest status of THIS report is CODE_COMPLETE_UNVERIFIED_THIS_SESSION, one level more conservative.",
+  "mode": "MODE_1_SHADOW_ONLY",
+  "production_activation": "BLOCKED",
+  "no_user_betting_signal": true,
+  "next_step_required": "Run `python api/test_prospective_shadow.py`, the full regression suite (see scripts/prospective_shadow.py::REGRESSION_SUITES, 13 prior suites), and `python scripts/prospective_shadow.py --dry-run` against the real api/app.db -- either directly, in a fresh session, or with auto mode switched off -- then regenerate this report with real results before any SHADOW_OPERATIONAL/EARLY_EVIDENCE claim is made."
+}

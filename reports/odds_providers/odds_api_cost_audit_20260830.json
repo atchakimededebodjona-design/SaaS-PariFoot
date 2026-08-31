@@ -1,0 +1,316 @@
+{
+  "run_id": "20260830_110556",
+  "generated_at": "2026-08-30T11:05:56.258322+00:00",
+  "phase": "8G.1",
+  "kind": "cost_credit_feasibility_audit",
+  "rule": "NO PURCHASE, NO PLAN CHANGE, NO HISTORICAL ODDS REQUEST, NO NEW SMOKE TEST, 0 CREDITS CONSUMED THIS PHASE.",
+  "prior_smoke_test_evidence": {
+    "source_report": "reports/odds_providers/odds_api_smoke_test_20260830_104639.json",
+    "sports_call_status": 200,
+    "historical_call_status": 401,
+    "credits_consumed_that_run": 0,
+    "conclusion": "Starter (free) tier key: standard API accessible, Historical Odds endpoint returns 401 (access not included in current plan)."
+  },
+  "plans": [
+    {
+      "name": "Starter",
+      "price_usd_month": 0,
+      "credits_month": 500,
+      "historical_odds_access": "NO (empirically confirmed — see below)"
+    },
+    {
+      "name": "20K",
+      "price_usd_month": 30,
+      "credits_month": 20000,
+      "historical_odds_access": "UNKNOWN (see Historical Odds Pricing section)"
+    },
+    {
+      "name": "100K",
+      "price_usd_month": 59,
+      "credits_month": 100000,
+      "historical_odds_access": "UNKNOWN (see Historical Odds Pricing section)"
+    },
+    {
+      "name": "5M",
+      "price_usd_month": 119,
+      "credits_month": 5000000,
+      "historical_odds_access": "UNKNOWN (see Historical Odds Pricing section)"
+    },
+    {
+      "name": "15M",
+      "price_usd_month": 249,
+      "credits_month": 15000000,
+      "historical_odds_access": "UNKNOWN (see Historical Odds Pricing section)"
+    }
+  ],
+  "entry_level_paid_plan": "20K",
+  "historical_odds_pricing": {
+    "formula_live": "cost = markets x regions",
+    "formula_historical": "cost = 10 x markets x regions",
+    "formula_source": "https://the-odds-api.com/liveapi/guides/v4/ (verified via WebFetch this session)",
+    "which_paid_tier_minimum_confirmed": "UNKNOWN — official docs state 'Historical data is only available on paid usage plans' without naming the minimum tier explicitly; homepage lists 'Historical Odds' as a feature label on every plan card (Starter included), which CONTRADICTS the dedicated historical-odds-data page AND our own empirical 401 on the Starter/free key used in the prior smoke test. Treating the dedicated page + empirical evidence as authoritative: Starter = NO. First paid tier (20K, $30/mo) = UNKNOWN, not contradicted by any source, but not explicitly confirmed either."
+  },
+  "league_historical_floors": {
+    "PremierLeague": "2020-06-06T10:05:00+00:00",
+    "Bundesliga": "2020-06-06T10:05:00+00:00",
+    "SerieA": "2020-06-06T10:05:00+00:00",
+    "LaLiga": "2020-06-06T10:05:00+00:00",
+    "Ligue1": "2020-07-16T00:55:00+00:00"
+  },
+  "xfoot_dataset": {
+    "total_matches_all_leagues": 12459,
+    "earliest_match_all_leagues": "2019-08-09T00:00:00",
+    "latest_match_all_leagues": "2026-05-24T00:00:00",
+    "priority_leagues": {
+      "PremierLeague": {
+        "n_matches": 2660,
+        "earliest": "2019-08-09T00:00:00",
+        "latest": "2026-05-24T00:00:00",
+        "historical_odds_floor": "2020-06-06T10:05:00+00:00",
+        "matches_on_or_after_floor": 2372,
+        "matches_before_floor_not_covered": 288,
+        "coverage_pct": 89.17
+      },
+      "Ligue1": {
+        "n_matches": 2337,
+        "earliest": "2019-08-09T00:00:00",
+        "latest": "2026-05-17T00:00:00",
+        "historical_odds_floor": "2020-07-16T00:55:00+00:00",
+        "matches_on_or_after_floor": 2058,
+        "matches_before_floor_not_covered": 279,
+        "coverage_pct": 88.06
+      },
+      "Bundesliga": {
+        "n_matches": 2142,
+        "earliest": "2019-08-16T00:00:00",
+        "latest": "2026-05-16T00:00:00",
+        "historical_odds_floor": "2020-06-06T10:05:00+00:00",
+        "matches_on_or_after_floor": 1875,
+        "matches_before_floor_not_covered": 267,
+        "coverage_pct": 87.54
+      },
+      "SerieA": {
+        "n_matches": 2660,
+        "earliest": "2019-08-24T00:00:00",
+        "latest": "2026-05-24T00:00:00",
+        "historical_odds_floor": "2020-06-06T10:05:00+00:00",
+        "matches_on_or_after_floor": 2404,
+        "matches_before_floor_not_covered": 256,
+        "coverage_pct": 90.38
+      },
+      "LaLiga": {
+        "n_matches": 2660,
+        "earliest": "2019-08-16T00:00:00",
+        "latest": "2026-05-24T00:00:00",
+        "historical_odds_floor": "2020-06-06T10:05:00+00:00",
+        "matches_on_or_after_floor": 2390,
+        "matches_before_floor_not_covered": 270,
+        "coverage_pct": 89.85
+      }
+    }
+  },
+  "poc_dataset": {
+    "n_matches": 100,
+    "max_per_league": 20,
+    "by_league": {
+      "Bundesliga": {
+        "n_selected": 20,
+        "earliest": "2026-05-03",
+        "latest": "2026-05-16",
+        "with_real_kickoff_time_from_cache": 20,
+        "date_only_fallback": 0,
+        "on_or_after_historical_floor": 20,
+        "not_covered_before_floor": 0
+      },
+      "LaLiga": {
+        "n_selected": 20,
+        "earliest": "2026-05-17",
+        "latest": "2026-05-24",
+        "with_real_kickoff_time_from_cache": 20,
+        "date_only_fallback": 0,
+        "on_or_after_historical_floor": 20,
+        "not_covered_before_floor": 0
+      },
+      "Ligue1": {
+        "n_selected": 20,
+        "earliest": "2026-05-08",
+        "latest": "2026-05-17",
+        "with_real_kickoff_time_from_cache": 20,
+        "date_only_fallback": 0,
+        "on_or_after_historical_floor": 20,
+        "not_covered_before_floor": 0
+      },
+      "PremierLeague": {
+        "n_selected": 20,
+        "earliest": "2026-05-15",
+        "latest": "2026-05-24",
+        "with_real_kickoff_time_from_cache": 20,
+        "date_only_fallback": 0,
+        "on_or_after_historical_floor": 20,
+        "not_covered_before_floor": 0
+      },
+      "SerieA": {
+        "n_selected": 20,
+        "earliest": "2026-05-17",
+        "latest": "2026-05-24",
+        "with_real_kickoff_time_from_cache": 20,
+        "date_only_fallback": 0,
+        "on_or_after_historical_floor": 20,
+        "not_covered_before_floor": 0
+      }
+    },
+    "reused_selection_function": "app.ai.odds_research.odds_api_trial.select_trial_matches (identique à scripts/odds_api_trial.py, aucune resélection)"
+  },
+  "requests_needed_by_cutoff_horizon": {
+    "24": {
+      "requests_worst_case_no_batching": 100,
+      "requests_after_real_kickoff_batching": 36
+    },
+    "12": {
+      "requests_worst_case_no_batching": 100,
+      "requests_after_real_kickoff_batching": 36
+    },
+    "6": {
+      "requests_worst_case_no_batching": 100,
+      "requests_after_real_kickoff_batching": 36
+    },
+    "3": {
+      "requests_worst_case_no_batching": 100,
+      "requests_after_real_kickoff_batching": 36
+    },
+    "1": {
+      "requests_worst_case_no_batching": 100,
+      "requests_after_real_kickoff_batching": 36
+    }
+  },
+  "batching_methodology": "Une requête historique renvoie tous les événements du sport proches du timestamp demandé (confirmé empiriquement, smoke test Phase 8G) -> deux matchs de la même ligue dont le cutoff calculé tombe au même horaire réel (minute) peuvent partager une requête. Le regroupement n'est appliqué QUE sur les matchs dont le kickoff réel est connu via le cache football-data.co.uk (Phase 8D) — un match DATE_ONLY compte pour 1 requête entière, jamais supposé partageable. previous_timestamp/next_timestamp permettent de naviguer entre snapshots mais chaque navigation reste une requête facturée à part entière (confirmé par la documentation officielle) — AUCUNE économie inter-cutoff.",
+  "scenario_minimal": {
+    "description": "100 matchs (échantillon PoC réel), 1X2 uniquement, 1 région (eu), 1 cutoff (T-6h, représentatif)",
+    "requests_worst_case": 100,
+    "requests_after_batching": 36,
+    "credits_worst_case": 1000,
+    "credits_after_batching": 360
+  },
+  "scenario_recommended": {
+    "description": "100 matchs (échantillon PoC réel), 1X2 + BTTS(si dispo) + O/U2.5(si dispo), 1 région (eu), 1 cutoff (T-6h)",
+    "markets_count": 3,
+    "requests_worst_case": 100,
+    "requests_after_batching": 36,
+    "credits_worst_case": 3000,
+    "credits_after_batching": 1080
+  },
+  "scenario_maximal": {
+    "description": "100 matchs (échantillon PoC réel), 3 marchés, 5 cutoffs (T-24h/12h/6h/3h/1h), 1 région (eu)",
+    "credits_worst_case": 15000,
+    "credits_after_batching": 5400
+  },
+  "safety_margins_on_recommended_batched": {
+    "+10%": {
+      "credits_needed": 1188,
+      "pct_of_entry_plan_quota": 5.94
+    },
+    "+25%": {
+      "credits_needed": 1350,
+      "pct_of_entry_plan_quota": 6.75
+    },
+    "+50%": {
+      "credits_needed": 1620,
+      "pct_of_entry_plan_quota": 8.1
+    }
+  },
+  "cost_per_match": {
+    "1X2_only": 10,
+    "BTTS_only": 10,
+    "OU25_only": 10,
+    "1X2_plus_BTTS_plus_OU25": 30,
+    "note": "Coût PAR REQUÊTE (une requête peut, empiriquement, couvrir plusieurs matchs de la même ligue au même horaire de coup d'envoi réel — voir requests_by_horizon). Coût par MATCH réel dépend donc du taux de partage effectif, pas d'un ratio fixe."
+  },
+  "cost_per_100_matches": {
+    "minimal_1X2_only": 360,
+    "recommended_3_markets_1_cutoff": 1080,
+    "maximal_3_markets_5_cutoffs": 5400
+  },
+  "league_coverage_table": [
+    {
+      "league": "PremierLeague",
+      "sport_key": "soccer_epl",
+      "available_on_provider": "YES (confirmed Phase 8F/8G — SPORT_KEYS mapping + smoke test /v4/sports 200 for SerieA; other 4 not re-verified this phase per no-new-network-call rule)",
+      "historical_floor_confirmed": "2020-06-06T10:05:00+00:00",
+      "xfoot_full_history_coverage_pct": 89.17,
+      "poc_sample_coverage": "20/20",
+      "market_coverage": "UNKNOWN / NEEDS_REAL_QUERY (1X2/h2h presumed available per general Odds API market catalogue; BTTS/O-U 2.5 historical availability NOT confirmed by documentation fetched this session)",
+      "confidence": "MEDIUM (availability + floor date from official docs; market-level and real-time coverage not empirically verified for this phase)"
+    },
+    {
+      "league": "Ligue1",
+      "sport_key": "soccer_france_ligue_one",
+      "available_on_provider": "YES (confirmed Phase 8F/8G — SPORT_KEYS mapping + smoke test /v4/sports 200 for SerieA; other 4 not re-verified this phase per no-new-network-call rule)",
+      "historical_floor_confirmed": "2020-07-16T00:55:00+00:00",
+      "xfoot_full_history_coverage_pct": 88.06,
+      "poc_sample_coverage": "20/20",
+      "market_coverage": "UNKNOWN / NEEDS_REAL_QUERY (1X2/h2h presumed available per general Odds API market catalogue; BTTS/O-U 2.5 historical availability NOT confirmed by documentation fetched this session)",
+      "confidence": "MEDIUM (availability + floor date from official docs; market-level and real-time coverage not empirically verified for this phase)"
+    },
+    {
+      "league": "Bundesliga",
+      "sport_key": "soccer_germany_bundesliga",
+      "available_on_provider": "YES (confirmed Phase 8F/8G — SPORT_KEYS mapping + smoke test /v4/sports 200 for SerieA; other 4 not re-verified this phase per no-new-network-call rule)",
+      "historical_floor_confirmed": "2020-06-06T10:05:00+00:00",
+      "xfoot_full_history_coverage_pct": 87.54,
+      "poc_sample_coverage": "20/20",
+      "market_coverage": "UNKNOWN / NEEDS_REAL_QUERY (1X2/h2h presumed available per general Odds API market catalogue; BTTS/O-U 2.5 historical availability NOT confirmed by documentation fetched this session)",
+      "confidence": "MEDIUM (availability + floor date from official docs; market-level and real-time coverage not empirically verified for this phase)"
+    },
+    {
+      "league": "SerieA",
+      "sport_key": "soccer_italy_serie_a",
+      "available_on_provider": "YES (confirmed Phase 8F/8G — SPORT_KEYS mapping + smoke test /v4/sports 200 for SerieA; other 4 not re-verified this phase per no-new-network-call rule)",
+      "historical_floor_confirmed": "2020-06-06T10:05:00+00:00",
+      "xfoot_full_history_coverage_pct": 90.38,
+      "poc_sample_coverage": "20/20",
+      "market_coverage": "UNKNOWN / NEEDS_REAL_QUERY (1X2/h2h presumed available per general Odds API market catalogue; BTTS/O-U 2.5 historical availability NOT confirmed by documentation fetched this session)",
+      "confidence": "MEDIUM (availability + floor date from official docs; market-level and real-time coverage not empirically verified for this phase)"
+    },
+    {
+      "league": "LaLiga",
+      "sport_key": "soccer_spain_la_liga",
+      "available_on_provider": "YES (confirmed Phase 8F/8G — SPORT_KEYS mapping + smoke test /v4/sports 200 for SerieA; other 4 not re-verified this phase per no-new-network-call rule)",
+      "historical_floor_confirmed": "2020-06-06T10:05:00+00:00",
+      "xfoot_full_history_coverage_pct": 89.85,
+      "poc_sample_coverage": "20/20",
+      "market_coverage": "UNKNOWN / NEEDS_REAL_QUERY (1X2/h2h presumed available per general Odds API market catalogue; BTTS/O-U 2.5 historical availability NOT confirmed by documentation fetched this session)",
+      "confidence": "MEDIUM (availability + floor date from official docs; market-level and real-time coverage not empirically verified for this phase)"
+    }
+  ],
+  "commercial_conditions": {
+    "commercial_saas_use": "ALLOWED — 'use of our data in websites, mobile apps, dashboards, analytical tools, and other user-facing applications, including commercial use' (terms-and-conditions.html, verified this session).",
+    "redistribution": "PROHIBITED as a standalone data product (own API/data feed/downloadable files) — does not restrict internal derived features/ML use per the fetched clause.",
+    "storage_caching": "Not explicitly addressed — no stated restriction on operational retention found in the fetched terms.",
+    "research_vs_commercial_distinction": "NONE STATED — same restriction (no resale as standalone product) applies regardless of research/production context.",
+    "verdict": "ALLOWED for Xfoot's intended use (internal feature derivation + display in the product), subject to never reselling raw odds as a standalone feed. LEGAL_REVIEW_REQUIRED only if Xfoot later considers redistributing raw odds directly."
+  },
+  "db_safety": {
+    "before": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "after": {
+      "match": 12459,
+      "match_stats": 12459,
+      "model_predictions": 3610,
+      "model_versions": 15,
+      "prediction_log": 9,
+      "team_ratings": 568
+    },
+    "unchanged": true
+  },
+  "git_status_porcelain": "?? api/app/ai/odds_research/odds_api_trial.py\n?? api/app/ai/odds_research/provider_audit.py\n?? api/test_odds_api_trial.py\n?? api/test_odds_provider_audit.py\n?? api/test_timestamped_odds_provider_audit.py\n?? reports/odds_providers/\n?? scripts/odds_api_cost_audit.py\n?? scripts/odds_api_smoke_test.py\n?? scripts/odds_api_trial.py\n?? scripts/timestamped_odds_provider_audit.py\n",
+  "final_decision": {
+    "decision": "NEEDS_REAL_QUERY",
+    "reason": "Le calcul de coût lui-même est FAVORABLE : le scénario recommandé (100 matchs, 3 marchés, 1 cutoff, regroupement par kickoff réel appliqué) nécessite 1080 crédits, soit 8.1% du quota mensuel du plan 20K même avec +50% de marge — largement soutenable. MAIS la documentation officielle ne confirme PAS explicitement que le plan d'entrée de gamme (20K, $30/mois) inclut réellement l'accès Historical Odds (la page dédiée dit seulement 'paid usage plans' sans nommer le tier minimum, et la page d'accueil liste 'Historical Odds' de façon identique sur CHAQUE plan y compris Starter — ce qui contredit notre propre 401 empirique sur la clé Starter actuelle). Cette phase interdit explicitement toute nouvelle requête réseau pour lever cette inconnue. Recommandation : si un achat est envisagé, vérifier ce point PRÉCIS (contact support The Odds API ou un premier appel historique réel sur le plan 20K une fois souscrit) avant tout usage en profondeur — le coût n'est PAS le facteur bloquant, l'ACCÈS au tier minimum l'est potentiellement."
+  }
+}
