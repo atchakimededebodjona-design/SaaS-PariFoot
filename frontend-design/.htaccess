@@ -1,0 +1,28 @@
+# Phase 14 — liens de parrainage propres : https://www.xfoot.site/{slug}
+#
+# Hostinger (hébergement statique, voir HOSTINGER_DEPLOY.md) sert ce dossier
+# tel quel via Apache — mod_rewrite y est disponible en standard sur
+# l'hébergement mutuel Hostinger (non vérifié sur CE compte précis, faute
+# d'accès — voir HOSTINGER_DEPLOY.md : "je n'ai pas accès à ton compte
+# Hostinger"). CODE COMPLET, NON VÉRIFIÉ EN PRODUCTION — à confirmer après
+# upload (voir reports/phase14, section Limitations).
+#
+# Règle : un chemin à un seul segment qui NE correspond À AUCUN fichier ni
+# dossier réel (login.html, index.html, styles.css, api.js, etc. restent
+# donc totalement inchangés) est réécrit en interne vers login.html avec le
+# slug en paramètre ?ref= — jamais une redirection visible (302/301), le
+# visiteur voit toujours https://www.xfoot.site/{slug} dans sa barre
+# d'adresse. La validation RÉELLE du slug (existe / actif) se fait ensuite
+# côté JS (captureReferralFromUrl(), api.js) via un appel API — ce fichier
+# ne fait QUE transporter le slug jusqu'à la page, jamais de logique métier.
+
+RewriteEngine On
+
+# Ne jamais réécrire un fichier ou dossier qui existe réellement sur le disque.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Un seul segment, caractères URL-safe uniquement (même alphabet que
+# app/referral/slug.py::_SLUG_RE côté backend — la validation d'AUTORITÉ
+# reste toujours côté serveur, ceci n'est qu'un filtre de forme).
+RewriteRule ^([a-z0-9][a-z0-9-]{0,38}[a-z0-9]|[a-z0-9])$ /login.html?ref=$1 [L,QSA]

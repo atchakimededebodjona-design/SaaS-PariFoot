@@ -43,6 +43,8 @@ from app.auth.router import router as auth_router
 from app.auth.security import get_current_user
 from app.billing.router import router as billing_router
 from app.billing.dependencies import require_active_subscription
+from app.referral.router import router as referral_router
+from app.referral.admin_router import router as referral_admin_router
 from app.models.user import User
 from app.models.model_artifact import ModelArtifact
 from app.models.prediction_log import PredictionLog
@@ -820,6 +822,8 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(billing_router)
+app.include_router(referral_router)
+app.include_router(referral_admin_router)
 
 
 @app.on_event("startup")

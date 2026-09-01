@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Administration Promoteurs</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
+        .admin-subnav { display: flex; gap: 0.5rem; margin-bottom: var(--x-space-5); flex-wrap: wrap; }
+        .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
+        [data-role-nav] { display: inline-flex; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span><span>xFoot</span><span class="pro-badge">ADMIN</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+                <a href="admin-promoters.html" class="desktop-nav-link active" data-role-nav="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <h1 class="x-h1" style="margin-bottom: 0.3rem;">Administration — Promoteurs</h1>
+            <p class="x-body-sm" style="color: var(--x-text-muted); margin-bottom: var(--x-space-4);">Réservé aux administrateurs (vérifié côté serveur).</p>
+
+            <div class="admin-subnav">
+                <a href="admin-promoters.html" class="x-btn x-btn-primary x-btn-sm">Promoteurs</a>
+                <a href="admin-subscribers.html" class="x-btn x-btn-ghost x-btn-sm">Abonnés</a>
+                <a href="admin-earnings.html" class="x-btn x-btn-ghost x-btn-sm">Gains</a>
+            </div>
+
+            <div id="admin-error" class="x-field-error" style="display:none;"></div>
+            <div id="admin-content" style="display:none;">
+
+                <section class="dash-section">
+                    <div class="dash-section-header">
+                        <h2 class="x-h2">Rechercher / filtrer</h2>
+                    </div>
+                    <div class="x-search" style="max-width: 320px; margin-bottom: 1rem;">
+                        <span class="x-search-icon">🔍</span>
+                        <input class="x-input" id="search-input" placeholder="Nom, email ou slug…">
+                    </div>
+                    <select class="x-select" id="status-filter" style="max-width: 220px;">
+                        <option value="">Tous les statuts</option>
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                        <option value="SUSPENDED">SUSPENDED</option>
+                    </select>
+                </section>
+
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Promoteurs</h2></div>
+                    <div id="promoters-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">🤝</span>
+                        <p class="x-body">Aucun promoteur pour l'instant.</p>
+                    </div>
+                    <div class="x-table-wrap" id="promoters-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Email</th><th>Slug</th><th>Lien</th><th>Statut</th><th>Créé le</th><th>Actions</th></tr></thead>
+                            <tbody id="promoters-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Créer un promoteur</h2></div>
+                    <p class="x-caption" style="margin-bottom:0.6rem;">À partir de l'ID d'un utilisateur existant (visible sur la fiche Abonnés).</p>
+                    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                        <input class="x-input" id="new-promoter-user-id" placeholder="user_id" style="max-width:140px;" type="number">
+                        <input class="x-input" id="new-promoter-slug" placeholder="slug personnalisé (optionnel)" style="max-width:240px;">
+                        <button class="x-btn x-btn-secondary x-btn-md" id="create-promoter-btn">Créer</button>
+                    </div>
+                    <div id="create-promoter-msg" class="x-caption" style="margin-top:0.5rem;"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        async function loadCurrentUserHeader() {
+            try {
+                const response = await apiFetch("/auth/me");
+                const user = await response.json();
+                document.getElementById("user-email").textContent = user.name || user.email.split("@")[0];
+                document.getElementById("user-email").title = user.email;
+            } catch (e) { console.error("Auth error", e); }
+        }
+
+        function fmtDate(iso) {
+            return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+        }
+
+        async function loadPromoters() {
+            const q = document.getElementById("search-input").value.trim();
+            const status = document.getElementById("status-filter").value;
+            const params = new URLSearchParams();
+            if (q) params.set("q", q);
+            if (status) params.set("status_filter", status);
+            const res = await apiFetch(`/admin/promoters?${params.toString()}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+
+            const emptyEl = document.getElementById("promoters-empty");
+            const wrapEl = document.getElementById("promoters-table-wrap");
+            if (rows.length === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("promoters-tbody").innerHTML = rows.map(p => `
+                <tr>
+                    <td>${p.email}</td>
+                    <td>${p.slug}</td>
+                    <td style="font-family:monospace; font-size:0.8rem;">${p.referral_link}</td>
+                    <td><span class="x-badge ${p.status === "ACTIVE" ? "x-badge-active" : "x-badge-inactive"}">${p.status}</span></td>
+                    <td>${fmtDate(p.created_at)}</td>
+                    <td>
+                        <select class="x-select status-select" data-promoter-id="${p.id}" style="font-size:0.8rem; padding:0.3rem 0.5rem;">
+                            <option value="ACTIVE" ${p.status === "ACTIVE" ? "selected" : ""}>ACTIVE</option>
+                            <option value="INACTIVE" ${p.status === "INACTIVE" ? "selected" : ""}>INACTIVE</option>
+                            <option value="SUSPENDED" ${p.status === "SUSPENDED" ? "selected" : ""}>SUSPENDED</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join("");
+
+            document.querySelectorAll(".status-select").forEach(sel => {
+                sel.addEventListener("change", async () => {
+                    const promoterId = sel.dataset.promoterId;
+                    const res = await apiFetch(`/admin/promoters/${promoterId}/status`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: sel.value }),
+                    });
+                    if (!res.ok) { alert("Changement de statut impossible."); return; }
+                    loadPromoters();
+                });
+            });
+        }
+
+        document.getElementById("search-input").addEventListener("input", () => { loadPromoters().catch(console.error); });
+        document.getElementById("status-filter").addEventListener("change", () => { loadPromoters().catch(console.error); });
+
+        document.getElementById("create-promoter-btn").addEventListener("click", async () => {
+            const userId = document.getElementById("new-promoter-user-id").value;
+            const slug = document.getElementById("new-promoter-slug").value.trim();
+            const msgEl = document.getElementById("create-promoter-msg");
+            if (!userId) { msgEl.textContent = "user_id requis."; return; }
+            const res = await apiFetch("/admin/promoters", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: parseInt(userId, 10), requested_slug: slug || null }),
+            });
+            const body = await res.json();
+            if (!res.ok) {
+                msgEl.textContent = body.detail || "Création impossible.";
+                msgEl.style.color = "var(--x-danger, #ff4d4d)";
+            } else {
+                msgEl.textContent = `Promoteur créé : ${body.slug}`;
+                msgEl.style.color = "var(--x-success, #2cd9a5)";
+                loadPromoters();
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            clearToken();
+            window.location.href = "login.html";
+        });
+
+        async function init() {
+            loadCurrentUserHeader();
+            applyRoleBasedNav();
+            const errorEl = document.getElementById("admin-error");
+            const contentEl = document.getElementById("admin-content");
+            try {
+                await loadPromoters();
+                contentEl.style.display = "block";
+            } catch (e) {
+                errorEl.textContent = e.message && e.message.includes("403")
+                    ? "Accès réservé aux administrateurs."
+                    : "Impossible de charger la liste des promoteurs — " + (e.message || "erreur.");
+                errorEl.style.display = "block";
+            }
+        }
+        init();
+    </script>
+</body>
+</html>

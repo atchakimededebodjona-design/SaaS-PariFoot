@@ -130,6 +130,14 @@
                     <span class="nav-icon">👑</span>
                     <span>VIP</span>
                 </a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter">
+                    <span class="nav-icon">🤝</span>
+                    <span>Promoteur</span>
+                </a>
+                <a href="admin-promoters.html" class="desktop-nav-link hidden" data-role-nav="admin">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin</span>
+                </a>
             </nav>
             <div class="header-actions">
                 <span class="user-email" id="user-email">...</span>
@@ -246,6 +254,8 @@
                     <a href="arena.html" class="dash-quick-link"><span class="dash-quick-icon">🏟️</span><span class="x-body-sm" style="color:var(--x-text);">AI Arena</span></a>
                     <a href="history.html" class="dash-quick-link"><span class="dash-quick-icon">📊</span><span class="x-body-sm" style="color:var(--x-text);">Analytics</span></a>
                     <a href="#" class="dash-quick-link disabled" aria-disabled="true"><span class="dash-quick-icon">🔥</span><span class="x-body-sm" style="color:var(--x-text);">AI Radar <span class="x-caption">(soon)</span></span></a>
+                    <a href="promoter.html" class="dash-quick-link hidden" data-role-nav="promoter"><span class="dash-quick-icon">🤝</span><span class="x-body-sm" style="color:var(--x-text);">Promoteur</span></a>
+                    <a href="admin-promoters.html" class="dash-quick-link hidden" data-role-nav="admin"><span class="dash-quick-icon">🛡️</span><span class="x-body-sm" style="color:var(--x-text);">Administration</span></a>
                 </div>
             </section>
 
@@ -509,6 +519,7 @@
         }
 
         loadCurrentUser();
+        applyRoleBasedNav();
         loadMatches();
         loadPredictions();
         loadModelPerformance();

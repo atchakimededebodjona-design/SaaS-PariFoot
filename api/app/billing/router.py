@@ -61,6 +61,7 @@ from app.models.subscription import ProcessedPulseDelivery
 from app.models.provider_subscription import ProviderSubscription
 from app.models.entitlement import Entitlement
 from app.billing.entitlement_service import recompute_entitlement
+from app.referral.commission_service import create_commission_for_confirmed_payment, reverse_commissions_for_subscription
 from app.models.google_play_purchase import ProcessedGoogleNotification
 from app.billing.google_play_service import (
     GoogleApiError,
@@ -577,7 +578,7 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
     event_type = body.get("event")
 
     if event_type == "successful.sale":
-        _handle_successful_sale(session, body)
+        _handle_successful_sale(session, body, delivery_id)
     elif event_type == "license.activated":
         _handle_license_activated(session, body)
     elif event_type == "license.expired":
@@ -596,13 +597,22 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
     return {"received": True}
 
 
-def _handle_successful_sale(session: Session, body: dict):
+def _handle_successful_sale(session: Session, body: dict, delivery_id: str | None = None):
     """
     Le sale ne porte PAS encore de clé de licence ni de date d'expiration
     (ces informations arrivent avec le Pulse license.activated qui suit) —
     on active l'accès dès maintenant sur la seule foi de custom_metadata
     (notre user_id, fixé par nous à la création du checkout), et
     license.activated affinera current_period_end juste après.
+
+    Phase 14 : c'est ICI, et UNIQUEMENT ici, que le paiement devient
+    PAID/CONFIRMED pour ce projet (§11 du prompt Phase 14 — jamais au clic,
+    à l'inscription, à la création du checkout, ni au choix d'un plan) — le
+    point d'accroche naturel pour la création d'une commission de
+    parrainage, réutilisant `delivery_id` comme clé d'idempotence (déjà
+    dédupliqué en amont par ProcessedPulseDelivery, voir chariow_pulse
+    ci-dessus ; la commission ajoute sa propre contrainte UNIQUE en défense
+    en profondeur, voir app/referral/commission_service.py).
     """
     sale = body.get("sale") or {}
     custom_metadata = sale.get("custom_metadata") or {}
@@ -631,6 +641,15 @@ def _handle_successful_sale(session: Session, body: dict):
     session.commit()
     session.refresh(sub)
     recompute_entitlement(session, user_id, provider_subscription_id=sub.id, reason="chariow: successful.sale")
+
+    # Phase 14 : paiement RÉELLEMENT confirmé ci-dessus (sub.status="active", déjà committé) — seul
+    # endroit où une commission de parrainage peut être créée (§11/§52). Best-effort : ne doit jamais faire
+    # échouer le traitement du paiement/entitlement déjà appliqué au-dessus (même discipline que
+    # api/main.py::_log_prediction) — aucune vente/aucun abonné n'est affecté si la commission échoue.
+    try:
+        create_commission_for_confirmed_payment(session, provider_subscription=sub, sale_body=sale, delivery_id=delivery_id)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Création de commission de parrainage impossible (non bloquant) pour provider_subscription_id=%s : %s", sub.id, e)
 
 
 def _handle_license_activated(session: Session, body: dict):
@@ -672,6 +691,15 @@ def _handle_license_status(session: Session, body: dict, *, new_status: str):
     session.commit()
     session.refresh(sub)
     recompute_entitlement(session, sub.user_id, provider_subscription_id=sub.id, reason=f"chariow: license.{new_status}")
+
+    # Phase 14 : §13/§35 — "revoked" est déjà le vocabulaire de ce dépôt pour révocation/remboursement
+    # (voir revoked_or_refunded_at ci-dessus, nom de champ déjà existant, jamais un second concept
+    # introduit). Toute commission ACCRUED liée à cet abonnement passe à REVERSED — jamais supprimée.
+    if new_status == "revoked":
+        try:
+            reverse_commissions_for_subscription(session, sub.id, reason="chariow: license.revoked")
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Réversion de commission de parrainage impossible (non bloquant) pour provider_subscription_id=%s : %s", sub.id, e)
 
 
 def _handle_license_nearing_expiry(session: Session, body: dict):

@@ -155,6 +155,14 @@
                     <span class="nav-icon">👑</span>
                     <span>VIP</span>
                 </a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter">
+                    <span class="nav-icon">🤝</span>
+                    <span>Promoteur</span>
+                </a>
+                <a href="admin-promoters.html" class="desktop-nav-link hidden" data-role-nav="admin">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin</span>
+                </a>
             </nav>
             <div class="header-actions">
                 <span id="user-role-badge" class="badge-role subscriber">...</span>
@@ -1182,6 +1190,7 @@
         }
 
         loadCurrentUser();
+        applyRoleBasedNav();
         loadArena();
         loadModelStatus();
         loadEnsembleLeagues();

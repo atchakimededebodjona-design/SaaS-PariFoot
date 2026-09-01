@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Administration Abonnés</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
+        .admin-subnav { display: flex; gap: 0.5rem; margin-bottom: var(--x-space-5); flex-wrap: wrap; }
+        .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
+        [data-role-nav] { display: inline-flex; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span><span>xFoot</span><span class="pro-badge">ADMIN</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+                <a href="admin-promoters.html" class="desktop-nav-link active" data-role-nav="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <h1 class="x-h1" style="margin-bottom: 0.3rem;">Administration — Abonnés</h1>
+            <p class="x-body-sm" style="color: var(--x-text-muted); margin-bottom: var(--x-space-4);">Réservé aux administrateurs (vérifié côté serveur).</p>
+
+            <div class="admin-subnav">
+                <a href="admin-promoters.html" class="x-btn x-btn-ghost x-btn-sm">Promoteurs</a>
+                <a href="admin-subscribers.html" class="x-btn x-btn-primary x-btn-sm">Abonnés</a>
+                <a href="admin-earnings.html" class="x-btn x-btn-ghost x-btn-sm">Gains</a>
+            </div>
+
+            <div id="admin-error" class="x-field-error" style="display:none;"></div>
+            <div id="admin-content" style="display:none;">
+                <section class="dash-section">
+                    <div class="dash-section-header">
+                        <h2 class="x-h2">Abonnés</h2>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="x-btn x-btn-ghost x-btn-sm" id="prev-btn">← Précédent</button>
+                            <button class="x-btn x-btn-ghost x-btn-sm" id="next-btn">Suivant →</button>
+                        </div>
+                    </div>
+                    <p class="x-caption" style="margin-bottom:0.8rem;">Aucune donnée sensible de paiement affichée (§20) — le montant est celui réellement confirmé par Chariow, jamais un prix catalogue.</p>
+                    <div id="subs-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">👥</span>
+                        <p class="x-body">Aucun abonné pour l'instant.</p>
+                    </div>
+                    <div class="x-table-wrap" id="subs-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Nom</th><th>Email</th><th>Plan</th><th>Montant payé</th><th>Date</th><th>Promoteur</th><th>Statut paiement</th></tr></thead>
+                            <tbody id="subs-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        async function loadCurrentUserHeader() {
+            try {
+                const response = await apiFetch("/auth/me");
+                const user = await response.json();
+                document.getElementById("user-email").textContent = user.name || user.email.split("@")[0];
+                document.getElementById("user-email").title = user.email;
+            } catch (e) { console.error("Auth error", e); }
+        }
+
+        function fmtDate(iso) {
+            return iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+        }
+        function fmtMoney(amount) {
+            return amount === null || amount === undefined ? "—" : amount.toLocaleString("fr-FR");
+        }
+
+        let offset = 0;
+        const PAGE_SIZE = 20;
+
+        async function loadSubscribers() {
+            const res = await apiFetch(`/admin/subscribers?limit=${PAGE_SIZE}&offset=${offset}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+            const emptyEl = document.getElementById("subs-empty");
+            const wrapEl = document.getElementById("subs-table-wrap");
+            if (rows.length === 0 && offset === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("subs-tbody").innerHTML = rows.map(s => `
+                <tr>
+                    <td>${s.name || "—"}</td>
+                    <td>${s.email}</td>
+                    <td>${s.plan || "—"}</td>
+                    <td>${fmtMoney(s.amount_paid)}</td>
+                    <td>${fmtDate(s.date)}</td>
+                    <td>${s.promoter_slug || "—"}</td>
+                    <td><span class="x-badge ${s.payment_status === "active" ? "x-badge-active" : "x-badge-inactive"}">${s.payment_status}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        document.getElementById("prev-btn").addEventListener("click", () => { offset = Math.max(0, offset - PAGE_SIZE); loadSubscribers(); });
+        document.getElementById("next-btn").addEventListener("click", () => { offset += PAGE_SIZE; loadSubscribers(); });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            clearToken();
+            window.location.href = "login.html";
+        });
+
+        async function init() {
+            loadCurrentUserHeader();
+            applyRoleBasedNav();
+            const errorEl = document.getElementById("admin-error");
+            const contentEl = document.getElementById("admin-content");
+            try {
+                await loadSubscribers();
+                contentEl.style.display = "block";
+            } catch (e) {
+                errorEl.textContent = e.message && e.message.includes("403")
+                    ? "Accès réservé aux administrateurs."
+                    : "Impossible de charger les abonnés — " + (e.message || "erreur.");
+                errorEl.style.display = "block";
+            }
+        }
+        init();
+    </script>
+</body>
+</html>

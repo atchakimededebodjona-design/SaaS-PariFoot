@@ -73,6 +73,12 @@
         // Déjà connecté -> pas besoin de repasser par cette page.
         if (getToken()) {
             window.location.href = "dashboard.html";
+        } else {
+            // Phase 14 : login.html est la véritable porte d'entrée anonyme du site (index.html exige déjà
+            // requireAuth() dès son chargement, voir index.html) — c'est ici, et nulle part ailleurs, qu'un
+            // visiteur arrivant via https://www.xfoot.site/{slug} (réécrit en ?ref={slug} par .htaccess,
+            // voir frontend-design/.htaccess) atterrit réellement. Best-effort, ne bloque jamais le rendu (§31).
+            captureReferralFromUrl();
         }
 
         let mode = "login"; // "login" | "register"
@@ -178,6 +184,10 @@
                     await register(name, email, password);
                 }
                 await login(email, password);
+                // Phase 14 : seul moment où une attribution devient une ligne serveur (§8/§9/§11) — après
+                // login ET register (le token vient d'être posé par login() ci-dessus, requis pour
+                // authentifier l'appel). Best-effort, ne bloque jamais la redirection (§31).
+                await attributeReferralIfPresent();
                 window.location.href = "dashboard.html";
             } catch (err) {
                 showError(err.message);

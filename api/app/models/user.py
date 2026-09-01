@@ -32,6 +32,7 @@ class UserRead(SQLModel):
     name: Optional[str] = None
     is_active: bool
     is_admin: bool = False
+    is_promoter: bool = False  # Phase 14 — même principe que is_admin : dérivé côté serveur, jamais fourni par le client
     created_at: datetime
 
 

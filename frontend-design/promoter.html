@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Tableau de bord Promoteur</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Scoped à cette page — composé uniquement de classes .x-* du Design
+           System (styles.css) + le shell .app-container déjà validé, même
+           discipline que dashboard.html (Phase 14, §30 : "réutiliser
+           layout/navigation/composants", rien de nouveau introduit ici qui
+           ne devrait pas migrer dans styles.css si une autre page en a besoin). */
+        .promo-link-card {
+            display: flex; align-items: center; gap: var(--x-space-3); flex-wrap: wrap;
+            background: var(--x-surface); border: 1px solid var(--x-border); border-radius: var(--x-radius-lg);
+            padding: var(--x-space-5); margin-bottom: var(--x-space-6);
+        }
+        .promo-link-value {
+            flex: 1; min-width: 220px; font-family: monospace; font-size: 0.95rem;
+            color: var(--x-text); background: var(--x-bg); border: 1px solid var(--x-border);
+            border-radius: var(--x-radius-md); padding: 0.7rem 0.9rem; overflow-x: auto; white-space: nowrap;
+        }
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
+        .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
+        .payout-banner {
+            background: rgba(255, 193, 7, 0.08); border: 1px solid rgba(255, 193, 7, 0.25); border-radius: var(--x-radius-md);
+            padding: var(--x-space-3) var(--x-space-4); margin-top: var(--x-space-3); font-size: 0.85rem; color: var(--x-text-muted);
+        }
+        [data-role-nav] { display: inline-flex; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span><span>xFoot</span><span class="pro-badge">PROMOTEUR</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+                <a href="index.html" class="desktop-nav-link"><span class="nav-icon">✨</span><span>AI Analysis</span></a>
+                <a href="history.html" class="desktop-nav-link"><span class="nav-icon">📊</span><span>Historique</span></a>
+                <a href="promoter.html" class="desktop-nav-link active" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+                <a href="admin-promoters.html" class="desktop-nav-link hidden" data-role-nav="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <h1 class="x-h1" style="margin-bottom: 0.3rem;">Tableau de bord Promoteur</h1>
+            <p class="x-body-sm" style="color: var(--x-text-muted); margin-bottom: var(--x-space-5);">
+                Partage ton lien, suis tes conversions et tes commissions — 40% de chaque abonnement réellement payé.
+            </p>
+
+            <div id="promoter-error" class="x-field-error" style="display:none;"></div>
+            <div id="promoter-content" style="display:none;">
+
+                <!-- ============ LIEN DE PROMOTION ============ -->
+                <div class="promo-link-card">
+                    <span class="x-h3" style="margin: 0;">🔗 Ton lien</span>
+                    <span class="promo-link-value" id="referral-link">—</span>
+                    <button class="x-btn x-btn-primary x-btn-md" id="copy-link-btn">Copier le lien</button>
+                    <span class="x-badge" id="promoter-status-badge">—</span>
+                </div>
+
+                <!-- ============ STATISTIQUES ============ -->
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Statistiques</h2></div>
+                    <div class="x-grid">
+                        <div class="x-card-kpi"><span class="x-label">Visiteurs</span><span class="x-kpi" id="kpi-visitors">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Inscriptions</span><span class="x-kpi" id="kpi-signups">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Abonnés convertis</span><span class="x-kpi" id="kpi-converted">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Ventes payées</span><span class="x-kpi" id="kpi-sales">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Revenu généré</span><span class="x-kpi" id="kpi-revenue">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Commission totale</span><span class="x-kpi" id="kpi-commission">—</span></div>
+                    </div>
+                </section>
+
+                <!-- ============ GAINS ============ -->
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Gains</h2></div>
+                    <div class="x-grid">
+                        <div class="x-card-kpi"><span class="x-label">Commission acquise</span><span class="x-kpi" id="kpi-accrued">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Reversée (remboursements)</span><span class="x-kpi" id="kpi-reversed">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Disponible</span><span class="x-kpi" id="kpi-available">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Déjà versée</span><span class="x-kpi" id="kpi-paid-out">0</span></div>
+                    </div>
+                    <div class="payout-banner">⚠️ Système de versement pas encore implémenté (<code>PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED</code>) — les montants ci-dessus sont acquis (comptabilisés dans le grand livre) mais aucun virement automatique n'existe encore. Contacte l'équipe xFoot pour un versement manuel.</div>
+                </section>
+
+                <!-- ============ VENTES ============ -->
+                <section class="dash-section">
+                    <div class="dash-section-header">
+                        <h2 class="x-h2">Ventes</h2>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button class="x-btn x-btn-ghost x-btn-sm" id="sales-prev-btn">← Précédent</button>
+                            <button class="x-btn x-btn-ghost x-btn-sm" id="sales-next-btn">Suivant →</button>
+                        </div>
+                    </div>
+                    <div id="sales-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">📭</span>
+                        <p class="x-body">Aucune vente pour l'instant.</p>
+                        <p class="x-caption" style="margin-top:0.4rem;">Une vente apparaît ici uniquement lorsqu'un paiement est réellement confirmé — jamais au clic ou à l'inscription.</p>
+                    </div>
+                    <div class="x-table-wrap" id="sales-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Date</th><th>Client</th><th>Plan</th><th>Montant payé</th><th>Commission</th><th>Statut</th></tr></thead>
+                            <tbody id="sales-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+            <a href="history.html" class="nav-item"><span class="nav-icon">📊</span><span>Historique</span></a>
+            <a href="promoter.html" class="nav-item active" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+            <a href="index.html" class="nav-item"><span class="nav-icon">✨</span><span>AI Analysis</span></a>
+        </nav>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const STATUS_BADGE_CLASS = { ACCRUED: "x-badge-success", REVERSED: "x-badge-error" };
+        const STATUS_LABEL = { ACCRUED: "Payée", REVERSED: "Remboursée" };
+        const CURRENCY_LABEL = { XOF: "FCFA" };
+
+        function fmtMoney(amount, currency) {
+            if (amount === null || amount === undefined) return "—";
+            return `${amount.toLocaleString("fr-FR")} ${CURRENCY_LABEL[currency] || currency || ""}`.trim();
+        }
+        function fmtDate(iso) {
+            return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+        }
+
+        let salesOffset = 0;
+        const SALES_PAGE_SIZE = 20;
+        let promoterCurrency = "XOF";
+
+        async function loadCurrentUserHeader() {
+            try {
+                const response = await apiFetch("/auth/me");
+                const user = await response.json();
+                document.getElementById("user-email").textContent = user.name || user.email.split("@")[0];
+                document.getElementById("user-email").title = user.email;
+            } catch (e) { console.error("Auth error", e); }
+        }
+
+        async function loadProfile() {
+            const res = await apiFetch("/promoter/me");
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const profile = await res.json();
+            document.getElementById("referral-link").textContent = profile.referral_link;
+            document.getElementById("promoter-status-badge").textContent = profile.status;
+            document.getElementById("promoter-status-badge").className =
+                "x-badge " + (profile.status === "ACTIVE" ? "x-badge-active" : "x-badge-inactive");
+            return profile;
+        }
+
+        async function loadStats() {
+            const res = await apiFetch("/promoter/me/stats");
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const stats = await res.json();
+            promoterCurrency = stats.currency || "XOF";
+            document.getElementById("kpi-visitors").textContent = stats.visitors_attributed;
+            document.getElementById("kpi-signups").textContent = stats.signups_attributed;
+            document.getElementById("kpi-converted").textContent = stats.converted_subscribers;
+            document.getElementById("kpi-sales").textContent = stats.total_sales;
+            document.getElementById("kpi-revenue").textContent = fmtMoney(stats.gross_revenue, stats.currency);
+            document.getElementById("kpi-commission").textContent = fmtMoney(stats.total_commission_accrued, stats.currency);
+            document.getElementById("kpi-accrued").textContent = fmtMoney(stats.total_commission_accrued, stats.currency);
+            document.getElementById("kpi-reversed").textContent = fmtMoney(stats.total_commission_reversed, stats.currency);
+            document.getElementById("kpi-available").textContent = fmtMoney(stats.commission_available, stats.currency);
+            document.getElementById("kpi-paid-out").textContent = fmtMoney(stats.commission_paid_out, stats.currency);
+        }
+
+        async function loadSales() {
+            const res = await apiFetch(`/promoter/me/sales?limit=${SALES_PAGE_SIZE}&offset=${salesOffset}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+            const emptyEl = document.getElementById("sales-empty");
+            const wrapEl = document.getElementById("sales-table-wrap");
+            if (rows.length === 0 && salesOffset === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("sales-tbody").innerHTML = rows.map(r => `
+                <tr>
+                    <td>${fmtDate(r.date)}</td>
+                    <td>${r.client}</td>
+                    <td>${r.plan || "—"}</td>
+                    <td>${fmtMoney(r.amount_paid, r.currency)}</td>
+                    <td>${fmtMoney(r.commission, r.currency)}</td>
+                    <td><span class="x-badge ${STATUS_BADGE_CLASS[r.status] || ""}">${STATUS_LABEL[r.status] || r.status}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        document.getElementById("sales-prev-btn").addEventListener("click", () => {
+            salesOffset = Math.max(0, salesOffset - SALES_PAGE_SIZE);
+            loadSales();
+        });
+        document.getElementById("sales-next-btn").addEventListener("click", () => {
+            salesOffset += SALES_PAGE_SIZE;
+            loadSales();
+        });
+
+        document.getElementById("copy-link-btn").addEventListener("click", async () => {
+            const link = document.getElementById("referral-link").textContent;
+            try {
+                await navigator.clipboard.writeText(link);
+                const btn = document.getElementById("copy-link-btn");
+                const original = btn.textContent;
+                btn.textContent = "Copié !";
+                setTimeout(() => { btn.textContent = original; }, 1500);
+            } catch (e) { console.error("Copie impossible:", e); }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            clearToken();
+            window.location.href = "login.html";
+        });
+
+        async function init() {
+            loadCurrentUserHeader();
+            applyRoleBasedNav();
+            const errorEl = document.getElementById("promoter-error");
+            const contentEl = document.getElementById("promoter-content");
+            try {
+                await loadProfile();
+                await Promise.all([loadStats(), loadSales()]);
+                contentEl.style.display = "block";
+            } catch (e) {
+                if (e.message && e.message.includes("403")) {
+                    errorEl.textContent = "Ce compte n'est pas un compte promoteur.";
+                } else {
+                    errorEl.textContent = "Impossible de charger le tableau de bord promoteur — " + (e.message || "erreur.");
+                }
+                errorEl.style.display = "block";
+            }
+        }
+        init();
+    </script>
+</body>
+</html>

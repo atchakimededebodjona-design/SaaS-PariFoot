@@ -40,6 +40,14 @@
                     <span class="nav-icon">👑</span>
                     <span>VIP</span>
                 </a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter">
+                    <span class="nav-icon">🤝</span>
+                    <span>Promoteur</span>
+                </a>
+                <a href="admin-promoters.html" class="desktop-nav-link hidden" data-role-nav="admin">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin</span>
+                </a>
             </nav>
             <div class="header-actions">
                 <span class="user-email" id="user-email">...</span>
@@ -479,6 +487,7 @@
 
         /* ─── Init ─── */
         loadCurrentUser();
+        applyRoleBasedNav();
         loadHistory();
     </script>
 
@@ -503,6 +512,28 @@
 
         .fixtures-list .day-group + .day-group {
             margin-top: 0.5rem;
+        }
+
+        /* Desktop : #history-days (.fixtures-list) devient une grille multi-colonnes (voir styles.css),
+           mais ses enfants directs sont des .day-group (un par jour), pas les fixture-card — sans ceci,
+           chaque jour occupe UNE seule cellule de grille et ses matchs restent empilés en une colonne,
+           laissant le reste de la largeur vide. Chaque .day-group s'étend donc sur toute la largeur de
+           la grille et devient lui-même une grille responsive pour ses propres fixture-card. */
+        @media (min-width: 768px) {
+            .fixtures-list .day-group {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+                gap: 1.25rem;
+            }
+
+            .fixtures-list .day-group .day-header {
+                grid-column: 1 / -1;
+            }
+
+            .fixtures-list .day-group + .day-group {
+                margin-top: 1rem;
+            }
         }
 
         /* VS divider with score styling */

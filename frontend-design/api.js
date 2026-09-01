@@ -93,3 +93,94 @@ async function getCurrentUser() {
     return null;
 }
 
+// ---------------------------------------------------------------------------
+// Programme de promotion / parrainage (Phase 14) — capture et attribution du
+// lien https://www.xfoot.site/{slug}. Même mécanisme de persistance que le
+// token (localStorage sur l'origine du frontend, PAS un cookie — Chariow/
+// l'API tournent sur un domaine différent, xfoot_token est déjà stocké ainsi
+// pour la même raison) — voir app/referral/router.py pour le contrat serveur.
+// ---------------------------------------------------------------------------
+
+const REFERRAL_SLUG_KEY = "xfoot_referral_slug";
+const REFERRAL_CAPTURED_AT_KEY = "xfoot_referral_captured_at";
+const VISITOR_ID_KEY = "xfoot_visitor_id";
+
+// UUID anonyme persistant — AUCUNE donnée personnelle (pas d'email, pas d'IP,
+// pas de user-agent) — sert uniquement à compter des visiteurs distincts
+// côté serveur (voir ReferralVisit, app/models/promoter.py).
+function getOrCreateVisitorId() {
+    let id = window.localStorage.getItem(VISITOR_ID_KEY);
+    if (!id) {
+        id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID()
+            : `v-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        window.localStorage.setItem(VISITOR_ID_KEY, id);
+    }
+    return id;
+}
+
+// À appeler au chargement de CHAQUE page publique (index.html en premier
+// lieu, la landing réelle du site) : si l'URL porte ?ref={slug} (ou si
+// .htaccess a réécrit /{slug} vers ?ref={slug}, voir frontend-design/.htaccess),
+// valide le slug côté serveur puis le mémorise (LAST VALID REFERRER — un
+// nouveau ?ref= valide remplace toujours le précédent). Ne bloque jamais le
+// rendu de la page (§31 : "le parcours doit être fluide", best-effort,
+// jamais d'erreur visible si l'appel échoue).
+async function captureReferralFromUrl() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const slug = (params.get("ref") || "").trim().toLowerCase();
+        if (!slug) return;
+
+        const res = await fetch(`${API_BASE_URL}/referral/resolve/${encodeURIComponent(slug)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ visitor_id: getOrCreateVisitorId() }),
+        });
+        if (!res.ok) return;
+        const body = await res.json();
+        if (body.valid) {
+            window.localStorage.setItem(REFERRAL_SLUG_KEY, slug);
+            window.localStorage.setItem(REFERRAL_CAPTURED_AT_KEY, new Date().toISOString());
+        }
+        // slug invalide/inactif : comportement normal du site, rien à afficher (§32).
+    } catch (e) {
+        console.error("captureReferralFromUrl:", e);
+    }
+}
+
+// À appeler juste après une inscription+connexion réussies (voir login.html)
+// — le SEUL moment où une attribution devient une ligne serveur (§8/§9).
+// Best-effort : ne doit jamais faire échouer le parcours d'inscription.
+async function attributeReferralIfPresent() {
+    const slug = window.localStorage.getItem(REFERRAL_SLUG_KEY);
+    if (!slug) return;
+    const capturedAt = window.localStorage.getItem(REFERRAL_CAPTURED_AT_KEY);
+    try {
+        await apiFetch("/referral/attribute", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ slug, captured_at: capturedAt, visitor_id: getOrCreateVisitorId() }),
+        });
+    } catch (e) {
+        console.error("attributeReferralIfPresent:", e);
+    } finally {
+        // Un seul essai possible par nature (ALREADY_ATTRIBUTED derrière, §9) — jamais retenté après coup.
+        window.localStorage.removeItem(REFERRAL_SLUG_KEY);
+        window.localStorage.removeItem(REFERRAL_CAPTURED_AT_KEY);
+    }
+}
+
+// Affiche/masque les liens de nav réservés (Promoteur/Admin) selon le rôle
+// réel renvoyé par /auth/me (is_promoter/is_admin, jamais une hypothèse
+// côté client) — à appeler une fois le DOM prêt sur chaque page qui inclut
+// ces liens (voir index.html et les autres pages, bloc [data-role-nav]).
+async function applyRoleBasedNav() {
+    const user = await getCurrentUser();
+    document.querySelectorAll('[data-role-nav="promoter"]').forEach(el => {
+        el.classList.toggle("hidden", !(user && user.is_promoter));
+    });
+    document.querySelectorAll('[data-role-nav="admin"]').forEach(el => {
+        el.classList.toggle("hidden", !(user && user.is_admin));
+    });
+}
+

@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 from app.core.database import get_session
 from app.core.rate_limit import limiter
 from app.models.user import User, UserCreate, UserRead, Token
+from app.models.promoter import Promoter
 from app.auth.security import hash_password, authenticate_user, create_access_token, get_current_user
 from app.auth.admin import _admin_emails
 
@@ -51,12 +52,16 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), se
 
 
 @router.get("/me", response_model=UserRead)
-def read_current_user(current_user: User = Depends(get_current_user)):
+def read_current_user(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    # Phase 14 : is_promoter dérivé de la même façon que is_admin — recalculé à chaque requête depuis la
+    # base (jamais mis en cache dans le token), pour rester cohérent avec le principe déjà établi ici.
+    is_promoter = session.exec(select(Promoter).where(Promoter.user_id == current_user.id)).first() is not None
     return UserRead(
         id=current_user.id,
         email=current_user.email,
         name=current_user.name,
         is_active=current_user.is_active,
         is_admin=current_user.email.strip().lower() in _admin_emails(),
+        is_promoter=is_promoter,
         created_at=current_user.created_at,
     )

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Administration Gains</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
+        .admin-subnav { display: flex; gap: 0.5rem; margin-bottom: var(--x-space-5); flex-wrap: wrap; }
+        .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
+        [data-role-nav] { display: inline-flex; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span><span>xFoot</span><span class="pro-badge">ADMIN</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+                <a href="admin-promoters.html" class="desktop-nav-link active" data-role-nav="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <h1 class="x-h1" style="margin-bottom: 0.3rem;">Administration — Gains</h1>
+            <p class="x-body-sm" style="color: var(--x-text-muted); margin-bottom: var(--x-space-4);">Réservé aux administrateurs (vérifié côté serveur). Tous les totaux sont recalculés depuis le grand livre des commissions — jamais un compteur mutable séparé.</p>
+
+            <div class="admin-subnav">
+                <a href="admin-promoters.html" class="x-btn x-btn-ghost x-btn-sm">Promoteurs</a>
+                <a href="admin-subscribers.html" class="x-btn x-btn-ghost x-btn-sm">Abonnés</a>
+                <a href="admin-earnings.html" class="x-btn x-btn-primary x-btn-sm">Gains</a>
+            </div>
+
+            <div id="admin-error" class="x-field-error" style="display:none;"></div>
+            <div id="admin-content" style="display:none;">
+
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Totaux</h2></div>
+                    <div class="x-grid">
+                        <div class="x-card-kpi"><span class="x-label">Total abonnements</span><span class="x-kpi" id="kpi-total-subs">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Ventes payées</span><span class="x-kpi" id="kpi-paid-sales">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Revenu total</span><span class="x-kpi" id="kpi-revenue">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Commissions totales</span><span class="x-kpi" id="kpi-commissions">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Net après commissions</span><span class="x-kpi" id="kpi-net">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Commissions reversées</span><span class="x-kpi" id="kpi-reversed">—</span></div>
+                    </div>
+                </section>
+
+                <section class="dash-section">
+                    <div class="dash-section-header">
+                        <h2 class="x-h2">Par promoteur</h2>
+                        <select class="x-select" id="sort-select" style="max-width: 220px;">
+                            <option value="commission">Trier : commission</option>
+                            <option value="sales">Trier : ventes</option>
+                            <option value="revenue">Trier : revenus</option>
+                        </select>
+                    </div>
+                    <div id="leaderboard-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">📈</span>
+                        <p class="x-body">Aucune vente attribuée pour l'instant.</p>
+                    </div>
+                    <div class="x-table-wrap" id="leaderboard-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Promoteur</th><th>Statut</th><th>Ventes</th><th>CA généré</th><th>40%</th><th>Commission</th></tr></thead>
+                            <tbody id="leaderboard-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        async function loadCurrentUserHeader() {
+            try {
+                const response = await apiFetch("/auth/me");
+                const user = await response.json();
+                document.getElementById("user-email").textContent = user.name || user.email.split("@")[0];
+                document.getElementById("user-email").title = user.email;
+            } catch (e) { console.error("Auth error", e); }
+        }
+
+        function fmtMoney(amount) {
+            return amount === null || amount === undefined ? "—" : `${amount.toLocaleString("fr-FR")} FCFA`;
+        }
+
+        async function loadTotals() {
+            const res = await apiFetch("/admin/earnings/totals");
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const t = await res.json();
+            document.getElementById("kpi-total-subs").textContent = t.total_subscriptions;
+            document.getElementById("kpi-paid-sales").textContent = t.total_paid_sales_accrued;
+            document.getElementById("kpi-revenue").textContent = fmtMoney(t.total_revenue);
+            document.getElementById("kpi-commissions").textContent = fmtMoney(t.total_commissions);
+            document.getElementById("kpi-net").textContent = fmtMoney(t.net_after_commissions);
+            document.getElementById("kpi-reversed").textContent = fmtMoney(t.reversed_commissions);
+        }
+
+        async function loadLeaderboard() {
+            const sort = document.getElementById("sort-select").value;
+            const res = await apiFetch(`/admin/earnings/by-promoter?sort=${sort}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+            const emptyEl = document.getElementById("leaderboard-empty");
+            const wrapEl = document.getElementById("leaderboard-table-wrap");
+            if (rows.length === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("leaderboard-tbody").innerHTML = rows.map(r => `
+                <tr>
+                    <td>${r.slug}</td>
+                    <td><span class="x-badge ${r.status === "ACTIVE" ? "x-badge-active" : "x-badge-inactive"}">${r.status}</span></td>
+                    <td>${r.sales}</td>
+                    <td>${fmtMoney(r.revenue)}</td>
+                    <td>40%</td>
+                    <td>${fmtMoney(r.commission)}</td>
+                </tr>
+            `).join("");
+        }
+
+        document.getElementById("sort-select").addEventListener("change", () => { loadLeaderboard().catch(console.error); });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            clearToken();
+            window.location.href = "login.html";
+        });
+
+        async function init() {
+            loadCurrentUserHeader();
+            applyRoleBasedNav();
+            const errorEl = document.getElementById("admin-error");
+            const contentEl = document.getElementById("admin-content");
+            try {
+                await Promise.all([loadTotals(), loadLeaderboard()]);
+                contentEl.style.display = "block";
+            } catch (e) {
+                errorEl.textContent = e.message && e.message.includes("403")
+                    ? "Accès réservé aux administrateurs."
+                    : "Impossible de charger les gains — " + (e.message || "erreur.");
+                errorEl.style.display = "block";
+            }
+        }
+        init();
+    </script>
+</body>
+</html>
