@@ -82,7 +82,7 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 
 class CheckoutRequest(BaseModel):
-    plan: str  # "monthly" ou "yearly"
+    plan: str  # "biweekly", "monthly" ou "yearly" — validé dynamiquement contre PRODUCT_IDS (chariow_config.py), jamais une liste figée ici
     # Chariow a besoin de ces informations pour générer le lien de checkout
     # (contrairement à Stripe Checkout, qui ne demandait rien de plus que
     # le plan) — le frontend doit les collecter avant d'appeler cet endpoint.

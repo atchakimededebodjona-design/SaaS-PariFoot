@@ -3,10 +3,22 @@ Configuration Chariow (plateforme de vente ouest-africaine, Mobile Money
 natif — remplace Stripe pour la facturation).
 
 Variables d'environnement requises (voir .env.example) :
-    CHARIOW_API_KEY             — clé API pour créer les liens de checkout
-    CHARIOW_PULSE_SECRET        — secret de signature des Pulses (webhooks Chariow)
-    CHARIOW_PRODUCT_ID_MONTHLY  — ID du produit Licence mensuelle
-    CHARIOW_PRODUCT_ID_YEARLY   — ID du produit Licence annuelle
+    CHARIOW_API_KEY              — clé API pour créer les liens de checkout
+    CHARIOW_PULSE_SECRET         — secret de signature des Pulses (webhooks Chariow)
+    CHARIOW_PRODUCT_ID_BIWEEKLY  — ID du produit Licence 2 semaines
+    CHARIOW_PRODUCT_ID_MONTHLY   — ID du produit Licence mensuelle
+    CHARIOW_PRODUCT_ID_YEARLY    — ID du produit Licence annuelle
+
+Phase 15.1 : 3 offres officielles (remplacent les anciennes offres proposées
+par Xfoot pour les NOUVEAUX achats — les anciens produits Chariow restent
+publiés et ne sont ni supprimés ni modifiés, voir reports/phase15_1) :
+    biweekly  1000 FCFA / 14 jours  -> Product ID Chariow "prd_1gje3jzz"
+    monthly   1500 FCFA / 1 mois    -> Product ID Chariow "prd_sgvapilx"
+    yearly    28000 FCFA / 1 an     -> Product ID Chariow "prd_f90jpbh3"
+Ces Product ID sont ceux extraits des URLs de checkout officielles
+fournies (https://jrykbuks.mychariow.co/{product_id}) — à configurer tels
+quels dans les variables d'environnement ci-dessus, jamais codés en dur
+ici (même principe que les anciens Product ID monthly/yearly).
 
 IMPORTANT — modèle de licence, pas d'abonnement récurrent :
   - Les produits doivent être créés en mode "Paiement unique" avec un prix
@@ -34,6 +46,7 @@ CHARIOW_API_KEY = os.environ.get("CHARIOW_API_KEY", "")
 CHARIOW_PULSE_SECRET = os.environ.get("CHARIOW_PULSE_SECRET", "")
 
 PRODUCT_IDS = {
+    "biweekly": os.environ.get("CHARIOW_PRODUCT_ID_BIWEEKLY", ""),
     "monthly": os.environ.get("CHARIOW_PRODUCT_ID_MONTHLY", ""),
     "yearly": os.environ.get("CHARIOW_PRODUCT_ID_YEARLY", ""),
 }
