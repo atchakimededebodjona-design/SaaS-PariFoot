@@ -62,7 +62,7 @@
                     </div>
                     <div class="x-table-wrap" id="subs-table-wrap" style="display:none;">
                         <table class="x-table">
-                            <thead><tr><th>Nom</th><th>Email</th><th>Plan</th><th>Montant payé</th><th>Date</th><th>Promoteur</th><th>Statut paiement</th></tr></thead>
+                            <thead><tr><th>Nom</th><th>User ID</th><th>Email</th><th>Plan</th><th>Montant payé</th><th>Date</th><th>Promoteur</th><th>Statut paiement</th></tr></thead>
                             <tbody id="subs-tbody"></tbody>
                         </table>
                     </div>
@@ -110,6 +110,7 @@
             document.getElementById("subs-tbody").innerHTML = rows.map(s => `
                 <tr>
                     <td>${s.name || "—"}</td>
+                    <td>${fmtUserId(s.user_id)}</td>
                     <td>${s.email}</td>
                     <td>${s.plan || "—"}</td>
                     <td>${fmtMoney(s.amount_paid)}</td>
@@ -119,6 +120,25 @@
                 </tr>
             `).join("");
         }
+
+        // Phase 14.13 : user_id tel que renvoyé par le backend (SubscriberRow.user_id) — jamais inventé ni
+        // déduit ; "—" uniquement si le backend ne le fournit pas pour cette ligne. Bouton copier réutilisant
+        // exactement le mécanisme déjà en place sur promoter.html (navigator.clipboard.writeText).
+        function fmtUserId(userId) {
+            if (userId === null || userId === undefined) return "—";
+            return `<span class="x-body-sm" style="font-family:monospace;">${userId}</span> <button class="x-btn x-btn-ghost x-btn-sm copy-user-id-btn" data-user-id="${userId}" title="Copier le user_id" style="padding:0.15rem 0.5rem;">Copier</button>`;
+        }
+
+        document.getElementById("subs-tbody").addEventListener("click", async (e) => {
+            const btn = e.target.closest(".copy-user-id-btn");
+            if (!btn) return;
+            try {
+                await navigator.clipboard.writeText(btn.dataset.userId);
+                const original = btn.textContent;
+                btn.textContent = "Copié !";
+                setTimeout(() => { btn.textContent = original; }, 1500);
+            } catch (err) { console.error("Copie impossible:", err); }
+        });
 
         document.getElementById("prev-btn").addEventListener("click", () => { offset = Math.max(0, offset - PAGE_SIZE); loadSubscribers(); });
         document.getElementById("next-btn").addEventListener("click", () => { offset += PAGE_SIZE; loadSubscribers(); });
