@@ -70,15 +70,23 @@
 
     <script src="api.js"></script>
     <script>
+        // Phase 14 : login.html est la véritable porte d'entrée anonyme du site (index.html exige déjà
+        // requireAuth() dès son chargement, voir index.html) — c'est ici, et nulle part ailleurs, qu'un
+        // visiteur arrivant via https://www.xfoot.site/{slug} (réécrit en ?ref={slug} par .htaccess, voir
+        // frontend-design/.htaccess) atterrit réellement. Best-effort, ne bloque jamais le rendu (§31).
+        //
+        // Phase 15.7 : appelée AVANT le test getToken() (jamais dans le `else`) — un token résiduel d'une
+        // session précédente dans ce même navigateur (compte de test différent, session non déconnectée)
+        // ne doit jamais faire perdre le slug ?ref= : le capturer coûte une simple écriture localStorage,
+        // totalement indépendante de l'état de connexion, alors que l'ignorer perd l'attribution pour de
+        // bon dès que l'utilisateur atterrit ensuite sur dashboard.html (qui ne porte plus ?ref= dans son
+        // URL). L'ATTRIBUTION elle-même (attributeReferralIfPresent, appelée uniquement après un login/
+        // register RÉUSSI sur CETTE page) reste, elle, inchangée et toujours conditionnée à une authentification.
+        captureReferralFromUrl();
+
         // Déjà connecté -> pas besoin de repasser par cette page.
         if (getToken()) {
             window.location.href = "dashboard.html";
-        } else {
-            // Phase 14 : login.html est la véritable porte d'entrée anonyme du site (index.html exige déjà
-            // requireAuth() dès son chargement, voir index.html) — c'est ici, et nulle part ailleurs, qu'un
-            // visiteur arrivant via https://www.xfoot.site/{slug} (réécrit en ?ref={slug} par .htaccess,
-            // voir frontend-design/.htaccess) atterrit réellement. Best-effort, ne bloque jamais le rendu (§31).
-            captureReferralFromUrl();
         }
 
         let mode = "login"; // "login" | "register"
