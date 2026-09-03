@@ -408,6 +408,12 @@ def activate_license(
         # Product ID monthly/yearly déjà configurés (PRODUCT_IDS).
         product_id = (license_data.get("product") or {}).get("id")
         plan = next((p for p, pid in PRODUCT_IDS.items() if pid == product_id), None)
+        # Phase 15.10 : delibérément PAS de rejet si plan reste None ici — comportement historique
+        # déjà testé (test_activate_license_email_fallback_when_no_metadata) : une licence legacy
+        # SANS metadata NI product_id reconnu est tout de même activée (Chariow confirme un achat
+        # réel, refuser l'accès sur la seule absence d'un libellé serait pire que l'accepter). Le
+        # plan=None qui en résulte est inoffensif pour la commission ci-dessous : le calcul ne
+        # dépend jamais de `plan`, uniquement du montant réel (voir money.py).
 
     sub = _get_or_create_provider_subscription(session, current_user)
     sub.status = "active"
@@ -424,6 +430,32 @@ def activate_license(
     session.refresh(sub)
     recompute_entitlement(session, current_user.id, provider_subscription_id=sub.id,
                            reason="chariow: activate-license (filet de secours)")
+
+    # Phase 15.10 : ce endpoint est le filet de sécurité quand le Pulse successful.sale n'a jamais
+    # finalisé le traitement — la vente/commission de parrainage doit donc pouvoir se produire ICI
+    # AUSSI, en RÉUTILISANT exactement le même point d'entrée unique que le webhook
+    # (create_commission_for_confirmed_payment, jamais une seconde logique de calcul). sale_body=
+    # license_data (pas un objet "sale" Pulse) : extract_actual_paid_amount() y cherche les mêmes clés
+    # candidates de montant (amount/amount_paid/price/...) à la racine, et retombe sur son repli déjà
+    # existant (prix configuré fixe) ou sur "unavailable" si rien n'est trouvé — JAMAIS un montant
+    # inventé ici (§33/§43, money.py, inchangé). Idempotence : source_event_id dérivé de la clé de
+    # licence elle-même (stable, unique par achat Chariow, jamais transmise par le client comme
+    # identifiant de session) — un second appel avec la MÊME licence retombe sur la contrainte UNIQUE
+    # déjà en place (commission_service.py), jamais une deuxième commission, y compris en cas d'appels
+    # concurrents (IntegrityError déjà gérée). promoter_id n'est JAMAIS lu depuis le corps de la requête
+    # client (ActivateLicenseRequest n'a même pas ce champ) : il provient exclusivement de la
+    # ReferralAttribution déjà en base pour CET utilisateur authentifié. Best-effort : ne doit jamais
+    # faire échouer l'activation de l'abonnement déjà committée ci-dessus.
+    try:
+        create_commission_for_confirmed_payment(
+            session, provider_subscription=sub, sale_body=license_data,
+            delivery_id=f"activate-license:{body.license_key}",
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "Création de commission de parrainage impossible via activate-license (non bloquant) "
+            "pour provider_subscription_id=%s : %s", sub.id, e,
+        )
 
     return SubscriptionStatus(
         status=sub.status, plan=sub.plan, is_active=sub.is_effectively_active,
@@ -568,14 +600,35 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
     delivery_id = request.headers.get("x-pulse-delivery-id")
     if delivery_id and _already_processed(session, delivery_id):
         # Chariow peut renvoyer la même delivery plusieurs fois (retry
-        # réseau) — on accuse réception sans retraiter.
+        # réseau) — on accuse réception sans retraiter, quel que soit le
+        # contenu de CE second envoi (jamais reparsé/recomparé — la
+        # déduplication porte sur l'identité de la delivery, pas sur son
+        # contenu, §12 : un même payment/transaction ID ne doit jamais
+        # produire un second traitement, même avec des données divergentes).
         return {"received": True, "duplicate": True}
 
     # Pas de wrapper "data" : les champs sont à la racine, sous des clés qui
     # varient par type d'événement ("sale", "license", "customer", ...) —
     # confirmé via chariow.dev/en/guides/pulses.
-    body = json.loads(payload)
+    #
+    # Phase 15.9 : la signature a déjà été vérifiée ci-dessus (payload
+    # authentiquement issu de Chariow) — mais "signé" ne garantit pas "JSON
+    # bien formé", ni "porteur d'un champ 'event'". Un corps illisible ou
+    # sans 'event' n'est PAS un type d'événement qu'on choisit d'ignorer
+    # (voir plus bas) : c'est un Pulse structurellement invalide, jamais vu
+    # dans la doc Chariow — 400 explicite plutôt qu'une 500 générique
+    # (JSONDecodeError non attrapée) ou un 200 silencieux masquant un vrai
+    # problème de parsing.
+    try:
+        body = json.loads(payload)
+    except json.JSONDecodeError:
+        logger.error("Pulse Chariow : corps JSON invalide (delivery_id=%s, signature pourtant valide).", delivery_id)
+        raise HTTPException(status_code=400, detail="Corps de Pulse JSON invalide")
+
     event_type = body.get("event")
+    if event_type is None:
+        logger.error("Pulse Chariow : champ 'event' absent du corps (delivery_id=%s).", delivery_id)
+        raise HTTPException(status_code=400, detail="Champ 'event' manquant")
 
     if event_type == "successful.sale":
         _handle_successful_sale(session, body, delivery_id)
@@ -587,9 +640,14 @@ async def chariow_pulse(request: Request, session: Session = Depends(get_session
         _handle_license_status(session, body, new_status="revoked")
     elif event_type == "license.nearing_expiry":
         _handle_license_nearing_expiry(session, body)
-    # Les autres types d'événements peuvent être ajoutés au besoin — ignorés
-    # silencieusement pour l'instant plutôt que de lever une erreur
-    # (Chariow réessaie sinon indéfiniment).
+    else:
+        # Type d'événement RECONNU COMME PRÉSENT mais non géré par ce code —
+        # rester en 200 (Chariow réessaie sinon indéfiniment un type qu'on
+        # ne traitera jamais, voir doc Pulse) MAIS journalisé explicitement
+        # (Phase 15.9 : "réponse explicite et loggable", jamais un silence
+        # total comme avant — c'est ce même silence qui a rendu le diagnostic
+        # du paiement pi_ih0s0eixhgm1 impossible à confirmer depuis les logs).
+        logger.info("Pulse Chariow : event_type '%s' non géré, accusé réception sans traitement (delivery_id=%s).", event_type, delivery_id)
 
     if delivery_id:
         _mark_processed(session, delivery_id, event_type)
@@ -616,21 +674,56 @@ def _handle_successful_sale(session: Session, body: dict, delivery_id: str | Non
     """
     sale = body.get("sale") or {}
     custom_metadata = sale.get("custom_metadata") or {}
-    user_id = custom_metadata.get("user_id")
-    if user_id is None:
-        return
-    user_id = int(user_id)
+    user_id_raw = custom_metadata.get("user_id")
 
-    sub = session.exec(
-        select(ProviderSubscription).where(
-            ProviderSubscription.user_id == user_id,
-            ProviderSubscription.provider == "chariow",
-        )
-    ).first()
+    sub = None
+    if user_id_raw is not None:
+        try:
+            user_id = int(user_id_raw)
+        except (TypeError, ValueError):
+            logger.warning(
+                "successful.sale : custom_metadata.user_id non numérique (%r) — delivery_id=%s, "
+                "tentative de repli par email.", user_id_raw, delivery_id,
+            )
+        else:
+            sub = session.exec(
+                select(ProviderSubscription).where(
+                    ProviderSubscription.user_id == user_id,
+                    ProviderSubscription.provider == "chariow",
+                )
+            ).first()
+            if sub is None:
+                logger.warning(
+                    "successful.sale : aucun ProviderSubscription pour user_id=%s (custom_metadata) — "
+                    "delivery_id=%s, tentative de repli par email.", user_id, delivery_id,
+                )
+
     if sub is None:
-        return  # ne devrait pas arriver (/billing/checkout crée toujours l'enregistrement avant la vente)
+        # Repli EMAIL — RÉUTILISE _find_provider_subscription_by_email (déjà en place et testé pour
+        # les Pulses license.*, jamais un second mécanisme inventé ici). Nécessaire car ce dépôt a
+        # DÉJÀ rencontré, une fois, un cas réel où Chariow ne renvoie pas metadata sous la structure
+        # attendue (voir _fetch_chariow_license, "correction du bug metadata/custom_metadata")  — la
+        # même prudence s'applique ici tant que le Pulse successful.sale réel n'a jamais été
+        # confirmé conforme à la doc contre un paiement réel avant celui-ci (Phase 15.8).
+        customer_email = (sale.get("customer") or {}).get("email")
+        sub = _find_provider_subscription_by_email(session, customer_email)
+        if sub is None:
+            logger.warning(
+                "successful.sale IGNORÉ : ni custom_metadata.user_id ni repli email n'ont permis de "
+                "retrouver un ProviderSubscription Xfoot — delivery_id=%s. Paiement Chariow "
+                "potentiellement confirmé mais NON rattaché, nécessite une investigation manuelle "
+                "(voir raw_payload si une ligne ProviderSubscription existe déjà pour ce client).",
+                delivery_id,
+            )
+            return
+        logger.info(
+            "successful.sale rattaché par repli email (customer.email) pour provider_subscription_id=%s, "
+            "delivery_id=%s — custom_metadata absente ou incomplète.", sub.id, delivery_id,
+        )
 
-    sub.plan = custom_metadata.get("plan")
+    # custom_metadata.get("plan") reste vide en repli email (aucune metadata) — ne jamais écraser un
+    # plan déjà connu par une valeur absente dans ce cas précis.
+    sub.plan = custom_metadata.get("plan") or sub.plan
     sub.status = "active"
     sub.raw_status = "active"
     # Nouvel achat/renouvellement : le compte à rebours précédent n'a plus cours.
@@ -640,7 +733,10 @@ def _handle_successful_sale(session: Session, body: dict, delivery_id: str | Non
     session.add(sub)
     session.commit()
     session.refresh(sub)
-    recompute_entitlement(session, user_id, provider_subscription_id=sub.id, reason="chariow: successful.sale")
+    # sub.user_id (jamais la variable locale user_id, qui n'existe pas en repli email) : source
+    # fiable dans les DEUX chemins (custom_metadata ou repli email), toujours celui de la ligne
+    # ProviderSubscription réellement mise à jour ci-dessus.
+    recompute_entitlement(session, sub.user_id, provider_subscription_id=sub.id, reason="chariow: successful.sale")
 
     # Phase 14 : paiement RÉELLEMENT confirmé ci-dessus (sub.status="active", déjà committé) — seul
     # endroit où une commission de parrainage peut être créée (§11/§52). Best-effort : ne doit jamais faire
