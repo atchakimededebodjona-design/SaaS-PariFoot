@@ -446,6 +446,22 @@ def activate_license(
     # client (ActivateLicenseRequest n'a même pas ce champ) : il provient exclusivement de la
     # ReferralAttribution déjà en base pour CET utilisateur authentifié. Best-effort : ne doit jamais
     # faire échouer l'activation de l'abonnement déjà committée ci-dessus.
+    #
+    # Phase 15.12 : diagnostic réel (USER 245, pi_ih0s0eixhgm1) — GET/POST /licenses/{key} (les 2 SEULS
+    # appels Chariow utilisés par ce endpoint, avec POST /checkout qui n'en est pas un puisqu'il ne fait
+    # que CRÉER un lien de paiement) ne renvoient JAMAIS de champ montant, confirmé par relecture
+    # exhaustive de tout ce module — aucun autre appel Chariow (GET /sales/{id}, /transactions/{id}, ou
+    # équivalent) n'existe dans ce dépôt et aucun n'est inventé ici. extract_actual_paid_amount() retombe
+    # donc TOUJOURS sur son repli PLAN_LIST_PRICES (REFERRAL_PLAN_PRICE_MONTHLY/_YEARLY) pour ce chemin
+    # précis — jamais sur un montant "webhook" réel. Ce repli n'est un "montant réellement payé" légitime
+    # (et non un prix catalogue substitué abusivement, §33) QUE parce que cette intégration Chariow
+    # précise n'a AUCUN mécanisme de remise/coupon : POST /checkout (ci-dessus) n'envoie et ne peut
+    # envoyer aucun code promo (payload figé : product_id/email/nom/téléphone/metadata/redirect_url
+    # uniquement), et le mode "Prix libre" est explicitement exclu de l'API Chariow (voir
+    # chariow_config.py) — le prix payé pour un produit Licence de CE projet est donc, par construction,
+    # TOUJOURS identique au prix configuré de ce produit, jamais une supposition générique. Si cette
+    # intégration devait un jour introduire des remises, ce repli deviendrait invalide et devrait être
+    # retiré — non le cas aujourd'hui, vérifié par audit de code (§ci-dessus).
     try:
         create_commission_for_confirmed_payment(
             session, provider_subscription=sub, sale_body=license_data,
