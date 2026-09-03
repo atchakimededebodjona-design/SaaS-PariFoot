@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xFoot - Administration Retraits</title>
+    <link rel="stylesheet" href="styles.css?v=11">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .dash-section { margin-bottom: var(--x-space-8); }
+        .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
+        .admin-subnav { display: flex; gap: 0.5rem; margin-bottom: var(--x-space-5); flex-wrap: wrap; }
+        .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
+        [data-role-nav] { display: inline-flex; }
+        .payout-notice {
+            background: rgba(44, 217, 165, 0.08); border: 1px solid rgba(44, 217, 165, 0.25); border-radius: var(--x-radius-md);
+            padding: var(--x-space-3) var(--x-space-4); margin-bottom: var(--x-space-4); font-size: 0.85rem; color: var(--x-text-muted);
+        }
+        .withdrawal-actions-panel {
+            background: var(--x-bg); border: 1px solid var(--x-border); border-radius: var(--x-radius-md);
+            padding: var(--x-space-3); margin-top: 0.4rem; display: none; flex-direction: column; gap: 0.5rem; max-width: 420px;
+        }
+        .withdrawal-actions-panel.open { display: flex; }
+        .withdrawal-actions-panel label { font-size: 0.78rem; color: var(--x-text-muted); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-title">
+                <a href="dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>⚽</span><span>xFoot</span><span class="pro-badge">ADMIN</span>
+                </a>
+            </div>
+            <nav class="desktop-nav">
+                <a href="dashboard.html" class="desktop-nav-link"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
+                <a href="promoter.html" class="desktop-nav-link hidden" data-role-nav="promoter"><span class="nav-icon">🤝</span><span>Promoteur</span></a>
+                <a href="admin-promoters.html" class="desktop-nav-link active" data-role-nav="admin"><span class="nav-icon">🛡️</span><span>Admin</span></a>
+            </nav>
+            <div class="header-actions">
+                <span class="user-email" id="user-email">...</span>
+                <button class="icon-btn" id="logout-btn" title="Déconnexion">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <h1 class="x-h1" style="margin-bottom: 0.3rem;">Administration — Demandes de retrait</h1>
+            <p class="x-body-sm" style="color: var(--x-text-muted); margin-bottom: var(--x-space-4);">Réservé aux administrateurs (vérifié côté serveur).</p>
+
+            <div class="admin-subnav">
+                <a href="admin-promoters.html" class="x-btn x-btn-ghost x-btn-sm">Promoteurs</a>
+                <a href="admin-subscribers.html" class="x-btn x-btn-ghost x-btn-sm">Abonnés</a>
+                <a href="admin-earnings.html" class="x-btn x-btn-ghost x-btn-sm">Gains</a>
+                <a href="admin-withdrawals.html" class="x-btn x-btn-primary x-btn-sm">Retraits</a>
+            </div>
+
+            <div class="payout-notice">Les retraits sont traités MANUELLEMENT par l'équipe Xfoot. Aucun paiement automatique n'existe — "Confirmer le versement" enregistre un paiement que tu as déjà effectué toi-même, hors Xfoot, il n'en déclenche aucun.</div>
+
+            <div id="admin-error" class="x-field-error" style="display:none;"></div>
+            <div id="admin-content" style="display:none;">
+
+                <section class="dash-section">
+                    <div class="dash-section-header">
+                        <h2 class="x-h2">Demandes</h2>
+                        <select class="x-select" id="status-filter" style="max-width: 220px;">
+                            <option value="">Tous les statuts</option>
+                            <option value="PENDING" selected>En attente</option>
+                            <option value="PAID">Versées</option>
+                            <option value="REJECTED">Refusées</option>
+                        </select>
+                    </div>
+                    <div id="withdrawals-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">💸</span>
+                        <p class="x-body">Aucune demande de retrait pour ce filtre.</p>
+                    </div>
+                    <div class="x-table-wrap" id="withdrawals-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Promoteur</th><th>Montant</th><th>Demandée le</th><th>Statut</th><th>Traitée le</th><th>Référence</th><th>Actions</th></tr></thead>
+                            <tbody id="withdrawals-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        requireAuth();
+
+        const STATUS_BADGE_CLASS = { PENDING: "x-badge-inactive", PAID: "x-badge-active", REJECTED: "x-badge-error" };
+        const STATUS_LABEL = { PENDING: "En attente", PAID: "Versé", REJECTED: "Refusé" };
+
+        async function loadCurrentUserHeader() {
+            try {
+                const response = await apiFetch("/auth/me");
+                const user = await response.json();
+                document.getElementById("user-email").textContent = user.name || user.email.split("@")[0];
+                document.getElementById("user-email").title = user.email;
+            } catch (e) { console.error("Auth error", e); }
+        }
+
+        function fmtMoney(amount, currency) {
+            if (amount === null || amount === undefined) return "—";
+            return `${amount.toLocaleString("fr-FR")} ${currency === "XOF" ? "FCFA" : (currency || "")}`.trim();
+        }
+        function fmtDate(iso) {
+            if (!iso) return "—";
+            return new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        }
+
+        async function loadWithdrawals() {
+            const status = document.getElementById("status-filter").value;
+            const params = new URLSearchParams();
+            if (status) params.set("status_filter", status);
+            const res = await apiFetch(`/admin/withdrawals?${params.toString()}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+
+            const emptyEl = document.getElementById("withdrawals-empty");
+            const wrapEl = document.getElementById("withdrawals-table-wrap");
+            if (rows.length === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("withdrawals-tbody").innerHTML = rows.map(w => `
+                <tr>
+                    <td>${w.promoter_slug}<br><span class="x-caption">${w.promoter_email}</span></td>
+                    <td>${fmtMoney(w.amount, w.currency)}</td>
+                    <td>${fmtDate(w.requested_at)}</td>
+                    <td><span class="x-badge ${STATUS_BADGE_CLASS[w.status] || ""}">${STATUS_LABEL[w.status] || w.status}</span></td>
+                    <td>${fmtDate(w.processed_at)}${w.processed_by_admin_email ? `<br><span class="x-caption">par ${w.processed_by_admin_email}</span>` : ""}</td>
+                    <td>${w.external_reference || "—"}</td>
+                    <td>
+                        ${w.status === "PENDING" ? `
+                            <button class="x-btn x-btn-secondary x-btn-sm" data-toggle-panel="${w.id}">Effectuer le paiement manuellement</button>
+                            <button class="x-btn x-btn-ghost x-btn-sm" data-reject="${w.id}">Refuser</button>
+                            <div class="withdrawal-actions-panel" id="panel-${w.id}">
+                                <label>Référence externe (optionnelle, ex. TMONEY-XXXX)</label>
+                                <input class="x-input" id="ref-${w.id}" placeholder="Référence externe">
+                                <label>Note (optionnelle)</label>
+                                <input class="x-input" id="note-${w.id}" placeholder="Note interne">
+                                <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color: var(--x-text);">
+                                    <input type="checkbox" id="confirm-${w.id}">
+                                    Je confirme avoir réellement envoyé ${fmtMoney(w.amount, w.currency)} au promoteur, hors Xfoot.
+                                </label>
+                                <button class="x-btn x-btn-primary x-btn-sm" data-confirm-paid="${w.id}" disabled>Confirmer le versement effectué</button>
+                            </div>
+                        ` : "—"}
+                    </td>
+                </tr>
+            `).join("");
+
+            document.querySelectorAll("[data-toggle-panel]").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    document.getElementById(`panel-${btn.dataset.togglePanel}`).classList.toggle("open");
+                });
+            });
+            document.querySelectorAll("[id^='confirm-']").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    const id = cb.id.replace("confirm-", "");
+                    document.querySelector(`[data-confirm-paid="${id}"]`).disabled = !cb.checked;
+                });
+            });
+            document.querySelectorAll("[data-confirm-paid]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.confirmPaid;
+                    const ref = document.getElementById(`ref-${id}`).value.trim() || null;
+                    const note = document.getElementById(`note-${id}`).value.trim() || null;
+                    const res = await apiFetch(`/admin/withdrawals/${id}/confirm-paid`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ confirm: true, external_reference: ref, admin_note: note }),
+                    });
+                    if (!res.ok) {
+                        const body = await res.json().catch(() => ({}));
+                        alert(body.detail || "Confirmation impossible — cette demande n'est peut-être plus en attente.");
+                        loadWithdrawals();
+                        return;
+                    }
+                    alert("Versement confirmé.");
+                    loadWithdrawals();
+                });
+            });
+            document.querySelectorAll("[data-reject]").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.reject;
+                    if (!confirm("Refuser cette demande de retrait ? Le montant redeviendra disponible pour le promoteur.")) return;
+                    const res = await apiFetch(`/admin/withdrawals/${id}/reject`, {
+                        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}),
+                    });
+                    if (!res.ok) {
+                        const body = await res.json().catch(() => ({}));
+                        alert(body.detail || "Refus impossible.");
+                        loadWithdrawals();
+                        return;
+                    }
+                    loadWithdrawals();
+                });
+            });
+        }
+
+        document.getElementById("status-filter").addEventListener("change", () => { loadWithdrawals().catch(console.error); });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            clearToken();
+            window.location.href = "login.html";
+        });
+
+        async function init() {
+            loadCurrentUserHeader();
+            applyRoleBasedNav();
+            const errorEl = document.getElementById("admin-error");
+            const contentEl = document.getElementById("admin-content");
+            try {
+                await loadWithdrawals();
+                contentEl.style.display = "block";
+            } catch (e) {
+                errorEl.textContent = e.message && e.message.includes("403")
+                    ? "Accès réservé aux administrateurs."
+                    : "Impossible de charger les demandes de retrait — " + (e.message || "erreur.");
+                errorEl.style.display = "block";
+            }
+        }
+        init();
+    </script>
+</body>
+</html>

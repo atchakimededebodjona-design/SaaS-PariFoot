@@ -21,6 +21,7 @@ from typing import Optional
 from sqlmodel import Session, select, func
 
 from app.models.promoter import Promoter, ReferralAttribution, ReferralCommission, ReferralVisit
+from app.referral.withdrawal_service import compute_promoter_available_amount
 
 
 def compute_promoter_stats(session: Session, promoter_id: int, *, since: Optional[datetime] = None, until: Optional[datetime] = None) -> dict:
@@ -52,8 +53,12 @@ def compute_promoter_stats(session: Session, promoter_id: int, *, since: Optiona
     total_commission = sum(r.commission_amount for r in accrued)
     reversed_commission = sum(r.commission_amount for r in reversed_rows)
 
-    # §17 : aucun mécanisme de payout n'existe encore dans ce dépôt (recherche explicite, §1) — tout le
-    # montant ACCRUED est donc "disponible" (accru, jamais versé) ; "paid_out" reste à 0, documenté, jamais inventé.
+    # Phase 15.14 : système de retrait MANUEL implémenté — "disponible"/"déjà versé"/"en attente de
+    # retrait" sont désormais recalculés depuis PromoterWithdrawal (le journal des demandes), jamais un
+    # compteur mutable séparé (même discipline que le reste de ce fichier, §46). Le paiement lui-même reste
+    # entièrement MANUEL (aucun fournisseur externe intégré, voir withdrawal_service.py).
+    payout_amounts = compute_promoter_available_amount(session, promoter_id)
+
     return {
         "visitors_attributed": int(visitors or 0),
         "signups_attributed": int(signups or 0),
@@ -63,9 +68,10 @@ def compute_promoter_stats(session: Session, promoter_id: int, *, since: Optiona
         "currency": accrued[0].currency if accrued else "XOF",
         "total_commission_accrued": total_commission,
         "total_commission_reversed": reversed_commission,
-        "commission_available": total_commission,  # PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED — voir §17
-        "commission_paid_out": 0,
-        "payout_system_status": "PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED",
+        "commission_available": payout_amounts["commission_available"],
+        "commission_pending_withdrawal": payout_amounts["commission_pending_withdrawal"],
+        "commission_paid_out": payout_amounts["commission_paid_out"],
+        "payout_system_status": "MANUAL_WITHDRAWAL_V1",
     }
 
 

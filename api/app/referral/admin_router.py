@@ -22,9 +22,10 @@ from app.core.database import get_session
 from app.auth.admin import require_admin
 from app.models.user import User
 from app.models.provider_subscription import ProviderSubscription
-from app.models.promoter import Promoter, ReferralAttribution, ReferralCommission, PROMOTER_STATUSES
+from app.models.promoter import Promoter, PromoterWithdrawal, ReferralAttribution, ReferralCommission, PROMOTER_STATUSES, WITHDRAWAL_STATUSES
 from app.referral.promoter_service import create_promoter, set_promoter_status
 from app.referral.stats import compute_promoter_stats, compute_admin_totals, compute_promoter_leaderboard
+from app.referral.withdrawal_service import confirm_withdrawal_paid, reject_withdrawal
 
 router = APIRouter(prefix="/admin", tags=["admin-referral"])
 
@@ -202,3 +203,130 @@ def admin_earnings_by_promoter(admin: User = Depends(require_admin), session: Se
     leaderboard = compute_promoter_leaderboard(session)
     sort_key = {"commission": "commission", "sales": "sales", "revenue": "revenue"}.get(sort, "commission")
     return sorted(leaderboard, key=lambda r: r[sort_key], reverse=True)
+
+
+# ---------------------------------------------------------------------------
+# Phase 15.14 : retrait MANUEL des commissions — §Partie H/I/J : liste +
+# traitement manuel côté admin. AUCUN fournisseur de paiement contacté ici
+# (§Partie V) — ces endpoints tracent une demande et permettent à un
+# administrateur de confirmer un paiement DÉJÀ effectué HORS Xfoot.
+# ---------------------------------------------------------------------------
+
+class WithdrawalAdminRow(BaseModel):
+    id: int
+    promoter_id: int
+    promoter_slug: str
+    promoter_email: str
+    amount: int
+    currency: str
+    status: str
+    requested_at: datetime
+    processed_at: Optional[datetime]
+    processed_by_admin_email: Optional[str]
+    external_reference: Optional[str]
+    admin_note: Optional[str]
+
+
+def _to_admin_row(session: Session, w: PromoterWithdrawal, promoters_by_id: dict, users_by_id: dict) -> WithdrawalAdminRow:
+    promoter = promoters_by_id.get(w.promoter_id)
+    promoter_user = users_by_id.get(promoter.user_id) if promoter else None
+    processed_admin_email = None
+    if w.processed_by_admin_id is not None:
+        processed_admin = users_by_id.get(w.processed_by_admin_id) or session.get(User, w.processed_by_admin_id)
+        processed_admin_email = processed_admin.email if processed_admin else None
+    return WithdrawalAdminRow(
+        id=w.id, promoter_id=w.promoter_id, promoter_slug=promoter.slug if promoter else "—",
+        promoter_email=promoter_user.email if promoter_user else "—",
+        amount=w.amount, currency=w.currency, status=w.status,
+        requested_at=w.requested_at, processed_at=w.processed_at,
+        processed_by_admin_email=processed_admin_email,
+        external_reference=w.external_reference, admin_note=w.admin_note,
+    )
+
+
+@router.get("/withdrawals", response_model=list[WithdrawalAdminRow])
+def admin_list_withdrawals(
+    admin: User = Depends(require_admin), session: Session = Depends(get_session),
+    status_filter: Optional[str] = None, limit: int = 50, offset: int = 0,
+):
+    """§Partie H : "Demandes de retrait" — filtrable par statut (PENDING/PAID/REJECTED)."""
+    limit = max(1, min(limit, 200))
+    offset = max(0, offset)
+    if status_filter is not None and status_filter not in WITHDRAWAL_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Statut invalide. Attendu un de {WITHDRAWAL_STATUSES}.")
+    query = select(PromoterWithdrawal)
+    if status_filter:
+        query = query.where(PromoterWithdrawal.status == status_filter)
+    rows = session.exec(query.order_by(PromoterWithdrawal.requested_at.desc()).offset(offset).limit(limit)).all()
+
+    promoter_ids = {w.promoter_id for w in rows}
+    promoters_by_id = {p.id: p for p in session.exec(select(Promoter)).all() if p.id in promoter_ids} if promoter_ids else {}
+    user_ids = {p.user_id for p in promoters_by_id.values()} | {w.processed_by_admin_id for w in rows if w.processed_by_admin_id}
+    users_by_id = {u.id: u for u in session.exec(select(User)).all() if u.id in user_ids} if user_ids else {}
+
+    return [_to_admin_row(session, w, promoters_by_id, users_by_id) for w in rows]
+
+
+class ConfirmWithdrawalRequest(BaseModel):
+    # §Partie I : confirmation EXPLICITE obligatoire — un simple clic ne suffit jamais à transitionner
+    # vers PAID (le prompt : "PAID" ne doit jamais signifier "l'administrateur a simplement cliqué").
+    confirm: bool
+    external_reference: Optional[str] = None  # §Partie J : texte libre, aucun format imposé
+    admin_note: Optional[str] = None
+
+
+@router.post("/withdrawals/{withdrawal_id}/confirm-paid", response_model=WithdrawalAdminRow)
+def admin_confirm_withdrawal_paid(
+    withdrawal_id: int, body: ConfirmWithdrawalRequest,
+    admin: User = Depends(require_admin), session: Session = Depends(get_session),
+):
+    """
+    §Partie I : "Confirmer le versement effectué" — ce bouton ne déclenche AUCUN paiement, il confirme
+    qu'un administrateur a DÉJÀ envoyé l'argent manuellement, hors Xfoot (§Partie V). `confirm=True` est
+    obligatoire (la case à cocher "Je confirme avoir réellement envoyé ce montant au promoteur" côté UI) —
+    sans cela, refus explicite plutôt qu'une confirmation implicite.
+    """
+    if not body.confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Confirmation explicite requise : 'Je confirme avoir réellement envoyé ce montant au promoteur.'",
+        )
+    withdrawal = confirm_withdrawal_paid(
+        session, withdrawal_id, admin_id=admin.id,
+        external_reference=body.external_reference, admin_note=body.admin_note,
+    )
+    if withdrawal is None:
+        existing = session.get(PromoterWithdrawal, withdrawal_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Demande de retrait introuvable.")
+        # §Partie N/Q : déjà PAID/REJECTED — jamais une seconde transition, jamais une erreur 500 opaque.
+        raise HTTPException(status_code=409, detail=f"Cette demande n'est plus PENDING (statut actuel : {existing.status}).")
+
+    promoters_by_id = {withdrawal.promoter_id: session.get(Promoter, withdrawal.promoter_id)}
+    promoter = promoters_by_id[withdrawal.promoter_id]
+    users_by_id = {promoter.user_id: session.get(User, promoter.user_id), admin.id: admin} if promoter else {admin.id: admin}
+    return _to_admin_row(session, withdrawal, promoters_by_id, users_by_id)
+
+
+class RejectWithdrawalRequest(BaseModel):
+    admin_note: Optional[str] = None
+
+
+@router.post("/withdrawals/{withdrawal_id}/reject", response_model=WithdrawalAdminRow)
+def admin_reject_withdrawal(
+    withdrawal_id: int, body: RejectWithdrawalRequest,
+    admin: User = Depends(require_admin), session: Session = Depends(get_session),
+):
+    """§Partie P : refuse une demande PENDING — le montant redevient disponible automatiquement (recalculé,
+    voir withdrawal_service.py::compute_promoter_available_amount), aucune donnée financière n'est perdue."""
+    withdrawal = reject_withdrawal(session, withdrawal_id, admin_id=admin.id, admin_note=body.admin_note)
+    if withdrawal is None:
+        existing = session.get(PromoterWithdrawal, withdrawal_id)
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Demande de retrait introuvable.")
+        raise HTTPException(status_code=409, detail=f"Cette demande n'est plus PENDING (statut actuel : {existing.status}).")
+
+    promoters_by_id = {withdrawal.promoter_id: session.get(Promoter, withdrawal.promoter_id)}
+    promoter = promoters_by_id[withdrawal.promoter_id]
+    users_by_id = {promoter.user_id: session.get(User, promoter.user_id), admin.id: admin} if promoter else {admin.id: admin}
+    return _to_admin_row(session, withdrawal, promoters_by_id, users_by_id)

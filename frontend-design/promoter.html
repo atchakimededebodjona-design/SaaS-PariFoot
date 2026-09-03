@@ -26,9 +26,10 @@
         .dash-section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--x-space-4); gap: var(--x-space-3); flex-wrap: wrap; }
         .dash-empty { text-align: center; padding: var(--x-space-8) var(--x-space-4); color: var(--x-text-muted); border: 1px dashed var(--x-border); border-radius: var(--x-radius-lg); }
         .payout-banner {
-            background: rgba(255, 193, 7, 0.08); border: 1px solid rgba(255, 193, 7, 0.25); border-radius: var(--x-radius-md);
+            background: rgba(110, 138, 255, 0.08); border: 1px solid rgba(110, 138, 255, 0.25); border-radius: var(--x-radius-md);
             padding: var(--x-space-3) var(--x-space-4); margin-top: var(--x-space-3); font-size: 0.85rem; color: var(--x-text-muted);
         }
+        .withdraw-msg { font-size: 0.82rem; margin-top: 0.5rem; }
         [data-role-nav] { display: inline-flex; }
     </style>
 </head>
@@ -92,9 +93,30 @@
                         <div class="x-card-kpi"><span class="x-label">Commission acquise</span><span class="x-kpi" id="kpi-accrued">—</span></div>
                         <div class="x-card-kpi"><span class="x-label">Reversée (remboursements)</span><span class="x-kpi" id="kpi-reversed">—</span></div>
                         <div class="x-card-kpi"><span class="x-label">Disponible</span><span class="x-kpi" id="kpi-available">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">En attente de retrait</span><span class="x-kpi" id="kpi-pending-withdrawal">—</span></div>
                         <div class="x-card-kpi"><span class="x-label">Déjà versée</span><span class="x-kpi" id="kpi-paid-out">0</span></div>
                     </div>
-                    <div class="payout-banner">⚠️ Système de versement pas encore implémenté (<code>PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED</code>) — les montants ci-dessus sont acquis (comptabilisés dans le grand livre) mais aucun virement automatique n'existe encore. Contacte l'équipe xFoot pour un versement manuel.</div>
+                    <div class="payout-banner">Les retraits sont traités manuellement par l'équipe Xfoot : tu envoies une demande, l'administration te verse la somme par le moyen convenu avec toi, puis confirme ici une fois le versement réellement effectué.</div>
+                    <div style="margin-top: var(--x-space-4); display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+                        <button class="x-btn x-btn-primary x-btn-md" id="request-withdrawal-btn">Demander un retrait</button>
+                        <span class="x-caption" id="withdraw-hint"></span>
+                    </div>
+                    <div class="withdraw-msg" id="withdraw-msg"></div>
+                </section>
+
+                <!-- ============ DEMANDES DE RETRAIT ============ -->
+                <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Mes demandes de retrait</h2></div>
+                    <div id="withdrawals-empty" class="dash-empty" style="display:none;">
+                        <span style="font-size:1.8rem; display:block; margin-bottom:0.6rem;">💸</span>
+                        <p class="x-body">Aucune demande de retrait pour l'instant.</p>
+                    </div>
+                    <div class="x-table-wrap" id="withdrawals-table-wrap" style="display:none;">
+                        <table class="x-table">
+                            <thead><tr><th>Montant</th><th>Demandée le</th><th>Statut</th><th>Versée le</th><th>Référence</th></tr></thead>
+                            <tbody id="withdrawals-tbody"></tbody>
+                        </table>
+                    </div>
                 </section>
 
                 <!-- ============ VENTES ============ -->
@@ -148,6 +170,10 @@
         let salesOffset = 0;
         const SALES_PAGE_SIZE = 20;
         let promoterCurrency = "XOF";
+        let currentAvailable = 0;
+
+        const WITHDRAWAL_STATUS_BADGE_CLASS = { PENDING: "x-badge-inactive", PAID: "x-badge-active", REJECTED: "x-badge-error" };
+        const WITHDRAWAL_STATUS_LABEL = { PENDING: "En attente", PAID: "Versé", REJECTED: "Refusé" };
 
         async function loadCurrentUserHeader() {
             try {
@@ -183,8 +209,64 @@
             document.getElementById("kpi-accrued").textContent = fmtMoney(stats.total_commission_accrued, stats.currency);
             document.getElementById("kpi-reversed").textContent = fmtMoney(stats.total_commission_reversed, stats.currency);
             document.getElementById("kpi-available").textContent = fmtMoney(stats.commission_available, stats.currency);
+            document.getElementById("kpi-pending-withdrawal").textContent = fmtMoney(stats.commission_pending_withdrawal, stats.currency);
             document.getElementById("kpi-paid-out").textContent = fmtMoney(stats.commission_paid_out, stats.currency);
+
+            currentAvailable = stats.commission_available || 0;
+            const btn = document.getElementById("request-withdrawal-btn");
+            const hint = document.getElementById("withdraw-hint");
+            if (currentAvailable > 0) {
+                btn.disabled = false;
+                hint.textContent = `Montant disponible : ${fmtMoney(currentAvailable, stats.currency)} — le retrait porte sur ce montant en totalité.`;
+            } else {
+                btn.disabled = true;
+                hint.textContent = "Aucun montant disponible pour un retrait pour le moment.";
+            }
         }
+
+        async function loadWithdrawals() {
+            const res = await apiFetch("/promoter/me/withdrawals");
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const rows = await res.json();
+            const emptyEl = document.getElementById("withdrawals-empty");
+            const wrapEl = document.getElementById("withdrawals-table-wrap");
+            if (rows.length === 0) {
+                emptyEl.style.display = "block";
+                wrapEl.style.display = "none";
+                return;
+            }
+            emptyEl.style.display = "none";
+            wrapEl.style.display = "block";
+            document.getElementById("withdrawals-tbody").innerHTML = rows.map(w => `
+                <tr>
+                    <td>${fmtMoney(w.amount, w.currency)}</td>
+                    <td>${fmtDate(w.requested_at)}</td>
+                    <td><span class="x-badge ${WITHDRAWAL_STATUS_BADGE_CLASS[w.status] || ""}">${WITHDRAWAL_STATUS_LABEL[w.status] || w.status}</span></td>
+                    <td>${w.processed_at ? fmtDate(w.processed_at) : "—"}</td>
+                    <td>${w.external_reference || "—"}</td>
+                </tr>
+            `).join("");
+        }
+
+        document.getElementById("request-withdrawal-btn").addEventListener("click", async () => {
+            const msgEl = document.getElementById("withdraw-msg");
+            msgEl.textContent = "";
+            if (currentAvailable <= 0) return;
+            if (!confirm(`Demander un retrait de ${fmtMoney(currentAvailable, promoterCurrency)} ? Ce montant sera réservé jusqu'au traitement par l'administration.`)) return;
+            const res = await apiFetch("/promoter/me/withdrawals", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: currentAvailable }),
+            });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                msgEl.textContent = (body.detail && body.detail.message) || "Demande impossible.";
+                msgEl.style.color = "var(--x-danger, #ff4d4d)";
+                return;
+            }
+            msgEl.textContent = "Demande de retrait envoyée à l'administration.";
+            msgEl.style.color = "var(--x-success, #2cd9a5)";
+            await Promise.all([loadStats(), loadWithdrawals()]);
+        });
 
         async function loadSales() {
             const res = await apiFetch(`/promoter/me/sales?limit=${SALES_PAGE_SIZE}&offset=${salesOffset}`);
@@ -243,7 +325,7 @@
             const contentEl = document.getElementById("promoter-content");
             try {
                 await loadProfile();
-                await Promise.all([loadStats(), loadSales()]);
+                await Promise.all([loadStats(), loadSales(), loadWithdrawals()]);
                 contentEl.style.display = "block";
             } catch (e) {
                 if (e.message && e.message.includes("403")) {

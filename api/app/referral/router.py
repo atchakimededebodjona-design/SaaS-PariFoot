@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -21,9 +21,10 @@ from app.core.database import get_session
 from app.core.rate_limit import limiter
 from app.auth.security import get_current_user
 from app.models.user import User
-from app.models.promoter import Promoter, ReferralAttribution, ReferralCommission, ReferralVisit, ReferralAuditEvent
+from app.models.promoter import Promoter, PromoterWithdrawal, ReferralAttribution, ReferralCommission, ReferralVisit, ReferralAuditEvent
 from app.referral.dependencies import get_current_promoter
 from app.referral.stats import compute_promoter_stats
+from app.referral.withdrawal_service import WithdrawalRequestError, create_withdrawal_request
 
 router = APIRouter(tags=["referral"])
 
@@ -199,3 +200,71 @@ def get_my_promoter_sales(
             currency=r.currency, status=r.status,
         ))
     return out
+
+
+# ---------------------------------------------------------------------------
+# Phase 15.14 : retrait MANUEL des commissions — endpoints promoteur.
+# §Partie D/K : le promoteur ne voit et n'agit que sur SES PROPRES demandes,
+# jamais via un promoter_id fourni par le client (même discipline que le
+# reste de ce fichier, get_current_promoter dérive du token authentifié).
+# ---------------------------------------------------------------------------
+
+class CreateWithdrawalRequest(BaseModel):
+    # §Partie E : optionnel — si fourni, DOIT correspondre exactement au montant
+    # disponible recalculé côté serveur (WITHDRAWAL_AMOUNT_POLICY=FULL_AVAILABLE_ONLY,
+    # voir withdrawal_service.py) ; jamais utilisé tel quel comme montant écrit en base.
+    amount: Optional[int] = None
+
+
+class WithdrawalRow(BaseModel):
+    id: int
+    amount: int
+    currency: str
+    status: str
+    requested_at: datetime
+    processed_at: Optional[datetime]
+    external_reference: Optional[str]
+
+
+def _to_withdrawal_row(w: PromoterWithdrawal) -> WithdrawalRow:
+    return WithdrawalRow(
+        id=w.id, amount=w.amount, currency=w.currency, status=w.status,
+        requested_at=w.requested_at, processed_at=w.processed_at, external_reference=w.external_reference,
+    )
+
+
+@router.post("/promoter/me/withdrawals", response_model=WithdrawalRow, status_code=201)
+@limiter.limit("10/minute")
+def request_withdrawal(
+    request: Request, body: CreateWithdrawalRequest,
+    promoter: Promoter = Depends(get_current_promoter), session: Session = Depends(get_session),
+):
+    """
+    §Partie D : "Demander un retrait." Le montant réellement disponible est
+    TOUJOURS recalculé côté serveur (jamais confié au frontend, §Partie E) —
+    voir create_withdrawal_request. §Partie G/N : un double-clic ou un retry
+    réseau sur cet endpoint ne crée jamais une deuxième demande PENDING.
+    """
+    try:
+        withdrawal = create_withdrawal_request(session, promoter, requested_amount=body.amount)
+    except WithdrawalRequestError as e:
+        raise HTTPException(status_code=400, detail={"code": e.code, "message": str(e), "available": e.available})
+    return _to_withdrawal_row(withdrawal)
+
+
+@router.get("/promoter/me/withdrawals", response_model=list[WithdrawalRow])
+def list_my_withdrawals(
+    promoter: Promoter = Depends(get_current_promoter), session: Session = Depends(get_session),
+    limit: int = 20, offset: int = 0,
+):
+    """§Partie K : le promoteur voit SES propres demandes uniquement, jamais celles d'un autre promoteur
+    (filtré par promoter.id dérivé du token, jamais un identifiant transmis par le client)."""
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    rows = session.exec(
+        select(PromoterWithdrawal)
+        .where(PromoterWithdrawal.promoter_id == promoter.id)
+        .order_by(PromoterWithdrawal.requested_at.desc())
+        .offset(offset).limit(limit)
+    ).all()
+    return [_to_withdrawal_row(w) for w in rows]

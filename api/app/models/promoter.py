@@ -32,7 +32,7 @@ documentée (floor, déterministe, testée).
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Index, UniqueConstraint, text
 from sqlmodel import SQLModel, Field
 
 
@@ -205,6 +205,7 @@ class ReferralVisit(SQLModel, table=True):
 REFERRAL_AUDIT_EVENT_TYPES = (
     "PROMOTER_CREATED", "PROMOTER_ACTIVATED", "PROMOTER_DEACTIVATED", "PROMOTER_SUSPENDED",
     "COMMISSION_CREATED", "COMMISSION_REVERSED", "SELF_REFERRAL_REJECTED",
+    "WITHDRAWAL_REQUESTED", "WITHDRAWAL_PAID", "WITHDRAWAL_REJECTED",
 )
 
 
@@ -217,3 +218,83 @@ class ReferralAuditEvent(SQLModel, table=True):
     actor_user_id: Optional[int] = Field(default=None, foreign_key="user.id")  # admin ayant agi, si applicable
     detail: Optional[str] = None  # texte libre court, jamais de secret/donnée bancaire (§38)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# ---------------------------------------------------------------------------
+# Phase 15.14 : retrait MANUEL des commissions promoteurs — Xfoot n'effectue
+# JAMAIS de paiement automatique (aucun fournisseur externe intégré). Cette
+# table est un JOURNAL DE DEMANDES, pas une seconde source de vérité
+# financière : le montant réellement dû reste TOUJOURS dérivable de
+# ReferralCommission (le grand livre existant) moins les retraits déjà
+# PAYÉS/EN ATTENTE — voir app/referral/withdrawal_service.py::
+# compute_promoter_available_amount, jamais un champ `promoter.balance`
+# mutable (Partie M du prompt Phase 15.14).
+#
+# "PAID" signifie exclusivement : un administrateur a envoyé l'argent
+# MANUELLEMENT, HORS Xfoot, puis est revenu confirmer explicitement ce
+# paiement déjà effectué (Partie C/I du prompt) — jamais un paiement
+# déclenché par ce bouton.
+# ---------------------------------------------------------------------------
+
+WITHDRAWAL_STATUSES = ("PENDING", "PAID", "REJECTED")
+# §Partie C du prompt : "CANCELLED" est explicitement omis en V1 — aucune
+# action promoteur d'auto-annulation n'est demandée nulle part dans cette
+# phase (seul le refus ADMIN, "REJECTED", est spécifié avec un comportement
+# précis, Partie P) ; ajouter CANCELLED sans cas d'usage réel serait une
+# règle métier inventée, interdite (§ "en cas de règle métier inconnue :
+# NOT_DEFINED"). Documenté ici plutôt qu'ajouté silencieusement.
+
+
+class PromoterWithdrawal(SQLModel, table=True):
+    """
+    §Partie B : une ligne = UNE demande de retrait. §Partie F/M : le montant
+    "disponible" n'est JAMAIS lu depuis cette table seule — toujours recalculé
+    (ReferralCommission ACCRUED - retraits PENDING - retraits PAID), voir
+    withdrawal_service.py. Une fois PAID, une ligne est un historique
+    immuable (§Partie Q) : jamais UPDATE du montant, jamais suppression,
+    jamais une seconde confirmation possible (transition atomique côté DB,
+    voir withdrawal_service.py::confirm_withdrawal_paid).
+    """
+    __tablename__ = "promoter_withdrawal"
+    __table_args__ = (
+        # §Partie G/N/O : au plus UNE demande PENDING à la fois par promoteur —
+        # empêche un double-clic ou deux requêtes concurrentes de créer deux
+        # demandes, au niveau DB (pas seulement applicatif), sur SQLite ET
+        # PostgreSQL (les deux moteurs réellement utilisés par ce projet, voir
+        # app/core/database.py) : un index UNIQUE PARTIEL (WHERE status =
+        # 'PENDING') plutôt qu'une contrainte globale, pour qu'un promoteur
+        # puisse à nouveau demander un retrait après qu'une précédente demande
+        # ait été PAID ou REJECTED.
+        Index(
+            "uq_promoter_withdrawal_one_pending", "promoter_id", unique=True,
+            sqlite_where=text("status = 'PENDING'"),
+            postgresql_where=text("status = 'PENDING'"),
+        ),
+    )
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    promoter_id: int = Field(foreign_key="promoter.id", index=True)
+
+    # §Partie E : TOUJOURS le montant calculé côté serveur au moment de la
+    # création (jamais une valeur transmise par le client sans revérification,
+    # voir withdrawal_service.py::create_withdrawal_request) — entier, XOF
+    # sans sous-unité, même convention que ReferralCommission.gross_paid_amount.
+    amount: int
+    currency: str = Field(default="XOF")
+
+    status: str = Field(default="PENDING", index=True)  # WITHDRAWAL_STATUSES
+
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    processed_at: Optional[datetime] = None
+    processed_by_admin_id: Optional[int] = Field(default=None, foreign_key="user.id")
+
+    # §Partie J : référence externe TEXTUELLE, jamais un format imposé, jamais
+    # une vérification automatique prétendue (l'admin l'enregistre après avoir
+    # réellement payé hors Xfoot) — nullable : une confirmation reste possible
+    # sans référence, mais admin + date sont TOUJOURS conservés (voir champs
+    # ci-dessus), garantissant la traçabilité minimale même sans référence.
+    external_reference: Optional[str] = None
+    admin_note: Optional[str] = None  # §Partie J : commentaire libre facultatif, jamais de donnée bancaire (§38)
+
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
