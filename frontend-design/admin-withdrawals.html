@@ -62,6 +62,24 @@
             <div id="admin-content" style="display:none;">
 
                 <section class="dash-section">
+                    <div class="dash-section-header"><h2 class="x-h2">Rechercher un promoteur</h2></div>
+                    <div class="x-search" style="max-width: 320px; margin-bottom: 0.8rem;">
+                        <span class="x-search-icon">🔍</span>
+                        <input class="x-input" id="promoter-search-input" placeholder="Slug ou email du promoteur…">
+                    </div>
+                    <div id="promoter-search-results" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom: 0.8rem;"></div>
+                    <div id="promoter-summary-empty" class="x-caption">Aucun promoteur sélectionné — toutes les demandes sont affichées ci-dessous.</div>
+                    <div id="promoter-summary" class="x-grid" style="display:none; margin-bottom: 1rem;">
+                        <div class="x-card-kpi"><span class="x-label">Commission générée</span><span class="x-kpi" id="sum-generated">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Total demandé (historique)</span><span class="x-kpi" id="sum-requested">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Total versé</span><span class="x-kpi" id="sum-paid">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">En attente</span><span class="x-kpi" id="sum-pending">—</span></div>
+                        <div class="x-card-kpi"><span class="x-label">Reste disponible</span><span class="x-kpi" id="sum-available">—</span></div>
+                    </div>
+                    <button class="x-btn x-btn-ghost x-btn-sm" id="clear-promoter-filter-btn" style="display:none; margin-bottom:0.8rem;">✕ Retirer le filtre promoteur</button>
+                </section>
+
+                <section class="dash-section">
                     <div class="dash-section-header">
                         <h2 class="x-h2">Demandes</h2>
                         <select class="x-select" id="status-filter" style="max-width: 220px;">
@@ -92,6 +110,7 @@
 
         const STATUS_BADGE_CLASS = { PENDING: "x-badge-inactive", PAID: "x-badge-active", REJECTED: "x-badge-error" };
         const STATUS_LABEL = { PENDING: "En attente", PAID: "Versé", REJECTED: "Refusé" };
+        let selectedPromoterId = null;
 
         async function loadCurrentUserHeader() {
             try {
@@ -111,10 +130,63 @@
             return new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
         }
 
+        async function searchPromoters() {
+            const q = document.getElementById("promoter-search-input").value.trim();
+            const resultsEl = document.getElementById("promoter-search-results");
+            if (!q) { resultsEl.innerHTML = ""; return; }
+            const res = await apiFetch(`/admin/promoters?q=${encodeURIComponent(q)}&limit=10`);
+            if (!res.ok) { resultsEl.innerHTML = ""; return; }
+            const rows = await res.json();
+            if (rows.length === 0) {
+                resultsEl.innerHTML = `<span class="x-caption">Aucun promoteur trouvé.</span>`;
+                return;
+            }
+            resultsEl.innerHTML = rows.map(p => `
+                <button class="x-btn x-btn-secondary x-btn-sm" data-select-promoter="${p.id}">${p.slug} (${p.email})</button>
+            `).join("");
+            resultsEl.querySelectorAll("[data-select-promoter]").forEach(btn => {
+                btn.addEventListener("click", () => selectPromoter(parseInt(btn.dataset.selectPromoter, 10)));
+            });
+        }
+
+        async function selectPromoter(promoterId) {
+            selectedPromoterId = promoterId;
+            document.getElementById("promoter-search-results").innerHTML = "";
+            document.getElementById("promoter-search-input").value = "";
+            document.getElementById("clear-promoter-filter-btn").style.display = "inline-flex";
+            await Promise.all([loadPromoterSummary(promoterId), loadWithdrawals()]);
+        }
+
+        function clearPromoterFilter() {
+            selectedPromoterId = null;
+            document.getElementById("clear-promoter-filter-btn").style.display = "none";
+            document.getElementById("promoter-summary").style.display = "none";
+            document.getElementById("promoter-summary-empty").style.display = "block";
+            loadWithdrawals();
+        }
+        document.getElementById("clear-promoter-filter-btn").addEventListener("click", clearPromoterFilter);
+        document.getElementById("promoter-search-input").addEventListener("input", () => { searchPromoters().catch(console.error); });
+
+        async function loadPromoterSummary(promoterId) {
+            // §Partie D : montants TOUJOURS calculés côté serveur (compute_promoter_stats), jamais recalculés
+            // ici — cette page ne fait qu'afficher ce que /admin/promoters/{id} renvoie déjà.
+            const res = await apiFetch(`/admin/promoters/${promoterId}`);
+            if (!res.ok) throw new Error(`Erreur (${res.status})`);
+            const detail = await res.json();
+            document.getElementById("promoter-summary-empty").style.display = "none";
+            document.getElementById("promoter-summary").style.display = "grid";
+            document.getElementById("sum-generated").textContent = fmtMoney(detail.total_commission_accrued, detail.currency);
+            document.getElementById("sum-requested").textContent = fmtMoney(detail.commission_total_requested, detail.currency);
+            document.getElementById("sum-paid").textContent = fmtMoney(detail.commission_paid_out, detail.currency);
+            document.getElementById("sum-pending").textContent = fmtMoney(detail.commission_pending_withdrawal, detail.currency);
+            document.getElementById("sum-available").textContent = fmtMoney(detail.commission_available, detail.currency);
+        }
+
         async function loadWithdrawals() {
             const status = document.getElementById("status-filter").value;
             const params = new URLSearchParams();
             if (status) params.set("status_filter", status);
+            if (selectedPromoterId) params.set("promoter_id", selectedPromoterId);
             const res = await apiFetch(`/admin/withdrawals?${params.toString()}`);
             if (!res.ok) throw new Error(`Erreur (${res.status})`);
             const rows = await res.json();

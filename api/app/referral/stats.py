@@ -71,6 +71,7 @@ def compute_promoter_stats(session: Session, promoter_id: int, *, since: Optiona
         "commission_available": payout_amounts["commission_available"],
         "commission_pending_withdrawal": payout_amounts["commission_pending_withdrawal"],
         "commission_paid_out": payout_amounts["commission_paid_out"],
+        "commission_total_requested": payout_amounts["commission_total_requested"],
         "payout_system_status": "MANUAL_WITHDRAWAL_V1",
     }
 

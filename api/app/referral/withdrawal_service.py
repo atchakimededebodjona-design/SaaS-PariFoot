@@ -55,12 +55,18 @@ def compute_promoter_available_amount(session: Session, promoter_id: int) -> dic
     withdrawals = session.exec(select(PromoterWithdrawal).where(PromoterWithdrawal.promoter_id == promoter_id)).all()
     total_paid_out = sum(w.amount for w in withdrawals if w.status == "PAID")
     total_pending = sum(w.amount for w in withdrawals if w.status == "PENDING")
+    # Phase 15.16.1 : total de TOUTES les demandes jamais soumises (PENDING+PAID+REJECTED) — distinct de
+    # "disponible"/"versé"/"en attente" : sert uniquement au résumé financier admin par promoteur (Partie D
+    # du prompt), jamais utilisé dans le calcul du disponible (une demande REJECTED ne doit jamais réduire
+    # le disponible, voir Partie P déjà en place).
+    total_requested_all_time = sum(w.amount for w in withdrawals)
 
     raw_available = total_accrued - total_paid_out - total_pending
     return {
         "commission_accrued": total_accrued,
         "commission_paid_out": total_paid_out,
         "commission_pending_withdrawal": total_pending,
+        "commission_total_requested": total_requested_all_time,
         "commission_available": max(0, raw_available),
         "_raw_available_unclamped": raw_available,  # usage interne (détection du cas §Partie S), jamais exposé tel quel à l'API
     }

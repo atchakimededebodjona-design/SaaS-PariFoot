@@ -247,9 +247,12 @@ def _to_admin_row(session: Session, w: PromoterWithdrawal, promoters_by_id: dict
 @router.get("/withdrawals", response_model=list[WithdrawalAdminRow])
 def admin_list_withdrawals(
     admin: User = Depends(require_admin), session: Session = Depends(get_session),
-    status_filter: Optional[str] = None, limit: int = 50, offset: int = 0,
+    status_filter: Optional[str] = None, promoter_id: Optional[int] = None, limit: int = 50, offset: int = 0,
 ):
-    """§Partie H : "Demandes de retrait" — filtrable par statut (PENDING/PAID/REJECTED)."""
+    """§Partie H : "Demandes de retrait" — filtrable par statut (PENDING/PAID/REJECTED).
+    §Phase 15.16.1 Partie C : filtrable en plus par promoter_id (sélectionné par l'admin après recherche via
+    GET /admin/promoters?q=, déjà existant) — endpoint déjà réservé à require_admin, ce filtre n'élargit
+    aucun accès : l'admin peut déjà voir TOUTES les demandes sans filtre, ceci n'est qu'un confort de vue."""
     limit = max(1, min(limit, 200))
     offset = max(0, offset)
     if status_filter is not None and status_filter not in WITHDRAWAL_STATUSES:
@@ -257,6 +260,8 @@ def admin_list_withdrawals(
     query = select(PromoterWithdrawal)
     if status_filter:
         query = query.where(PromoterWithdrawal.status == status_filter)
+    if promoter_id is not None:
+        query = query.where(PromoterWithdrawal.promoter_id == promoter_id)
     rows = session.exec(query.order_by(PromoterWithdrawal.requested_at.desc()).offset(offset).limit(limit)).all()
 
     promoter_ids = {w.promoter_id for w in rows}
