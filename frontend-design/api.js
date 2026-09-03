@@ -118,17 +118,42 @@ function getOrCreateVisitorId() {
     return id;
 }
 
+// Format de slug IDENTIQUE à app/referral/slug.py::_SLUG_RE côté backend et à
+// la RewriteRule de frontend-design/.htaccess (1-40 caractères, [a-z0-9]
+// uniquement, tirets internes, aucun point ni slash) — jamais une seconde
+// définition du format : un candidat qui ne matche pas est simplement écarté
+// ici, AVANT même d'appeler le backend, qui reste seul juge de l'existence et
+// du statut réel d'un promoteur (voir POST /referral/resolve ci-dessous).
+const _SLUG_CANDIDATE_RE = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+
+// Phase 15.7.6 : la réécriture .htaccess qui sert /{slug} est INTERNE (jamais
+// de redirection HTTP 301/302, volontairement — voir le commentaire de
+// frontend-design/.htaccess) : le navigateur ne voit donc JAMAIS ?ref={slug}
+// dans sa propre barre d'adresse, seulement location.pathname inchangé.
+// Repli UNIQUEMENT si aucun ?ref= n'est présent (priorité 1 toujours au query
+// param, pour ne jamais changer le comportement historique de
+// /login.html?ref={slug}) — un seul segment, jamais un fichier réel
+// (login.html/billing.html/etc. contiennent un '.', exclu par le regex
+// ci-dessus, donc jamais interprétés comme un slug).
+function _slugCandidateFromPathname() {
+    const segment = window.location.pathname.replace(/^\/+/, "");
+    if (!segment || segment.includes("/") || !_SLUG_CANDIDATE_RE.test(segment)) return null;
+    return segment;
+}
+
 // À appeler au chargement de CHAQUE page publique (index.html en premier
-// lieu, la landing réelle du site) : si l'URL porte ?ref={slug} (ou si
-// .htaccess a réécrit /{slug} vers ?ref={slug}, voir frontend-design/.htaccess),
-// valide le slug côté serveur puis le mémorise (LAST VALID REFERRER — un
-// nouveau ?ref= valide remplace toujours le précédent). Ne bloque jamais le
-// rendu de la page (§31 : "le parcours doit être fluide", best-effort,
-// jamais d'erreur visible si l'appel échoue).
+// lieu, la landing réelle du site) : si l'URL porte ?ref={slug}, ou sinon si
+// le pathname lui-même ressemble à un slug (cas de /{slug} réécrit en
+// interne par .htaccess, voir frontend-design/.htaccess et
+// _slugCandidateFromPathname ci-dessus), valide le slug côté serveur puis le
+// mémorise (LAST VALID REFERRER — un nouveau ?ref= valide remplace toujours
+// le précédent). Ne bloque jamais le rendu de la page (§31 : "le parcours
+// doit être fluide", best-effort, jamais d'erreur visible si l'appel échoue).
 async function captureReferralFromUrl() {
     try {
         const params = new URLSearchParams(window.location.search);
-        const slug = (params.get("ref") || "").trim().toLowerCase();
+        const fromQuery = (params.get("ref") || "").trim().toLowerCase();
+        const slug = fromQuery || _slugCandidateFromPathname();
         if (!slug) return;
 
         const res = await fetch(`${API_BASE_URL}/referral/resolve/${encodeURIComponent(slug)}`, {
