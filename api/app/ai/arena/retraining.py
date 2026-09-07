@@ -36,6 +36,7 @@ explicitement).
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
@@ -57,6 +58,8 @@ from .promotion import (
     evaluate_promotion,
 )
 
+logger = logging.getLogger("xfoot.arena.retraining")
+
 SUPPORTED_MODEL_TYPES = ("xgboost", "lightgbm")
 
 # Mêmes valeurs, même rôle que scripts/train_ml_stacking_from_db.py (voir
@@ -74,9 +77,70 @@ FEATURE_VERSION = "phase9-v1"
 # une marge confortable au-dessus de N_TEST+N_VAL=400 (le split lui-même a
 # besoin d'au moins ça), RETRAIN_MIN_PERIOD_DAYS=90 évite un réentraînement
 # sur une fenêtre trop courte pour capturer une saison représentative.
-RETRAIN_MIN_MATCHES = int(os.environ.get("RETRAIN_MIN_MATCHES", "500"))
-RETRAIN_MIN_LEAGUES = int(os.environ.get("RETRAIN_MIN_LEAGUES", "1"))
-RETRAIN_MIN_PERIOD_DAYS = int(os.environ.get("RETRAIN_MIN_PERIOD_DAYS", "90"))
+def _resolve_min_matches() -> int:
+    """
+    Phase 16.5.1 : résout RETRAIN_MIN_MATCHES depuis l'environnement — même
+    esprit que app/core/database.py::resolve_database_url() (une valeur de
+    configuration présente mais invalide ne doit JAMAIS lever d'exception au
+    chargement du module). Nécessaire parce que api/main.py importe ce
+    module SANS CONDITION au démarrage (voir Phase 16.5,
+    RETRAIN_MIN_MATCHES_API_STARTUP_RISK_CONFIRMED) : un `int()` non protégé
+    ici faisait planter tout le service FastAPI, pas seulement le
+    retraining, pour "" / "abc" / "12.5". Fallback jamais silencieux — loggé
+    en warning, valeur invalide incluse (jamais un secret, uniquement un
+    entier de configuration).
+    """
+    raw = os.environ.get("RETRAIN_MIN_MATCHES")
+    if raw is None:
+        return 500
+    try:
+        return int(raw)
+    except ValueError:
+        logger.warning(
+            "RETRAIN_MIN_MATCHES invalide (valeur reçue: %r) ; utilisation du défaut 500.", raw,
+        )
+        return 500
+
+
+def _resolve_min_leagues() -> int:
+    """
+    Phase 16.5.3 : même correctif que _resolve_min_matches() (Phase 16.5.1),
+    appliqué à RETRAIN_MIN_LEAGUES — identifié à risque de startup crash
+    identique lors de l'audit Phase 16.5.2 (RETRAIN_ENV_AUDIT_ADDITIONAL_
+    STARTUP_RISK_CONFIRMED). Ne change JAMAIS la sémantique de 0/négatif
+    (aucune validation de plage ajoutée ici, hors périmètre de cette phase).
+    """
+    raw = os.environ.get("RETRAIN_MIN_LEAGUES")
+    if raw is None:
+        return 1
+    try:
+        return int(raw)
+    except ValueError:
+        logger.warning(
+            "RETRAIN_MIN_LEAGUES invalide (valeur reçue: %r) ; utilisation du défaut 1.", raw,
+        )
+        return 1
+
+
+def _resolve_min_period_days() -> int:
+    """Phase 16.5.3 : même correctif que _resolve_min_matches() (Phase
+    16.5.1), appliqué à RETRAIN_MIN_PERIOD_DAYS — même risque, même
+    traitement. Aucune validation de plage ajoutée (0/négatif inchangés)."""
+    raw = os.environ.get("RETRAIN_MIN_PERIOD_DAYS")
+    if raw is None:
+        return 90
+    try:
+        return int(raw)
+    except ValueError:
+        logger.warning(
+            "RETRAIN_MIN_PERIOD_DAYS invalide (valeur reçue: %r) ; utilisation du défaut 90.", raw,
+        )
+        return 90
+
+
+RETRAIN_MIN_MATCHES = _resolve_min_matches()
+RETRAIN_MIN_LEAGUES = _resolve_min_leagues()
+RETRAIN_MIN_PERIOD_DAYS = _resolve_min_period_days()
 
 
 # ---------------------------------------------------------------------------
