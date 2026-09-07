@@ -1,0 +1,414 @@
+{
+  "run_id": "20260831_222400",
+  "generated_at": "2026-08-31T22:24:00.831382+00:00",
+  "phase": "13",
+  "kind": "prospective_shadow_evidence_maturation_v1",
+  "rule": "POST-COMMIT CONTROLLED OBSERVATION. MODE_1_SHADOW_ONLY. NO PRODUCTION ACTIVATION. NO MODE_2/3/4 ACTIVATION.",
+  "operating_mode": "MODE_1_SHADOW_ONLY",
+  "git_baseline": {
+    "git_log_oneline_5": "00dd971 feat: complete AI shadow and production readiness phases\na2811c2 feat: add Xfoot odds temporal integrity audit v1\ne85f79f Phase 8D â€” Odds Research Prototype & Walk-Forward V1 (recherche)\n309e591 Phase 8C â€” External Data Source Audit V1 (due diligence)\n2160b4f Phase 8A â€” Data Intelligence & Feature Registry V1\n",
+    "expected_checkpoint": "00dd971",
+    "checkpoint_present_in_recent_log": true
+  },
+  "phase12_baseline_run_id": "20260831_221502",
+  "phase12_baseline_generated_at": "2026-08-31T22:15:02.628577+00:00",
+  "phase12_baseline_final_verdict": "NEEDS_FIXES",
+  "phase12_current_run_id": "20260831_223115",
+  "real_execution_log": {
+    "scripts/internal_shadow_operation.py --dry-run": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:24:49,907 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase11\\xfoot_phase11_20260831_222449.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase11\\xfoot_phase11_20260831_222449.md"
+    },
+    "scripts/internal_shadow_operation.py --monitor": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:25:40,251 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase11\\xfoot_phase11_20260831_222540.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase11\\xfoot_phase11_20260831_222540.md"
+    },
+    "scripts/shadow_evidence_watch.py --dry-run": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:26:25,875 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase9_5\\xfoot_phase9_5_20260831_222625.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase9_5\\xfoot_phase9_5_20260831_222625.md"
+    },
+    "scripts/shadow_evidence_watch.py --monitor": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:27:10,160 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase9_5\\xfoot_phase9_5_20260831_222710.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase9_5\\xfoot_phase9_5_20260831_222710.md"
+    },
+    "scripts/shadow_observation_period.py": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:31:12,254 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase12\\xfoot_phase12_20260831_223112.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase12\\xfoot_phase12_20260831_223112.md"
+    },
+    "scripts/shadow_observation_period.py --monitor (attempted, unsupported flag)": {
+      "returncode": 2,
+      "summary_line": "",
+      "pass": false,
+      "stderr_tail": "shadow_observation_period.py: error: unrecognized arguments: --monitor",
+      "note": "scripts/shadow_observation_period.py (Phase 12) n'expose pas de flag --monitor — documenté honnêtement (§28) plutôt que masqué ; le script est de toute façon déjà entièrement en lecture seule à chaque invocation, --monitor n'aurait rien changé."
+    },
+    "scripts/shadow_observation_period.py (fallback re-run, no --monitor)": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": "2026-08-31 22:35:14,654 [INFO] Rapports écrits : C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase12\\xfoot_phase12_20260831_223514.json / C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\reports\\phase12\\xfoot_phase12_20260831_223514.md"
+    },
+    "scripts/production_readiness.py --dry-run": {
+      "returncode": 0,
+      "summary_line": "================================================================================",
+      "pass": true,
+      "stderr_tail": ""
+    }
+  },
+  "observation_delta": {
+    "NEW_OBSERVATIONS": 0,
+    "NEW_REAL_PROSPECTIVE": 0,
+    "NEW_RESOLVED": 0,
+    "NEW_PROVENANCE_COMPLETE": 0,
+    "NEW_MODEL_VERSIONS": [],
+    "NEW_MARKETS": [],
+    "NEW_LEAGUES": [],
+    "NO_NEW_EVIDENCE": true
+  },
+  "blocker_evolution": {
+    "status": "ok",
+    "new": [],
+    "persisting": [
+      "MONITORING",
+      "PROVENANCE",
+      "ROLLBACK",
+      "TRACK_RECORD"
+    ],
+    "cleared": [],
+    "regressed": []
+  },
+  "comparison_vs_phase12": {
+    "readiness_verdict": {
+      "baseline": "NO_GO",
+      "current": "NO_GO",
+      "delta": "UNCHANGED"
+    },
+    "real_prospective_evidence": {
+      "baseline": 0,
+      "current": 0,
+      "delta": "UNCHANGED"
+    },
+    "track_record_sample_size": {
+      "baseline": 0,
+      "current": 0,
+      "delta": "UNCHANGED"
+    },
+    "provenance_complete": {
+      "baseline": 0,
+      "current": 0,
+      "delta": "UNCHANGED"
+    },
+    "critical_gates": {
+      "MODEL": "UNCHANGED",
+      "MODEL_VERSION": "UNCHANGED",
+      "DATABASE_SAFETY": "UNCHANGED",
+      "TEMPORAL_INTEGRITY": "UNCHANGED",
+      "PROVENANCE": "UNCHANGED",
+      "TRACK_RECORD": "UNCHANGED",
+      "KILL_SWITCH": "UNCHANGED",
+      "MONITORING": "UNCHANGED",
+      "ROLLBACK": "UNCHANGED"
+    },
+    "note": "§39 : chaque dimension comparée indépendamment, sans compensation.",
+    "baseline_run_id": "20260831_221502",
+    "current_run_id": "20260831_223115"
+  },
+  "activation_matrix": {
+    "MODE_1_SHADOW_ONLY": {
+      "description": "État actuel — recherche/shadow uniquement, aucune exposition production.",
+      "required_gates": [],
+      "unmet_gates": [],
+      "conditions_met": true,
+      "activated": false,
+      "note": "DOCUMENTARY_ONLY (§26/§37) — jamais activé automatiquement, quel que soit le résultat."
+    },
+    "MODE_2_LIMITED_INTERNAL": {
+      "description": "Recherche interne étendue — signaux visibles UNIQUEMENT par l'équipe technique, jamais un utilisateur final.",
+      "required_gates": [
+        "MODEL",
+        "MODEL_VERSION",
+        "TEMPORAL_INTEGRITY",
+        "DATABASE_SAFETY",
+        "KILL_SWITCH"
+      ],
+      "unmet_gates": [],
+      "conditions_met": true,
+      "activated": false,
+      "note": "DOCUMENTARY_ONLY (§26/§37) — jamais activé automatiquement, quel que soit le résultat."
+    },
+    "MODE_3_LIMITED_PRODUCTION": {
+      "description": "Exposition production limitée (1 marché, 1 ligue, volume research/observation).",
+      "required_gates": [
+        "MODEL",
+        "MODEL_VERSION",
+        "TEMPORAL_INTEGRITY",
+        "PROVENANCE",
+        "DATABASE_SAFETY",
+        "ROLLBACK",
+        "MONITORING",
+        "TRACK_RECORD",
+        "KILL_SWITCH"
+      ],
+      "unmet_gates": [
+        "PROVENANCE",
+        "ROLLBACK",
+        "MONITORING",
+        "TRACK_RECORD"
+      ],
+      "conditions_met": false,
+      "activated": false,
+      "note": "DOCUMENTARY_ONLY (§26/§37) — jamais activé automatiquement, quel que soit le résultat."
+    },
+    "MODE_4_FULL_PRODUCTION": {
+      "description": "Exposition production complète — hors du périmètre de toute phase actuelle.",
+      "required_gates": [
+        "TEMPORAL_INTEGRITY",
+        "MODEL",
+        "MODEL_VERSION",
+        "PROVENANCE",
+        "DATABASE_SAFETY",
+        "ROLLBACK",
+        "MONITORING",
+        "TRACK_RECORD",
+        "KILL_SWITCH"
+      ],
+      "unmet_gates": [
+        "PROVENANCE",
+        "ROLLBACK",
+        "MONITORING",
+        "TRACK_RECORD"
+      ],
+      "conditions_met": false,
+      "activated": false,
+      "note": "DOCUMENTARY_ONLY (§26/§37) — jamais activé automatiquement, quel que soit le résultat."
+    }
+  },
+  "readiness_verdict": "NO_GO",
+  "readiness_critical_failures": [
+    "PROVENANCE",
+    "ROLLBACK",
+    "MONITORING",
+    "TRACK_RECORD"
+  ],
+  "human_review_status": "NOT_READY_FOR_HUMAN_REVIEW",
+  "baseline_evidence_ledger": {
+    "total_observations": 0,
+    "by_data_marking_class": {
+      "REAL_PROSPECTIVE": 0,
+      "REAL_BUT_TEMPORAL_UNVERIFIED": 0,
+      "HISTORICAL": 0,
+      "SYNTHETIC": 0
+    },
+    "data_marking_detail": [],
+    "by_resolution_status": {},
+    "pending": 0,
+    "resolved": 0,
+    "conflicts": 0,
+    "unresolved": 0,
+    "invalid": 0,
+    "provenance_complete": 0,
+    "provenance_incomplete": 0,
+    "provenance_unknown": 0,
+    "temporal_invalid": 0,
+    "model_mismatch": 0,
+    "probability_mismatch": 0,
+    "decision_mismatch": 0,
+    "distinct_fixtures": 0,
+    "distinct_leagues": [],
+    "distinct_markets": [],
+    "distinct_models": [],
+    "distinct_model_versions": [],
+    "first_observation": null,
+    "latest_observation": null,
+    "period_covered": {
+      "earliest_kickoff": null,
+      "latest_kickoff": null
+    },
+    "maturity_real_prospective_resolved": "NO_DATA",
+    "real_prospective_resolved_count": 0
+  },
+  "current_evidence_ledger": {
+    "total_observations": 0,
+    "by_data_marking_class": {
+      "REAL_PROSPECTIVE": 0,
+      "REAL_BUT_TEMPORAL_UNVERIFIED": 0,
+      "HISTORICAL": 0,
+      "SYNTHETIC": 0
+    },
+    "data_marking_detail": [],
+    "by_resolution_status": {},
+    "pending": 0,
+    "resolved": 0,
+    "conflicts": 0,
+    "unresolved": 0,
+    "invalid": 0,
+    "provenance_complete": 0,
+    "provenance_incomplete": 0,
+    "provenance_unknown": 0,
+    "temporal_invalid": 0,
+    "model_mismatch": 0,
+    "probability_mismatch": 0,
+    "decision_mismatch": 0,
+    "distinct_fixtures": 0,
+    "distinct_leagues": [],
+    "distinct_markets": [],
+    "distinct_models": [],
+    "distinct_model_versions": [],
+    "first_observation": null,
+    "latest_observation": null,
+    "period_covered": {
+      "earliest_kickoff": null,
+      "latest_kickoff": null
+    },
+    "maturity_real_prospective_resolved": "NO_DATA",
+    "real_prospective_resolved_count": 0
+  },
+  "existing_regression_suites": {
+    "test_model_selection.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "17/17 tests OK",
+      "pass": true
+    },
+    "test_track_record.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "23/23 tests OK",
+      "pass": true
+    },
+    "test_feature_registry.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_feature_engineering_v1.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_value_engine.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "36/36 tests OK",
+      "pass": true
+    },
+    "test_decision_layer.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "34/34 tests OK",
+      "pass": true
+    },
+    "test_end_to_end_pipeline.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "21/21 tests OK",
+      "pass": true
+    },
+    "test_shadow_operational.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "25/25 tests OK",
+      "pass": true
+    },
+    "test_historical_replay.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "22/22 tests OK",
+      "pass": true
+    },
+    "test_live_shadow_track.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "18/18 tests OK",
+      "pass": true
+    },
+    "test_shadow_monitoring.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "29/29 tests OK",
+      "pass": true
+    },
+    "test_production_readiness.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "59 passed, 0 failed (sur 59 assertions)",
+      "pass": true
+    },
+    "test_safety_controls.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "76 passed, 0 failed (sur 76 assertions, 40 scénarios)",
+      "pass": true
+    },
+    "test_prospective_shadow.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "71 passed, 0 failed (sur 71 assertions, 37 scénarios)",
+      "pass": true
+    },
+    "test_phase9_3.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "74 passed, 0 failed (sur 74 assertions, 40 scénarios)",
+      "pass": true
+    },
+    "test_phase9_4.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "98 passed, 0 failed (sur 98 assertions, 44 scénarios)",
+      "pass": true
+    },
+    "test_phase9_5.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "86 passed, 0 failed (sur 86 assertions, 40 scénarios)",
+      "pass": true
+    },
+    "test_phase10.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "89 passed, 0 failed (sur 89 assertions, 44 scénarios)",
+      "pass": true
+    },
+    "test_phase11.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "100 passed, 0 failed (sur 100 assertions, 60 scénarios)",
+      "pass": true
+    },
+    "test_phase12.py": {
+      "status": "PASSED",
+      "returncode": 0,
+      "summary_line": "42 passed, 0 failed (sur 42 assertions, 18 scénarios)",
+      "pass": true
+    }
+  },
+  "this_phase_tests": {
+    "status": "PASSED",
+    "returncode": 0,
+    "summary_line": "41 passed, 0 failed (sur 41 assertions, 14 scénarios)",
+    "pass": true
+  },
+  "git_status_short": " M api/app/ai/readiness/gates.py\n M reports/shadow/watch/evidence_snapshots.json\n?? api/test_phase13.py\n?? reports/phase11/xfoot_phase11_20260831_220816.json\n?? reports/phase11/xfoot_phase11_20260831_220816.md\n?? reports/phase11/xfoot_phase11_20260831_220924.json\n?? reports/phase11/xfoot_phase11_20260831_220924.md\n?? reports/phase11/xfoot_phase11_20260831_221146.json\n?? reports/phase11/xfoot_phase11_20260831_221146.md\n?? reports/phase11/xfoot_phase11_20260831_221237.json\n?? reports/phase11/xfoot_phase11_20260831_221237.md\n?? reports/phase11/xfoot_phase11_20260831_221552.json\n?? reports/phase11/xfoot_phase11_20260831_221552.md\n?? reports/phase11/xfoot_phase11_20260831_221643.json\n?? reports/phase11/xfoot_phase11_20260831_221643.md\n?? reports/phase11/xfoot_phase11_20260831_222449.json\n?? reports/phase11/xfoot_phase11_20260831_222449.md\n?? reports/phase11/xfoot_phase11_20260831_222540.json\n?? reports/phase11/xfoot_phase11_20260831_222540.md\n?? reports/phase11/xfoot_phase11_20260831_222801.json\n?? reports/phase11/xfoot_phase11_20260831_222801.md\n?? reports/phase11/xfoot_phase11_20260831_222850.json\n?? reports/phase11/xfoot_phase11_20260831_222850.md\n?? reports/phase11/xfoot_phase11_20260831_223204.json\n?? reports/phase11/xfoot_phase11_20260831_223204.md\n?? reports/phase11/xfoot_phase11_20260831_223253.json\n?? reports/phase11/xfoot_phase11_20260831_223253.md\n?? reports/phase12/xfoot_phase12_20260831_221459.json\n?? reports/phase12/xfoot_phase12_20260831_221459.md\n?? reports/phase12/xfoot_phase12_20260831_221908.json\n?? reports/phase12/xfoot_phase12_20260831_221908.md\n?? reports/phase12/xfoot_phase12_20260831_223112.json\n?? reports/phase12/xfoot_phase12_20260831_223112.md\n?? reports/phase12/xfoot_phase12_20260831_223514.json\n?? reports/phase12/xfoot_phase12_20260831_223514.md\n?? reports/phase13/\n?? reports/phase9_5/xfoot_phase9_5_20260831_221009.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221009.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_221054.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221054.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_221322.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221322.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_221407.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221407.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_221729.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221729.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_221815.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_221815.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_222625.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_222625.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_222710.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_222710.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_222935.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_222935.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_223020.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_223020.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_223338.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_223338.md\n?? reports/phase9_5/xfoot_phase9_5_20260831_223423.json\n?? reports/phase9_5/xfoot_phase9_5_20260831_223423.md\n?? scripts/phase13_evidence_maturation.py\n",
+  "git_diff_stat": " api/app/ai/readiness/gates.py                |   6 +\n reports/shadow/watch/evidence_snapshots.json | 648 +++++++++++++++++++++++++++\n 2 files changed, 654 insertions(+)\n",
+  "git_diff_names": "api/app/ai/readiness/gates.py\nreports/shadow/watch/evidence_snapshots.json\n",
+  "production_files_modified": false,
+  "tests_green": true,
+  "final_verdict": "NO_DATA",
+  "the_odds_api_status": "SUPPORT_REQUIRED — non appelé dans cette phase.",
+  "no_user_betting_signal": true,
+  "mode": "MODE_1_SHADOW_ONLY",
+  "production_activation": "BLOCKED"
+}
