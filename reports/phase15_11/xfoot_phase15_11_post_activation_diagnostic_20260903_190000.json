@@ -1,0 +1,114 @@
+{
+  "phase": "15.11-DIAG — DIAGNOSTIC POST-ACTIVATION : ABONNEMENT ACTIVE MAIS VENTE/COMMISSION ABSENTES",
+  "timestamp": "2026-09-03T19:00:00Z",
+
+  "etat_avant_activation": {"user_245": "abonnement NONE, montant —, PROMOTEUR déjà promoter-2 (attribution pré-existante)"},
+  "etat_apres_activation": {
+    "admin_abonnes": {"user_id": 245, "email": "oktest@test.com", "plan": "monthly", "promoteur": "promoter-2", "statut": "ACTIVE", "montant_paye": "—"},
+    "admin_gains": {"total_abonnements": 52, "ventes_payees": 0, "revenu_total": "0 FCFA", "commissions": "0 FCFA"},
+    "promoter_2": {"visiteurs": 2, "inscriptions": 3, "abonnes_convertis": 0, "ventes_payees": 0, "revenu": "0 FCFA", "commission": "0 FCFA"}
+  },
+
+  "PARTIE_A_flux_active_license_trace": {
+    "1_reception_licence": "body.license_key (seule donnée acceptée du client) — api/app/billing/router.py:341-348",
+    "2_verification_chariow": "_fetch_chariow_license(body.license_key) -> GET {CHARIOW_API_BASE_URL}/licenses/{key}, appel réel confirmé (l'abonnement EST passé à ACTIVE, donc ce GET a réussi et status='active')",
+    "3_extraction_donnees_paiement": "license_data = {status, expires_at, metadata:{user_id, plan}, customer:{email}, product:{id}} — AUCUN champ montant n'est extrait à cette étape, ni ne l'a jamais été (fonction inchangée depuis avant Phase 15.10)",
+    "4_creation_activation_subscription": "sub.status='active', sub.plan=metadata.plan ('monthly'), sub.external_ref=license_key, sub.current_period_end=expires_at — CONFIRMÉ RÉUSSI (Admin Abonnés montre STATUT=ACTIVE, PLAN=monthly)",
+    "5_user_id": "metadata.user_id -> comparé à current_user.id (245) -> owns_license=true -> CONFIRMÉ (sinon 403, jamais atteint 'active')",
+    "6_email": "current_user.email (JWT) — jamais lu depuis le corps client, non déterminant ici (metadata.user_id a suffi)",
+    "7_montant": "JAMAIS DÉTERMINÉ À CETTE ÉTAPE — voir PARTIE B, c'est le point de rupture",
+    "8_plan": "'monthly' — résolu via metadata.plan, CONFIRMÉ (visible dans Admin Abonnés)",
+    "9_payment_transaction_id": "PAS pi_ih0s0eixhgm1 — voir PARTIE C",
+    "10_recherche_referralattribution": "Effectuée à l'INTÉRIEUR de create_commission_for_confirmed_payment (appelée après commit de la subscription) — voir PARTIE D, TRÈS PROBABLEMENT RÉUSSIE",
+    "11_appel_create_commission_for_confirmed_payment": "CONFIRMÉ APPELÉ — api/app/billing/router.py, immédiatement après recompute_entitlement, dans un bloc try/except (Phase 15.10)",
+    "12_resultat_de_cet_appel": "None (aucune ReferralCommission créée) — déduit avec certitude de l'observation Admin Gains/Promoteur (voir PARTIE E)",
+    "13_exception": "AUCUNE exception levée (le try/except entourant l'appel n'a rien eu à intercepter au sens 'crash' — la fonction retourne None PROPREMENT selon son propre contrat documenté, ce n'est pas un échec technique mais un résultat métier normal du chemin 'montant introuvable')",
+    "14_reponse_http_finale": "200, SubscriptionStatus{status='active', plan='monthly', is_active=true, ...} — la réponse HTTP ne reflète JAMAIS le résultat de la commission (best-effort, voir Phase 15.10 : 'ne doit jamais faire échouer l'activation de l'abonnement déjà committée')"
+  },
+
+  "PARTIE_B_payment_amount_ROOT_CAUSE": {
+    "symptome": "Admin Abonnés MONTANT PAYÉ = '—' alors que Chariow confirme 1500 FCFA",
+    "cause_exacte_prouvee_par_le_code": {
+      "etape_1": "extract_actual_paid_amount(sale_body=license_data, plan='monthly') — api/app/referral/money.py:67-88",
+      "etape_2": "Boucle sur _AMOUNT_CANDIDATE_KEYS = ('amount','amount_paid','paid_amount','total_amount','total','price') appliquée directement sur license_data (l'objet retourné par GET /licenses/{key}) — AUCUN de ces champs n'est documenté ni jamais observé dans license_data dans TOUT ce dépôt (le docstring de _fetch_chariow_license, api/app/billing/router.py:262-291, énumère explicitement les champs réels confirmés : status/expires_at/product/metadata/customer.email — JAMAIS un montant)",
+      "etape_3": "Repli sur PLAN_LIST_PRICES['monthly'] (variable REFERRAL_PLAN_PRICE_MONTHLY, lue UNE SEULE FOIS au chargement du module money.py, jamais recontrôlée à l'exécution) — cette variable n'a JAMAIS été mentionnée comme configurée sur Railway dans l'historique complet de ce projet (contrairement à CHARIOW_PRODUCT_ID_MONTHLY, dont la configuration a été explicitement diagnostiquée et corrigée en Phase 15.6). Absence non re-vérifiable directement par cet assistant (aucun accès Railway), mais fortement corroborée par le résultat observé.",
+      "etape_4": "Les deux sources échouent -> return (None, 'unavailable')"
+    },
+    "conclusion": "amount = None, amount_source = 'unavailable'. C'est un résultat DÉTERMINISTE et PROUVÉ par le code — pas une supposition. La cause exacte tient en une phrase : license_data (réponse de l'API Chariow /licenses/{key}) ne porte aucun champ de montant, et aucun prix fixe de repli n'est configuré pour compenser cette absence.",
+    "champ_reellement_observe_vs_invente": "AUCUN champ montant n'a été inventé ni supposé exister — la conclusion s'appuie sur l'ABSENCE documentée dans le code existant, jamais sur une supposition positive de structure."
+  },
+
+  "PARTIE_C_payment_transaction_id": {
+    "valeur_transmise_a_create_commission_for_confirmed_payment": "delivery_id = f'activate-license:{body.license_key}' (Phase 15.10, api/app/billing/router.py)",
+    "comparaison_avec_pi_ih0s0eixhgm1": "DIFFÉRENT — le delivery_id utilisé est dérivé de license_key (secret humain, jamais loggé ni connu de cet assistant), PAS de la référence Chariow pi_ih0s0eixhgm1 elle-même.",
+    "champ_attendu_par_la_fonction": "source_event_id (ReferralCommission.source_event_id, contrainte UNIQUE) — accepte n'importe quelle chaîne stable et unique, aucune validation de format Chariow spécifique",
+    "identifiant_reellement_fourni": "Oui, un identifiant EST fourni (jamais None) — le license_key existe forcément puisque l'activation a réussi. CE N'EST DONC PAS LA CAUSE DU BLOCAGE : la fonction atteint bel et bien l'étape de vérification d'idempotence (ligne 78-83) SANS problème, c'est l'étape SUIVANTE (extraction du montant, ligne 85) qui bloque.",
+    "note_architecturale_non_bloquante": "Si une commission avait pu être créée, elle serait retrouvable par 'activate-license:<license_key>', PAS par 'pi_ih0s0eixhgm1' — une recherche future dans le ledger par la référence Chariow ne la trouverait pas. Ceci n'explique PAS l'absence actuelle de commission, mais est noté pour la Phase 15.12."
+  },
+
+  "PARTIE_D_referral": {
+    "attribution_deja_prouvee": "USER 245 -> promoter-2 (promoter_id=206) — confirmé de façon FORTE et INDÉPENDANTE : Admin Abonnés affiche PROMOTEUR=promoter-2 pour USER 245, or ce champ (admin_router.py:174-175,180 : list_subscribers) est calculé PAR UNE LECTURE DIRECTE de ReferralAttribution, ENTIÈREMENT INDÉPENDANTE de l'existence d'une ReferralCommission. Ceci est une preuve solide, pas une déduction : l'attribution EXISTE réellement en base et se résout correctement.",
+    "consequence_sur_create_commission_for_confirmed_payment": "Les 3 premières préconditions de la fonction (attribution existe, promoter existe, promoter.status=='ACTIVE') sont donc TRÈS PROBABLEMENT toutes PASS — cohérent avec le fait que promoter-2 est déjà visible et fonctionnel ailleurs dans le système (dashboard promoteur accessible, INSCRIPTIONS=3 affiché).",
+    "verification_directe_db": "NOT_VERIFIABLE (aucun accès DB/admin direct pour cet assistant) — mais la preuve indirecte ci-dessus est suffisamment forte pour écarter REFERRAL_LOOKUP_FAIL comme cause du problème actuel."
+  },
+
+  "PARTIE_E_preconditions_create_commission_for_confirmed_payment": {
+    "1_attribution_existe": "PASS (déduit fortement, voir Partie D)",
+    "2_promoter_existe": "PASS (déduit fortement, voir Partie D)",
+    "3_promoter_status_ACTIVE": "PASS (déduit fortement — promoter-2 visible et actif partout ailleurs dans le système)",
+    "4_pas_self_referral": "PASS (USER 245 ≠ promoter-2, évident)",
+    "5_delivery_id_pas_deja_traite": "PASS (aucune commission n'a pu exister avant pour cette licence, première tentative)",
+    "6_amount_non_null": "FAIL — voir PARTIE B, ROOT CAUSE PROUVÉE",
+    "7_conclusion": "Une SEULE précondition échoue : le montant réellement payé est introuvable. Toutes les préconditions liées à l'attribution/au promoteur/à l'idempotence sont satisfaites. La fonction retourne None PROPREMENT à la ligne 86-91 de commission_service.py, log un WARNING explicite ('PAYMENT_CONFIRMATION_UNAVAILABLE'), jamais une exception."
+  },
+
+  "PARTIE_F_idempotence": {
+    "cle_qui_aurait_du_etre_utilisee": "activate-license:<license_key> (voir Partie C) — PAS pi_ih0s0eixhgm1 directement",
+    "ledger_entry_existant": "NOT_VERIFIABLE directement (pas d'accès DB) — mais Admin Gains affiche COMMISSIONS=0 sur la TOTALITÉ du système (pas seulement pour USER 245), ce qui est une preuve indirecte forte qu'aucune ligne ReferralCommission n'existe nulle part pour l'instant, cohérent avec 'aucune commission n'a jamais pu être créée depuis le déploiement (montant toujours introuvable pour tout paiement traité via activate-license)'.",
+    "action_effectuee": "AUCUNE — lecture seule uniquement, aucune ligne créée manuellement, conformément à la règle absolue."
+  },
+
+  "PARTIE_G_tests_vs_realite": {
+    "ecart_identifie": true,
+    "description_precise": "api/test_phase15_10_activate_license_commission.py, fonction _fake_license() (ligne ~58-68) accepte un paramètre 'amount' optionnel et l'injecte DIRECTEMENT à la racine de l'objet 'license_data' simulé : data['amount'] = amount. Les TEST 1/2 (le 'chemin heureux' démontrant la création de commission) appellent CETTE fonction avec amount=1500 — un champ qui N'EST DOCUMENTÉ NULLE PART comme réellement renvoyé par GET /licenses/{key} de Chariow (voir Partie B). Le commentaire du code de test lui-même le signalait déjà honnêtement : '# champ hypothétique, testé tel quel — jamais garanti par Chariow' (test_phase15_10_activate_license_commission.py, docstring de _fake_license).",
+    "test_qui_avait_deja_correctement_predit_le_reel": "TEST 6 ('montant introuvable dans license_data -> abonnement activé, AUCUNE commission fabriquée') utilisait délibérément amount=None et prouvait EXACTEMENT le comportement observé en production aujourd'hui : abonnement activé, zéro commission. Ce test était vert ET réaliste — mais son message n'a pas été interprété comme un AVERTISSEMENT que ce serait le comportement RÉEL par défaut, faute d'accès à la vraie réponse Chariow au moment de la Phase 15.10.",
+    "consequence": "33/33 tests verts en Phase 15.10 ne prouvaient PAS que le cas réel fonctionnerait de bout en bout — ils prouvaient que LE CODE fait exactement ce qu'il est censé faire ÉTANT DONNÉ les données qu'on lui fournit. Le test 1/2 fournissait des données optimistes non confirmées ; le test 6 fournissait les données réalistes et avait raison."
+  },
+
+  "PARTIE_H_intention_vs_comportement": {
+    "intention_documentee_phase_15_10": "B) activation + réconciliation financière complète (vente + commission) — explicitement l'objectif énoncé",
+    "comportement_reel_observe": "A) activation SEULEMENT — la réconciliation financière est bien TENTÉE (le code l'appelle réellement, Partie A étape 11) mais échoue systématiquement à cause de l'absence de montant exploitable (Partie B)",
+    "ecart": "L'intention B n'est PAS pleinement réalisée dans le cas réel — le code a le bon design (réutilisation stricte de create_commission_for_confirmed_payment, jamais une seconde logique) mais dépend d'une donnée (le montant) que la source Chariow utilisée (GET /licenses/{key}) ne fournit apparemment pas, et qu'aucun repli de configuration ne compense actuellement."
+  },
+
+  "PARTIE_I_chaine_causale": [
+    "USER 245",
+    "-> licence Chariow vérifiée (GET /licenses/{key}, status='active') — PROUVÉ (abonnement réellement ACTIVE)",
+    "-> ProviderSubscription créée/activée (status=active, plan=monthly) — PROUVÉ (Admin Abonnés)",
+    "-> plan 'monthly' déterminé via metadata.plan — PROUVÉ",
+    "-> ReferralAttribution retrouvée (converted_user_id=245 -> promoter_id=206) — TRÈS FORTEMENT PROUVÉ (indépendamment, via Admin Abonnés PROMOTEUR=promoter-2)",
+    "-> promoter-2 status ACTIVE confirmé — TRÈS FORTEMENT PROUVÉ",
+    "-> create_commission_for_confirmed_payment(sale_body=license_data, delivery_id='activate-license:<license_key>') appelée — PROUVÉ (code lu, chemin d'exécution confirmé)",
+    "-> extract_actual_paid_amount(license_data, 'monthly') -> aucune clé montant dans license_data, aucun REFERRAL_PLAN_PRICE_MONTHLY configuré -> (None, 'unavailable') — CAUSE RACINE PROUVÉE PAR LE CODE",
+    "-> précondition 'amount is None' = FAIL -> return None (aucune exception, comportement normal documenté)",
+    "-> AUCUNE ligne ReferralCommission créée",
+    "-> Admin Abonnés: MONTANT PAYÉ='—' (sourcé exclusivement depuis ReferralCommission.gross_paid_amount, admin_router.py:179) — PROUVÉ",
+    "-> Admin Gains: VENTES PAYÉES=0, REVENU=0, COMMISSIONS=0 (compute_admin_totals, sourcé exclusivement depuis ReferralCommission, stats.py:72-97) — PROUVÉ",
+    "-> Promoteur promoter-2: ABONNÉS CONVERTIS=0, VENTES=0, REVENU=0, COMMISSION=0 (compute_promoter_stats, même source exclusive, stats.py:26-69) — PROUVÉ"
+  ],
+
+  "aucune_modification_effectuee": {
+    "router_py_modifie": false, "tests_modifies": false, "db_modifiee": false,
+    "referral_attribution_modifiee": false, "commission_ledger_modifie": false,
+    "commit": false, "push": false, "deploiement": false,
+    "licence_chariow_demandee_affichee_ou_loggee": false
+  },
+
+  "verdict": {
+    "value": "MULTIPLE_ROOT_CAUSES",
+    "causes_secondaires_qui_composent_la_cause_principale": ["AMOUNT_RECONCILIATION_MISSING"],
+    "note_sur_le_choix_du_verdict": "Le verdict AMOUNT_RECONCILIATION_MISSING serait suffisant à lui seul pour expliquer 100% des symptômes observés (démontré Partie B-E-I) — mais MULTIPLE_ROOT_CAUSES est retenu car un second problème INDÉPENDANT, bien que non bloquant pour CE cas précis, a été prouvé et documenté (PARTIE C : l'identifiant utilisé pour l'idempotence n'est pas la référence Chariow pi_ih0s0eixhgm1 elle-même, ce qui compliquera toute réconciliation manuelle future basée sur cette référence) ET un écart tests/réalité a été prouvé et documenté (PARTIE G, TEST_REALITY_GAP_IDENTIFIED). PAYMENT_ID_RECONCILIATION_MISSING et REFERRAL_LOOKUP_FAIL sont explicitement ÉCARTÉS (preuves à l'appui, Parties C et D). COMMISSION_PRECONDITION_FAIL est vrai mais entièrement expliqué par AMOUNT_RECONCILIATION_MISSING (une seule précondition en cause, pas plusieurs préconditions indépendantes)."
+  },
+
+  "closing_statement": "PHASE 15.11-DIAG — CAUSE RACINE PROUVÉE PAR LE CODE, PAS SUPPOSÉE : extract_actual_paid_amount(license_data, 'monthly') RETOURNE (None, 'unavailable') CAR (a) L'OBJET RENVOYÉ PAR GET /licenses/{key} DE CHARIOW NE PORTE DOCUMENTAIREMENT AUCUN CHAMP DE MONTANT, ET (b) AUCUN PRIX FIXE DE REPLI (REFERRAL_PLAN_PRICE_MONTHLY) N'EST CONFIGURÉ POUR COMPENSER. TOUTE LA CHAÎNE EN AVAL (Admin Abonnés MONTANT='—', Admin Gains 0/0/0, Promoteur 0/0/0) EST STRICTEMENT ET EXCLUSIVEMENT SOURCÉE DEPUIS ReferralCommission (PROUVÉ PAR CITATION DE CODE EXACTE, admin_router.py:179 ET stats.py:26-97) — AUCUNE AUTRE EXPLICATION N'EST NÉCESSAIRE NI POSSIBLE. L'ATTRIBUTION referral (245->promoter-2) EST FORTEMENT CONFIRMÉE FONCTIONNELLE ET N'EST PAS EN CAUSE. UN ÉCART ENTRE LES TESTS PHASE 15.10 ET LA RÉALITÉ CHARIOW A ÉTÉ IDENTIFIÉ ET DOCUMENTÉ (TEST 1/2 UTILISAIENT UN CHAMP 'amount' NON CONFIRMÉ ; TEST 6 AVAIT DÉJÀ CORRECTEMENT PRÉDIT LE COMPORTEMENT RÉEL). AUCUNE CORRECTION EFFECTUÉE CETTE PHASE, CONFORMÉMENT À LA RÈGLE ABSOLUE. VERDICT : MULTIPLE_ROOT_CAUSES (CAUSE PRINCIPALE : AMOUNT_RECONCILIATION_MISSING). LA PHASE 15.12 DE CORRECTION CIBLÉE POURRA S'APPUYER SUR CE DIAGNOSTIC SANS AMBIGUÏTÉ."
+}

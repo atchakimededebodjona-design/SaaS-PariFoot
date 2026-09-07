@@ -1,0 +1,72 @@
+{
+  "phase": "15.7.2 — COMMIT + PUSH + DÉPLOIEMENT HOSTINGER CONTRÔLÉ",
+  "timestamp": "2026-09-02T23:50:00Z",
+
+  "2_HEAD_avant": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+  "3_HEAD_apres": "dbf2124ad5740d1dcecff6654d185f574910b22c",
+  "4_commit_sha": "dbf2124ad5740d1dcecff6654d185f574910b22c",
+  "5_commit_message": "fix: ensure referral capture before auth redirect",
+  "6_fichiers_committes": ["frontend-design/login.html"],
+  "7_nombre_exact_de_fichiers": 1,
+
+  "8_sha256_local_login_html": "7cb4ba83cefe98b1f337746d3a00a22cfa722ce423e0c586c2db1afa7e19484b",
+  "9_sha256_production_login_html": "385338b997bb0321556c822250f6cefee9492ab00b9b238ac498147abd42a3a4",
+  "10_byte_for_byte_match": false,
+
+  "11_url_production_verifiee": {
+    "url": "https://www.xfoot.site/login.html",
+    "status_code": 200,
+    "last_modified": "Tue, 01 Sep 2026 21:34:21 GMT",
+    "etag": "W/\"25d4-6a9744dd-f504f5f156cef406;gz\"",
+    "interpretation": "Toujours l'ANCIEN fichier (pré-correctif) — attendu, aucun upload Hostinger effectué à ce stade. Le push Git/redéploiement Railway n'a AUCUN effet sur les fichiers statiques Hostinger (confirmé à de multiples reprises dans cette conversation, ex. Phase 15.4)."
+  },
+
+  "12_hostinger_upload_status": "NON EFFECTUÉ — cet assistant n'a aucun accès FTP/File Manager Hostinger (confirmé constamment depuis le début de cette conversation). L'upload manuel reste une action strictement humaine.",
+
+  "13_cache_cdn_status": "NON APPLICABLE — aucun upload n'a encore eu lieu, donc aucune question de cache/CDN à diagnostiquer à ce stade.",
+
+  "14_tests_avant": {"TOTAL": 66, "PASSED": 66, "FAILED": 0, "moment": "avant staging/commit"},
+  "15_tests_apres": {"TOTAL": 66, "PASSED": 66, "FAILED": 0, "moment": "après push, re-vérifié"},
+
+  "16_ai_table_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "17_railway_impact": {
+    "fichiers_backend_modifies": 0,
+    "confirme_par_diff": "Le commit dbf2124 contient EXCLUSIVEMENT frontend-design/login.html (vérifié via git show --name-only --format=fuller HEAD) — aucun fichier api/app/*, aucune variable d'environnement, aucune configuration touchée.",
+    "redeploiement_automatique_attendu": "Railway redéploiera très probablement automatiquement sur ce push (comportement connu), mais fonctionnellement neutre : aucun code backend n'a changé, seul un redémarrage de processus aura lieu, sans conséquence sur le comportement de l'API.",
+    "aucune_action_manuelle_railway_effectuee": true
+  },
+
+  "18_chariow_impact": "NONE — aucun appel Chariow, aucune écriture, aucun produit touché",
+  "19_payment_performed": false,
+
+  "20_git_status": {
+    "HEAD": "dbf2124ad5740d1dcecff6654d185f574910b22c",
+    "origin_main": "dbf2124ad5740d1dcecff6654d185f574910b22c",
+    "local_HEAD_egale_origin_main": true,
+    "git_status_apres_push": "M api/app/ai/readiness/gates.py (étranger, pré-existant, jamais touché) ; ?? api/test_phase13.py, api/test_phase15_7_referral_attribution_repro.py, nombreux rapports historiques non suivis — AUCUN de ces fichiers n'a été inclus dans le commit dbf2124.",
+    "aucun_git_add_point_ou_dash_A_utilise": true
+  },
+
+  "21_limitations": [
+    "Le commit et le push sont RÉELLEMENT effectués et vérifiés (HEAD local = origin/main = dbf2124), mais ceci ne déploie QUE le backend Railway (qui, ici, n'a de toute façon aucun changement de code). Le FRONTEND Hostinger reste inchangé tant que login.html n'est pas uploadé manuellement — confirmé par hash SHA256 toujours différent de la production actuelle.",
+    "Cet assistant n'a aucun accès FTP/File Manager Hostinger — l'upload doit être effectué par l'utilisateur.",
+    "Étapes 13 (vérification byte-à-byte production), 14 (cache/CDN), 15 (vérification du correctif dans le fichier public), 17 (instructions de validation navigateur) restent EN ATTENTE de cet upload."
+  ],
+
+  "22_prochaine_action_humaine": {
+    "action": "Uploader manuellement UNIQUEMENT frontend-design/login.html vers la destination correspondant à https://www.xfoot.site/login.html sur Hostinger (File Manager ou FTP) — remplacer le fichier existant, ne rien supprimer d'autre, ne toucher à aucun autre fichier (api.js, billing.html, vip.html, .htaccess, etc. restent inchangés).",
+    "apres_upload": "Prévenir cet assistant — il reprendra alors les Étapes 13 à 17 (vérification SHA256 byte-à-byte, diagnostic cache/CDN si nécessaire, confirmation du correctif dans le fichier public, puis transmission des instructions de validation navigateur pour un parcours humain réel)."
+  },
+
+  "verdict": {
+    "value": "COMMIT_READY_HOSTINGER_UPLOAD_PENDING",
+    "rationale": "Commit et push réussis et vérifiés avec preuve (SHA256 identique entre local pré-commit et fichier committé ; HEAD local = origin/main). Exactement 1 fichier applicatif committé (frontend-design/login.html), aucun autre fichier backend/AI/pricing touché. 66/66 tests avant ET après push, 6 tables IA strictement inchangées. L'upload Hostinger — seule étape restante avant une validation navigateur possible — n'a PAS été effectué, cet assistant n'ayant aucun accès FTP/File Manager. Aucun paiement, aucune écriture Chariow, aucune modification Railway/DB/abonnement."
+  },
+
+  "closing_statement": "PHASE 15.7.2 — COMMIT + PUSH RÉUSSIS ET VÉRIFIÉS (dbf2124, EXACTEMENT 1 FICHIER : frontend-design/login.html). HEAD LOCAL = origin/main. 66/66 TESTS AVANT ET APRÈS PUSH, 6 TABLES IA STRICTEMENT INCHANGÉES. AUCUN FICHIER BACKEND/AI/PRICING TOUCHÉ. UPLOAD HOSTINGER NON EFFECTUÉ — HORS DE PORTÉE TECHNIQUE DE CET ASSISTANT (AUCUN ACCÈS FTP/FILE MANAGER) — LE FICHIER PRODUCTION RESTE L'ANCIENNE VERSION (SHA256 CONFIRMÉ DIFFÉRENT). AUCUN PAIEMENT, AUCUNE ÉCRITURE CHARIOW, AUCUNE MODIFICATION RAILWAY/DB. VERDICT : COMMIT_READY_HOSTINGER_UPLOAD_PENDING — EN ATTENTE DE L'UPLOAD MANUEL HUMAIN DE frontend-design/login.html (UNIQUEMENT CE FICHIER) POUR POURSUIVRE LES ÉTAPES 13 À 17."
+}

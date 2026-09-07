@@ -1,0 +1,105 @@
+{
+  "phase": "15.17-R2",
+  "title": "Décision et versionnage du test de reproductibilité referral",
+  "generated_at_utc": "2026-09-04T00:14:55Z",
+  "no_production_change": true,
+  "no_real_withdrawal_modified": true,
+  "no_payment_made": true,
+  "no_ai_data_modified": true,
+  "partie_a_convention_git": {
+    "gitignore_content": "__pycache__/, *.pyc, .claude/, logs/, *.tmp, .env, *.db, *.db.backup*, *.db.backup-*",
+    "reports_or_tests_ignored_by_gitignore": false,
+    "conclusion": "Aucune règle .gitignore ne concerne reports/ ou les fichiers de test — l'absence de versionnage de ces 178 fichiers (Phase 15.17-R1) est une CONVENTION D'USAGE (aucun commit ne les a jamais stagés), jamais une exclusion technique forcée.",
+    "git_ls_files_before": "vide (fichier non suivi, confirmé)",
+    "git_check_ignore_exit_code": 1,
+    "git_check_ignore_meaning": "non ignoré — aucune règle ne bloque ce fichier",
+    "git_log_all_before": "vide — ce fichier n'a JAMAIS été committé, dans aucun commit, aucune branche, depuis sa création"
+  },
+  "partie_b_audit_du_test": {
+    "fichier": "api/test_phase15_7_referral_attribution_repro.py",
+    "lu_integralement": true,
+    "est_un_test_xfoot": true,
+    "appartient_a_attribution_referral": true,
+    "objet": "Reproduit fidèlement l'ordre et le format EXACTS des appels navigateur réels (resolve avant inscription, register+login, attribute avec captured_at au format JS 'new Date().toISOString()' se terminant par 'Z' — jamais testé ailleurs dans ce dépôt, écart de couverture comblé par ce fichier)",
+    "secrets_trouves": false,
+    "identifiants_sensibles_reels": false,
+    "details_identifiants": "Uniquement des emails de test fictifs sous le domaine @repro157.example.com et le mot de passe de test fixe 'correct-horse-battery-staple' déjà utilisé dans TOUS les fichiers de test de ce dépôt — aucune donnée réelle (jamais USER 245/oktest@test.com, jamais de vraie licence Chariow)",
+    "depend_dun_fichier_local_personnel": false,
+    "details_dependances": "Dépend uniquement de _test_support.py, main.py, app/models/promoter.py, app/referral/promoter_service.py — TOUS déjà suivis par Git (vérifié via git ls-files), garantissant la reproductibilité dans un clone frais",
+    "utilise_une_base_isolee": "Oui — configure_test_env('test_phase15_7_referral_attribution_repro.db'), jamais api/app.db, jamais la production ; le fichier .db lui-même est exclu par *.db du .gitignore",
+    "reproductible": true,
+    "compatible_suite_actuelle": "Oui — déjà exécuté avec succès comme régression dans les Phases 15.9/15.10/15.12/15.14/15.16.1, toujours 24/24",
+    "aucun_paiement_reel": "Confirmé — le seul appel billing (TEST 2) mock _create_chariow_checkout_link, ne simule jamais successful.sale ni aucune confirmation de paiement",
+    "aucune_modification_production": "Confirmé — base SQLite isolée dédiée, jamais de connexion à PostgreSQL/production",
+    "reecriture_effectuee": false,
+    "raison_non_reecrit": "Fichier déjà correct et fonctionnel, aucune modification nécessaire ni effectuée — conforme à la consigne 'ne pas réécrire inutilement le test'"
+  },
+  "partie_c_rapports_historiques": {
+    "ajoutes": false,
+    "les_115_rapports_referral_billing_retraits": "hors staging, hors commit — confirmé (commit ne contient que le test)",
+    "rapports_phase14x_et_15x": "hors staging, hors commit",
+    "supprimes": false
+  },
+  "partie_d_ai_foreign": {
+    "gates_py_ajoute": false,
+    "evidence_snapshots_json_ajoute": false,
+    "test_phase13_py_ajoute": false,
+    "phase13_evidence_maturation_py_ajoute": false,
+    "rapports_phases_9_5_11_12_13_ajoutes": false,
+    "tout_fichier_ai_foreign_modifie": false,
+    "tout_fichier_ai_foreign_restaure": false,
+    "tout_fichier_ai_foreign_supprime": false
+  },
+  "partie_e_tests": {
+    "test_standalone": "24/24 (test_phase15_7_referral_attribution_repro.py)",
+    "regression_pertinente": {
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_9_webhook_hardening.py": "31/31",
+      "test_phase15_10_activate_license_commission.py": "33/33",
+      "test_phase15_12_amount_reconciliation.py": "36/36",
+      "test_phase15_14_manual_withdrawal.py": "56/56",
+      "test_phase15_16_1_admin_promoter_search.py": "41/41",
+      "test_auth.py": "8/8"
+    },
+    "total_failures": 0,
+    "ai_tables_verified": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9}
+  },
+  "partie_f_staging": {
+    "commande": "git add api/test_phase15_7_referral_attribution_repro.py",
+    "git_add_dot_used": false,
+    "git_add_dash_a_used": false,
+    "diff_cached_name_status": "A\tapi/test_phase15_7_referral_attribution_repro.py",
+    "diff_cached_stat": "1 file changed, 224 insertions(+)",
+    "fichiers_stages": ["api/test_phase15_7_referral_attribution_repro.py"],
+    "fichier_inattendu_detecte": false
+  },
+  "partie_g_commit": {
+    "sha": "b0a680974666776dce8708c675e3328534d0d91d",
+    "message": "test: version referral attribution reproduction test",
+    "files": ["api/test_phase15_7_referral_attribution_repro.py"],
+    "stat": "1 file changed, 224 insertions(+)",
+    "melange_avec_autre_chose": false
+  },
+  "partie_h_push": {
+    "autorise": "Autorisation générale déjà donnée par l'utilisateur pour les checkpoints Xfoot",
+    "verification": {
+      "head": "b0a680974666776dce8708c675e3328534d0d91d",
+      "origin_main_local_ref": "b0a680974666776dce8708c675e3328534d0d91d",
+      "ls_remote_refs_heads_main": "b0a680974666776dce8708c675e3328534d0d91d",
+      "all_three_match": true
+    }
+  },
+  "partie_i_post_commit": {
+    "test_desormais_suivi": true,
+    "commit_contient_uniquement_le_test": true,
+    "aucun_rapport_ajoute": true,
+    "aucun_fichier_ai_foreign_ajoute": true,
+    "gates_py_hors_commit": true,
+    "gates_py_dernier_commit_le_touchant": "00dd971 (inchangé par ce checkpoint)",
+    "retrait_reel_modifie": false,
+    "donnee_production_modifiee": false,
+    "working_tree_status_line_count_note": "179 fichiers non suivis restants (178 - 1 test committé + 2 nouveaux rapports Phase 15.17-R1 écrits entre-temps) — écart vérifié par diff explicite, aucune anomalie, working tree volontairement laissé non-'propre' conformément à la consigne de ne pas chercher un git status artificiellement vide"
+  },
+  "verdict": "REPRO_TEST_VERSIONED_AND_PUSHED"
+}

@@ -1,0 +1,185 @@
+{
+  "phase": "14.8R",
+  "title": "XFOOT FRONTEND HOSTINGER RECOVERY + DEPLOYMENT DIAGNOSIS V1",
+  "generated_at_utc": "2026-09-01T19:30:43Z",
+  "release_commit": "ebb23ec",
+
+  "1_objectif": "Diagnostiquer de manière définitive pourquoi le frontend Phase 14 n'est pas publié sur www.xfoot.site, sans créer de compte, sans paiement, sans toucher au backend/DNS/IA, et sans deviner un accès Hostinger inexistant.",
+
+  "2_etat_initial": {
+    "reference": "reports/phase14_8/xfoot_phase14_8_20260901_173611.{json,md}",
+    "resume": "Backend Railway déployé et stable (11/11 routes), frontend Hostinger FRONTEND_DEPLOYMENT_BLOCKED, aucun compte de test créé, décision de lecture seule maintenue."
+  },
+
+  "3_commit_release_verifie": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true,
+    "git_remote": "origin https://github.com/atchakimededebodjona-design/SaaS-PariFoot.git",
+    "frontend_files_in_ebb23ec": [
+      "frontend-design/.htaccess (nouveau)",
+      "frontend-design/admin-earnings.html (nouveau)",
+      "frontend-design/admin-promoters.html (nouveau)",
+      "frontend-design/admin-subscribers.html (nouveau)",
+      "frontend-design/api.js (modifié, +91 lignes)",
+      "frontend-design/arena.html (modifié, +9)",
+      "frontend-design/billing.html (modifié, +9)",
+      "frontend-design/dashboard.html (modifié, +11)",
+      "frontend-design/history.html (modifié, +31)",
+      "frontend-design/index.html (modifié, +9)",
+      "frontend-design/live.html (modifié, +9)",
+      "frontend-design/login.html (modifié, +10)",
+      "frontend-design/promoter.html (nouveau)",
+      "frontend-design/vip.html (modifié, +9)"
+    ],
+    "no_local_modification_since_commit": true
+  },
+
+  "4_structure_frontend": {
+    "type": "Site statique HTML/CSS/JS pur — aucun build, aucun bundler, aucune dépendance npm côté frontend-design/",
+    "document_root_attendu": "public_html/ (racine du domaine Hostinger) — les fichiers doivent être uploadés À LA RACINE, jamais dans un sous-dossier (explicitement documenté dans HOSTINGER_DEPLOY.md, section 3 : 'à la racine de public_html/, pas dans un sous-dossier — sinon https://xfoot.site/ ne trouvera pas index.html directement')",
+    "fichiers_a_publier": ["index.html", "login.html", "billing.html", "history.html", "live.html", "arena.html", "vip.html", "dashboard.html", "styles.css", "design-system.html", "google-play-billing.js", "api.js", "promoter.html", "admin-promoters.html", "admin-subscribers.html", "admin-earnings.html", ".htaccess"],
+    "fichier_le_plus_critique": "frontend-design/.htaccess — active la réécriture des liens de parrainage /{slug}, absent par nature de tout dossier Hostinger tant qu'il n'est pas uploadé explicitement",
+    "htaccess_regles": "RewriteEngine On ; ne réécrit jamais un fichier/dossier réellement présent (!-f !-d) ; un segment unique URL-safe -> /login.html?ref=$1, réécriture interne, jamais une redirection visible",
+    "build_necessaire": false
+  },
+
+  "5_diagnostic_hostinger": {
+    "document_source_of_truth": "HOSTINGER_DEPLOY.md (racine du dépôt, lu intégralement cette phase)",
+    "hebergeur_backend": "Railway (projet 'luminous-adventure', service 'SaaS-PariFoot', PostgreSQL attaché) — domaine api.xfoot.site",
+    "hebergeur_frontend": "Hostinger — hébergement web statique mutualisé (pas de VPS, pas d'accès SSH documenté), domaine xfoot.site",
+    "domaine_principal_reel": "xfoot.site (SANS www) — c'est le domaine explicitement acheté et configuré selon HOSTINGER_DEPLOY.md, PAS www.xfoot.site en priorité (le document avertit explicitement : 'si https://www.xfoot.site doit aussi marcher... sinon seul https://xfoot.site (sans www) fonctionnera')",
+    "mecanisme_de_deploiement": "MANUEL UNIQUEMENT — dashboard Hostinger (hpanel.hostinger.com) → Fichiers → Gestionnaire de fichiers (ou FTP classique) → upload direct du contenu de frontend-design/ dans public_html/. AUCUN mécanisme d'auto-déploiement (ni Git deployment, ni CI/CD, ni webhook) — confirmé par l'absence totale de fichiers .github/workflows/, et par la déclaration explicite du document : 'Je n'ai pas accès à ton compte Railway ni Hostinger — les étapes ci-dessous sont à exécuter par toi.'",
+    "aucun_ci_cd_trouve": true,
+    "aucune_credential_hostinger_trouvee": true,
+    "aucune_variable_environnement_hostinger_trouvee": true
+  },
+
+  "6_acces_reellement_disponibles": {
+    "GIT": "AVAILABLE (déjà utilisé, push déjà effectué en amont)",
+    "RAILWAY_ACCESS": "UNAVAILABLE (inchangé, aucun CLI/token)",
+    "HOSTINGER_ACCESS": "UNAVAILABLE",
+    "hostinger_tools_checked": ["lftp (absent du système)", "sftp (binaire présent, mais AUCUN hôte/identifiant Hostinger connu ou configuré — inutilisable sans credentials)", "ftp (binaire Windows présent, même limitation)"],
+    "hostinger_env_vars_checked": "Recherche de HOSTINGER_*/FTP_*/SFTP_*/SSH_* dans les variables d'environnement — AUCUNE trouvée (noms uniquement recherchés, aucune valeur n'aurait de toute façon été affichée)",
+    "conclusion": "Aucun accès Hostinger réel, légitime ou simulable n'existe dans cet environnement. Ceci n'est pas une supposition — c'est le résultat d'une recherche exhaustive (CLI, variables d'environnement, fichiers de configuration, credentials) qui n'a produit aucun résultat positif."
+  },
+
+  "7_tests_http_effectues": {
+    "methode": "GET/HEAD publics uniquement, sans authentification, aucune écriture",
+    "domaine_principal_xfoot_site_sans_www": [
+      {"url": "http://xfoot.site/", "status": 301, "redirect_to": "https://xfoot.site/"},
+      {"url": "https://xfoot.site/", "status": 200},
+      {"url": "https://xfoot.site/login.html", "status": 200},
+      {"url": "https://xfoot.site/promoter.html", "status": 404},
+      {"url": "https://xfoot.site/admin-promoters.html", "status": 404},
+      {"url": "https://xfoot.site/admin-subscribers.html", "status": 404}
+    ],
+    "domaine_www_xfoot_site": [
+      {"url": "https://www.xfoot.site/", "status": 200},
+      {"url": "https://www.xfoot.site/index.html", "status": 200},
+      {"url": "https://www.xfoot.site/promoter.html", "status": 404},
+      {"url": "https://www.xfoot.site/admin-promoters.html", "status": 404},
+      {"url": "https://www.xfoot.site/admin-subscribers.html", "status": 404}
+    ],
+    "conclusion_domaine": "Les DEUX domaines (avec et sans www) sont actifs et servent EXACTEMENT le même contenu (même comportement 200/404) — ceci ÉLIMINE l'hypothèse d'une confusion de sous-domaine comme cause du blocage. Le problème n'est pas 'la mauvaise URL a été testée', c'est 'les fichiers Phase 14 n'ont jamais été uploadés, sur aucun des deux domaines'.",
+    "preuve_404_genuine": {
+      "methode": "Inspection du corps ET des en-têtes de la réponse 404 sur /promoter.html",
+      "resultat": "Page 404 générique Hostinger authentique (en-têtes platform: hostinger, panel: hpanel, Server: hcdn) — PAS un artefact de cache, PAS un problème de réécriture .htaccess, PAS une redirection incorrecte. Le fichier est réellement absent du serveur."
+    },
+    "preuve_timeline_upload": {
+      "methode": "En-tête Last-Modified sur les fichiers actuellement en ligne (index/login/api.js/styles.css/history/dashboard)",
+      "resultat": "TOUS datés exactement 'Fri, 28 Aug 2026 21:10:35/36 GMT' — un seul et même lot d'upload, cohérent avec le travail décrit dans HOSTINGER_DEPLOY.md (ticket antérieur), réalisé 3 jours AVANT le début de la Phase 14 (fichiers locaux datés 31 août). AUCUN upload n'a eu lieu depuis — preuve directe, pas une inférence."
+    },
+    "verification_version_live_api_js": {
+      "taille_locale_ebb23ec": "8122 octets",
+      "taille_en_ligne": "3666 octets",
+      "presence_marqueurs_phase14": "0/2 pour captureReferralFromUrl/attributeReferralIfPresent sur login.html et index.html en ligne ; api.js en ligne contient PRODUCTION_API_URL (version du ticket Hostinger antérieur) mais AUCUNE des fonctions ajoutées par Phase 14 (captureReferralFromUrl, applyRoleBasedNav, getOrCreateVisitorId)",
+      "conclusion": "La version actuellement en ligne correspond au ticket HOSTINGER_DEPLOY.md antérieur (28 août), PAS au commit ebb23ec (31 août-1er septembre)."
+    }
+  },
+
+  "8_resultats_frontend": {
+    "frontend_deploye": false,
+    "pages_phase14_publiques": [
+      {"page": "promoter.html", "status_xfoot_site": 404, "status_www_xfoot_site": 404},
+      {"page": "admin-promoters.html", "status_xfoot_site": 404, "status_www_xfoot_site": 404},
+      {"page": "admin-subscribers.html", "status_xfoot_site": 404, "status_www_xfoot_site": 404},
+      {"page": "admin-earnings.html", "status_xfoot_site": "non testé séparément (déjà confirmé absent en Phase 14.7/14.8)", "status_www_xfoot_site": 404}
+    ],
+    "pages_pre_existantes_toujours_en_ligne": ["index.html (200, version pré-Phase-14)", "login.html (200, version pré-Phase-14)", "history.html/dashboard.html/etc. (200, versions pré-Phase-14)"]
+  },
+
+  "9_resultats_cors_api": {
+    "note": "Backend déjà confirmé stable en Phase 14.7/14.8 — aucune re-vérification complète effectuée, conformément à la consigne de ne pas refaire ces phases. Seule information nouvelle pertinente : HOSTINGER_DEPLOY.md confirme qu'ALLOWED_ORIGINS a été configuré à l'origine pour https://xfoot.site (sans www) ; les tests Phase 14.7/14.8 avaient déjà confirmé que https://www.xfoot.site fonctionne également en CORS — cohérent, ALLOWED_ORIGINS a donc été étendu depuis la rédaction initiale du ticket.",
+    "backend_re_teste_cette_phase": false
+  },
+
+  "10_operations_effectuees": {
+    "aucune_operation_d_ecriture": true,
+    "liste": ["Lecture de fichiers locaux (git log/show/status, frontend-design/, .htaccess, HOSTINGER_DEPLOY.md)", "Requêtes HTTP GET/HEAD publiques en lecture seule vers xfoot.site et www.xfoot.site", "Recherche de credentials/outils Hostinger dans l'environnement (lecture seule, aucune valeur affichée)"]
+  },
+
+  "11_operations_non_effectuees": [
+    "Aucun upload de fichier vers Hostinger (accès indisponible).",
+    "Aucune modification de DNS.",
+    "Aucune modification du domaine.",
+    "Aucune modification du backend de production.",
+    "Aucune création de compte utilisateur/promoteur/admin.",
+    "Aucun paiement, aucun appel Chariow.",
+    "Aucune modification de app/ai/* ni des tables IA.",
+    "Aucun nouveau commit, aucun push.",
+    "Aucune modification d'aucun fichier du projet en dehors de ce rapport."
+  ],
+
+  "12_limitations": [
+    "HOSTINGER_ACCESS reste UNAVAILABLE — aucun mécanisme technique disponible dans cet environnement pour publier les fichiers.",
+    "Impossible de confirmer directement le contenu actuel de public_html/ au-delà de ce qui est observable en HTTP (pas d'accès File Manager/FTP).",
+    "Impossible de confirmer si un certificat HTTPS séparé existe pour xfoot.site vs www.xfoot.site au niveau du panel (les deux répondent en HTTPS valide côté client, ce qui suffit pour ce diagnostic).",
+    "AUTHENTICATED_TEST_BLOCKED reste en vigueur (décision de lecture seule de la Phase 14.7, non modifiée)."
+  ],
+
+  "13_action_humaine_restante": {
+    "checklist": [
+      "1. Se connecter à hpanel.hostinger.com (compte Hostinger réel de l'utilisateur).",
+      "2. Ouvrir Fichiers → Gestionnaire de fichiers (ou un client FTP) pour le domaine xfoot.site.",
+      "3. Naviguer jusqu'au dossier public_html/ (racine du domaine, PAS un sous-dossier).",
+      "4. Uploader/écraser TOUT le contenu de frontend-design/ (14 fichiers modifiés/nouveaux du commit ebb23ec — voir §3) directement à la racine de public_html/, y compris le fichier .htaccess (souvent invisible par défaut — activer 'afficher les fichiers cachés' dans le gestionnaire de fichiers Hostinger si nécessaire).",
+      "5. Vérifier après upload : https://www.xfoot.site/promoter.html doit répondre 200 (au lieu de 404 actuellement).",
+      "6. Vérifier également : https://www.xfoot.site/admin-promoters.html et /admin-subscribers.html et /admin-earnings.html doivent répondre 200.",
+      "7. Revenir vers l'agent avec la confirmation — la Phase 14.8/14.9 pourra alors reprendre les tests authentifiés et de bout-en-bout."
+    ],
+    "credentials_never_requested_in_chat": true,
+    "estimated_effort": "Opération manuelle simple (upload de 17 fichiers dans un dossier existant), quelques minutes, aucune compétence technique avancée requise au-delà de l'utilisation du gestionnaire de fichiers Hostinger."
+  },
+
+  "14_controle_absence_modification_ia": {
+    "git_diff_app_ai_references": 0,
+    "ai_tables_modifiees": false,
+    "script_ia_execute": false,
+    "signal_pari_production_genere": false,
+    "seuls_fichiers_modifies_working_tree": ["api/app/ai/readiness/gates.py (Phase 13, pré-existant, étranger à cette phase)", "reports/shadow/watch/evidence_snapshots.json (log généré, étranger à cette phase)"],
+    "aucun_nouveau_changement_introduit_par_cette_phase": true
+  },
+
+  "15_verdict_final": {
+    "value": "FRONTEND_DEPLOYMENT_DIAGNOSIS_COMPLETE",
+    "rationale": "Le diagnostic est désormais complet et précis, appuyé par des preuves directes (pas des inférences) : (1) HOSTINGER_DEPLOY.md confirme sans ambiguïté qu'il n'existe AUCUN mécanisme d'auto-déploiement — un upload manuel humain est la SEULE voie possible ; (2) l'hypothèse d'une confusion entre xfoot.site et www.xfoot.site est définitivement écartée — les deux domaines sont actifs et servent identiquement l'ancienne version ; (3) l'en-tête Last-Modified prouve directement que le dernier upload réel date du 28 août 2026, 3 jours avant le début de la Phase 14, et qu'aucun upload n'a eu lieu depuis ; (4) aucun accès Hostinger (CLI, credentials, variable d'environnement, mécanisme CI/CD) n'existe dans cet environnement, recherche exhaustive à l'appui. Aucune action de déploiement ne peut être effectuée depuis cet environnement — la checklist humaine (§13) est la seule voie de déblocage restante."
+  },
+
+  "resume_fin_de_phase": {
+    "verdict": "FRONTEND_DEPLOYMENT_DIAGNOSIS_COMPLETE",
+    "frontend_deploye": "NO",
+    "acces_hostinger": "UNAVAILABLE",
+    "pages_phase14_publiques": [
+      {"page": "promoter.html", "http_status": 404},
+      {"page": "admin-promoters.html", "http_status": 404},
+      {"page": "admin-subscribers.html", "http_status": 404},
+      {"page": "admin-earnings.html", "http_status": 404}
+    ],
+    "commit_frontend_verifie": "ebb23ec",
+    "tests_effectues": "14 requêtes HTTP en lecture seule (2 domaines × pages publiques/Phase14), inspection headers 404, inspection Last-Modified, inspection contenu api.js en ligne, lecture exhaustive de HOSTINGER_DEPLOY.md, recherche exhaustive d'accès Hostinger",
+    "limitations": "Aucun accès Hostinger réel disponible dans cet environnement — fait confirmé, pas supposé",
+    "prochaine_action_humaine_exacte": "Upload manuel de frontend-design/ (17 fichiers, dont .htaccess) dans public_html/ via hpanel.hostinger.com → Gestionnaire de fichiers, puis confirmation à l'agent pour reprendre les tests"
+  },
+
+  "closing_statement": "PHASE 14.8R — XFOOT FRONTEND HOSTINGER RECOVERY + DEPLOYMENT DIAGNOSIS V1 TERMINÉE. LE BLOCAGE DU DÉPLOIEMENT FRONTEND A ÉTÉ DIAGNOSTIQUÉ AVEC PRÉCISION : AUCUN ACCÈS HOSTINGER DISPONIBLE, AUCUN MÉCANISME D'AUTO-DÉPLOIEMENT, DERNIER UPLOAD RÉEL CONFIRMÉ ANTÉRIEUR À LA PHASE 14. AUCUNE ACTION DE DÉPLOIEMENT N'A ÉTÉ TENTÉE NI INVENTÉE. AUCUN COMPTE CRÉÉ. AUCUN PAIEMENT. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. L'ACTION HUMAINE EXACTE NÉCESSAIRE POUR DÉBLOQUER LE DÉPLOIEMENT EST DOCUMENTÉE CI-DESSUS."
+}

@@ -1,0 +1,135 @@
+{
+  "phase": "15.4",
+  "title": "XFOOT — DÉPLOIEMENT NOUVELLES OFFRES V1",
+  "generated_at_utc": "2026-09-02T19:35:00Z",
+
+  "sha_deploye": {
+    "sha": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "sha_court": "eeb01ec",
+    "parent": "901c468",
+    "branch": "main"
+  },
+
+  "1_push": {
+    "commande": "git push origin main",
+    "resultat": "SUCCESS",
+    "sortie_brute": "ebb23ec..eeb01ec  main -> main",
+    "verification_post_push": {
+      "git_status_short": "aucun fichier de la Phase 15 restant — seuls des fichiers étrangers pré-existants (gates.py, evidence_snapshots.json, rapports historiques)",
+      "git_log_oneline_3": ["eeb01ec feat: update xfoot subscription pricing", "901c468 feat: show user_id in admin subscribers list", "ebb23ec feat: add xfoot promoter referral platform"],
+      "git_ls_remote_origin_refs_heads_main": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+      "origin_main_pointe_vers_eeb01ec": true
+    }
+  },
+
+  "2_railway": {
+    "redeploiement_automatique_attendu": true,
+    "verification_read_only": {
+      "GET https://api.xfoot.site/health": {
+        "status_code": 200,
+        "body": {"status": "ok", "leagues_loaded": ["EuropaLeague", "SerieA", "ConferenceLeague", "Ligue1", "MLS", "SaudiProLeague", "PremierLeague", "PrimeiraLiga", "LaLiga", "ChampionsLeague", "Bundesliga"]},
+        "interpretation": "Backend joignable, répond correctement — aucun signe de crash post-déploiement."
+      },
+      "POST https://api.xfoot.site/billing/checkout (sans token)": {
+        "status_code": 401,
+        "interpretation": "Comportement attendu (authentification requise) — confirme que l'endpoint existe et est protégé, mais NE PERMET PAS de vérifier le contenu exact du mapping PRODUCT_IDS déployé (aucun compte de test disponible, aucun appel authentifié tenté)."
+      }
+    },
+    "limitation_honnete": "Aucun endpoint de version/SHA n'existe côté backend (vérifié : pas de /version, pas de /health exposant un commit). Aucun accès au dashboard Railway. La correspondance exacte 'code en production = eeb01ec' repose donc sur (a) la preuve directe que origin/main = eeb01ec, et (b) le comportement documenté de Railway (redéploiement automatique sur push vers main, confirmé dans les phases précédentes) — PAS sur une vérification directe et positive du contenu du process en cours d'exécution.",
+    "adminemails_modifie": false,
+    "railway_modifie_manuellement": false
+  },
+
+  "3_hostinger": {
+    "auto_deploiement": false,
+    "fichiers_a_uploader_manuellement": ["frontend-design/billing.html", "frontend-design/vip.html"],
+    "upload_effectue_par_lassistant": false,
+    "raison": "Aucun accès FTP/File Manager Hostinger disponible pour cet assistant — upload strictement manuel, réservé à l'utilisateur, conformément aux phases précédentes (14.8R, 14.9, 14.15).",
+    "verification_etat_actuel_production": {
+      "GET https://www.xfoot.site/billing.html": {
+        "prix_detectes": ["1000 FCFA", "10000 FCFA"],
+        "badge_economisez_2_mois_present": true,
+        "conclusion": "ANCIENNES OFFRES toujours servies — fichier NON mis à jour sur Hostinger."
+      },
+      "GET https://www.xfoot.site/vip.html": {
+        "prix_detectes": ["1000 FCFA", "10000 FCFA"],
+        "badge_economisez_2_mois_present": true,
+        "conclusion": "ANCIENNES OFFRES toujours servies — fichier NON mis à jour sur Hostinger."
+      }
+    },
+    "action_humaine_necessaire": "Upload manuel de frontend-design/billing.html et frontend-design/vip.html vers public_html/ sur Hostinger (File Manager ou FTP), tel que documenté dans HOSTINGER_DEPLOY.md."
+  },
+
+  "4_prix_production_apres_upload": {
+    "statut": "NON_APPLICABLE — upload Hostinger non encore effectué",
+    "prix_attendus_apres_upload": {
+      "2_semaines": "1000 FCFA / 14 jours",
+      "1_mois": "1500 FCFA / 1 mois",
+      "1_an": "28000 FCFA / 1 an"
+    }
+  },
+
+  "5_mapping_product_ids": {
+    "biweekly": {"product_id": "prd_1gje3jzz", "env_var": "CHARIOW_PRODUCT_ID_BIWEEKLY", "prix": "1000 FCFA"},
+    "monthly": {"product_id": "prd_sgvapilx", "env_var": "CHARIOW_PRODUCT_ID_MONTHLY", "prix": "1500 FCFA"},
+    "yearly": {"product_id": "prd_f90jpbh3", "env_var": "CHARIOW_PRODUCT_ID_YEARLY", "prix": "28000 FCFA"},
+    "note": "Le code backend (chariow_config.py, déployé via eeb01ec) lit ces 3 Product IDs depuis des variables d'environnement Railway. Cette phase N'A PAS vérifié si CHARIOW_PRODUCT_ID_BIWEEKLY/MONTHLY/YEARLY sont bien configurées avec les valeurs prd_1gje3jzz/prd_sgvapilx/prd_f90jpbh3 sur Railway lui-même (aucun accès dashboard) — seul le CODE qui les lit a été déployé."
+  },
+
+  "6_tests": {
+    "TOTAL_FICHIERS": 65,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "methode": "Exécution de chaque test_*.py individuellement, vérification du code de sortie réel (pas seulement du texte affiché)",
+    "avant_deploiement": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres_regression": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "tables_ia_identiques": true
+  },
+
+  "7_regression": {
+    "resultat": "65/65 fichiers exécutés avec succès (exit code 0)",
+    "aucune_donnee_historique_modifiee": true
+  },
+
+  "8_etat_6_tables_ia": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "identiques_avant_apres": true
+  },
+
+  "9_absence_paiement": {
+    "aucun_paiement_reel_effectue": true,
+    "aucun_checkout_chariow_reel_lance": true,
+    "aucun_compte_cree": true
+  },
+
+  "10_absence_ecriture_chariow": {
+    "aucun_appel_chariow_decriture": true,
+    "seuls_appels_reseau_effectues": [
+      "GET https://api.xfoot.site/health (lecture seule)",
+      "GET https://api.xfoot.site/ (lecture seule, 404 attendu)",
+      "POST https://api.xfoot.site/billing/checkout sans token (401 attendu, aucune donnée traitée côté serveur au-delà du rejet d'authentification)",
+      "GET https://www.xfoot.site/billing.html (lecture seule)",
+      "GET https://www.xfoot.site/vip.html (lecture seule)"
+    ]
+  },
+
+  "11_git_final": {
+    "git_status_short": "aucun fichier lié à la Phase 15 — seuls des fichiers étrangers pré-existants",
+    "git_log_oneline_3": ["eeb01ec feat: update xfoot subscription pricing", "901c468 feat: show user_id in admin subscribers list", "ebb23ec feat: add xfoot promoter referral platform"],
+    "aucun_nouveau_commit_cree_pendant_cette_phase": true
+  },
+
+  "12_limitations": [
+    "Aucun endpoint de version/SHA exposé par le backend — la correspondance production=eeb01ec repose sur origin/main + comportement Railway documenté, jamais vérifiée directement sur le processus en cours d'exécution.",
+    "Aucun compte de test authentifié disponible — impossible de vérifier par un appel réel (même en lecture) que POST /billing/checkout accepte désormais 'biweekly' et rejette toujours un plan inconnu en production.",
+    "Aucune vérification que les variables Railway CHARIOW_PRODUCT_ID_BIWEEKLY/MONTHLY/YEARLY portent bien les valeurs prd_1gje3jzz/prd_sgvapilx/prd_f90jpbh3 — seul le code qui les lit a été déployé, pas leur contenu vérifié.",
+    "Hostinger : billing.html et vip.html toujours sur les anciennes offres (1000/10000 FCFA, badge 'Économisez 2 mois' présent) — upload manuel requis, hors de portée de cet assistant (aucun accès FTP/File Manager)."
+  ],
+
+  "verdict_final": {
+    "value": "HOSTINGER_DEPLOYMENT_PENDING",
+    "rationale": "Le commit eeb01ec a été poussé avec succès vers origin/main (confirmé par git ls-remote). Railway est censé se redéployer automatiquement (comportement documenté) et le endpoint /health répond 200 sans erreur. En revanche, le frontend Hostinger (billing.html, vip.html) sert TOUJOURS les anciennes offres (1000/10000 FCFA, badge inexact toujours présent) — confirmé par lecture directe des deux pages en production. Le déploiement backend est déclenché mais non positivement vérifié dans le détail (pas d'endpoint de version, pas de compte de test) ; le déploiement frontend n'a tout simplement pas encore eu lieu (nécessite un upload manuel humain)."
+  },
+
+  "closing_statement": "PHASE 15.4 — DÉPLOIEMENT NOUVELLES OFFRES V1 : PUSH EFFECTUÉ AVEC SUCCÈS (origin/main = eeb01ec, CONFIRMÉ). RAILWAY REDÉPLOIEMENT ATTENDU AUTOMATIQUEMENT, BACKEND JOIGNABLE ET SAIN (/health = 200), MAIS CONTENU EXACT NON VÉRIFIABLE DIRECTEMENT (AUCUN ENDPOINT DE VERSION, AUCUN COMPTE DE TEST). HOSTINGER NON MIS À JOUR — billing.html ET vip.html AFFICHENT ENCORE LES ANCIENNES OFFRES (1000/10000 FCFA + BADGE INEXACT), UPLOAD MANUEL HUMAIN REQUIS (frontend-design/billing.html ET frontend-design/vip.html UNIQUEMENT). 65/65 TESTS VERTS (EXIT CODE RÉEL VÉRIFIÉ), 6 TABLES IA INCHANGÉES. AUCUN PAIEMENT RÉEL, AUCUNE ÉCRITURE CHARIOW, AUCUN COMPTE CRÉÉ, AUCUN NOUVEAU COMMIT. EN ATTENTE DE L'UPLOAD HOSTINGER MANUEL POUR COMPLÉTER LE DÉPLOIEMENT."
+}

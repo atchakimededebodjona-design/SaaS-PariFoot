@@ -1,0 +1,257 @@
+{
+  "phase": "15.17-R1",
+  "title": "Audit complet des 180 changements avant commit/push",
+  "generated_at_utc": "2026-09-04T00:06:27Z",
+  "no_action_taken": {
+    "no_file_deleted": true,
+    "no_git_add": true,
+    "no_commit": true,
+    "no_push": true,
+    "no_git_reset_or_clean_or_checkout": true
+  },
+  "correction_du_rapport_precedent": "Le rapport Phase 15.17 affirmait à tort qu'il n'y avait 'rien à committer'. C'était vrai UNIQUEMENT pour le code du système de retrait manuel/recherche promoteur (déjà committé dans a0dcbc7/dcd70e6) — mais 178 fichiers non suivis + 2 fichiers modifiés (180 au total) existaient bel et bien dans l'arbre de travail sans avoir été énumérés individuellement. Cette phase corrige cette omission par un inventaire exhaustif fichier par fichier.",
+  "partie_a_inventaire": {
+    "git_status_short_lines": 102,
+    "explication_ecart_102_vs_180": "git status --short COLLAPSE un répertoire entièrement non suivi en une seule ligne '?? reports/phaseXX/' — c'est ce qui donnait l'impression de peu de changements. git ls-files --others --exclude-standard EXPANSE chaque répertoire en fichiers individuels (178), + 2 fichiers modifiés déjà suivis = 180 — exactement le chiffre observé dans VS Code (qui affiche toujours les fichiers individuels, jamais des répertoires collapsés).",
+    "tracked_modified_count": 2,
+    "tracked_modified_files": ["api/app/ai/readiness/gates.py", "reports/shadow/watch/evidence_snapshots.json"],
+    "untracked_count": 178,
+    "total_changes": 180,
+    "commands_executed": ["git status --short", "git status --porcelain=v1", "git diff --stat", "git diff --name-status", "git ls-files --others --exclude-standard"]
+  },
+  "partie_b_classification_par_groupe": [
+    {
+      "groupe": 1, "chemin": "api/app/ai/readiness/gates.py", "nb_fichiers": 1, "statut_git": "modifié (suivi)",
+      "categorie": "AI_FOREIGN", "sous_statut": "EXCLUDED_FOREIGN_AI_CHANGE",
+      "raison": "Modification étrangère pré-existante (audit sécurité IA Phase 13), documentée hors périmètre depuis la Phase 15.9. Ni modifié, ni stagé, ni committé, ni supprimé, ni restauré durant cette phase — laissé strictement dans son état actuel."
+    },
+    {
+      "groupe": 2, "chemin": "reports/shadow/watch/evidence_snapshots.json", "nb_fichiers": 1, "statut_git": "modifié (suivi)",
+      "categorie": "AI_FOREIGN",
+      "raison": "Artefact de suivi shadow-mode IA (chemin reports/shadow/watch/), généré automatiquement par le monitoring de prédictions IA — sans rapport avec le programme de promotion/retraits."
+    },
+    {
+      "groupe": 3, "chemin": "api/test_phase13.py", "nb_fichiers": 1, "statut_git": "non suivi",
+      "categorie": "AI_FOREIGN",
+      "raison": "Vérifié par lecture de contenu : teste compute_observation_delta() de scripts/phase13_evidence_maturation.py — 'Phase 13 : XFOOT PROSPECTIVE SHADOW OBSERVATION & EVIDENCE MATURATION'. Aucun rapport avec promoter/referral/commission."
+    },
+    {
+      "groupe": 4, "chemin": "scripts/phase13_evidence_maturation.py", "nb_fichiers": 1, "statut_git": "non suivi",
+      "categorie": "AI_FOREIGN",
+      "raison": "Vérifié par lecture de contenu : script de maturation de preuves shadow-mode IA (model_versions/markets/leagues), même Phase 13 IA que gates.py."
+    },
+    {
+      "groupe": 5, "chemin": "api/test_phase15_7_referral_attribution_repro.py", "nb_fichiers": 1, "statut_git": "non suivi",
+      "categorie": "TEST_XFOOT", "sous_categorie": "PROMOTION_REFERRAL",
+      "raison": "Test de reproduction de l'attribution referral (Phase 15.7) — ACTIVEMENT réutilisé comme suite de régression dans TOUTES les phases depuis 15.9 (15.9/15.10/15.12/15.14/15.16.1 l'exécutent tous). N'a cependant jamais été committé — risque réel : un clone frais du dépôt ferait échouer toute exécution de régression qui le référence.",
+      "priorite": "HAUTE — candidat naturel à un commit dédié, distinct de la question des rapports historiques"
+    },
+    {
+      "groupe": 6, "chemin_pattern": "reports/phase9_5/*", "nb_fichiers": 24, "statut_git": "non suivis",
+      "categorie": "AI_FOREIGN",
+      "raison": "Contenu vérifié par grep de mots-clés : 100% des fichiers contiennent shadow/gate_/model_version/readiness/prediction, 0% ne contient promoter/referral/commission. Phase 9.5 = shadow mode IA, antérieure à la plateforme de parrainage (commit ebb23ec).",
+      "fichiers": [
+        "reports/phase9_5/xfoot_phase9_5_20260831_221009.json", "reports/phase9_5/xfoot_phase9_5_20260831_221009.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_221054.json", "reports/phase9_5/xfoot_phase9_5_20260831_221054.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_221322.json", "reports/phase9_5/xfoot_phase9_5_20260831_221322.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_221407.json", "reports/phase9_5/xfoot_phase9_5_20260831_221407.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_221729.json", "reports/phase9_5/xfoot_phase9_5_20260831_221729.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_221815.json", "reports/phase9_5/xfoot_phase9_5_20260831_221815.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_222625.json", "reports/phase9_5/xfoot_phase9_5_20260831_222625.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_222710.json", "reports/phase9_5/xfoot_phase9_5_20260831_222710.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_222935.json", "reports/phase9_5/xfoot_phase9_5_20260831_222935.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_223020.json", "reports/phase9_5/xfoot_phase9_5_20260831_223020.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_223338.json", "reports/phase9_5/xfoot_phase9_5_20260831_223338.md",
+        "reports/phase9_5/xfoot_phase9_5_20260831_223423.json", "reports/phase9_5/xfoot_phase9_5_20260831_223423.md"
+      ]
+    },
+    {
+      "groupe": 7, "chemin_pattern": "reports/phase11/*", "nb_fichiers": 24, "statut_git": "non suivis",
+      "categorie": "AI_FOREIGN",
+      "raison": "Contenu vérifié (\"phase\":\"11\", mots-clés shadow/gate_/model_version/readiness/prediction) — production readiness IA, antérieure à Phase 14.",
+      "fichiers": [
+        "reports/phase11/xfoot_phase11_20260831_220816.json", "reports/phase11/xfoot_phase11_20260831_220816.md",
+        "reports/phase11/xfoot_phase11_20260831_220924.json", "reports/phase11/xfoot_phase11_20260831_220924.md",
+        "reports/phase11/xfoot_phase11_20260831_221146.json", "reports/phase11/xfoot_phase11_20260831_221146.md",
+        "reports/phase11/xfoot_phase11_20260831_221237.json", "reports/phase11/xfoot_phase11_20260831_221237.md",
+        "reports/phase11/xfoot_phase11_20260831_221552.json", "reports/phase11/xfoot_phase11_20260831_221552.md",
+        "reports/phase11/xfoot_phase11_20260831_221643.json", "reports/phase11/xfoot_phase11_20260831_221643.md",
+        "reports/phase11/xfoot_phase11_20260831_222449.json", "reports/phase11/xfoot_phase11_20260831_222449.md",
+        "reports/phase11/xfoot_phase11_20260831_222540.json", "reports/phase11/xfoot_phase11_20260831_222540.md",
+        "reports/phase11/xfoot_phase11_20260831_222801.json", "reports/phase11/xfoot_phase11_20260831_222801.md",
+        "reports/phase11/xfoot_phase11_20260831_222850.json", "reports/phase11/xfoot_phase11_20260831_222850.md",
+        "reports/phase11/xfoot_phase11_20260831_223204.json", "reports/phase11/xfoot_phase11_20260831_223204.md",
+        "reports/phase11/xfoot_phase11_20260831_223253.json", "reports/phase11/xfoot_phase11_20260831_223253.md"
+      ]
+    },
+    {
+      "groupe": 8, "chemin_pattern": "reports/phase12/*", "nb_fichiers": 8, "statut_git": "non suivis",
+      "categorie": "AI_FOREIGN", "raison": "Contenu vérifié (\"phase\":\"12\", mêmes mots-clés IA), aucune mention promoter/referral.",
+      "fichiers": [
+        "reports/phase12/xfoot_phase12_20260831_221459.json", "reports/phase12/xfoot_phase12_20260831_221459.md",
+        "reports/phase12/xfoot_phase12_20260831_221908.json", "reports/phase12/xfoot_phase12_20260831_221908.md",
+        "reports/phase12/xfoot_phase12_20260831_223112.json", "reports/phase12/xfoot_phase12_20260831_223112.md",
+        "reports/phase12/xfoot_phase12_20260831_223514.json", "reports/phase12/xfoot_phase12_20260831_223514.md"
+      ]
+    },
+    {
+      "groupe": 9, "chemin_pattern": "reports/phase13/*", "nb_fichiers": 4, "statut_git": "non suivis",
+      "categorie": "AI_FOREIGN", "raison": "Contenu vérifié (\"phase\":\"13\", model_version/shadow/readiness) — correspond à test_phase13.py/phase13_evidence_maturation.py (groupes 3/4).",
+      "fichiers": [
+        "reports/phase13/xfoot_phase13_20260831_222003.json", "reports/phase13/xfoot_phase13_20260831_222003.md",
+        "reports/phase13/xfoot_phase13_20260831_223606.json", "reports/phase13/xfoot_phase13_20260831_223606.md"
+      ]
+    },
+    {
+      "groupe": 10, "chemin_pattern": "reports/phase14*/* (phase14, 14_1..14_15, 14_10r/r1/r2, 14_8r, 14_9r/r2)",
+      "nb_fichiers": 47, "statut_git": "non suivis",
+      "categorie": "PROMOTION_REFERRAL", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Contenu vérifié : mots-clés promoter/referral/commission omniprésents ; deployment_manifest.json confirme explicitement 'phase14_affiliation_code_status : 100% non commité' à l'origine — ce sont les rapports de la genèse de la plateforme de parrainage (commit ebb23ec, Phase 14). Artefacts historiques valides, jamais versionnés, mais HORS du périmètre strict 'retrait manuel' de cette série 15.14-15.17.",
+      "note": "22 répertoires : phase14, phase14_1 à phase14_15, phase14_10r, phase14_10r1, phase14_10r2, phase14_8r, phase14_9r, phase14_9r2 (phase14_3 contient 4 fichiers dont deployment_manifest.json/.md, phase14_14 contient 3 fichiers dont un rapport de clôture supplémentaire)"
+    },
+    {
+      "groupe": 11, "chemin_pattern": "reports/phase15_1/*, phase15_2/*, phase15_3/*, phase15_4/*, phase15_5/*",
+      "nb_fichiers": 10, "statut_git": "non suivis",
+      "categorie": "PROMOTION_REFERRAL", "sous_categorie_secondaire": "BILLING_PAYMENT", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Contenu vérifié : mots-clés chariow/checkout/commission/plan/pricing/promoter/referral/subscription/webhook présents dans les 5 — phases d'intégration billing/referral antérieures à cette conversation (Phase 15.1 'New Offers' à 15.5), hors périmètre strict retrait manuel.",
+      "fichiers": [
+        "reports/phase15_1/xfoot_phase15_1_20260902_190542.json", "reports/phase15_1/xfoot_phase15_1_20260902_190542.md",
+        "reports/phase15_2/xfoot_phase15_2_20260902_191555.json", "reports/phase15_2/xfoot_phase15_2_20260902_191555.md",
+        "reports/phase15_3/xfoot_phase15_3_20260902_192321.json", "reports/phase15_3/xfoot_phase15_3_20260902_192321.md",
+        "reports/phase15_4/xfoot_phase15_4_20260902_193500.json", "reports/phase15_4/xfoot_phase15_4_20260902_193500.md",
+        "reports/phase15_5/xfoot_phase15_5_20260902_200500.json", "reports/phase15_5/xfoot_phase15_5_20260902_200500.md"
+      ]
+    },
+    {
+      "groupe": 12, "chemin_pattern": "reports/phase15_6/*", "nb_fichiers": 14, "statut_git": "non suivis",
+      "categorie": "PROMOTION_REFERRAL", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Titres confirmés : audit/diagnostic d'attribution referral pré-paiement (ÉTAPE 1/2/3, diagnostic inscription, diagnostic attribution réelle).",
+      "fichiers": [
+        "reports/phase15_6/checkout_diagnostic_20260902_210500.json", "reports/phase15_6/checkout_diagnostic_20260902_210500.md",
+        "reports/phase15_6/step1_precheck_20260902_201700.json", "reports/phase15_6/step1_precheck_20260902_201700.md",
+        "reports/phase15_6/step2_referral_20260902_203400.json", "reports/phase15_6/step2_referral_20260902_203400.md",
+        "reports/phase15_6/step3_checkout_20260902_204500.json", "reports/phase15_6/step3_checkout_20260902_204500.md",
+        "reports/phase15_6/xfoot_phase15_6_referral_attribution_r2_20260902_223000.json", "reports/phase15_6/xfoot_phase15_6_referral_attribution_r2_20260902_223000.md",
+        "reports/phase15_6/xfoot_phase15_6_referral_audit_20260902_213000.json", "reports/phase15_6/xfoot_phase15_6_referral_audit_20260902_213000.md",
+        "reports/phase15_6/xfoot_phase15_6_referral_signup_diagnostic_20260902_215000.json", "reports/phase15_6/xfoot_phase15_6_referral_signup_diagnostic_20260902_215000.md"
+      ]
+    },
+    {
+      "groupe": 13, "chemin_pattern": "reports/phase15_7/*", "nb_fichiers": 18, "statut_git": "non suivis",
+      "categorie": "PROMOTION_REFERRAL", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Titres confirmés : correctif d'attribution referral (fallback pathname), commit/déploiement contrôlé associé, validations navigateur/production api.js.",
+      "fichiers": [
+        "reports/phase15_7/xfoot_phase15_7_1_browser_validation_20260902_233300.json", "reports/phase15_7/xfoot_phase15_7_1_browser_validation_20260902_233300.md",
+        "reports/phase15_7/xfoot_phase15_7_2_deployment_20260902_235000.json", "reports/phase15_7/xfoot_phase15_7_2_deployment_20260902_235000.md",
+        "reports/phase15_7/xfoot_phase15_7_4_routing_diagnostic_20260903_000000.json", "reports/phase15_7/xfoot_phase15_7_4_routing_diagnostic_20260903_000000.md",
+        "reports/phase15_7/xfoot_phase15_7_5_referral_root_cause_20260903_001500.json", "reports/phase15_7/xfoot_phase15_7_5_referral_root_cause_20260903_001500.md",
+        "reports/phase15_7/xfoot_phase15_7_6_referral_pathname_fix_20260903_003000.json", "reports/phase15_7/xfoot_phase15_7_6_referral_pathname_fix_20260903_003000.md",
+        "reports/phase15_7/xfoot_phase15_7_7_commit_20260903_004500.json", "reports/phase15_7/xfoot_phase15_7_7_commit_20260903_004500.md",
+        "reports/phase15_7/xfoot_phase15_7_8_deployment_20260903_005500.json", "reports/phase15_7/xfoot_phase15_7_8_deployment_20260903_005500.md",
+        "reports/phase15_7/xfoot_phase15_7_9_api_js_production_20260903_010500.json", "reports/phase15_7/xfoot_phase15_7_9_api_js_production_20260903_010500.md",
+        "reports/phase15_7/xfoot_phase15_7_referral_fix_20260902_231500.json", "reports/phase15_7/xfoot_phase15_7_referral_fix_20260902_231500.md"
+      ]
+    },
+    {
+      "groupe": 14, "chemin_pattern": "reports/phase15_8/*, phase15_9/*", "nb_fichiers": 4, "statut_git": "non suivis",
+      "categorie": "BILLING_PAYMENT", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Connu directement de l'historique de cette conversation : 15.8-DIAG (paiement Chariow confirmé non traité), 15.9 (durcissement webhook billing).",
+      "fichiers": [
+        "reports/phase15_8/xfoot_phase15_8_webhook_diagnostic_20260903_012000.json", "reports/phase15_8/xfoot_phase15_8_webhook_diagnostic_20260903_012000.md",
+        "reports/phase15_9/xfoot_phase15_9_webhook_hardening_20260903_020000.json", "reports/phase15_9/xfoot_phase15_9_webhook_hardening_20260903_020000.md"
+      ]
+    },
+    {
+      "groupe": 15, "chemin_pattern": "reports/phase15_10/*, 15_11/*, 15_12/*, 15_13/*", "nb_fichiers": 12, "statut_git": "non suivis",
+      "categorie": "BILLING_PAYMENT", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Connu directement de l'historique de cette conversation : activate-license+commission (15.10), déploiement+diagnostic post-activation (15.11), réconciliation du montant (15.12), config Railway + sécurité de rejeu (15.13).",
+      "fichiers": [
+        "reports/phase15_10/xfoot_phase15_10_activate_license_commission_20260903_030000.json", "reports/phase15_10/xfoot_phase15_10_activate_license_commission_20260903_030000.md",
+        "reports/phase15_11/xfoot_phase15_11_deployment_real_payment_20260903_181500.json", "reports/phase15_11/xfoot_phase15_11_deployment_real_payment_20260903_181500.md",
+        "reports/phase15_11/xfoot_phase15_11_post_activation_diagnostic_20260903_190000.json", "reports/phase15_11/xfoot_phase15_11_post_activation_diagnostic_20260903_190000.md",
+        "reports/phase15_12/xfoot_phase15_12_amount_reconciliation_20260903_193000.json", "reports/phase15_12/xfoot_phase15_12_amount_reconciliation_20260903_193000.md",
+        "reports/phase15_13/xfoot_phase15_13_railway_config_real_payment_20260903_210253.json", "reports/phase15_13/xfoot_phase15_13_railway_config_real_payment_20260903_210253.md",
+        "reports/phase15_13/xfoot_phase15_13_reconciliation_retry_safety_20260903_211609.json", "reports/phase15_13/xfoot_phase15_13_reconciliation_retry_safety_20260903_211609.md"
+      ]
+    },
+    {
+      "groupe": 16, "chemin_pattern": "reports/phase15_14/*, 15_15/*, 15_16_1/*, 15_16_2/*, 15_17/*", "nb_fichiers": 10, "statut_git": "non suivis",
+      "categorie": "PROMOTION_WITHDRAWAL", "sous_statut": "REPORT_XFOOT_CANDIDATE",
+      "raison": "Rapports produits directement par cette série de phases (retrait manuel V1, déploiement, audit remboursements + recherche promoteur, déploiement recherche, checkpoint précédent) — cœur exact du périmètre 'Promotion/Retraits' évoqué par cette phase.",
+      "fichiers": [
+        "reports/phase15_14/xfoot_phase15_14_manual_withdrawal_20260903_221935.json", "reports/phase15_14/xfoot_phase15_14_manual_withdrawal_20260903_221935.md",
+        "reports/phase15_15/xfoot_phase15_15_deployment_manual_withdrawal_20260903_223327.json", "reports/phase15_15/xfoot_phase15_15_deployment_manual_withdrawal_20260903_223327.md",
+        "reports/phase15_16_1/xfoot_phase15_16_1_reversed_commission_audit_20260903_233602.json", "reports/phase15_16_1/xfoot_phase15_16_1_reversed_commission_audit_20260903_233602.md",
+        "reports/phase15_16_2/xfoot_phase15_16_2_deployment_promoter_search_20260903_234341.json", "reports/phase15_16_2/xfoot_phase15_16_2_deployment_promoter_search_20260903_234341.md",
+        "reports/phase15_17/xfoot_phase15_17_final_checkpoint_20260903_235845.json", "reports/phase15_17/xfoot_phase15_17_final_checkpoint_20260903_235845.md"
+      ]
+    }
+  ],
+  "totaux_par_categorie": {
+    "AI_FOREIGN": 64,
+    "TEST_XFOOT_PROMOTION_REFERRAL": 1,
+    "PROMOTION_REFERRAL_reports": 89,
+    "BILLING_PAYMENT_reports": 16,
+    "PROMOTION_WITHDRAWAL_reports": 10,
+    "TEMPORARY_GENERATED": 0,
+    "UNKNOWN": 0,
+    "total": 180
+  },
+  "partie_c_gates_py": {
+    "fichier": "api/app/ai/readiness/gates.py",
+    "statut": "EXCLUDED_FOREIGN_AI_CHANGE",
+    "action_prise": "AUCUNE — non modifié, non stagé, non committé, non supprimé, non restauré. Laissé strictement dans son état actuel."
+  },
+  "partie_d_rapports_phase11_et_ai": {
+    "verifie_pour_chaque_fichier_ai_foreign_64_fichiers": {
+      "origine": "Toutes les phases AI (9.5/11/12/13) confirmées par le champ 'phase' interne + mots-clés de contenu (shadow/gate_/model_version/readiness/prediction), aucune ambiguïté trouvée.",
+      "deja_suivis_par_git": "Non — tous non suivis (??), sauf gates.py et evidence_snapshots.json qui sont suivis mais modifiés.",
+      "secrets_verifies": "Scan explicite (patterns sk_live/api_key littéral/password littéral/secret littéral/Bearer token en dur/license_key littéral) sur les 178 fichiers non suivis — 9 correspondances, TOUTES vérifiées manuellement et confirmées FAUSSES POSITIVES (mot de passe de test fixe déjà utilisé dans tout le dépôt 'correct-horse-battery-staple' ; mentions 'CHARIOW_PULSE_SECRET: PRESENT (valeur jamais affichée)' ; listes de PATTERNS recherchés, jamais de valeurs réelles). AUCUN secret réel trouvé dans aucun des 180 fichiers.",
+      "artefacts_definitifs_ou_temporaires": "Définitifs — ce sont des rapports de phase complets et signés (verdict + horodatage), pas des fichiers temporaires/cache."
+    }
+  },
+  "partie_e_tests": {
+    "test_phase13_py": {
+      "role": "Tests de compute_observation_delta() (Phase 13, IA shadow evidence maturation)",
+      "utile": "Oui, pour la suite de tests IA — mais hors périmètre Promotion/Retraits",
+      "deja_couvert_par_un_commit": "Non",
+      "appartient_a": "Phase 13 (IA), pas à la série 15.14-15.17",
+      "recommandation": "Ne pas inclure dans le checkpoint Promotion/Retraits — candidat à un futur checkpoint AI séparé si souhaité"
+    },
+    "test_phase15_7_referral_attribution_repro_py": {
+      "role": "Reproduction de l'attribution referral (Phase 15.7) — activement exécuté en régression par 5 phases ultérieures",
+      "utile": "Oui, directement — fait partie de la suite de régression officielle depuis Phase 15.9",
+      "deja_couvert_par_un_commit": "Non — JAMAIS committé malgré son usage actif",
+      "appartient_a": "Phase 15.7 (referral), périphérique mais pertinent à la série billing/referral/retraits",
+      "recommandation": "Candidat prioritaire à un commit dédié — son absence du dépôt versionné est un risque réel pour la reproductibilité de la régression"
+    }
+  },
+  "partie_f_historique_git": {
+    "log_recent": ["dcd70e6 feat: add promoter withdrawal search and clarify refunds", "a0dcbc7 feat: add manual promoter withdrawals", "44f6652 fix: reconcile referral commission amount from plan price", "5baca92 feat: harden billing webhook and activate-license commission", "70970ee feat: fix referral capture from rewritten pathname", "dbf2124 fix: ensure referral capture before auth redirect", "eeb01ec feat: update xfoot subscription pricing", "901c468 feat: show user_id in admin subscribers list", "ebb23ec feat: add xfoot promoter referral platform", "00dd971 feat: complete AI shadow and production readiness phases"],
+    "confirmation": "a0dcbc7 et dcd70e6 contiennent exactement le code source (app/, frontend-design/) des Phases 15.14/15.15 et 15.16.1/15.16.2 respectivement — vérifié en Phase 15.17. Aucun des 178 fichiers non suivis ne correspond à du CODE de ces phases : ce sont exclusivement des RAPPORTS (JSON/MD) et 3 fichiers de tests/scripts jamais committés à travers TOUTE l'histoire du dépôt, pas seulement cette série récente (convention constante depuis 00dd971)."
+  },
+  "partie_g_promotion_retraits": {
+    "code_des_phases_15_14_a_15_16_2": "100% déjà commité (a0dcbc7, dcd70e6) et poussé — confirmé à nouveau dans cette phase (git diff --stat -- api frontend-design ne montre que gates.py, hors périmètre).",
+    "fichiers_non_commites_appartenant_reellement_a_ces_phases": "Uniquement les RAPPORTS (groupe 16, 10 fichiers) — le code lui-même est déjà versionné. Aucune logique n'a été ni ne sera modifiée pour créer artificiellement un commit."
+  },
+  "partie_h_ia": {
+    "fichiers_ai_exclus_du_perimetre": 64,
+    "tables_protegees_verifiees": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "aucun_fichier_ai_recommande_pour_ce_checkpoint": true
+  },
+  "partie_i_aucune_suppression": {
+    "rm_utilise": false, "git_clean_utilise": false, "git_reset_hard_utilise": false,
+    "git_checkout_dash_dash_point_utilise": false, "git_restore_point_utilise": false,
+    "nombre_de_fichiers_dans_larbre_de_travail_avant": 180, "nombre_apres": 180
+  },
+  "partie_j_aucun_commit": {"git_add_execute": false, "git_commit_execute": false, "git_push_execute": false},
+  "recommandation_perimetre_de_commit": {
+    "option_1_minimal_recommandee": "api/test_phase15_7_referral_attribution_repro.py SEUL — corrige un risque réel de reproductibilité de régression (test activement utilisé mais absent du dépôt versionné), sans ouvrir la question plus large des rapports historiques.",
+    "option_2_rapports_promotion_retraits": "Les 10 fichiers du groupe 16 (rapports 15.14-15.17) pourraient être ajoutés SI l'utilisateur décide de commencer à versionner les rapports de cette série précise — décision de convention à trancher explicitement, jamais assumée par cet agent.",
+    "option_3_tous_les_rapports_xfoot_non_ai": "Les 115 rapports PROMOTION_REFERRAL + BILLING_PAYMENT + PROMOTION_WITHDRAWAL (groupes 10 à 16) — changerait une convention constante depuis le tout début du projet (aucun rapport jamais committé), décision majeure nécessitant validation humaine explicite.",
+    "jamais_recommande": "Les 64 fichiers AI_FOREIGN (groupes 1,2,3,4,6,7,8,9) — strictement hors périmètre, ne jamais inclure dans un checkpoint Promotion/Retraits.",
+    "aucune_action_prise_dans_cette_phase": true
+  },
+  "verdict": "AUDIT_REQUIRES_HUMAN_DECISION",
+  "verdict_justification": "La classification de TOUS les 180 fichiers est certaine (vérifiée par contenu, aucun fichier en catégorie UNKNOWN). Ce qui reste à trancher n'est PAS un problème de classification mais une DÉCISION DE PÉRIMÈTRE/CONVENTION : faut-il commencer à versionner des rapports historiques jamais commités jusqu'ici (changement de pratique établie depuis le début du projet), et à quelle échelle (1 test isolé / 10 rapports de cette série / 115 rapports au total) ? Cette décision appartient explicitement à l'utilisateur."
+}

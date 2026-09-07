@@ -1,0 +1,124 @@
+{
+  "phase": "15.14",
+  "title": "Système de retrait manuel des commissions promoteurs V1",
+  "generated_at_utc": "2026-09-03T22:19:35Z",
+  "real_payment_performed": false,
+  "commit_push_deploy_performed": false,
+  "partie_a_audit": {
+    "existing_before_this_phase": [
+      "ReferralCommission (grand livre existant, jamais modifié en logique)",
+      "app/referral/stats.py::compute_promoter_stats exposait déjà commission_available (=total accru, aucune déduction) et le flag PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED",
+      "aucun modèle payout, aucune route payout, aucune migration payout n'existait avant cette phase (grep exhaustif confirmé)"
+    ],
+    "reused_not_duplicated": [
+      "ReferralCommission reste l'UNIQUE source de vérité des commissions",
+      "require_admin (Phase 10) réutilisé tel quel pour les routes admin",
+      "get_current_promoter (Phase 14) réutilisé tel quel pour les routes promoteur",
+      "ReferralAuditEvent réutilisé (3 nouveaux types : WITHDRAWAL_REQUESTED/PAID/REJECTED)",
+      "pattern idempotence check-then-insert + IntegrityError déjà établi par commission_service.py, répliqué à l'identique dans withdrawal_service.py"
+    ]
+  },
+  "model": {
+    "name": "PromoterWithdrawal",
+    "file": "api/app/models/promoter.py",
+    "fields": ["id", "promoter_id", "amount", "currency", "status", "requested_at", "processed_at",
+               "processed_by_admin_id", "external_reference", "admin_note", "created_at", "updated_at"],
+    "statuses_implemented": ["PENDING", "PAID", "REJECTED"],
+    "cancelled_status": "omis en V1 — aucun cas d'usage d'auto-annulation promoteur spécifié dans le prompt, décision documentée dans le code plutôt qu'ajoutée sans justification (règle : ne pas inventer une règle métier)",
+    "concurrency_protection": "Index UNIQUE PARTIEL 'uq_promoter_withdrawal_one_pending' sur promoter_id, WHERE status='PENDING' — fonctionnel sous SQLite ET PostgreSQL (les deux moteurs réellement utilisés par ce projet), testé (upgrade/downgrade/re-upgrade)"
+  },
+  "migration": {
+    "file": "api/alembic/versions/99fd1d8ad121_phase15_14_promoter_withdrawal.py",
+    "revises": "5787c4b3b963",
+    "additive_only": true,
+    "tested": {
+      "upgrade": "OK (sur copie scratch de app.db, jamais la DB de dev/prod réelle)",
+      "schema_verified": "table + 2 index simples + 1 index UNIQUE PARTIEL confirmés présents avec la clause WHERE correcte",
+      "downgrade": "OK (table supprimée proprement)",
+      "re_upgrade": "OK (idempotent)"
+    },
+    "destructive_in_production": false
+  },
+  "workflow": {
+    "steps": [
+      "1. Promoteur : POST /promoter/me/withdrawals (aucun amount requis, ou amount devant correspondre exactement au disponible)",
+      "2. Backend recalcule le disponible depuis ReferralCommission - PromoterWithdrawal(PENDING+PAID) — jamais confiance au frontend",
+      "3. Ligne PENDING créée (idempotent : appel répété -> même ligne, jamais un doublon)",
+      "4. Admin : GET /admin/withdrawals?status_filter=PENDING",
+      "5. Admin : POST /admin/withdrawals/{id}/confirm-paid avec confirm=true (obligatoire) + référence/note optionnelles — APRÈS avoir payé manuellement hors Xfoot",
+      "6. Transition PENDING->PAID atomique (UPDATE ... WHERE status='PENDING'), jamais une seconde transition possible",
+      "7. Promoteur voit son statut VERSÉ + référence"
+    ],
+    "no_automatic_payment": true,
+    "no_external_payment_provider_integrated": true
+  },
+  "amount_policy": {
+    "WITHDRAWAL_AMOUNT_POLICY": "FULL_AVAILABLE_ONLY",
+    "justification": "Aucune règle de retrait partiel n'existait avant cette phase (recherche explicite) — la préférence recommandée par le prompt (retrait uniquement du montant disponible en totalité) a été retenue pour V1, documentée explicitement dans withdrawal_service.py, jamais implicite. Le montant écrit en base est TOUJOURS celui recalculé côté serveur, jamais celui envoyé par le client.",
+    "examples_verified": {"600_sur_600_disponible": "ACCEPTÉ", "601": "REFUSÉ (400)", "1000": "REFUSÉ (400)", "0": "REFUSÉ (400)", "négatif": "REFUSÉ (400)"}
+  },
+  "source_of_truth": {
+    "no_mutable_balance_field": true,
+    "computation": "commission_available = max(0, SUM(ReferralCommission.commission_amount WHERE status='ACCRUED') - SUM(PromoterWithdrawal.amount WHERE status='PAID') - SUM(PromoterWithdrawal.amount WHERE status='PENDING'))",
+    "function": "app/referral/withdrawal_service.py::compute_promoter_available_amount"
+  },
+  "idempotence_and_concurrency": {
+    "double_request_click": "protégé (check PENDING existant -> no-op + index UNIQUE PARTIEL en défense en profondeur, IntegrityError rattrapée)",
+    "double_confirmation": "protégé (UPDATE atomique conditionné sur status='PENDING', rowcount=0 -> 409, jamais une seconde transition)",
+    "concurrency_test_limitation": "même limite déjà documentée en Phase 15.10/15.12 : harness de test synchrone, pas de vrai test multi-thread — la protection réelle (contrainte/index UNIQUE + UPDATE atomique conditionnel) est correcte indépendamment du test, mais non prouvée par un test multi-thread réel"
+  },
+  "security": {
+    "promoter_routes": "authentification obligatoire (get_current_user), promoter_id TOUJOURS dérivé du token via get_current_promoter, jamais transmis par le client",
+    "admin_routes": "authentification + require_admin (ADMIN_EMAILS) vérifié côté serveur à chaque requête",
+    "tested_matrix": ["non authentifié -> 401", "utilisateur normal (non promoteur) -> 403 sur routes promoteur", "promoteur non-admin -> 403 sur routes admin", "promoteur A isolé des demandes de promoteur B (liste + actions)"]
+  },
+  "refund_reject_behavior": {
+    "reject_pending": "montant automatiquement redisponible (recalculé, aucune donnée financière perdue), testé",
+    "refund_before_withdrawal": "commission ACCRUED->REVERSED (mécanisme existant, inchangé) -> disponible baisse correctement, testé",
+    "refund_after_pending_or_paid": "AUCUN mécanisme de récupération d'argent implémenté (interdit explicitement par le prompt) — limite documentée explicitement dans withdrawal_service.py::REFUND_AFTER_PAYOUT_LIMITATION, décision admin manuelle requise dans ce cas, jamais automatisée"
+  },
+  "tests": {
+    "new_file": "api/test_phase15_14_manual_withdrawal.py",
+    "result": "56/56 assertions réussies (30 scénarios numérotés du prompt couverts + matrice de sécurité)",
+    "uses_real_payment_flow": "toutes les ReferralCommission de test créées via un VRAI Pulse successful.sale signé (même helper que test_referral_promoter_platform.py), jamais une ligne fabriquée à la main",
+    "regression": {
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_1_new_offers.py": "17/17",
+      "test_phase15_7_referral_attribution_repro.py": "24/24",
+      "test_phase15_9_webhook_hardening.py": "31/31",
+      "test_phase15_10_activate_license_commission.py": "33/33",
+      "test_phase15_12_amount_reconciliation.py": "36/36",
+      "test_chariow_billing.py": "30/30",
+      "test_entitlement.py": "8/8",
+      "test_provider_subscription_backfill.py": "4/4",
+      "test_google_play_billing.py": "44/44",
+      "test_auth.py": "8/8",
+      "test_main.py": "9/9",
+      "total_failures": 0
+    }
+  },
+  "ai_isolation": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "ai_files_in_diff": false,
+    "note": "api/app/ai/readiness/gates.py reste une modification étrangère pré-existante (déjà présente avant cette phase), non touchée par Phase 15.14"
+  },
+  "files_changed": {
+    "backend_modified": ["api/app/models/promoter.py", "api/app/referral/admin_router.py", "api/app/referral/router.py", "api/app/referral/stats.py"],
+    "backend_new": ["api/app/referral/withdrawal_service.py", "api/alembic/versions/99fd1d8ad121_phase15_14_promoter_withdrawal.py", "api/test_phase15_14_manual_withdrawal.py"],
+    "frontend_modified": ["frontend-design/promoter.html", "frontend-design/admin-earnings.html", "frontend-design/admin-promoters.html", "frontend-design/admin-subscribers.html"],
+    "frontend_new": ["frontend-design/admin-withdrawals.html"]
+  },
+  "real_case_promoter_2": {
+    "state_before_and_after_this_phase": "INCHANGÉ — acquis 600 FCFA, disponible 600 FCFA, déjà versé 0 FCFA",
+    "no_production_action_taken": true,
+    "no_withdrawal_request_created_for_promoter_2": true
+  },
+  "limitations": [
+    "Frontend implémenté selon les conventions existantes du dépôt (mêmes classes CSS, mêmes helpers api.js) mais non testé visuellement dans un navigateur réel — aucun accès navigateur/computer-use disponible dans cet environnement, limitation déjà documentée dans les phases précédentes",
+    "Test de concurrence réelle (multi-thread) non exécuté — limite du harness de test synchrone déjà documentée en Phase 15.10/15.12 ; la protection (UPDATE atomique conditionnel + index UNIQUE partiel) est correcte par construction indépendamment de cette limite de test",
+    "REJECTED décidé comme statut minimal suffisant pour V1 ; CANCELLED explicitement omis (documenté dans le code, aucun cas d'usage demandé)"
+  ],
+  "verdict": "MANUAL_WITHDRAWAL_IMPLEMENTED_TESTS_PASS"
+}

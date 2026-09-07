@@ -1,0 +1,142 @@
+{
+  "phase": "14.10R",
+  "title": "XFOOT PRODUCTION TEST ACCOUNTS READINESS — PROMOTER + ADMIN",
+  "generated_at_utc": "2026-09-01T23:04:18Z",
+  "release_commit": "ebb23ec",
+  "scope_note": "Phase de PLANIFICATION uniquement — aucun compte créé, aucune écriture production, aucun paiement.",
+
+  "1_modele_user": {
+    "fichier": "api/app/models/user.py",
+    "champs": ["id", "email (unique, indexé)", "name (nullable)", "hashed_password", "is_active (défaut true)", "created_at"],
+    "aucun_champ_role_en_base": true,
+    "constat_critique": "La table User NE CONTIENT AUCUNE colonne de rôle (pas de 'role', pas de 'is_admin' en base) — is_admin et is_promoter sont TOUS DEUX des champs CALCULÉS À LA VOLÉE dans UserRead, jamais stockés, jamais fournis par le client à l'inscription.",
+    "UserCreate_champs_acceptes": ["name", "email", "password"],
+    "aucun_champ_role_dans_usercreate": true,
+    "consequence": "Un utilisateur ne peut STRUCTURELLEMENT pas s'auto-attribuer un rôle à l'inscription — le schéma Pydantic UserCreate n'expose même pas de champ pour cela."
+  },
+
+  "2_mecanisme_promoteur": {
+    "seul_point_de_creation": "POST /admin/promoters (api/app/referral/admin_router.py::admin_create_promoter) — protégé par require_admin.",
+    "aucun_endpoint_self_service": true,
+    "constat_critique": "IL N'EXISTE AUCUN mécanisme par lequel un utilisateur peut devenir Promoteur lui-même. Un compte Admin DOIT exister et être authentifié en premier pour créer un Promoteur — dépendance séquentielle obligatoire (Admin d'abord, Promoteur ensuite).",
+    "parametres_requis": {"user_id": "int, doit correspondre à un User existant (session.get(User, body.user_id))", "requested_slug": "optionnel — si omis, généré automatiquement depuis le nom d'affichage (app/referral/slug.py::generate_base_slug)"},
+    "generation_slug": "normalize_slug() -> NFKD, minuscule, [a-z0-9-] uniquement ; collision -> suffixe numérique déterministe (jean-dupont-2, etc.) ; rejette les slugs réservés (admin, login, api, etc.) et jamais un slug déjà pris.",
+    "taux_commission_par_defaut": {"valeur_bp": 4000, "pourcentage": "40%", "source": "app/models/promoter.py::DEFAULT_COMMISSION_RATE_BP = 4000", "confirme_conforme_a_l_attente": true},
+    "statut_initial": "ACTIVE (Promoter(status='ACTIVE', ...) codé en dur dans create_promoter)",
+    "contrainte_unicite": "UniqueConstraint sur promoter.user_id (un seul compte Promoter par utilisateur) ET sur promoter.slug (aucun doublon possible)"
+  },
+
+  "3_mecanisme_admin": {
+    "fichier": "api/app/auth/admin.py",
+    "mecanisme": "Allowlist d'emails via variable d'environnement ADMIN_EMAILS (CSV, comparaison insensible à la casse) — AUCUNE colonne DB, AUCUNE clé API statique.",
+    "verification": "require_admin() compare current_user.email (dérivé du JWT, jamais du client) contre la liste ADMIN_EMAILS — relue à CHAQUE requête via os.environ.get, JAMAIS mise en cache.",
+    "comportement_si_absent_vide": "Aucun admin du tout — jamais un accès ouvert par défaut faute de configuration (403 pour tout le monde).",
+    "code_erreur": "403 Forbidden (jamais 401 — l'utilisateur est authentifié, juste non autorisé)",
+    "page_html_ne_constitue_jamais_une_autorisation": "Confirmé — admin-promoters.html/admin-subscribers.html/admin-earnings.html sont de simples pages statiques ; TOUTE tentative de lecture de données y échoue avec 401/403 côté API tant que le token n'appartient pas à un email listé dans ADMIN_EMAILS.",
+    "ADMIN_EMAILS_local": "ABSENT du .env",
+    "ADMIN_EMAILS_production": "UNKNOWN — non modifié, non consulté par cette phase (règle absolue)",
+    "constat": "La SEULE façon de faire d'un compte un Admin est de configurer ADMIN_EMAILS sur Railway — action strictement humaine, hors de portée de tout code applicatif ou de cette conversation."
+  },
+
+  "4_protections_securite": {
+    "auto_attribution_admin": {"possible": false, "preuve": "UserCreate n'expose aucun champ de rôle ; ADMIN_EMAILS est une variable serveur, jamais modifiable via l'API."},
+    "modification_propre_role": {"possible": false, "preuve": "Aucun endpoint PATCH/PUT sur User n'existe pour modifier un rôle ou un statut admin."},
+    "promoter_id_arbitraire_cote_client": {"possible": false, "preuve": "get_current_promoter (app/referral/dependencies.py) dérive TOUJOURS le Promoter depuis current_user (JWT) via une requête SQL sur user_id — aucune route promoteur n'accepte de promoter_id en paramètre. Vérifié structurellement (grep 'promoter_id: int' absent des signatures de routes client) et testé exhaustivement en isolé (Phase 14 test 18, Phase 14.1 test isolation sur /promoter/me/sales)."},
+    "acces_donnees_autre_promoteur": {"possible": false, "preuve": "Toutes les requêtes de app/referral/router.py filtrent par promoter.id dérivé du token — jamais par un identifiant transmis."},
+    "acces_endpoints_admin_sans_droit": {"possible": false, "preuve": "require_admin appliqué comme dépendance FastAPI sur les 6 routes /admin/* — reconfirmé réellement en production (Phase 14.7/14.8/14.10) : 401 sans token, et le mécanisme 403 pour un non-admin authentifié est structurel (même code, jamais modifié)."},
+    "methode_verification": "Statique (lecture de code) + read-only (401 sans token, reconfirmé plusieurs fois en production) — aucune tentative destructive."
+  },
+
+  "5_strategie_comptes_de_test": {
+    "TEST_PROMOTEUR": {
+      "nom_propose": "Xfoot QA Promoter (Phase 14.10R)",
+      "email_propose": "xfoot.qa.promoter+phase14@gmail.com (adresse dédiée de test suggérée — jamais une adresse personnelle réelle de l'utilisateur, à confirmer/adapter par l'utilisateur avant création)",
+      "abonnement": "AUCUN — le compte User de base n'a besoin d'aucune subscription pour devenir Promoteur (create_promoter n'a aucune dépendance sur ProviderSubscription)",
+      "paiement": "AUCUN",
+      "solde": "AUCUN (commission_amount démarre à 0 par construction — aucune ligne ReferralCommission tant qu'aucun paiement réel n'est confirmé)",
+      "statut_promoteur_prevu": "ACTIVE (statut par défaut de create_promoter)",
+      "slug_propose": "xfoot-qa-promoter-141 (ou équivalent explicitement identifiable — à valider qu'il n'est pas déjà pris au moment de la création, aucune vérification possible sans écriture depuis cet environnement)",
+      "procedure_creation": "1) POST /auth/register (compte utilisateur standard) 2) un Admin authentifié appelle POST /admin/promoters avec ce user_id"
+    },
+    "TEST_ADMIN": {
+      "email_propose": "xfoot.qa.admin+phase14@gmail.com (adresse dédiée de test suggérée, à ajouter explicitement à ADMIN_EMAILS sur Railway)",
+      "abonnement": "AUCUN",
+      "paiement": "AUCUN",
+      "acces": "Admin UNIQUEMENT — via ADMIN_EMAILS, aucun privilège supplémentaire n'existe dans ce système (pas de rôles graduels, l'allowlist est binaire admin/non-admin)",
+      "procedure_creation": "1) POST /auth/register (compte utilisateur standard) 2) ajouter son email à ADMIN_EMAILS sur Railway (variable d'environnement, action humaine dans le dashboard Railway, prend effet immédiatement sans redéploiement)"
+    },
+    "mots_de_passe": "Jamais affichés ni générés dans ce rapport — à définir par l'humain au moment de l'inscription réelle."
+  },
+
+  "6_donnees_a_ne_pas_polluer": {
+    "garanties_structurelles": [
+      "Un compte Promoteur de test ne génère AUCUNE vente/commission tant qu'aucun paiement Chariow réel n'est confirmé pour un utilisateur référé par son slug (create_promoter ne crée aucune ligne financière).",
+      "L'historique commercial réel (autres promoteurs, autres commissions) n'est jamais affecté par la création d'un nouveau Promoter — table additive, FK uniquement, jamais de UPDATE croisé."
+    ],
+    "mecanisme_de_desactivation_existant": {
+      "disponible": true,
+      "methode": "POST /admin/promoters/{id}/status avec {\"status\": \"INACTIVE\"} ou {\"status\": \"SUSPENDED\"} — bloque toute FUTURE commission pour ce promoteur, sans jamais toucher l'historique déjà écrit.",
+      "journalise": true,
+      "evenement_audit": "PROMOTER_DEACTIVATED / PROMOTER_SUSPENDED (ReferralAuditEvent)"
+    },
+    "mecanisme_de_suppression_definitive": {
+      "disponible": false,
+      "constat_honnete": "AUCUN endpoint DELETE n'existe pour un Promoter (recherche exhaustive dans app/referral/*.py — aucun résultat). C'EST INTENTIONNEL, pas un gap : la spécification Phase 14 (§5/§22) exige explicitement de 'ne jamais supprimer l'historique financier'. Après les tests, le compte de test Promoteur pourra être mis INACTIVE (réversible, traçable) mais jamais supprimé physiquement — ceci n'est PAS inventé ici, c'est la conséquence directe et documentée d'un choix de conception déjà audité en Phase 14."
+    },
+    "compte_admin_desactivation": "Retirer l'email de ADMIN_EMAILS sur Railway (action humaine immédiate, aucun mécanisme applicatif nécessaire — le compte User de base reste inchangé, seul son statut admin disparaît)."
+  },
+
+  "7_plan_de_test_futur": {
+    "PROMOTEUR": ["1. login (POST /auth/login)", "2. GET /promoter/me", "3. dashboard (promoter.html)", "4. referral link (format https://www.xfoot.site/{slug})", "5. GET /promoter/me/stats (conversions)", "6. GET /promoter/me/sales (ventes)", "7. revenus (dans /promoter/me/stats)", "8. commissions (dans /promoter/me/stats + /promoter/me/sales)"],
+    "ADMIN": ["1. login", "2. accès admin (GET /admin/promoters -> 200 attendu)", "3. GET /admin/promoters (liste)", "4. GET /admin/subscribers", "5. GET /admin/earnings/totals + /admin/earnings/by-promoter"],
+    "SECURITE": ["1. token Promoteur -> GET /admin/promoters => 403 attendu", "2. aucun token -> endpoint protégé => 401 attendu (déjà reconfirmé Phase 14.10)", "3. promoter_id arbitraire dans la query/body -> refusé structurellement (déjà prouvé par lecture de code, §4)", "4. isolation Promoteur A/B -> nécessite la création ultérieure d'un DEUXIÈME compte promoteur de test, hors périmètre de cette phase"],
+    "aucun_paiement_necessaire": true
+  },
+
+  "8_verification_git_ia": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true,
+    "fichiers_modifies_par_cette_phase": 0,
+    "git_diff_app_ai_references": 0,
+    "tables_ia_modifiees": false,
+    "local_db_counts": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "signal_pari_genere": false,
+    "paiement_effectue": false
+  },
+
+  "risques": [
+    "Le slug proposé (xfoot-qa-promoter-141) pourrait déjà être pris — non vérifiable sans écriture depuis cet environnement ; le mécanisme de collision (suffixe -2, -3...) gère ce cas automatiquement et de façon déterministe, aucune action manuelle requise.",
+    "Ajouter un email à ADMIN_EMAILS sur Railway donne un accès admin COMPLET et immédiat, sans palier intermédiaire — à faire uniquement avec une adresse de test dédiée, jamais une adresse personnelle si évitable.",
+    "Aucune suppression définitive du compte Promoteur de test n'est possible après usage (voir §6) — seule une désactivation réversible existe, par conception du système."
+  ],
+
+  "9_verdict_final": {
+    "value": "TEST_ACCOUNTS_PLAN_READY",
+    "rationale": "Le mécanisme de création (inscription standard -> promotion via un Admin déjà authentifié -> ADMIN_EMAILS pour l'accès admin) est entièrement identifié par lecture de code, sans ambiguïté. Les protections contre l'auto-élévation de privilège et l'accès croisé sont structurellement confirmées (absence de champ rôle en base, dérivation systématique depuis le JWT). La stratégie de comptes de test est précise (emails dédiés proposés, aucune donnée financière générée, mécanisme de désactivation identifié). Aucune information technique indispensable ne manque pour qu'un humain procède à la création."
+  },
+
+  "resume_fin_de_phase": {
+    "PROMOTER_TEST_ACCOUNT": "READY (plan)",
+    "ADMIN_TEST_ACCOUNT": "READY (plan)",
+    "PROMOTER_ROLE_MECHANISM": "Aucun self-service — un Admin authentifié doit appeler POST /admin/promoters avec le user_id d'un compte déjà inscrit ; slug auto-généré ou fourni, taux 40% par défaut, statut ACTIVE.",
+    "ADMIN_AUTH_MECHANISM": "Allowlist ADMIN_EMAILS (variable d'environnement Railway, CSV, insensible à la casse), vérifiée à chaque requête, aucune colonne DB, 403 si absent.",
+    "SELF_ADMIN_PROTECTION": "PASS",
+    "PROMOTER_ISOLATION_PROTECTION": "PASS",
+    "PAYMENT": "NO",
+    "CHARIOW": "NO",
+    "DATABASE_WRITE": "NO",
+    "AI_MODIFIED": "NO",
+    "GIT_COMMIT": "NO",
+    "GIT_PUSH": "NO",
+    "VERDICT": "TEST_ACCOUNTS_PLAN_READY",
+    "HUMAN_ACTION_REQUIRED": [
+      "1. S'inscrire normalement sur https://www.xfoot.site/login.html avec l'email de test Promoteur proposé (ou un équivalent), choisir un mot de passe (jamais transmis ici).",
+      "2. S'inscrire normalement avec l'email de test Admin proposé (ou un équivalent).",
+      "3. Sur Railway (dashboard, service SaaS-PariFoot, variables d'environnement) : ajouter l'email de test Admin à ADMIN_EMAILS (créer la variable si absente, ou l'étendre avec une virgule si elle existe déjà) — effet immédiat, aucun redéploiement requis.",
+      "4. Se connecter avec le compte Admin de test sur admin-promoters.html, utiliser le formulaire 'Créer un promoteur' avec le user_id du compte Promoteur de test (visible dans la fiche Abonnés une fois créé, ou récupérable via GET /admin/subscribers).",
+      "5. Revenir vers l'agent avec la confirmation que les deux comptes existent — la Phase 14.10 (ou une nouvelle itération) pourra alors exécuter le plan de test du §7."
+    ]
+  },
+
+  "closing_statement": "PHASE 14.10R — XFOOT PRODUCTION TEST ACCOUNTS READINESS TERMINÉE. LE MÉCANISME DE CRÉATION DES COMPTES PROMOTEUR ET ADMIN EST ENTIÈREMENT DOCUMENTÉ PAR LECTURE DE CODE, LES PROTECTIONS CONTRE L'AUTO-ÉLÉVATION ET L'ACCÈS CROISÉ SONT CONFIRMÉES, ET UNE STRATÉGIE PRÉCISE DE COMPTES DE TEST EST PROPOSÉE. AUCUN COMPTE N'A ÉTÉ CRÉÉ. AUCUNE ÉCRITURE PRODUCTION. AUCUN PAIEMENT. AUCUNE MODIFICATION DU MOTEUR IA. LA PROCÉDURE HUMAINE EXACTE EST DOCUMENTÉE CI-DESSUS."
+}

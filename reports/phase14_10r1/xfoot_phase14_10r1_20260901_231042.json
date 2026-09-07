@@ -1,0 +1,147 @@
+{
+  "phase": "14.10R.1",
+  "title": "XFOOT ASSISTED TEST ACCOUNT PROVISIONING — STOP-BEFORE-PRODUCTION-WRITE",
+  "generated_at_utc": "2026-09-01T23:10:42Z",
+  "release_commit": "ebb23ec",
+  "scope_note": "Préparatoire uniquement — AUCUNE écriture production effectuée. Confirme et consolide la Phase 14.10R avec vérification fraîche des prérequis.",
+
+  "1_prerequis": {
+    "frontend_production_reachable": {"url": "https://www.xfoot.site/", "status": 200},
+    "login_html_reachable": {"url": "https://www.xfoot.site/login.html", "status": 200},
+    "admin_promoters_html_reachable": {"url": "https://www.xfoot.site/admin-promoters.html", "status": 200},
+    "api_production_reachable": {"url": "https://api.xfoot.site/health", "status": 200},
+    "endpoint_inscription_present": {"url": "OPTIONS https://api.xfoot.site/auth/register", "status": 405, "interpretation": "405 (méthode non gérée pour OPTIONS) confirme que la route existe réellement — même méthode de vérification que les phases précédentes."},
+    "endpoint_authentification_present": {"url": "OPTIONS https://api.xfoot.site/auth/login", "status": 405, "interpretation": "route confirmée existante"},
+    "route_admin_protegee": {"url": "GET https://api.xfoot.site/admin/promoters (sans auth)", "status": 401, "interpretation": "route existe et correctement protégée"},
+    "api_js_hotfix_toujours_actif": {
+      "verification": "GET https://www.xfoot.site/api.js contient toujours applyRoleBasedNav/captureReferralFromUrl",
+      "resultat": "confirmé présent — le hotfix CDN vérifié en Phase 14.9R.2 reste stable, login.html/dashboard.html/promoter.html/admin-*.html restent fonctionnels côté client"
+    },
+    "aucune_ecriture_effectuee": true
+  },
+
+  "2_etat_git": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true,
+    "git_status_relevant": [" M api/app/ai/readiness/gates.py (Phase 13, étranger)", " M reports/shadow/watch/evidence_snapshots.json (log généré, étranger)"],
+    "aucune_modification_par_cette_phase": true
+  },
+
+  "3_comptes_de_test": {
+    "emails_propose_en_phase_14_10r": {
+      "admin": "xfoot.qa.admin+phase14@gmail.com",
+      "promoteur": "xfoot.qa.promoter+phase14@gmail.com"
+    },
+    "statut": "PROPOSITIONS UNIQUEMENT — jamais confirmées ni fournies explicitement par l'humain à ce jour.",
+    "action_requise": "Avant toute création réelle (Phase 14.11 ou ultérieure), l'humain doit soit confirmer ces deux adresses, soit en fournir deux autres dédiées aux tests — jamais une adresse personnelle réelle si évitable.",
+    "aucune_adresse_reelle_inventee": true,
+    "mots_de_passe": "Jamais demandés, jamais affichés — à définir par l'humain au moment de l'inscription réelle."
+  },
+
+  "4_procedure_admin": {
+    "etapes": [
+      "1. Créer le compte utilisateur Admin via https://www.xfoot.site/login.html (inscription standard, aucun champ de rôle n'existe dans ce formulaire).",
+      "2. Sur le dashboard Railway (projet luminous-adventure, service SaaS-PariFoot) -> Variables d'environnement -> ADMIN_EMAILS.",
+      "3. Ajouter l'email du compte Admin de test à la liste existante (format CSV, ex. 'admin_existant@example.com,xfoot.qa.admin+phase14@gmail.com') — JAMAIS remplacer/écraser la valeur, toujours ÉTENDRE.",
+      "4. La modification prend effet immédiatement (relue à chaque requête, aucun redéploiement requis).",
+      "5. Se connecter avec ce compte sur login.html.",
+      "6. Vérifier l'accès Admin : GET /admin/promoters doit renvoyer 200 (au lieu de 401/403)."
+    ],
+    "variable_env": "ADMIN_EMAILS",
+    "format_attendu": "CSV, comparaison insensible à la casse, espaces autour des virgules tolérés (.strip() appliqué côté code)",
+    "risque_ecrasement": "CRITIQUE — si ADMIN_EMAILS est redéfini au lieu d'étendu, tout admin déjà autorisé (le cas échéant) perdrait immédiatement son accès. Toujours lire la valeur actuelle avant modification et l'étendre, jamais la remplacer.",
+    "conservation_admins_existants": "Obligatoire — aucune valeur existante ne doit être supprimée par cette opération.",
+    "execute_maintenant": false
+  },
+
+  "5_procedure_promoteur": {
+    "etapes": [
+      "1. Créer le compte utilisateur Promoteur via login.html (inscription standard, distinct du compte Admin).",
+      "2. Se connecter avec le compte Admin de test (déjà provisionné selon §4).",
+      "3. Ouvrir https://www.xfoot.site/admin-promoters.html.",
+      "4. Récupérer le user_id du compte Promoteur de test (visible via la fiche Abonnés/admin-subscribers.html, ou GET /admin/subscribers).",
+      "5. Utiliser le formulaire 'Créer un promoteur' (user_id + slug optionnel).",
+      "6. Vérifier le slug généré/attribué (unique, format URL-safe).",
+      "7. Vérifier commission_rate_percent = 40.0 dans la réponse (PromoterAdminRow.commission_rate_percent, calculé depuis commission_rate_bp/100).",
+      "8. Vérifier le statut initial = ACTIVE.",
+      "9. Se connecter avec le compte Promoteur de test, ouvrir promoter.html, vérifier l'affichage du dashboard."
+    ],
+    "execute_maintenant": false
+  },
+
+  "6_securite": {
+    "utilisateur_normal_ne_peut_pas_devenir_admin": {"verifie": true, "preuve": "UserCreate (schéma d'inscription) n'expose aucun champ de rôle ; ADMIN_EMAILS est une variable serveur, inaccessible via l'API."},
+    "utilisateur_normal_ne_peut_pas_creer_un_promoteur": {"verifie": true, "preuve": "POST /admin/promoters protégé par require_admin — testé réellement : GET /admin/promoters sans token -> 401 (§1) ; par construction, le POST est protégé par la même dépendance."},
+    "promoter_id_non_imposable_par_client": {"verifie": true, "preuve": "get_current_promoter dérive systématiquement depuis current_user (JWT) — aucune route promoteur n'accepte de promoter_id en paramètre, confirmé par lecture de code et testé exhaustivement en isolé (Phase 14/14.1)."},
+    "routes_admin_protegees": {"verifie": true, "preuve": "GET /admin/promoters sans token -> 401, reconfirmé réellement à l'instant (§1)."},
+    "routes_promoteur_protegees": {"verifie": true, "preuve": "Déjà reconfirmé réellement en Phase 14.9/14.10 (GET /promoter/me* sans token -> 401), non re-testé cette phase pour éviter une redondance inutile."},
+    "desactivation_reversible": {"verifie": true, "mecanisme": "POST /admin/promoters/{id}/status -> INACTIVE/SUSPENDED, journalisé, aucune modification de l'historique déjà écrit."},
+    "aucune_suppression_destructive_historique": {"verifie": true, "preuve": "Aucun endpoint DELETE n'existe pour Promoter/ReferralCommission (recherche exhaustive, déjà confirmée Phase 14.10R) — choix de conception intentionnel."},
+    "aucune_tentative_exploit_destructif": true,
+    "verdict_securite": "PASS"
+  },
+
+  "7_plan_de_nettoyage": {
+    "mecanisme_disponible": "Désactivation UNIQUEMENT — POST /admin/promoters/{id}/status avec {\"status\": \"INACTIVE\"} après les tests.",
+    "consequence": "Bloque toute future commission pour ce promoteur de test ; son historique (s'il en existe un, ce qui n'est pas prévu ici puisqu'aucun paiement réel n'est envisagé) reste intact et consultable.",
+    "compte_admin_test": "Retirer son email de ADMIN_EMAILS sur Railway (extension inverse de l'étape §4.3) — action humaine, immédiate.",
+    "compte_utilisateur_de_base": "Aucun mécanisme de suppression de compte User n'a été recherché/n'est nécessaire pour cette phase — les comptes de test peuvent rester inactifs indéfiniment sans risque, is_active reste true par défaut mais n'accorde aucun privilège en soi.",
+    "aucune_api_de_suppression_inventee": true,
+    "donnees_financieres_jamais_supprimees": true
+  },
+
+  "8_plan_phase_14_11": {
+    "ADMIN": ["login", "GET /admin/promoters (dashboard)", "GET /admin/subscribers", "GET /admin/earnings/totals + /admin/earnings/by-promoter"],
+    "PROMOTEUR": ["login", "GET /promoter/me", "dashboard (promoter.html)", "referral link (https://www.xfoot.site/{slug})", "GET /promoter/me/stats (conversions/revenus/commissions)", "GET /promoter/me/sales (ventes)"],
+    "SECURITE": ["non-authentifié -> 401/403 (déjà reconfirmé)", "Promoteur -> endpoints Admin -> 401/403 attendu (testable uniquement une fois le compte Promoteur créé)", "promoter_id arbitraire -> refus (déjà prouvé par lecture de code, re-testable en conditions réelles)", "isolation Promoteur A/B -> nécessite un DEUXIÈME compte promoteur, hors périmètre du provisioning minimal proposé ici"],
+    "PAIEMENT": {"prevu": false, "chariow_appele": false},
+    "prerequis_pour_lancer_phase_14_11": "Confirmation humaine que les 2 comptes (§3-§5) ont été créés et que ADMIN_EMAILS a été étendu (jamais remplacé)."
+  },
+
+  "9_verification_ia": {
+    "git_diff_app_ai_references": 0,
+    "tables_ia_modifiees": false,
+    "signal_pari_genere": false,
+    "kill_switch_modifie": false,
+    "readiness_modifie": false,
+    "local_db_counts": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9}
+  },
+
+  "10_limitations": [
+    "Les 2 adresses email de test restent des PROPOSITIONS non confirmées par l'humain — aucune création ne devrait avoir lieu tant qu'elles ne sont pas validées ou remplacées.",
+    "ADMIN_EMAILS production reste UNKNOWN (contenu actuel non consulté, par prudence — voir §4 sur le risque d'écrasement).",
+    "Isolation Promoteur A/B non planifiable avec un seul compte de test proposé — nécessiterait un second provisioning si souhaité.",
+    "Aucun test réel de connexion effectué cette phase (aucun compte n'existe encore)."
+  ],
+
+  "11_verdict_final": {
+    "value": "PROVISIONING_PLAN_READY",
+    "rationale": "Tous les prérequis techniques sont vérifiés fonctionnels en lecture seule (frontend/backend accessibles, endpoints d'inscription/authentification confirmés existants, routes admin correctement protégées, hotfix api.js toujours stable). Les procédures Admin et Promoteur sont documentées étape par étape, sans ambiguïté. Les protections de sécurité sont reconfirmées PASS. Le plan de nettoyage est honnête (désactivation uniquement, jamais de suppression inventée). Le plan Phase 14.11 est prêt à être exécuté dès que les comptes existeront. Aucune écriture production n'a été effectuée."
+  },
+
+  "resume_fin_de_phase": {
+    "ADMIN_PROVISIONING": "READY (plan)",
+    "PROMOTER_PROVISIONING": "READY (plan)",
+    "ADMIN_EMAILS_CONFIGURATION": "READY (procédure documentée, extension jamais remplacement)",
+    "PROMOTER_CREATION_MECHANISM": "READY (POST /admin/promoters, admin requis)",
+    "SECURITY": "PASS",
+    "CLEANUP_PLAN": "READY (désactivation réversible uniquement, honnêtement documenté)",
+    "PHASE_14_11_PLAN": "READY",
+    "DATABASE_WRITE": "NO",
+    "PAYMENT": "NO",
+    "CHARIOW": "NO",
+    "AI_MODIFIED": "NO",
+    "GIT_COMMIT": "NO",
+    "GIT_PUSH": "NO",
+    "VERDICT": "PROVISIONING_PLAN_READY",
+    "HUMAN_ACTION_REQUIRED": [
+      "1. Confirmer ou fournir les 2 adresses email de test (Admin + Promoteur) — voir propositions §3.",
+      "2. S'inscrire avec ces 2 adresses sur https://www.xfoot.site/login.html.",
+      "3. Sur Railway, ÉTENDRE (jamais remplacer) ADMIN_EMAILS avec l'email de test Admin.",
+      "4. Se connecter en Admin, créer le Promoteur via admin-promoters.html en utilisant le user_id du compte de test Promoteur.",
+      "5. Revenir vers l'agent avec confirmation — la Phase 14.11 (plan §8) pourra alors être exécutée."
+    ]
+  },
+
+  "closing_statement": "PHASE 14.10R.1 — XFOOT ASSISTED TEST ACCOUNT PROVISIONING TERMINÉE. TOUS LES PRÉREQUIS TECHNIQUES SONT VÉRIFIÉS EN LECTURE SEULE, LES PROCÉDURES ADMIN ET PROMOTEUR SONT DOCUMENTÉES PAS À PAS, LA SÉCURITÉ EST RECONFIRMÉE PASS, ET LE PLAN DE LA PHASE 14.11 EST PRÊT. AUCUN COMPTE CRÉÉ. AUCUNE MODIFICATION DE ADMIN_EMAILS. AUCUN PROMOTEUR CRÉÉ. AUCUNE ÉCRITURE PRODUCTION. AUCUN PAIEMENT. AUCUNE MODIFICATION DU MOTEUR IA. STOP AVANT ÉCRITURE, COMME DEMANDÉ."
+}

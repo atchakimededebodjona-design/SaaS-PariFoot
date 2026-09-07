@@ -1,0 +1,100 @@
+{
+  "phase": "15.7.6 — CORRECTION REFERRAL : FALLBACK PATHNAME SUR SLUG DE RÉÉCRITURE INTERNE",
+  "timestamp": "2026-09-03T00:30:00Z",
+
+  "cause_racine_issue_phase_15_7_5": "captureReferralFromUrl() (frontend-design/api.js) lisait EXCLUSIVEMENT window.location.search. La réécriture .htaccess qui sert /promoter-2 est INTERNE (RewriteRule ... [L,QSA], sans [R]) — jamais de redirection HTTP envoyée au navigateur (confirmé par curl : 200 direct, zéro header Location). Conséquence : window.location.search reste TOUJOURS VIDE pour un visiteur arrivant via /promoter-2 ; seul window.location.pathname porte réellement le slug, jamais lu par le code. Preuve exécutée (script Node.js chargeant le vrai api.js) : 0 appel fetch, localStorage jamais rempli dans ce scénario, avant ce correctif.",
+
+  "fichiers_modifies": ["frontend-design/api.js"],
+  "fichiers_ajoutes": ["frontend-design/test_referral_capture.js"],
+  "fichiers_backend_touches": [],
+  "fichier_htaccess_touche": false,
+
+  "fonctions_concernees": {
+    "nouvelle_fonction": "_slugCandidateFromPathname() (api.js, ~ligne 138) — extrait un candidat de slug depuis window.location.pathname, en réutilisant EXACTEMENT le même format de caractères que app/referral/slug.py::_SLUG_RE et la RewriteRule .htaccess (^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$) — un seul segment, strictement minuscules, aucun point ni slash.",
+    "fonction_modifiee": "captureReferralFromUrl() (api.js, ~ligne 152) — priorité 1 conservée au query param ?ref= (comportement historique inchangé), priorité 2 (nouveau) : repli sur _slugCandidateFromPathname() UNIQUEMENT si le query param est absent.",
+    "fonctions_backend_touchees": "AUCUNE — POST /referral/attribute, POST /referral/resolve, create_commission_for_confirmed_payment, la formule 40% de commission : tous strictement inchangés."
+  },
+
+  "logique_avant_apres": {
+    "avant": "const params = new URLSearchParams(window.location.search); const slug = (params.get('ref') || '').trim().toLowerCase(); if (!slug) return;",
+    "apres": "const params = new URLSearchParams(window.location.search); const fromQuery = (params.get('ref') || '').trim().toLowerCase(); const slug = fromQuery || _slugCandidateFromPathname(); if (!slug) return;",
+    "principe": "Le backend (POST /referral/resolve/{slug}) reste l'UNIQUE source de vérité sur l'existence/le statut d'un promoteur — le filtrage client-side (regex de format) n'est qu'une optimisation évitant des appels réseau inutiles pour des pathnames manifestement invalides (fichiers .html, chemins multi-segments, casse incorrecte), jamais une validation de sécurité en soi."
+  },
+
+  "contraintes_absolues_respectees": {
+    "htaccess_modifie": false,
+    "railway_modifie": false,
+    "db_modifiee": false,
+    "backend_modifie": false,
+    "prix_modifies": false,
+    "chariow_touche": false,
+    "paiement_effectue": false,
+    "nouveau_compte_cree": false,
+    "tables_ai_touchees": false,
+    "commission_40pct_modifiee": false,
+    "contrat_referral_attribute_modifie": false,
+    "commit_effectue": false,
+    "push_effectue": false
+  },
+
+  "tests_executes": {
+    "nouveau_test_frontend": {
+      "fichier": "frontend-design/test_referral_capture.js",
+      "methode": "Charge le VRAI fichier api.js (lecture réelle, jamais dupliqué) dans un environnement window/localStorage/fetch simulé — même technique que la preuve exécutée de la Phase 15.7.5, désormais formalisée en suite reproductible.",
+      "resultat": "17/17 tests réussis"
+    },
+    "suite_backend_complete": {"TOTAL": 66, "PASSED": 66, "FAILED": 0},
+    "suite_referral_ciblee_reconfirmee": {
+      "test_referral_promoter_platform.py": "99/99 assertions (idempotence, self-referral, isolation, slug réservé, etc. — TEST H couvert ici)",
+      "test_phase15_7_referral_attribution_repro.py": "24/24 (mécanisme serveur de bout en bout, format timestamp réel)"
+    }
+  },
+
+  "tests_non_regression_detail": {
+    "A_query_parameter_historique": {"scenario": "/login.html?ref=promoter-2", "attendu": "referral détecté", "resultat": "PASS — slug='promoter-2', 1 appel resolve"},
+    "B_url_propre": {"scenario": "/promoter-2 (pathname seul, search vide)", "attendu": "referral détecté", "resultat": "PASS — slug='promoter-2' via repli pathname, 1 appel resolve"},
+    "C_url_normale": {"scenario": "/login.html (aucun query, aucun slug exploitable)", "attendu": "aucun referral", "resultat": "PASS — aucun slug, 0 appel (point dans 'login.html' exclu par le regex)"},
+    "D_slash_final": {"scenario": "/promoter-2/", "attendu": "jamais considéré comme slug valide", "resultat": "PASS — aucun slug, 0 appel (segment contient '/')"},
+    "E_majuscule": {"scenario": "/Promoter-2", "attendu": "jamais considéré comme slug valide", "resultat": "PASS — aucun slug, 0 appel (regex strictement minuscules)"},
+    "F_page_systeme": {"scenario": "/billing.html", "attendu": "aucun referral", "resultat": "PASS — aucun slug, 0 appel"},
+    "G_slug_inexistant": {"scenario": "/slug-inexistant", "attendu": "candidat préparé, backend rejette proprement, aucun faux promoteur", "resultat": "PASS — 1 appel resolve émis (comportement attendu §4), mais AUCUNE valeur persistée (backend simulé répond valid=false)"},
+    "H_idempotence": {"scenario": "réutilisation des tests backend existants (jamais dupliqué)", "attendu": "un même événement/utilisateur ne produit jamais deux attributions", "resultat": "PASS — déjà couvert et vert dans test_referral_promoter_platform.py (§9 UniqueConstraint converted_user_id) ET test_phase15_7_referral_attribution_repro.py (TEST 6), non affecté par ce correctif purement frontend"},
+    "priorite_query_sur_pathname": {"scenario": "query=?ref=promoter-2 avec pathname délibérément invalide", "attendu": "le query gagne toujours, pathname jamais consulté", "resultat": "PASS"},
+    "regression_cas_reel_15_7_5": {"scenario": "exactement le scénario qui échouait avant ce correctif (/promoter-2, search vide)", "attendu": "slug désormais capturé (alors qu'avant : null)", "resultat": "PASS — confirme la correction du bug exact identifié en Phase 15.7.5"}
+  },
+
+  "ai_table_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "cas_user_241": {
+    "modifie": false,
+    "attribution_recreee_manuellement": false,
+    "precision": "moimeme@test.com (user_id=241) reste tel quel, aucune ReferralAttribution fabriquée pour lui. La validation du correctif repose exclusivement sur les tests A-H et sur la reconfirmation explicite du scénario exact de la Phase 15.7.5 (voir 'regression_cas_reel_15_7_5' ci-dessus) — jamais sur une manipulation de son compte."
+  },
+
+  "phase_15_7_verification_intacte": {
+    "ordre_captureReferralFromUrl_avant_getToken": "TOUJOURS PRÉSENT dans login.html (non touché par cette phase) — les deux protections cumulent désormais : (1) capture exécutée avant tout test de session (Phase 15.7), (2) capture désormais capable de lire le slug depuis pathname en repli (Phase 15.7.6)."
+  },
+
+  "git_status": {
+    "HEAD": "dbf2124ad5740d1dcecff6654d185f574910b22c (inchangé)",
+    "fichiers_modifies_non_committes": ["frontend-design/api.js"],
+    "fichiers_ajoutes_non_committes": ["frontend-design/test_referral_capture.js"],
+    "fichiers_etrangers_pre_existants_inchanges": ["api/app/ai/readiness/gates.py"],
+    "commit": false,
+    "push": false,
+    "aucun_git_add_effectue": true
+  },
+
+  "deploiement": "AUCUN — cette phase s'arrête après validation locale, conformément à l'instruction explicite. Le déploiement (commit/push/upload Hostinger) fera l'objet d'une phase séparée après validation humaine.",
+
+  "verdict": {
+    "value": "REFERRAL_PATHNAME_FIX_IMPLEMENTED_TESTS_PASS",
+    "rationale": "Le repli pathname est implémenté de façon minimale et ciblée (1 seule fonction ajoutée, 1 fonction existante légèrement étendue, 0 ligne backend touchée, 0 changement de contrat /referral/attribute). Les 8 scénarios de non-régression demandés (A-H) passent tous, plus 2 tests supplémentaires (priorité query>pathname, reproduction exacte du cas réel Phase 15.7.5). 17/17 nouveau test frontend, 66/66 régression backend, 99/99 + 24/24 suites referral déjà existantes reconfirmées vertes. 6 tables IA strictement inchangées. Aucun paiement, aucune modification DB/Railway/Chariow/.htaccess, aucun compte créé, aucun commit/push. Cette validation reste STRICTEMENT LOCALE — non déployée, donc sans aucun effet en production tant qu'une phase de déploiement séparée n'est pas explicitement autorisée."
+  },
+
+  "closing_statement": "PHASE 15.7.6 — CORRECTIF FALLBACK PATHNAME IMPLÉMENTÉ ET VALIDÉ LOCALEMENT. captureReferralFromUrl() (frontend-design/api.js) LIT DÉSORMAIS window.location.pathname EN REPLI QUAND AUCUN ?ref= N'EST PRÉSENT DANS window.location.search — CORRIGEANT EXACTEMENT LA CAUSE RACINE DÉMONTRÉE EN PHASE 15.7.5. FORMAT DE SLUG RÉUTILISÉ À L'IDENTIQUE DE app/referral/slug.py::_SLUG_RE ET DE LA REWRITERULE .htaccess (JAMAIS UNE SECONDE DÉFINITION). LE BACKEND RESTE L'UNIQUE SOURCE DE VÉRITÉ SUR L'ATTRIBUTION (AUCUN CHANGEMENT DE CONTRAT /referral/attribute). 17/17 NOUVEAU TEST FRONTEND (SCÉNARIOS A-H + PRIORITÉ + REPRODUCTION EXACTE DU BUG 15.7.5), 66/66 RÉGRESSION BACKEND, 6 TABLES IA INCHANGÉES. AUCUNE MODIFICATION DE .htaccess/RAILWAY/DB/PRIX/CHARIOW. AUCUN PAIEMENT, AUCUN COMPTE CRÉÉ, LE COMPTE 241 RESTE INTACT SANS ATTRIBUTION FABRIQUÉE. AUCUN COMMIT, AUCUN PUSH, AUCUN DÉPLOIEMENT — VALIDATION STRICTEMENT LOCALE. VERDICT : REFERRAL_PATHNAME_FIX_IMPLEMENTED_TESTS_PASS — EN ATTENTE D'AUTORISATION HUMAINE SÉPARÉE POUR LE DÉPLOIEMENT."
+}

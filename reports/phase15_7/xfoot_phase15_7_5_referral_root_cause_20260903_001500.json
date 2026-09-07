@@ -1,0 +1,132 @@
+{
+  "phase": "15.7.5 — DIAGNOSTIC RACINE DE L'ATTRIBUTION REFERRAL APRÈS ÉCHEC NAVIGATEUR",
+  "timestamp": "2026-09-03T00:15:00Z",
+
+  "compte_diagnostique": {"user_id": 241, "email": "moimeme@test.com", "promoteur_affiche_admin": "—", "statut_paiement": "NONE"},
+  "promoteur_attendu": {"slug": "promoter-2", "user_id": 206},
+
+  "cause_racine_demontree": {
+    "resume": "captureReferralFromUrl() (frontend-design/api.js) lit EXCLUSIVEMENT window.location.search pour extraire le paramètre 'ref'. Or la réécriture .htaccess qui sert /promoter-2 est INTERNE (RewriteRule ... [L,QSA], SANS le flag [R]) — c'est-à-dire qu'AUCUNE redirection HTTP n'est jamais envoyée au navigateur (confirmé par curl : HTTP 200 direct, ZÉRO header Location). Le fichier .htaccess documente lui-même explicitement cette intention dans son propre commentaire : 'jamais une redirection visible (302/301), le visiteur voit toujours https://www.xfoot.site/{slug} dans sa barre d'adresse.' CONSÉQUENCE DIRECTE : window.location.search du navigateur reste TOUJOURS VIDE pour un visiteur arrivant via /promoter-2 — le ?ref=promoter-2 ajouté par la règle de réécriture n'est QUE server-side, jamais transmis au client. SEUL window.location.pathname contient réellement '/promoter-2', mais AUCUNE ligne de code de captureReferralFromUrl() ne lit jamais pathname.",
+    "preuve_executee": {
+      "methode": "Script Node.js chargeant le VRAI fichier frontend-design/api.js (non modifié, code source réel), exécuté dans un environnement window/localStorage/fetch simulé reproduisant EXACTEMENT ce que curl a prouvé (aucune redirection HTTP -> pathname='/promoter-2', search='').",
+      "resultat_scenario_reel": {
+        "window_location_pathname": "/promoter-2",
+        "window_location_search": "",
+        "appels_fetch_declenches_par_captureReferralFromUrl": 0,
+        "localStorage_xfoot_referral_slug_apres_capture": null,
+        "conclusion": "captureReferralFromUrl() s'exécute, atteint la ligne 'const slug = (params.get(\"ref\") || \"\").trim().toLowerCase();', trouve une chaîne vide, et retourne IMMÉDIATEMENT à la ligne 'if (!slug) return;' (api.js:132) — AUCUN appel réseau, AUCUNE écriture localStorage."
+      },
+      "resultat_scenario_controle_hypothetique": {
+        "description": "Si une redirection EXTERNE (302) existait à la place d'une réécriture interne, le navigateur naviguerait réellement vers /login.html?ref=promoter-2",
+        "window_location_pathname": "/login.html",
+        "window_location_search": "?ref=promoter-2",
+        "appels_fetch_declenches": 1,
+        "url_appelee": "https://api.xfoot.site/referral/resolve/promoter-2",
+        "localStorage_xfoot_referral_slug_apres_capture": "promoter-2",
+        "conclusion": "Dans CE scénario hypothétique (non celui de la production actuelle), le mécanisme fonctionnerait parfaitement — ce qui confirme que le code de capture lui-même est fonctionnellement correct, seule la SOURCE de la valeur lue (search au lieu de pathname) est en cause."
+      },
+      "reproductibilite": "100% déterministe — ce comportement se produit pour TOUT visiteur, dans TOUT navigateur, dans TOUTE fenêtre (privée ou non), indépendamment de tout état de session/token résiduel. Ceci explique intégralement et simultanément les 4 échecs réels observés (user_id 236, 238, 239, 241), y compris le dernier (241), créé APRÈS le déploiement du correctif Phase 15.7 (dbf2124) qui, lui, corrigeait un problème réel mais secondaire (bypass par token résiduel) — insuffisant car même sans ce bypass, la capture ne pouvait de toute façon jamais réussir."
+    }
+  },
+
+  "1_audit_chaine_frontend": {
+    "A_arrivee_sur_promoter_2": "Réécriture .htaccess interne (frontend-design/.htaccess:28) — RewriteRule ^([a-z0-9][a-z0-9-]{0,38}[a-z0-9]|[a-z0-9])$ /login.html?ref=$1 [L,QSA] — SANS [R], donc AUCUNE redirection HTTP émise (confirmé HTTP 200 direct via curl, ré-vérifié cette phase).",
+    "B_execution_captureReferralFromUrl": "S'exécute bien (appelée inconditionnellement depuis le correctif Phase 15.7, login.html:85) — mais retourne immédiatement, slug vide.",
+    "C_valeur_extraite_du_pathname": "JAMAIS EXTRAITE — aucune ligne de code ne lit window.location.pathname dans tout frontend-design/ (recherche exhaustive confirmée en Phase 15.7.4, re-confirmée ici).",
+    "D_valeur_stockee_localStorage": "AUCUNE — jamais atteinte, preuve exécutée ci-dessus (localStorage reste null).",
+    "E_cle_localStorage": "REFERRAL_SLUG_KEY = 'xfoot_referral_slug' (api.js:104) — jamais écrite dans ce scénario.",
+    "F_moment_appel_attributeReferralIfPresent": "login.html:190, awaited après register()+login(), AVANT la redirection vers dashboard.html — CORRECTEMENT positionné (correctif Phase 15.7 intact et fonctionnel pour CE point précis), mais s'exécute sur un localStorage vide.",
+    "G_url_exacte_du_post": "POST https://api.xfoot.site/referral/attribute — JAMAIS APPELÉE dans ce scénario, car attributeReferralIfPresent() vérifie 'const slug = window.localStorage.getItem(REFERRAL_SLUG_KEY); if (!slug) return;' (api.js:155-156) et retourne immédiatement.",
+    "H_payload_exact": "NON APPLICABLE — aucun payload jamais construit.",
+    "I_headers_envoyes": "NON APPLICABLE.",
+    "J_reponse_http_recue": "NON APPLICABLE — aucune requête émise.",
+    "K_moment_suppression_localStorage": "NON APPLICABLE dans ce scénario (rien à supprimer) — mais pour mémoire, le nettoyage normal se fait dans le bloc finally d'attributeReferralIfPresent() (api.js:166-169), qui s'exécute même si slug était vide (no-op, removeItem sur des clés déjà absentes)."
+  },
+
+  "2_parcours_reellement_suivi_par_241": {
+    "determination": "login.html reste le SEUL fichier HTML avec un formulaire d'inscription/connexion dans tout le dépôt (confirmé par recherche exhaustive de fichiers .html en Phase 15.7.4) — aucun autre parcours d'inscription n'existe. Le compte 241 a donc nécessairement été créé via login.html (register() puis login(), lignes 157-167 + 143-155), qui appelle bien attributeReferralIfPresent() (ligne 190) dans le bon ordre par rapport à inscription/connexion/token/redirection — CE N'EST PAS ce maillon qui est en cause (H8 écartée avec certitude).",
+    "conclusion": "Le parcours suivi est celui attendu et correctement câblé côté login.html — le problème se situe entièrement EN AMONT, dans l'incapacité de captureReferralFromUrl() à obtenir le slug depuis l'URL réellement vue par le navigateur."
+  },
+
+  "3_contrat_backend_post_referral_attribute": {
+    "fichier": "api/app/referral/router.py:100-138",
+    "payload_attendu": "{slug: string, captured_at?: ISO datetime, visitor_id?: string}",
+    "authentification": "Requise (Depends(get_current_user), Bearer token)",
+    "validation_slug": "SELECT Promoter WHERE slug == body.slug.lower() ; doit exister ET status=='ACTIVE'",
+    "creation_attribution": "INSERT ReferralAttribution si toutes conditions passent (pas déjà attribué, pas self-referral, dans la fenêtre 30j)",
+    "comportement_si_deja_existante": "No-op silencieux, attributed:false, reason='ALREADY_ATTRIBUTED' (contrainte UNIQUE sur converted_user_id)",
+    "reponse_succes": "200 {attributed: true}",
+    "reponse_echec": "200 {attributed: false, reason: '...'} — JAMAIS une erreur 4xx/5xx pour un refus métier normal",
+    "verification": "Ce contrat a déjà été testé exhaustivement et prouvé correct en Phase 15.7 (24/24 tests, y compris reproduction fidèle du format réel du navigateur) — le backend N'EST PAS la cause, il n'est simplement JAMAIS APPELÉ dans le scénario réel de production."
+  },
+
+  "4_verification_db_user_241": {
+    "acces_disponible": false,
+    "resultat": "NOT_VERIFIABLE — aucun accès DB/admin cette session, comme dans toutes les phases précédentes. NON NÉCESSAIRE pour la conclusion : la cause racine démontrée ci-dessus (§ cause_racine_demontree) est UNIVERSELLE et déterministe — elle s'applique à TOUT compte créé via /promoter-2, indépendamment de son identité. Elle explique donc le cas 241 avec certitude, sans qu'une lecture DB directe soit requise."
+  },
+
+  "5_logs_network_navigateur": "NON REPRODUCTIBLE PAR CET ASSISTANT (aucun outil de navigateur) — remplacé par la preuve exécutée Node.js ci-dessus, qui teste directement et fidèlement le MÊME contrat (le vrai fichier api.js face aux mêmes valeurs location.search/pathname que la production), sans nécessiter de navigateur réel ni de nouveau compte.",
+
+  "6_verification_localStorage": {
+    "cle_utilisee_par_capture": "xfoot_referral_slug (REFERRAL_SLUG_KEY, api.js:104)",
+    "cle_utilisee_par_attribution": "xfoot_referral_slug (IDENTIQUE — api.js:155)",
+    "coherence_des_cles": true,
+    "conclusion": "Aucune divergence de nom de clé, aucune suppression prématurée, aucun appel au mauvais moment — le SEUL problème est que la clé n'est JAMAIS ÉCRITE en premier lieu dans le scénario réel de production."
+  },
+
+  "7_verification_temporelle": {
+    "etape_1_arrivee_promoter_2": "OK — réécriture .htaccess sert login.html, HTTP 200",
+    "etape_2_referral_capture": "❌ RUPTURE ICI — slug jamais extrait de location.search (vide), capture jamais effectuée",
+    "etape_3_a_8_inscription_token_attribution_redirection": "Toutes fonctionnellement correctes EN ELLES-MÊMES mais sans effet sur l'attribution, puisque localStorage ne contient jamais de slug à transmettre"
+  },
+
+  "8_hypotheses_testees": {
+    "H1_captureReferralFromUrl_ne_sexecute_pas": {"verdict": "PARTIELLEMENT VRAIE DANS SON EFFET, FAUSSE DANS SA CAUSE LITTÉRALE — la fonction s'exécute bien (prouvé), mais retourne immédiatement faute de slug dans location.search"},
+    "H2_capture_ok_mais_localStorage_non_conserve": {"verdict": "FAUX — la capture n'a jamais lieu, rien à conserver"},
+    "H3_localStorage_ok_mais_attribute_jamais_appelee": {"verdict": "FAUX — attributeReferralIfPresent() EST appelée (correctement positionnée), mais trouve localStorage vide et retourne sans rien envoyer"},
+    "H4_payload_incorrect": {"verdict": "NON APPLICABLE — aucun payload jamais construit"},
+    "H5_post_referral_attribute_echoue": {"verdict": "NON APPLICABLE — cette requête n'est JAMAIS émise dans le scénario réel"},
+    "H6_post_reussit_mais_backend_refuse": {"verdict": "NON APPLICABLE"},
+    "H7_backend_cree_mais_admin_naffiche_pas": {"verdict": "ÉCARTÉE — déjà prouvée fausse en Phase 15.7 (test backend 24/24, Admin affiche correctement promoter_slug quand l'attribution existe réellement)"},
+    "H8_parcours_different": {"verdict": "ÉCARTÉE — login.html est le seul point d'entrée d'inscription, séquence register->login->attributeReferralIfPresent confirmée correcte"},
+    "H9_NOUVELLE_source_du_slug_incorrecte_reecriture_interne_vs_search": {"verdict": "CONFIRMÉE AVEC PREUVE EXÉCUTÉE — cause racine réelle, voir section dédiée ci-dessus. Non anticipée dans la liste H1-H8 initiale, découverte par audit du contrat .htaccess<->JS."}
+  },
+
+  "9_verification_admin_display": {
+    "confirmation": "PROMOTEUR='—' correspond bien à l'ABSENCE RÉELLE de ReferralAttribution, PAS à un problème d'affichage — re-confirmé par le code (api/app/referral/admin_router.py:159-181, déjà audité Phase 15.6-R2) ET par le test de reproduction Phase 15.7 (TEST 2/24 : quand une attribution existe réellement, Admin affiche correctement promoter_slug='promoter-2'). REFERRAL_ADMIN_DISPLAY_BUG est donc ÉCARTÉ avec certitude."
+  },
+
+  "10_tests": {
+    "tests_backend_existants_reutilises": "test_referral_promoter_platform.py et test_phase15_7_referral_attribution_repro.py déjà exécutés en Phase 15.7 (99/99 + 24/24) — RECONFIRMENT que le mécanisme SERVEUR est intact et correct ; ils ne pouvaient PAS révéler cette cause racine par construction (un test Python/TestClient n'a pas de window.location, il appelle toujours directement le bon endpoint avec le bon slug en paramètre de chemin — il sidère complètement l'étape de capture navigateur).",
+    "nouveau_script_de_preuve": {
+      "nature": "Script Node.js de DIAGNOSTIC UNIQUEMENT, écrit dans le répertoire scratchpad de session (JAMAIS ajouté au dépôt, JAMAIS committé, conformément à 'diagnostic uniquement, ne rien modifier')",
+      "objectif": "Charger le VRAI fichier frontend-design/api.js (lecture seule, fichier non modifié) et exécuter réellement captureReferralFromUrl() face à des objets window/location/fetch simulés reproduisant fidèlement le contrat prouvé par curl (aucune redirection HTTP)",
+      "resultat": "0 appel fetch, localStorage jamais rempli — preuve exécutée et déterministe, reproductible à volonté sans aucun risque (aucun réseau réel, aucune donnée modifiée)"
+    },
+    "aucune_modification_de_code_pour_faire_passer_un_test": true
+  },
+
+  "aucune_action_effectuee": {
+    "code_modifie": false,
+    "htaccess_modifie": false,
+    "railway_modifie": false,
+    "db_modifiee": false,
+    "compte_cree": false,
+    "paiement_effectue": false,
+    "commit": false,
+    "push": false
+  },
+
+  "pistes_de_correction_pour_phase_future_NON_IMPLEMENTEES": [
+    "Option A (recommandée) : faire lire à captureReferralFromUrl() le slug depuis window.location.pathname en repli si location.search ne porte pas de 'ref' — cohérent avec l'intention documentée du projet de garder l'URL propre dans la barre d'adresse (pas de redirection externe), tout en corrigeant la lecture côté client pour qu'elle corresponde à la réalité d'une réécriture interne.",
+    "Option B (déconseillée) : transformer la réécriture .htaccess en redirection externe (ajout du flag [R=302]) — fonctionnerait mais romprait explicitement l'objectif documenté du fichier lui-même ('le visiteur voit toujours https://www.xfoot.site/{slug} dans sa barre d'adresse'), dégraderait l'expérience utilisateur et changerait un comportement déjà en production depuis la Phase 14.",
+    "Dans les deux cas : nécessite un correctif de code + tests + une NOUVELLE validation navigateur réelle (par un humain ou un accès navigateur) avant tout nouveau test de paiement — hors périmètre de cette phase, strictement diagnostique."
+  ],
+
+  "verdict": {
+    "value": "REFERRAL_ROOT_CAUSE_IDENTIFIED",
+    "rationale": "Cause racine démontrée par preuve EXÉCUTÉE (pas seulement déduite) : le fichier source réel frontend-design/api.js, exécuté dans un environnement reproduisant fidèlement (et vérifié par curl) l'absence de toute redirection HTTP sur /promoter-2, ne déclenche JAMAIS ni requête réseau ni écriture localStorage — car captureReferralFromUrl() lit exclusivement window.location.search, qui reste vide pour tout visiteur arrivant via la réécriture .htaccess interne (documentée comme volontairement non-redirigeante). Ce mécanisme est déterministe à 100%, indépendant de tout état de session/navigateur, et explique intégralement les 4 échecs réels observés (236, 238, 239, 241) — y compris le dernier, survenu APRÈS le déploiement du correctif Phase 15.7, qui corrigeait un problème réel mais secondaire et insuffisant à lui seul. Toutes les hypothèses alternatives (backend, affichage admin, mauvais parcours d'inscription, payload incorrect) ont été explicitement testées ou ré-auditées et écartées avec preuve."
+  },
+
+  "closing_statement": "PHASE 15.7.5 — DIAGNOSTIC RACINE REFERRAL : CAUSE RACINE DÉMONTRÉE PAR PREUVE EXÉCUTÉE (SCRIPT NODE.JS CHARGEANT LE VRAI api.js NON MODIFIÉ). captureReferralFromUrl() NE LIT JAMAIS window.location.pathname, UNIQUEMENT window.location.search — QUI RESTE TOUJOURS VIDE POUR TOUT VISITEUR ARRIVANT VIA /promoter-2, CAR LA RÉÉCRITURE .htaccess EST INTERNE (JAMAIS DE REDIRECTION HTTP, CONFIRMÉ PAR curl : AUCUN HEADER Location). CE MÉCANISME EST 100% DÉTERMINISTE ET EXPLIQUE À LUI SEUL LES 4 ÉCHECS RÉELS OBSERVÉS (236, 238, 239, 241). LE CORRECTIF PHASE 15.7 (dbf2124) RESTE VALIDE POUR SON PROBLÈME PROPRE MAIS ÉTAIT INSUFFISANT SEUL. TOUTES LES AUTRES HYPOTHÈSES (BACKEND, AFFICHAGE ADMIN, MAUVAIS PARCOURS) SONT ÉCARTÉES AVEC PREUVE. AUCUNE MODIFICATION DE CODE, .htaccess, RAILWAY, DB EFFECTUÉE. AUCUN COMPTE CRÉÉ, AUCUN PAIEMENT, AUCUN COMMIT, AUCUN PUSH. VERDICT : REFERRAL_ROOT_CAUSE_IDENTIFIED — LA CORRECTION ELLE-MÊME EST VOLONTAIREMENT LAISSÉE À UNE PHASE SÉPARÉE, CONFORMÉMENT À L'INSTRUCTION EXPLICITE DE NE PAS CORRIGER MAINTENANT."
+}

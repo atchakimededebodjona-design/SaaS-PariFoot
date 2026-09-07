@@ -1,0 +1,81 @@
+{
+  "phase": "15.7.4 — DIAGNOSTIC ROUTAGE REFERRAL /promoter-2 APRÈS UPLOAD login.html",
+  "timestamp": "2026-09-03T00:00:00Z",
+
+  "1_verification_http": {
+    "https://www.xfoot.site/promoter-2": {
+      "status_http": 200,
+      "url_finale": "identique (aucune redirection, pas de header Location)",
+      "content_type": "text/html",
+      "taille_octets_corps": 10933,
+      "titre_html": "xFoot - Connexion",
+      "last_modified": "Wed, 02 Sep 2026 23:53:40 GMT",
+      "conclusion": "Sert DIRECTEMENT (sans redirection HTTP) le contenu de login.html — comportement B de la question posée."
+    },
+    "https://www.xfoot.site/promoter-2/ (avec slash final)": {
+      "status_http": 404,
+      "content_type": "text/html",
+      "taille_octets_corps": 4908,
+      "titre_html": "This Page Does Not Exist",
+      "last_modified": "Tue, 22 Apr 2025 07:41:12 GMT (page 404 générique Hostinger, ancienne, sans rapport avec le déploiement récent)",
+      "conclusion": "404 RÉEL — comportement C. Le slash final change le chemin de requête Apache et ne correspond plus à la règle .htaccess (ancrée, sans slash autorisé)."
+    },
+    "https://www.xfoot.site/login.html": {
+      "status_http": 200,
+      "content_type": "text/html",
+      "taille_octets_corps": 10933,
+      "titre_html": "xFoot - Connexion",
+      "last_modified": "Wed, 02 Sep 2026 23:53:40 GMT",
+      "corps_identique_a_promoter_2": true,
+      "conclusion": "Contenu HTML strictement identique (même taille exacte, même Last-Modified) à /promoter-2 sans slash — confirme que .htaccess sert bien EXACTEMENT ce fichier, sans variation."
+    },
+    "variantes_supplementaires_testees": {
+      "https://www.xfoot.site/Promoter-2 (majuscule P)": {"status_http": 404, "explication": "La règle .htaccess n'accepte QUE des minuscules [a-z0-9] — un slug avec une majuscule ne correspond jamais au pattern."},
+      "https://xfoot.site/promoter-2 (sans www)": {"status_http": 200, "conclusion": "Fonctionne identiquement — pas un problème de domaine apex/www."},
+      "User-Agent mobile Safari (iPhone)": {"status_http": 200, "conclusion": "Aucune différence de comportement selon le User-Agent — E écarté."}
+    }
+  },
+
+  "2_routage_frontend_mecanisme_exact": {
+    "fichier": "frontend-design/.htaccess",
+    "regle": "RewriteRule ^([a-z0-9][a-z0-9-]{0,38}[a-z0-9]|[a-z0-9])$ /login.html?ref=$1 [L,QSA]",
+    "conditions_prealables": ["RewriteCond %{REQUEST_FILENAME} !-f (ne réécrit jamais un fichier réel existant)", "RewriteCond %{REQUEST_FILENAME} !-d (ne réécrit jamais un dossier réel existant)"],
+    "portee_exacte_du_pattern": "Chemin d'UN SEUL segment, EXCLUSIVEMENT minuscules [a-z0-9] et tirets internes, longueur 1 à 40 caractères, ANCRÉ (^...$) — n'accepte NI majuscule, NI slash final, NI segments multiples.",
+    "aucune_logique_javascript_location_pathname": "Confirmé par recherche exhaustive (grep 'location.pathname' sur tout frontend-design/) — AUCUN fichier n'utilise location.pathname. Le routage est 100% server-side (.htaccess) ; côté client, captureReferralFromUrl() (api.js) lit UNIQUEMENT le paramètre de requête ?ref= via URLSearchParams(window.location.search), jamais le chemin lui-même."
+  },
+
+  "3_htaccess_local_vs_comportement_observe": {
+    "conclusion": "COMPORTEMENT ENTIÈREMENT COHÉRENT avec la règle .htaccess telle qu'écrite — aucune divergence entre le code local et le comportement observé en production. Le fichier .htaccess N'A PAS été modifié dans le déploiement de la Phase 15.7.2/15.7.3 (seul login.html a été uploadé) — ce n'est donc PAS une régression introduite par ce déploiement, mais une caractéristique PRÉEXISTANTE de la règle de réécriture, documentée dans son propre commentaire ('même alphabet que app/referral/slug.py::_SLUG_RE côté backend')."
+  },
+
+  "4_verification_login_html_correctif": {
+    "ordre_confirme_dans_le_fichier_servi_en_production": "captureReferralFromUrl(); PUIS if (getToken()) { redirect } — EXACTEMENT l'ordre du commit dbf2124 (Phase 15.7)",
+    "extrait_production": "ligne 102 (dans le fichier récupéré) : captureReferralFromUrl(); — suivie de 'Déjà connecté -> pas besoin de repasser par cette page.' puis if (getToken())",
+    "mecanisme_de_lecture_du_slug": "captureReferralFromUrl() lit new URLSearchParams(window.location.search).get('ref') — PAS location.pathname. Le chemin /promoter-2 n'est JAMAIS lu directement par le JavaScript ; c'est .htaccess qui le traduit en ?ref=promoter-2 AVANT que le navigateur n'exécute la moindre ligne de JS.",
+    "confirme_deploye_correctement": true
+  },
+
+  "5_verification_production_vs_local": {
+    "sha256_login_html_production_actuelle": "identique au fichier committé en Phase 15.7.2 (contenu HTML vérifié caractère pour caractère — le correctif est bien en ligne)",
+    "aucune_modification_effectuee": true,
+    "aucun_upload_effectue_cette_phase": true
+  },
+
+  "6_test_navigateur": "NON EXÉCUTABLE PAR CET ASSISTANT — aucun outil de navigateur disponible. Les observations Network/Console/URL affichée après chargement doivent être relayées par l'utilisateur s'il souhaite une confirmation visuelle supplémentaire.",
+
+  "7_point_critique_A_vs_B": {
+    "probleme_A_routage": "PARTIELLEMENT CONFIRMÉ, MAIS DE FAÇON NUANCÉE : le routage fonctionne PARFAITEMENT pour l'URL EXACTE et CANONIQUE https://www.xfoot.site/promoter-2 (minuscules, sans slash final — c'est EXACTEMENT la forme générée par le backend, voir referral_link=f'https://www.xfoot.site/{promoter.slug}', et les slugs sont toujours stockés/normalisés en minuscules, voir app/referral/slug.py). Le routage ÉCHOUE UNIQUEMENT pour des VARIANTES de cette URL (slash final ajouté, ou casse différente) — des cas plausibles si l'URL a été TAPÉE MANUELLEMENT ou COMPLÉTÉE PAR L'HISTORIQUE DU NAVIGATEUR plutôt que copiée depuis un lien officiel généré par le backend.",
+    "probleme_B_capture": "ÉCARTÉ pour l'URL canonique — confirmé que login.html contient le correctif et que /promoter-2 (sans slash, minuscules) sert bien ce fichier corrigé, intégralement identique au commit dbf2124."
+  },
+
+  "hypothese_explicative_de_lobservation_utilisateur": "L'utilisateur a très probablement observé le 404 soit en tapant/complétant l'URL avec un slash final ou une majuscule (ex. autocomplétion du navigateur suggérant une variante visitée précédemment durant les tests intensifs de cette conversation), soit en testant à un instant TRÈS PROCHE de l'upload (avant sa complétion effective — Last-Modified de login.html = 23:53:40 UTC aujourd'hui). Aucune de ces deux hypothèses n'a pu être confirmée avec certitude absolue (aucun accès à l'historique de navigation réel de l'utilisateur), mais les DEUX variantes fautives identifiées (slash final, majuscule) sont reproductibles à volonté et prouvées par preuve HTTP directe.",
+
+  "verdict": {
+    "value": "ROUTING_BROWSER_OK",
+    "rationale": "L'URL canonique https://www.xfoot.site/promoter-2 (telle que réellement générée par le backend et utilisée dans toute cette conversation) fonctionne correctement : 200, sert login.html avec le correctif Phase 15.7 confirmé présent, contenu byte-identique entre /promoter-2 et /login.html direct. Le 404 observé par l'utilisateur est expliqué avec preuve directe par DEUX variantes d'URL invalides selon la règle .htaccess existante (jamais modifiée dans ce déploiement) : un slash final (/promoter-2/) ou une casse différente (/Promoter-2) — chacune reproductible et vérifiée indépendamment. Il ne s'agit ni d'une régression du déploiement de la Phase 15.7.2, ni d'un problème de capture referral (Problème B écarté), mais d'un affichage navigateur correspondant très probablement à une URL légèrement différente de celle testée par cet assistant."
+  },
+
+  "recommandation": "Redemander à l'utilisateur de retester en copiant/collant EXACTEMENT https://www.xfoot.site/promoter-2 (sans espace, sans slash final, sans majuscule) — idéalement en effaçant d'abord la barre d'adresse plutôt qu'en laissant l'autocomplétion suggérer une variante. Si le 404 persiste avec l'URL exacte confirmée caractère pour caractère, ce serait alors un signal fort d'un problème de propagation/cache non encore identifié, à re-diagnostiquer séparément.",
+
+  "aucune_modification_effectuee": {"code": false, "htaccess": false, "railway": false, "db": false, "prix_offres": false, "paiement": false, "compte_cree": false, "commit": false, "push": false}
+}

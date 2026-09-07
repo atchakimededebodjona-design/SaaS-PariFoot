@@ -1,0 +1,112 @@
+{
+  "phase": "14.13",
+  "title": "XFOOT — AFFICHAGE DES USER_ID DANS LA LISTE DES ABONNÉS ADMIN",
+  "generated_at_utc": "2026-09-02T01:22:02Z",
+  "release_commit_base": "ebb23ec",
+  "not_committed": true,
+
+  "1_inspection": {
+    "api/app/referral/admin_router.py::SubscriberRow": "user_id: int — champ déjà présent, NON optionnel (toujours fourni pour chaque ligne, jamais null).",
+    "endpoint": "GET /admin/subscribers (protégé par require_admin, inchangé)",
+    "admin-subscribers.html_avant": "Tableau à 7 colonnes (Nom/Email/Plan/Montant payé/Date/Promoteur/Statut paiement) — user_id reçu par le JS mais jamais affiché.",
+    "javascript_existant_reutilise": "navigator.clipboard.writeText() — pattern identique à celui déjà en place sur promoter.html (bouton 'Copier le lien')."
+  },
+
+  "2_confirmation_user_id_deja_fourni_par_backend": {
+    "confirme": true,
+    "preuve": "api/app/referral/admin_router.py ligne 178 : SubscriberRow(user_id=user.id, ...) — construit à partir de user.id (session.get(User, sub.user_id)), jamais inventé/déduit côté frontend.",
+    "champ_optionnel": false,
+    "aucun_nouvel_endpoint_cree": true,
+    "aucune_modification_backend": true
+  },
+
+  "3_fichiers_modifies": {
+    "liste": ["frontend-design/admin-subscribers.html"],
+    "backend_modifie": false,
+    "fichiers_paiement_chariow_modifies": false,
+    "fichiers_ia_modifies": false,
+    "modele_user_modifie": false,
+    "authentification_modifiee": false,
+    "admin_emails_modifie": false,
+    "regles_promoteur_admin_modifiees": false
+  },
+
+  "4_modification_appliquee": {
+    "colonne_ajoutee": "USER ID",
+    "position": "NOM | USER ID | EMAIL | PLAN | MONTANT PAYÉ | DATE | PROMOTEUR | STATUT PAIEMENT (position recommandée respectée exactement)",
+    "fonction_ajoutee": "fmtUserId(userId) — affiche la valeur user_id EXACTEMENT telle que reçue de s.user_id ; retourne '—' UNIQUEMENT si userId est null/undefined (jamais une valeur inventée ou déduite).",
+    "bouton_copier": {
+      "ajoute": true,
+      "mecanisme": "Délégation d'événement sur #subs-tbody (un seul listener, pas un par ligne) + navigator.clipboard.writeText(btn.dataset.userId) — réutilise le pattern EXACT déjà présent dans promoter.html (feedback 'Copié !' pendant 1.5s puis retour au texte original).",
+      "aucun_nouveau_composant_invente": true
+    },
+    "id_lisible_non_masque": true,
+    "diff_lignes": "+20 / -1 (voir git diff, uniquement dans admin-subscribers.html)"
+  },
+
+  "5_securite": {
+    "page_reste_reservee_admin": true,
+    "preuve": "requireAuth() + applyRoleBasedNav() inchangés ; loadSubscribers() appelle toujours le même GET /admin/subscribers protégé par require_admin côté backend (401 sans token, 403 si non-admin, tous deux inchangés) ; le message d'erreur '403' déclenche toujours l'affichage 'Accès réservé aux administrateurs.' (logique inchangée).",
+    "nouvelle_route_creee": false,
+    "contournement_frontend_introduit": false,
+    "user_id_expose_a_un_non_admin": false,
+    "user_id_expose_publiquement": false,
+    "explication": "Le user_id n'est visible que dans la réponse JSON déjà retournée à un appelant authentifié ADMIN — cette phase ne fait qu'afficher une donnée déjà présente dans cette réponse protégée, jamais une nouvelle source de données."
+  },
+
+  "6_tests_executes": {
+    "js_syntax_check": {"methode": "node vm sur admin-subscribers.html", "resultat": "OK, 0 erreur (4486 caractères de script inline)"},
+    "http_serving_local": {"url": "http://127.0.0.1:PORT/admin-subscribers.html", "resultat": 200},
+    "get_admin_subscribers_continue_de_fonctionner": {
+      "statut": "VERIFIED (indirect)",
+      "preuve": "Endpoint backend totalement inchangé (0 ligne modifiée dans admin_router.py) ; déjà exercé par api/test_phase14_1_production_integration.py::test_financial_reconciliation_chain (appel réel GET /admin/subscribers, réponse validée par le modèle Pydantic SubscriberRow qui EXIGE user_id: int — un échec de ce champ aurait fait échouer le test) — 36/36 assertions Phase 14.1 toujours vertes."
+    },
+    "user_id_affiche_correspond_exactement_a_l_api": {
+      "statut": "VERIFIED (revue de code)",
+      "preuve": "fmtUserId(s.user_id) rend directement la valeur du champ JSON s.user_id — aucune transformation, aucun calcul, aucune valeur par défaut autre que '—' pour null/undefined."
+    },
+    "plusieurs_lignes": {
+      "statut": "VERIFIED (structurel)",
+      "preuve": "rows.map(s => ...) applique fmtUserId à CHAQUE ligne retournée par l'API, sans limite autre que la pagination déjà existante (PAGE_SIZE=20)."
+    },
+    "ligne_avec_abonnement_chariow_et_ligne_sans_paiement": {
+      "statut": "VERIFIED (revue de code, nuance documentée)",
+      "constat": "list_subscribers() ne retourne QUE des lignes ProviderSubscription (provider='chariow') — chaque ligne A donc TOUJOURS un abonnement Chariow. Le champ user_id de SubscriberRow est non-optionnel (user_id: int, jamais Optional) — il est donc TOUJOURS présent quel que soit le statut de paiement (payé/pending/failed). Le fallback '—' de fmtUserId est une protection défensive requise par les consignes, mais n'est structurellement jamais déclenché par les données actuelles de l'API — documenté honnêtement plutôt que présenté comme testé sur un cas réel absent."
+    },
+    "non_admin_401_403": {
+      "statut": "VERIFIED (réutilisé, non re-testé inutilement)",
+      "preuve": "require_admin() inchangé — déjà revérifié réellement en production à de multiples reprises (Phase 14.7/14.8/14.10/14.11) : 401 sans token, 403 pour un compte non-admin authentifié. Cette phase n'a modifié aucun code d'autorisation, donc ce comportement est garanti inchangé."
+    },
+    "aucune_nouvelle_exposition_publique": {"statut": "VERIFIED", "preuve": "Aucune route ajoutée/modifiée côté backend ; le seul endroit où user_id apparaît désormais côté UI est à l'intérieur d'une page qui échoue systématiquement pour tout appelant non-admin."}
+  },
+
+  "7_regression": {
+    "TOTAL": 64, "PASSED": 64, "FAILED": 0, "SKIPPED": 0,
+    "note": "Suite complète api/test_*.py exécutée après la modification — aucune régression, incluant les 99 assertions Phase 14 et 36 assertions Phase 14.1 (dont le test exerçant réellement GET /admin/subscribers)."
+  },
+
+  "8_etat_tables_ia": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identiques": true
+  },
+
+  "9_absence_modification_paiement_chariow": {
+    "verifie": true,
+    "preuve": "git diff --name-only ne liste qu'un seul fichier modifié par cette phase : frontend-design/admin-subscribers.html. Aucun fichier api/app/billing/*, api/app/referral/*, ni aucune configuration Chariow n'a été touché."
+  },
+
+  "10_git": {
+    "commit_effectue": false,
+    "push_effectue": false,
+    "fichiers_modifies_par_cette_phase": ["frontend-design/admin-subscribers.html"],
+    "fichiers_pre_existants_etrangers_inchanges": ["api/app/ai/readiness/gates.py (Phase 13)", "reports/shadow/watch/evidence_snapshots.json (log généré)"]
+  },
+
+  "verdict_final": {
+    "value": "IMPLEMENTED_AND_TESTED",
+    "rationale": "Le champ user_id était déjà exposé par le backend (SubscriberRow.user_id, non optionnel) — aucune modification backend n'a été nécessaire ni effectuée. La modification frontend est minimale (1 fichier, +20/-1 lignes), réutilise exactement le mécanisme de copie déjà en place (promoter.html), affiche le user_id sans jamais l'inventer, et ne crée aucune nouvelle exposition publique. La sécurité de la page (réservée aux admins) est inchangée et vérifiée par revue de code + réutilisation des preuves déjà établies en production. 64/64 tests de régression passent, les 6 tables IA restent strictement identiques, aucun fichier de paiement/Chariow n'a été modifié. Rien n'a été committé ni poussé."
+  },
+
+  "closing_statement": "PHASE 14.13 — AFFICHAGE DES USER_ID DANS LA LISTE DES ABONNÉS ADMIN TERMINÉE. LA COLONNE 'USER ID' AVEC BOUTON COPIER A ÉTÉ AJOUTÉE À admin-subscribers.html, EN RÉUTILISANT EXCLUSIVEMENT LE CHAMP user_id DÉJÀ FOURNI PAR LE BACKEND ET LE MÉCANISME DE COPIE DÉJÀ EXISTANT. AUCUNE MODIFICATION BACKEND, PAIEMENT, CHARIOW OU IA. 64/64 TESTS DE RÉGRESSION VERTS. 6 TABLES IA INCHANGÉES. AUCUN COMMIT, AUCUN PUSH."
+}

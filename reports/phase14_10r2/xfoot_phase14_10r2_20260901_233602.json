@@ -1,0 +1,120 @@
+{
+  "phase": "14.10R.2",
+  "title": "XFOOT DIAGNOSTIC ADMIN_TEST — READ ONLY",
+  "generated_at_utc": "2026-09-01T23:36:02Z",
+  "release_commit": "ebb23ec",
+  "scope_note": "Diagnostic uniquement — AUCUNE écriture production, aucune valeur secrète affichée.",
+
+  "1_identite_du_probleme": {
+    "symptome_rapporte": "Compte Admin de test créé, email ajouté à ADMIN_EMAILS sur Railway, mais admin-promoters.html affiche 'Accès réservé aux administrateurs.' après connexion.",
+    "confirmation_precise_de_la_cause_immediate": "Le message exact affiché PROUVE que le backend renvoie un HTTP 403 (pas 401) à cette session authentifiée — ce n'est ni un problème de session absente, ni un bug purement frontend."
+  },
+
+  "2_endpoint_concerne": {
+    "endpoint": "GET /admin/promoters",
+    "appele_par": "frontend-design/admin-promoters.html::loadPromoters()"
+  },
+
+  "3_code_http": {
+    "preuve_frontend": "Code source de admin-promoters.html (lu en direct depuis la production) : `errorEl.textContent = e.message && e.message.includes(\"403\") ? \"Accès réservé aux administrateurs.\" : ...` — CE message précis n'apparaît QUE si loadPromoters() a levé une erreur dont le texte contient '403'.",
+    "loadPromoters_leve_erreur_si": "!res.ok -> throw new Error(`Erreur (${res.status})`) — donc le message observé prouve res.status === 403.",
+    "distinction_401_vs_403_cruciale": "apiFetch() (api.js) redirige automatiquement vers login.html sur un 401 (token absent/invalide) — CE comportement ne s'est PAS produit (l'utilisateur reste sur admin-promoters.html et voit le message d'erreur). Ceci prouve que le TOKEN EST VALIDE et que l'authentification a réussi — le problème se situe exclusivement dans la vérification d'autorisation Admin (require_admin), pas dans l'authentification elle-même."
+  },
+
+  "4_etat_authentification": {
+    "session_valide": true,
+    "preuve": "Absence de redirection vers login.html (comportement réservé au 401) — voir §3.",
+    "email_reellement_utilise_pour_la_session": "NON DÉTERMINABLE PAR L'AGENT — nécessiterait le token de session, jamais demandé ni manipulé (règle absolue). L'utilisateur peut le vérifier lui-même via l'onglet Réseau du navigateur (DevTools) sur la réponse de GET /auth/me, champ 'email'.",
+    "token_affiche": false
+  },
+
+  "5_etat_admin_emails": {
+    "fichier_code": "api/app/auth/admin.py",
+    "fonction": "_admin_emails()",
+    "code_exact": "raw = os.environ.get(\"ADMIN_EMAILS\", \"\"); return {e.strip().lower() for e in raw.split(\",\") if e.strip()}",
+    "parsing_confirme": {"separateur": "virgule (,) uniquement", "strip_applique": true, "lower_applique": true, "format_unique": "Aucun autre format/chemin de parsing ADMIN_EMAILS n'existe ailleurs dans le dépôt (recherche exhaustive, un seul point de lecture)."},
+    "require_admin_logique": "if current_user.email.strip().lower() not in _admin_emails(): raise HTTPException(403, ...)",
+    "ADMIN_EMAILS_EXISTS": "UNKNOWN — aucun accès Railway disponible depuis cet environnement",
+    "TEST_ADMIN_PRESENT": "UNKNOWN — non vérifiable sans accès Railway",
+    "EXISTING_ADMIN_PRESERVED": "UNKNOWN — non vérifiable sans accès Railway",
+    "valeur_complete_jamais_affichee": true,
+    "note": "L'agent n'a JAMAIS eu et n'a PAS obtenu d'accès Railway au cours de cette phase — cohérent avec toutes les phases précédentes (14.2/14.6/14.7 notamment)."
+  },
+
+  "6_comparaison_logique_email": {
+    "methode": "Analyse structurelle uniquement (aucun accès aux valeurs réelles).",
+    "sources_de_mismatch_possibles_par_le_code": [
+      "Espaces superflus : NEUTRALISÉ par .strip() des deux côtés — ne peut PAS être la cause.",
+      "Différence de casse : NEUTRALISÉE par .lower() des deux côtés — ne peut PAS être la cause.",
+      "Séparateur manquant entre les deux adresses (ex. virgule oubliée fusionnant les deux emails en une seule chaîne invalide) : POSSIBLE, non neutralisé par le code — un email malformé ne matcherait jamais.",
+      "Caractère invisible copié-collé (espace insécable Unicode U+00A0, guillemets typographiques, etc.) : POSSIBLE — .strip() ne retire que les espaces ASCII standard, pas nécessairement tous les caractères Unicode invisibles.",
+      "Faute de frappe réelle dans l'adresse (domaine, partie locale) : POSSIBLE, non détectable sans comparaison directe des deux valeurs réelles."
+    ],
+    "verification_non_effectuee": "L'agent n'a comparé aucune valeur réelle — ni le contenu d'ADMIN_EMAILS, ni l'email de session — faute d'accès à l'un ou l'autre."
+  },
+
+  "7_etat_session": {
+    "session_valide_au_moment_du_test": true,
+    "creee_avant_ou_apres_modification_admin_emails": "NON DÉTERMINABLE PAR L'AGENT.",
+    "reconnexion_necessaire_structurellement": false,
+    "justification": "require_admin() recalcule l'autorisation à CHAQUE requête à partir de current_user.email (dérivé du token) comparé à _admin_emails() (relu depuis os.environ à chaque appel) — le statut admin n'est JAMAIS encodé dans le token JWT lui-même. Une reconnexion seule ne peut donc PAS résoudre un problème où la variable d'environnement elle-même n'est pas encore effective côté serveur (voir §8) — mais peut être utile si l'email de session était erroné pour une autre raison (ex. connecté avec un autre compte que celui ajouté à ADMIN_EMAILS)."
+  },
+
+  "8_necessite_eventuelle_de_redeploiement": {
+    "constat_code": "Le code relit bien os.environ.get(\"ADMIN_EMAILS\") à CHAQUE requête (jamais mis en cache côté application) — ceci est vrai et vérifié.",
+    "nuance_critique_non_couverte_par_le_code_lui_meme": "Une variable d'environnement n'est PAS un état consulté dynamiquement dans un magasin externe — c'est un bloc mémoire copié dans le processus UNE SEULE FOIS, au démarrage de ce processus (comportement standard de tout système Unix/Linux, indépendant de ce dépôt). Modifier la valeur dans le dashboard Railway ne modifie PAS rétroactivement l'environnement d'un processus déjà en cours d'exécution — le processus continue de voir l'ANCIENNE valeur tant qu'il n'a pas été redémarré/redéployé avec la nouvelle configuration injectée.",
+    "hypothese_principale": "Le service Railway n'a probablement PAS encore redémarré avec la nouvelle valeur d'ADMIN_EMAILS au moment du test — c'est la cause la plus probable du symptôme observé, compte tenu du code (correct) et du comportement standard des variables d'environnement (non vérifiable directement sans accès au dashboard Railway).",
+    "verifiable_par_agent": false,
+    "action_humaine_pour_verifier": "Sur Railway, dashboard du service SaaS-PariFoot, onglet 'Deployments' : vérifier si un nouveau déploiement/redémarrage a été déclenché APRÈS l'enregistrement de la nouvelle valeur d'ADMIN_EMAILS. Si aucun déploiement récent n'apparaît, en déclencher un manuellement (action de plateforme standard, réversible, ne modifie ni code ni données)."
+  },
+
+  "9_causes_racines_possibles_classees_par_probabilite": [
+    {
+      "rang": 1,
+      "cause": "Variable d'environnement modifiée sur Railway mais processus backend pas encore redémarré/redéployé avec la nouvelle valeur.",
+      "probabilite": "ÉLEVÉE — explication la plus cohérente avec 'compte créé + email ajouté + toujours 403', le code lui-même étant correct.",
+      "verifiable_par_agent": false
+    },
+    {
+      "rang": 2,
+      "cause": "Erreur de format dans la valeur ADMIN_EMAILS (séparateur manquant, caractère invisible, faute de frappe) — non neutralisée par .strip()/.lower() dans les cas où le caractère problématique n'est ni un espace ASCII ni une différence de casse.",
+      "probabilite": "MOYENNE",
+      "verifiable_par_agent": false
+    },
+    {
+      "rang": 3,
+      "cause": "L'utilisateur est connecté avec un compte différent de celui ajouté à ADMIN_EMAILS (ex. ancien compte, mauvais onglet/session navigateur).",
+      "probabilite": "FAIBLE À MOYENNE",
+      "verifiable_par_agent": false
+    }
+  ],
+
+  "10_action_humaine_exacte": [
+    "1. Sur Railway, vérifier l'onglet 'Deployments' du service SaaS-PariFoot : un redémarrage a-t-il eu lieu après l'enregistrement d'ADMIN_EMAILS ? Si non, déclencher un redéploiement manuel (action de plateforme standard, sûre, réversible).",
+    "2. Une fois le redéploiement confirmé effectif : réessayer la connexion Admin sans rien changer d'autre.",
+    "3. Si le problème persiste : rouvrir le champ ADMIN_EMAILS sur Railway et vérifier visuellement qu'il n'existe qu'UNE seule virgule entre les deux adresses (pas de fusion accidentelle des deux emails en une seule chaîne).",
+    "4. Si le problème persiste encore : dans le navigateur, ouvrir les DevTools (F12) -> onglet Réseau, recharger admin-promoters.html, cliquer sur la requête GET /auth/me, lire le champ 'email' de la réponse JSON, et le comparer caractère par caractère avec l'adresse effectivement présente dans ADMIN_EMAILS.",
+    "5. Ne jamais transmettre le mot de passe, le token, ou le contenu complet d'ADMIN_EMAILS à l'agent — cette comparaison doit rester entre les mains de l'humain."
+  ],
+
+  "11_etat_git": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true,
+    "aucune_modification_par_cette_phase": true
+  },
+
+  "12_etat_ia": {
+    "git_diff_app_ai_references": 0,
+    "tables_ia_modifiees": false,
+    "local_db_counts": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "frontend_modifie": false,
+    "backend_modifie": false
+  },
+
+  "verdict_final": {
+    "value": "ADMIN_TEST_CONFIGURATION_BLOCKED",
+    "rationale": "Le problème n'est PAS une anomalie de code — require_admin()/_admin_emails() fonctionnent exactement comme documenté et déjà vérifié à de multiples reprises (Phase 14/14.6/14.7). Le symptôme (403 précisément, pas 401) confirme une authentification réussie mais une autorisation refusée, cohérente avec une variable ADMIN_EMAILS pas encore effective côté processus OU une erreur de format non détectable sans accès aux valeurs réelles. Comme la configuration Railway elle-même ne peut pas être vérifiée depuis cet environnement (aucun accès), le diagnostic s'arrête à ce niveau — d'où CONFIGURATION_BLOCKED plutôt que NEEDS_FIXES (aucune anomalie réelle de code découverte) ou ADMIN_TEST_AUTH_READY (la cause exacte n'est pas confirmée, seulement la plus probable)."
+  },
+
+  "closing_statement": "PHASE 14.10R.2 — XFOOT DIAGNOSTIC ADMIN_TEST TERMINÉE. LE CODE ADMIN_EMAILS/require_admin EST CONFIRMÉ CORRECT PAR LECTURE DIRECTE. LE SYMPTÔME OBSERVÉ (403, PAS 401) PROUVE UNE AUTHENTIFICATION RÉUSSIE MAIS UNE AUTORISATION REFUSÉE. LA CAUSE LA PLUS PROBABLE EST UN REDÉPLOIEMENT/REDÉMARRAGE RAILWAY NON ENCORE EFFECTUÉ DEPUIS LA MODIFICATION DE ADMIN_EMAILS, NON VÉRIFIABLE DEPUIS CET ENVIRONNEMENT SANS ACCÈS RAILWAY. AUCUNE MODIFICATION EFFECTUÉE. AUCUN COMPTE CRÉÉ. AUCUNE VALEUR SENSIBLE AFFICHÉE. AUCUNE MODIFICATION DU MOTEUR IA."
+}

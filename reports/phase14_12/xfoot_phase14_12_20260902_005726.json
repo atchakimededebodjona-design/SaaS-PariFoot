@@ -1,0 +1,176 @@
+{
+  "phase": "14.12",
+  "title": "XFOOT CONTROLLED REAL PAYMENT & COMMISSION VERIFICATION V1 — PRE-PAYMENT PREPARATION",
+  "generated_at_utc": "2026-09-02T00:57:26Z",
+  "release_commit": "ebb23ec",
+  "scope_note": "PRÉPARATION UNIQUEMENT — arrêt strict avant tout paiement réel. Aucune transaction déclenchée.",
+
+  "1_reutilisation_preuves_existantes": {
+    "phases_reutilisees": ["14", "14.1", "14.6", "14.7", "14.9R.2", "14.10", "14.10R", "14.10R.1", "14.10R.2", "14.11"],
+    "acquis_confirmes_sans_re_test": {
+      "ADMIN_TEST_is_admin": true,
+      "PROMOTER_TEST_is_promoter": true,
+      "promoter_2_status": "ACTIVE",
+      "promoter_2_lien": "https://www.xfoot.site/promoter-2",
+      "dashboards_fonctionnels": true,
+      "isolation_bidirectionnelle": "VERIFIED (Phase 14.11)",
+      "webhook_invalid_missing_signature_401": "reconfirmé une dernière fois cette phase (voir §3)",
+      "https_cors": "OK",
+      "tests_locaux": "64/64 PASS (dernière exécution Phase 14.11, code inchangé depuis — HEAD identique, non réexécuté inutilement)",
+      "tables_ia_6": "inchangées (dernière capture Phase 14.11)"
+    }
+  },
+
+  "2_objectif_du_test_reel": {
+    "promoteur": "promoter-2 (user_id=206, PROMOTER_TEST)",
+    "plan_vise": "mensuel (le moins cher des deux plans réellement configurés)",
+    "compte_client_testeur": {
+      "status": "TEST_ACCOUNT_BLOCKED",
+      "constat": "AUCUN compte client/acheteur de test distinct de PROMOTER_TEST n'a été établi dans les phases précédentes de cette conversation — seuls ADMIN_TEST et PROMOTER_TEST existent.",
+      "raison_structurelle_pour_laquelle_c_est_indispensable": "Le mécanisme anti-self-referral (déjà vérifié Phase 14/14.1) bloque explicitement toute commission si l'acheteur EST le propriétaire du promoteur (promoter.user_id == current_user.id). Utiliser PROMOTER_TEST lui-même comme acheteur produirait donc STRUCTURELLEMENT zéro commission, quel que soit le paiement — cela ne testerait PAS le parcours visé par cette phase.",
+      "action_requise": "Un compte utilisateur DISTINCT doit être créé pour jouer le rôle d'acheteur test (jamais un compte personnel réel, jamais PROMOTER_TEST/ADMIN_TEST) — cette création n'a PAS été effectuée par l'agent, conformément à l'interdiction explicite de cette phase ('NE PAS créer de nouveaux comptes automatiquement')."
+    },
+    "aucun_nouveau_compte_cree_par_agent": true
+  },
+
+  "3_verification_prealable_lecture_seule": {
+    "plan_mensuel_disponible": {"statut": "READ_ONLY_VERIFIED", "preuve": "vip.html production : <h4>Mensuel</h4><div class=\"price\">1000 FCFA<span>/mois</span></div>"},
+    "plan_annuel_disponible": {"statut": "READ_ONLY_VERIFIED", "preuve": "vip.html production : <h4>Annuel</h4><div class=\"price\">10000 FCFA<span>/an</span></div>"},
+    "prix_reellement_affiche_mensuel_fcfa": 1000,
+    "prix_reellement_affiche_annuel_fcfa": 10000,
+    "note_prix": "Ces montants sont ceux RÉELLEMENT affichés en production à l'instant de cette vérification — jamais supposés, jamais l'exemple documentaire 20000/15000 du prompt (qui reste un exemple théorique, non injecté comme donnée réelle).",
+    "url_checkout": {"endpoint": "POST https://api.xfoot.site/billing/checkout", "statut": "READ_ONLY_VERIFIED (existence)", "preuve": "OPTIONS/GET sur ce chemin -> 405 (méthode non gérée mais route existante) — confirmé sans déclencher aucune écriture"},
+    "integration_chariow_configuree": {
+      "statut": "READ_ONLY_VERIFIED (indirectement)",
+      "preuve": "37 abonnements réels préexistants observés dans /admin/subscribers (Phase 14.11) — l'intégration Chariow traite déjà des paiements réels en production, indépendamment de cette phase."
+    },
+    "variables_chariow_presentes": {
+      "CHARIOW_API_KEY": "PRESENT (local — valeur jamais affichée)",
+      "CHARIOW_PULSE_SECRET": "PRESENT (local — valeur jamais affichée)",
+      "CHARIOW_PRODUCT_ID_MONTHLY": "PRESENT (local — valeur jamais affichée)",
+      "CHARIOW_PRODUCT_ID_YEARLY": "PRESENT (local — valeur jamais affichée)",
+      "production": "UNKNOWN dans le détail exact (aucun accès Railway) — mais fonctionnellement confirmée par les 37 abonnements réels déjà traités."
+    },
+    "environnement_paiement": {"value": "UNKNOWN", "note": "Inchangé depuis Phase 14.2/14.6/14.7/14.8 — jamais résolu, jamais transformé en SANDBOX ou PRODUCTION sans preuve."},
+    "webhook_configure": {"statut": "READ_ONLY_VERIFIED (comportement)", "preuve": "POST /billing/pulse avec signature invalide -> 401 ; sans signature -> 401 (reconfirmé réellement cette phase, aucune écriture)"},
+    "url_de_retour": "Non vérifiée séparément cette phase (générée dynamiquement par _create_chariow_checkout_link, déjà auditée Phase 14) — non pertinente pour la décision d'autorisation, le parcours de retour ne modifie aucune donnée financière par lui-même.",
+    "attribution_referral": {"statut": "READ_ONLY_VERIFIED", "preuve": "POST /referral/resolve/promoter-2 -> {\"valid\":true}, 200 — reconfirmé réellement cette phase, sans écriture (aucun visitor_id fourni)"},
+    "etat_promoter_2": {"statut": "READ_ONLY_VERIFIED / HUMAN-VERIFIED (Phase 14.11)", "valeur": "ACTIVE, inchangé"},
+    "absence_doublon_grand_livre": {
+      "statut": "VERIFIED (réutilisé de Phase 14.11)",
+      "preuve": "Onglet Gains admin (Phase 14.11) : 37 abonnements, 0 vente attribuée à un promoteur, 0 commission — aucune commission préexistante pour promoter-2 pouvant fausser le test à venir."
+    },
+    "absence_transaction_test_precedente": {
+      "statut": "VERIFIED",
+      "preuve": "Confirmé par le même relevé Gains (0 commission, 0 revenu attribué) — aucun paiement de test antérieur n'a jamais été effectué dans le cadre de cette conversation (règle absolue respectée à travers toutes les phases précédentes)."
+    }
+  },
+
+  "4_attribution_referral": {
+    "parcours_verifie_jusqu_au_checkout": "PARTIEL — le lien et la résolution du slug sont vérifiés fonctionnels (§3), mais le parcours COMPLET jusqu'au checkout ne peut pas être vérifié tant qu'aucun compte client de test n'existe (§2).",
+    "slug": "promoter-2",
+    "attribution_frontend": "Mécanisme déjà vérifié par lecture de code (captureReferralFromUrl/attributeReferralIfPresent, Phase 14/14.9R.2) — logique inchangée.",
+    "attribution_backend": "POST /referral/attribute — dérive converted_user_id exclusivement du JWT (jamais du client), déjà vérifié structurellement (Phase 14/14.1/14.6).",
+    "promoteur_attendu": "promoter-2",
+    "aucune_donnee_modifiee_pour_fabriquer_une_attribution": true
+  },
+
+  "5_invariant_commission": {
+    "formule": "commission = 40% du montant réellement payé et confirmé",
+    "exemple_documentaire_prompt_non_injecte": "20000/15000/6000 — cité uniquement comme rappel de la RÈGLE, jamais utilisé comme donnée de ce test réel.",
+    "calcul_attendu_pour_le_plan_mensuel_reellement_affiche": {"montant_paye_attendu_fcfa": 1000, "commission_attendue_fcfa": 400, "formule_appliquee": "floor(1000 x 4000bp / 10000) = 400"},
+    "aucune_remise_inventee": true,
+    "note": "400 FCFA est un calcul théorique basé sur le prix RÉELLEMENT affiché (1000 FCFA/mois) — PAS une commission réellement générée, puisqu'aucun paiement n'a eu lieu."
+  },
+
+  "6_checkout_avant_paiement": {
+    "checkout_ouvert": false,
+    "raison": "Aucun compte client de test disponible pour initier un checkout réel sans provoquer un self-referral (§2) — le checkout n'a donc pas été ouvert cette phase.",
+    "value": "CHECKOUT_READY_NO_PAYMENT_EXECUTED",
+    "precision": "L'infrastructure (route /billing/checkout, intégration Chariow, plan à 1000 FCFA) est confirmée prête et fonctionnelle par preuve indirecte (§3) — mais aucune session de checkout n'a été concrètement initiée, faute du prérequis compte-client.",
+    "aucun_moyen_de_paiement_saisi": true,
+    "aucune_transaction_confirmee": true
+  },
+
+  "7_point_arret_obligatoire": {
+    "value": "REAL_PAYMENT_READY_FOR_HUMAN_AUTHORIZATION",
+    "plan_qui_serait_teste": "Mensuel",
+    "montant_qui_serait_reellement_debite_fcfa": 1000,
+    "devise": "FCFA (XOF)",
+    "promoteur_qui_recevrait_l_attribution": "promoter-2 (user_id=206)",
+    "commission_40_pourcent_attendue_fcfa": 400,
+    "verifications_prevues_apres_paiement_si_autorise": [
+      "A. Chariow/webhook : événement successful.sale reçu, signature valide, x-pulse-delivery-id unique, idempotence",
+      "B. Abonnement : bon utilisateur (compte client de test), plan=monthly, montant réellement payé=1000 FCFA, statut actif",
+      "C. Attribution : promoteur=promoter-2, vente correctement attribuée",
+      "D. Commission : exactement 400 FCFA (40% de 1000, jamais du prix catalogue), aucune double commission",
+      "E. Grand livre : une seule ligne ReferralCommission, montants cohérents, source_event_id traçable",
+      "F. Dashboard Admin : vente visible, revenu=1000 FCFA, commission=400 FCFA",
+      "G. Dashboard Promoteur : vente payée visible, revenu généré=1000 FCFA, commission totale=400 FCFA, acquise=400 FCFA, disponible=400 FCFA, déjà versée=0 (aucun payout n'existe dans ce système, Phase 14)"
+    ],
+    "prerequis_manquant_avant_toute_autorisation_utile": "Un compte client/acheteur de test DISTINCT doit être créé (par l'humain, jamais automatiquement) avant qu'un paiement réel puisse être exécuté de façon à réellement tester l'attribution — sans ce compte, même une autorisation de paiement ne pourrait pas être exploitée utilement (le seul compte disponible, PROMOTER_TEST, déclencherait un rejet self-referral)."
+  },
+
+  "8_execution_paiement_reel": {"authorized": false, "executed": false, "value": "PAYMENT_NOT_EXECUTED", "note": "Aucune autorisation humaine explicite distincte n'a été fournie dans le cadre de cette phase — et le prérequis §2 (compte client de test) n'est de toute façon pas encore satisfait."},
+
+  "9_idempotence": {"value": "NOT_TESTED", "raison": "Aucun événement réel n'existe à rejouer — dépend de §8."},
+
+  "10_remboursement": {"value": "REAL_REFUND_NOT_TESTED", "raison": "Aucun paiement réel n'a eu lieu, donc rien à rembourser — conforme à la règle absolue."},
+
+  "11_securite_isolation": {
+    "reutilise_de_phase_14_11": true,
+    "promoteur_vers_admin_interdit": "VERIFIED (Phase 14.11, 403 réel)",
+    "admin_vers_promoteur_non_automatique": "VERIFIED (Phase 14.11)",
+    "admin_backend_protege": "VERIFIED (401 sans token, reconfirmé)",
+    "webhook_signature_obligatoire": "VERIFIED (reconfirmé §3, 401 sur signature invalide/absente)",
+    "https_cors": "VERIFIED (Phase 14.7/14.8/14.11)",
+    "secrets_non_exposes": true,
+    "attribution_non_controlee_par_frontend": "VERIFIED (lecture de code, converted_user_id dérivé du JWT)",
+    "montant_commission_non_fourni_par_client": "VERIFIED (lecture de code, gross_paid_amount dérivé exclusivement du corps signé du webhook)"
+  },
+
+  "12_ia_isolation_absolue": {
+    "app_ai_modifie": false,
+    "tables_ia_avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "tables_ia_apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identiques": true,
+    "signal_pari_genere": false,
+    "shadow_mode_modifie": false,
+    "kill_switch_modifie": false,
+    "readiness_modifie": false
+  },
+
+  "13_tests_regression": {
+    "executes_cette_phase": false,
+    "raison": "Aucune modification de code n'a été apportée depuis la dernière exécution (Phase 14.11, HEAD identique ebb23ec) — réutilisé sans réexécution inutile, conformément à la consigne §1.",
+    "derniere_execution_reference": "Phase 14.11 : 64/64 PASS, 0 FAIL",
+    "git_diff_verifie": "0 changement de code introduit par cette phase (git status --short identique avant/après, seuls les 2 fichiers Phase 13 pré-existants et étrangers restent modifiés)",
+    "aucun_fichier_inattendu_modifie": true,
+    "aucun_changement_de_code": true,
+    "aucun_commit": true,
+    "aucun_push": true
+  },
+
+  "14_classification_des_verifications": {
+    "READ_ONLY_VERIFIED": ["prix plans (1000/10000 FCFA)", "existence route checkout", "résolution referral promoter-2", "sécurité webhook (401 x2)", "absence de doublon dans le grand livre"],
+    "HUMAN_VERIFIED": ["réutilisé de Phase 14.11 : is_admin, is_promoter, dashboards, isolation"],
+    "PAYMENT_READY": ["infrastructure checkout/Chariow confirmée fonctionnelle par preuve indirecte"],
+    "PAYMENT_EXECUTED": [],
+    "PAYMENT_NOT_EXECUTED": ["paiement réel du plan mensuel promoter-2"],
+    "BLOCKED": ["compte client/acheteur de test distinct (TEST_ACCOUNT_BLOCKED)"],
+    "NOT_TESTED": ["idempotence webhook réelle", "remboursement réel", "checkout réellement ouvert (aucun compte disponible pour l'ouvrir sans self-referral)"]
+  },
+
+  "verdict_final": {
+    "value": "REAL_PAYMENT_READY_FOR_HUMAN_AUTHORIZATION",
+    "rationale": "Toutes les vérifications réalisables sans paiement et sans compte client dédié sont concluantes : plan/prix réellement affichés (1000 FCFA/mois), route checkout existante, intégration Chariow fonctionnelle par preuve indirecte, referral promoter-2 résolvable, grand livre vérifié sans doublon ni transaction de test antérieure, sécurité webhook reconfirmée. UN prérequis reste cependant à satisfaire avant qu'un paiement réel puisse être utilement exécuté : un compte client/acheteur de test DISTINCT de promoter-2 lui-même (sinon self-referral bloque structurellement toute commission, rendant le test sans objet). Ce prérequis n'a pas été résolu automatiquement, conformément à l'interdiction explicite de créer des comptes dans cette phase. AUCUN paiement n'a été exécuté ni ne sera exécuté sans autorisation humaine explicite ET distincte, portant spécifiquement sur cette transaction précise (montant, plan, compte)."
+  },
+
+  "action_humaine_requise_avant_autorisation_utile": [
+    "1. Créer (ou fournir) UN compte utilisateur de test DISTINCT de PROMOTER_TEST et ADMIN_TEST, destiné à jouer le rôle d'acheteur (ex. via inscription standard sur login.html, email clairement tagué test).",
+    "2. Confirmer explicitement l'autorisation d'exécuter CE paiement précis : plan mensuel, 1000 FCFA, via le lien https://www.xfoot.site/promoter-2, avec ce nouveau compte acheteur.",
+    "3. Revenir vers l'agent avec cette confirmation pour que la Phase 14.12 (ou une itération dédiée) procède à la vérification post-paiement (§8 du prompt : Chariow/webhook, abonnement, attribution, commission, grand livre, dashboards)."
+  ],
+
+  "closing_statement": "PHASE 14.12 — XFOOT CONTROLLED REAL PAYMENT & COMMISSION VERIFICATION V1 (PRÉPARATION) TERMINÉE. TOUTES LES VÉRIFICATIONS PRÉ-PAIEMENT DISPONIBLES SONT CONCLUANTES. UN COMPTE CLIENT DE TEST DISTINCT RESTE NÉCESSAIRE AVANT TOUTE EXÉCUTION UTILE. AUCUN PAIEMENT RÉEL N'A ÉTÉ EFFECTUÉ NI TENTÉ. AUCUN APPEL D'ÉCRITURE CHARIOW. AUCUN COMPTE CRÉÉ AUTOMATIQUEMENT. AUCUNE MODIFICATION DU MOTEUR IA NI DES TABLES IA PROTÉGÉES. AUCUN CHANGEMENT DE CODE. AUCUN COMMIT, AUCUN PUSH. EN ATTENTE D'UNE AUTORISATION HUMAINE EXPLICITE ET D'UN COMPTE CLIENT DE TEST AVANT TOUTE POURSUITE."
+}

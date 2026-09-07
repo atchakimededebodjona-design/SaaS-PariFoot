@@ -1,0 +1,267 @@
+{
+  "phase": "14.7",
+  "title": "XFOOT PRODUCTION DEPLOYMENT & CONTROLLED SMOKE TEST V1",
+  "generated_at_utc": "2026-09-01T17:28:13Z",
+  "release_commit": "ebb23ec",
+
+  "1_executive_summary": "Découverte majeure confirmée par preuve directe : le push vers origin/main a eu lieu (par l'utilisateur, hors de cette conversation) ET Railway a AUTO-DÉPLOYÉ le backend — les 11 routes Phase 14 sont désormais RÉELLEMENT LIVE sur https://api.xfoot.site (vérifié via openapi.json : 36 -> 47 routes, exactement les 11 attendues). Le frontend Hostinger, lui, N'EST PAS déployé (pages Phase 14 toujours 404 — comportement attendu, Hostinger n'a pas d'auto-déploiement). Question posée à l'utilisateur sur la création de comptes de test réels en production pour le smoke test d'attribution complet : réponse = LECTURE SEULE UNIQUEMENT. En conséquence, tous les tests non-destructifs/read-only ont été exécutés RÉELLEMENT contre la production (401 sur endpoints protégés, rejet webhook signature invalide/absente, HTTPS/redirections), et les tests nécessitant la création de données réelles (attribution complète, dashboards promoteur/admin avec compte réel) sont marqués BLOCKED_PENDING_HUMAN_DECISION, jamais inventés. Aucun paiement réel. Aucune modification IA. Aucune action irréversible.",
+
+  "2_git_verification": {
+    "CURRENT_HEAD": "ebb23ec",
+    "matches_expected": true,
+    "ORIGIN_MAIN_SHA_via_ls_remote": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "origin_main_equals_ebb23ec": true,
+    "proof_method": "git ls-remote origin HEAD refs/heads/main (lecture seule) + git branch -vv confirmant [origin/main] sans divergence ahead/behind",
+    "conclusion": "Le push décrit dans l'objectif de cette phase a RÉELLEMENT eu lieu (par l'utilisateur, hors de cette session) — fait vérifié, jamais supposé.",
+    "no_new_commit_created_this_phase": true,
+    "no_reset_rebase_amend_force_push": true,
+    "untracked_files_not_added": true
+  },
+
+  "3_deployment_access": {
+    "RAILWAY_ACCESS": "UNAVAILABLE",
+    "railway_cli_present": false,
+    "railway_env_tokens_present": false,
+    "HOSTINGER_ACCESS": "UNAVAILABLE",
+    "hostinger_ftp_tool_present": false,
+    "note": "Aucun accès direct disponible depuis cet environnement — MAIS le déploiement backend a manifestement eu lieu via le mécanisme d'auto-déploiement Railway (connecté à GitHub, redéploie sur push), sans qu'aucune action de déploiement n'ait été effectuée DEPUIS cette conversation. Ceci est une observation factuelle (routes live), pas une action entreprise ici."
+  },
+
+  "4_environment": {
+    "variables": [
+      {"name": "ADMIN_EMAILS", "status": "UNKNOWN", "note": "Toujours non vérifiable — aucun accès Railway pour lire sa valeur configurée."},
+      {"name": "DATABASE_URL", "status": "UNKNOWN (présumée configurée, le service répond normalement)"},
+      {"name": "CORS / ALLOWED_ORIGINS", "status": "CONFIGURED (fonctionnellement — le frontend existant appelle déjà l'API avec succès)"},
+      {"name": "FRONTEND_URL", "status": "UNKNOWN dans le détail exact"},
+      {"name": "BACKEND_URL (api.xfoot.site)", "status": "CONFIRMED (actif, GET /health -> 200)"},
+      {"name": "CHARIOW_API_KEY / CHARIOW_PULSE_SECRET / PRODUCT_ID_*", "status": "UNKNOWN en production (présence locale déjà confirmée en Phase 14.3/14.6, jamais leur valeur)"}
+    ],
+    "rule_applied": "ADMIN_EMAILS=UNKNOWN n'a jamais été transformé en PASS."
+  },
+
+  "5_database": {
+    "DB_TARGET": "UNKNOWN — impossible de confirmer directement quelle base PostgreSQL de production est ciblée (aucun accès DB)",
+    "DB_SCHEMA": "Non inspectable directement",
+    "CURRENT_MIGRATION": "UNKNOWN sans accès DB",
+    "EXPECTED_MIGRATION": "5787c4b3b963_phase14_referral_promoter_platform",
+    "confirmed_not_api_app_db": true,
+    "note": "api/app.db (SQLite local) N'A PAS été utilisé ni modifié dans cette phase — confirmé par capture avant/après identique (voir §16). Aucune migration n'a été exécutée par cette conversation, ni localement ni en production."
+  },
+
+  "6_migration": {
+    "MIGRATION_TARGET": "Base de production PostgreSQL (Railway) — cible non directement vérifiable sans accès DB",
+    "MIGRATION_REVISION": "5787c4b3b963",
+    "MIGRATION_PARENT": "c4f8a1d75e93",
+    "MIGRATION_ROLLBACK_AVAILABLE": true,
+    "upgrade_downgrade_present": true,
+    "ai_tables_referenced_in_ddl": false,
+    "executed_by_this_conversation": false,
+    "indirect_evidence_migration_ran": "Les 11 routes Phase 14 répondent en production sans erreur 500 (401 propre sur les endpoints protégés, jamais une erreur serveur de type 'table does not exist') — ceci suggère fortement que les tables ont été créées, cohérent avec l'exécution automatique de la migration au démarrage du service Railway (mécanisme standard, non confirmé directement faute d'accès aux logs/DB).",
+    "explicit_caveat": "Cette indication indirecte N'EST PAS une preuve directe d'exécution de migration — documentée comme telle, jamais présentée comme une certitude."
+  },
+
+  "7_backend_deployment": {
+    "DEPLOYED_COMMIT": "Inféré avec un haut niveau de confiance = ebb23ec (aucune preuve cryptographique directe — aucun endpoint de version/commit exposé par l'API)",
+    "evidence_for_inference": [
+      "origin/main == ebb23ec (vérifié par ls-remote)",
+      "Railway est un service à auto-déploiement standard sur push GitHub (comportement de plateforme connu, cohérent avec l'apparition immédiate des nouvelles routes)",
+      "Les 11 chemins de route exacts désormais présents en production correspondent EXACTEMENT aux routes définies dans le code du commit ebb23ec (api/app/referral/router.py + admin_router.py), ni plus ni moins"
+    ],
+    "DEPLOYMENT_TIME": "UNKNOWN (aucun accès aux logs de déploiement Railway)",
+    "BACKEND_STATUS": "DEPLOYED — confirmé par preuve HTTP directe",
+    "HEALTH_STATUS": "OK — GET /health -> 200, {\"status\":\"ok\", \"leagues_loaded\":[...]}",
+    "startup_errors_observable": "Aucun signe d'erreur startup visible depuis l'extérieur (health OK, routes répondent normalement, pas de 502/503)",
+    "db_connection_functional": "Indirectement confirmée — les endpoints protégés renvoient 401 (authentification vérifiée, implique un fonctionnement normal de la couche applicative, cohérent avec une connexion DB opérationnelle) plutôt qu'une erreur 500"
+  },
+
+  "8_frontend_deployment": {
+    "FRONTEND_STATUS": "NOT_DEPLOYED",
+    "evidence": "GET https://www.xfoot.site/promoter.html, admin-promoters.html, admin-subscribers.html, admin-earnings.html -> 404 (×4), aucune modification depuis Phase 14.2/14.6",
+    "DEPLOYED_VERSION": "Antérieure à Phase 14 (pages/nav rôle-gated non présentes)",
+    "mechanism_identified": "Hébergement statique Hostinger, sans auto-déploiement depuis GitHub — nécessite un upload manuel (FTP/panel), jamais exécuté depuis aucune session de cette conversation.",
+    "not_a_bug": true
+  },
+
+  "9_https_routing": {
+    "http_www_xfoot_site": {"status": 301, "redirect_to": "https://www.xfoot.site/", "result": "PASS — HTTP force HTTPS"},
+    "https_www_xfoot_site": {"status": 200, "result": "PASS"},
+    "https_api_xfoot_site_health": {"status": 200, "result": "PASS"},
+    "mixed_content_evident": false,
+    "required_routes_from_code": {
+      "source": "Extraites du code réel (api/app/referral/router.py + admin_router.py), jamais inventées",
+      "routes_tested_present": [
+        "/promoter/me", "/promoter/me/stats", "/promoter/me/sales",
+        "/referral/resolve/{slug}", "/referral/attribute",
+        "/admin/promoters", "/admin/promoters/{promoter_id}", "/admin/promoters/{promoter_id}/status",
+        "/admin/subscribers", "/admin/earnings/totals", "/admin/earnings/by-promoter"
+      ],
+      "all_present_in_production_openapi": true,
+      "count_verified": "11/11"
+    }
+  },
+
+  "10_admin": {
+    "ADMIN_ACCESS_VALIDATION": "BLOCKED",
+    "reason": "ADMIN_EMAILS reste UNKNOWN en production (§4) et cette conversation ne dispose d'aucun identifiant de compte administrateur réel — conformément à la règle explicite de cette phase (§10 du prompt), aucun compte admin n'a été créé ni utilisé arbitrairement.",
+    "unauthenticated_check_performed": true,
+    "unauthenticated_result": "GET /admin/promoters, /admin/subscribers, /admin/earnings/totals (sans token) -> 401 (×3), confirmé réellement en production",
+    "admin_authorized_access_test": "NON EFFECTUÉ — nécessiterait un compte admin réel non disponible"
+  },
+
+  "11_promoter": {
+    "value": "BLOCKED_PENDING_HUMAN_DECISION",
+    "human_decision_recorded": "L'utilisateur, interrogé explicitement sur la création de comptes de test réels en production, a choisi : 'Rester en lecture seule uniquement' (option recommandée par défaut).",
+    "unauthenticated_check_performed": true,
+    "unauthenticated_result": "GET /promoter/me, /promoter/me/stats, /promoter/me/sales (sans token) -> 401 (×3), confirmé réellement en production",
+    "dashboard_test_with_real_account": "NON EFFECTUÉ — aucun compte promoteur réel créé, sur décision explicite de l'utilisateur",
+    "referral_link_format_confirmed_by_code_inspection": "https://www.xfoot.site/{slug} (format exact du code Phase 14, jamais modifié)"
+  },
+
+  "12_referral": {
+    "value": "BLOCKED_PENDING_HUMAN_DECISION",
+    "route_availability_confirmed": "POST /referral/resolve/{slug} et POST /referral/attribute existent et répondent en production (présents dans openapi.json ; non invoqués avec des données réelles, sur décision de l'utilisateur)",
+    "full_attribution_scenario_executed": false,
+    "reason": "Aurait nécessité une inscription réelle (POST /auth/register) sur la base de production — explicitement refusé par l'utilisateur cette phase.",
+    "click_registration_checkout_pending_never_equal_sale": "Reconfirmé par LECTURE DE CODE uniquement cette phase (déjà prouvé par exécution réelle en environnement isolé, Phase 14 + 14.1 : 135 assertions, dont le balayage consolidé 'no false commission')."
+  },
+
+  "13_commission": {
+    "invariant_reconfirmed_by_code_reading": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000) — app/referral/money.py::compute_commission_amount, code désormais confirmé LIVE en production (même contenu que le commit ebb23ec, vérifié §7).",
+    "example": {"catalogue": 20000, "paye": 15000, "commission_attendue": 6000, "jamais": 8000},
+    "frontend_cannot_impose_commission": "Confirmé par lecture de code — aucune route promoteur/publique n'accepte un champ commission ou amount en entrée pour la création d'une commission ; celle-ci dérive exclusivement du corps signé du webhook Chariow.",
+    "live_financial_test_performed": false,
+    "reason": "Aucun paiement réel autorisé cette phase (règle absolue) — voir §14 Payment Safety."
+  },
+
+  "14_webhook": {
+    "invalid_signature_test": {
+      "method": "POST https://api.xfoot.site/billing/pulse avec x-chariow-signature falsifiée (64 zéros)",
+      "result": "401",
+      "verdict": "REJECT confirmé réellement en production"
+    },
+    "missing_signature_test": {
+      "method": "POST https://api.xfoot.site/billing/pulse sans header x-chariow-signature",
+      "result": "401",
+      "verdict": "REJECT confirmé réellement en production"
+    },
+    "safety_justification": "Ces deux appels sont sans risque : le code (_verify_pulse_signature, vérifié dans le commit déployé) rejette la requête AVANT tout accès DB ou traitement métier — aucune donnée n'a pu être créée ou modifiée par ces tests.",
+    "valid_signature_test_with_fixture": "NON EFFECTUÉ — nécessiterait de signer un événement avec le VRAI CHARIOW_PULSE_SECRET de production, qui n'est jamais accessible depuis cet environnement (jamais affiché, jamais utilisé) ; un événement signé avec un secret de TEST serait de toute façon rejeté par la production réelle (signature invalide), donc sans valeur de test ici.",
+    "replay_duplicate_test": "NON EFFECTUÉ — dépendrait d'un événement valide au préalable, lui-même non réalisable sans le vrai secret.",
+    "amount_never_from_frontend": "Reconfirmé par lecture de code (§13)."
+  },
+
+  "15_database_purity": {
+    "local_dev_db_before_this_phase": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "local_dev_db_after_this_phase": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "local_identical": true,
+    "production_ai_table_counts": "NON VÉRIFIABLES — aucun accès direct à la base de production PostgreSQL depuis cet environnement.",
+    "architectural_guarantee": "Structurellement garanti par le code (déjà vérifié Phase 14/14.5/14.6, réutilisé) : AUCUN module app/referral/*.py ne référence Match/MatchStats/ModelPrediction/ModelVersion/TeamRating/PredictionLog — cette garantie s'applique de façon identique en production puisque le code déployé est celui du commit ebb23ec audité.",
+    "honest_limitation": "L'absence de preuve empirique directe sur la base de production (counts_before == counts_after) est explicitement documentée comme non vérifiée, plutôt que supposée."
+  },
+
+  "16_ai_isolation": {
+    "training_promotion_prediction_modification_signal_generation": false,
+    "evidence": "Code déployé = commit ebb23ec, déjà audité (Phase 14.5/14.6) comme ne contenant aucune référence à l'entraînement, la promotion, ou la génération de prédiction/signal — 0 changement depuis.",
+    "kill_switch_modified": false,
+    "mode3_mode4_activated": false,
+    "scheduler_ia_activated": false,
+    "odds_provider_called": false,
+    "model_promoted": false
+  },
+
+  "17_production_health": {
+    "health_endpoint": "200 OK",
+    "startup_errors": "Aucun signe visible",
+    "http_errors_observed": "Aucun inattendu (401 attendus sur endpoints protégés, 404 attendus sur pages frontend non déployées, 405 attendu sur health en POST)",
+    "db_errors_observed": "Aucun signe visible (pas de 500)",
+    "frontend_errors": "N/A (frontend Phase 14 non déployé)",
+    "cors": "Non testé directement cette phase (pas de nouvelle origine introduite par Phase 14, risque jugé nul)",
+    "monitoring_window": "Aucune fenêtre d'observation prolongée réalisée (accès aux logs Railway indisponible) — vérification ponctuelle uniquement, documentée comme telle."
+  },
+
+  "18_production_version": {
+    "PRODUCTION_VERSION": "UNKNOWN (au sens preuve directe) / ebb23ec (au sens inférence de très haute confiance, voir §7)",
+    "no_version_endpoint_exposed": true,
+    "no_deployment_metadata_header_exposed": true,
+    "never_deduced_solely_because_deployment_was_requested": true,
+    "basis_for_inference": "Correspondance exacte du nombre et des noms de routes entre le code du commit ebb23ec et l'openapi.json de production, combinée à la confirmation indépendante que origin/main == ebb23ec."
+  },
+
+  "19_smoke_tests": [
+    {"test": "HTTPS", "expected": "PASS", "actual": "200 (www), 301 (http->https), 200 (api/health)", "status": "PASS"},
+    {"test": "API health", "expected": "PASS", "actual": "200 OK, JSON valide", "status": "PASS"},
+    {"test": "Frontend", "expected": "PASS", "actual": "www.xfoot.site 200, mais pages Phase 14 spécifiques 404 (non déployées)", "status": "PARTIAL — domaine sain, contenu Phase 14 absent"},
+    {"test": "Referral URL (routes existent)", "expected": "PASS", "actual": "/referral/resolve/{slug} et /referral/attribute présents dans openapi.json", "status": "PASS (existence de route uniquement, non invoqué avec données réelles)"},
+    {"test": "Promoter login", "expected": "PASS", "actual": "non observé — aucun compte réel créé", "status": "BLOCKED_PENDING_HUMAN_DECISION"},
+    {"test": "Promoter isolation", "expected": "PASS", "actual": "non observé en production (déjà prouvé en isolé, Phase 14.1)", "status": "BLOCKED_PENDING_HUMAN_DECISION"},
+    {"test": "Admin login", "expected": "PASS", "actual": "non observé — aucun identifiant admin réel disponible", "status": "BLOCKED (ADMIN_EMAILS UNKNOWN)"},
+    {"test": "Admin isolation", "expected": "PASS", "actual": "GET /admin/* sans token -> 401 (×3), confirmé réellement", "status": "PASS (partiel : rejet non-authentifié uniquement)"},
+    {"test": "Referral attribution", "expected": "PASS", "actual": "non observé — nécessiterait une inscription réelle", "status": "BLOCKED_PENDING_HUMAN_DECISION"},
+    {"test": "Pending payment", "expected": "0 commission", "actual": "non observable sans compte/paiement réel — déjà prouvé en isolé (Phase 14 test 4)", "status": "NOT_OBSERVED_THIS_PHASE"},
+    {"test": "Invalid webhook", "expected": "REJECT", "actual": "401 confirmé réellement (signature invalide ET signature absente)", "status": "PASS"},
+    {"test": "Duplicate webhook", "expected": "IDEMPOTENT", "actual": "non testable sans un premier événement valide (nécessiterait le vrai secret) — déjà prouvé en isolé (Phase 14 test 6, 10 livraisons -> 1 commission)", "status": "NOT_OBSERVED_THIS_PHASE"},
+    {"test": "AI DB purity", "expected": "UNCHANGED", "actual": "local dev DB confirmée inchangée ; production DB non vérifiable directement (pas d'accès), garantie architecturale confirmée", "status": "PASS (local) / UNVERIFIABLE (production, honnêtement documenté)"}
+  ],
+
+  "20_rollback": {
+    "CURRENT_RELEASE": "ebb23ec",
+    "PREVIOUS_RELEASE": "2160b4f (dernier commit connu avant ce Release Candidate, confirmé par ls-remote lors de la Phase 14.6)",
+    "application_rollback": "Redéploiement du commit précédent via l'historique Railway (méthode standard de plateforme, non exercée)",
+    "git_rollback": "git revert (jamais exécuté) — documentation uniquement",
+    "migration_rollback": "alembic downgrade -1 (jamais exécuté, downgrade() structurellement vérifié)",
+    "executed_this_phase": false
+  },
+
+  "21_payment_gate": {
+    "PAYMENT_REAL_TEST": "PENDING_HUMAN_AUTHORIZATION",
+    "PAYMENT_ENVIRONMENT": "UNKNOWN",
+    "chariow_write_calls_this_phase": 0,
+    "value": "PAYMENT_VERIFICATION = BLOCKED_PENDING_HUMAN_AUTHORIZATION",
+    "note": "Cette phase n'autorise NI n'effectue automatiquement un test de paiement réel — reste un gate séparé, distinct du succès du déploiement technique."
+  },
+
+  "22_limitations": [
+    "PRODUCTION_VERSION confirmée avec un très haut niveau de confiance mais sans preuve cryptographique directe (aucun endpoint de version exposé).",
+    "FRONTEND non déployé — le programme d'affiliation est incomplet en production tant que Hostinger n'a pas reçu les fichiers (upload manuel requis).",
+    "ADMIN_EMAILS reste UNKNOWN — ADMIN_ACCESS_VALIDATION = BLOCKED.",
+    "Tests Promoteur/Admin authentifiés et flux d'attribution complet NON exécutés en production, sur décision explicite de l'utilisateur (lecture seule uniquement) — jamais inventés ni simulés.",
+    "Aucun accès direct à la base de données de production — DATABASE_PURITY en production repose sur une garantie architecturale, non une mesure empirique directe.",
+    "Aucune fenêtre de monitoring prolongée — vérification ponctuelle uniquement.",
+    "PAYMENT_ENVIRONMENT toujours UNKNOWN, aucun test financier réel effectué.",
+    "Idempotence webhook et scénario refund non re-testables en production réelle sans le vrai secret Chariow (jamais accessible) — déjà prouvés de façon rigoureuse en environnement isolé (Phase 14/14.1)."
+  ],
+
+  "23_final_verdict": {
+    "value": "DEPLOYED_WITH_LIMITATIONS",
+    "rationale": "Le backend est RÉELLEMENT déployé et vérifié par preuve HTTP directe (11/11 routes Phase 14 live, health OK, autorisation 401 correcte, sécurité webhook confirmée réellement contre la production). Le frontend n'est PAS déployé (Hostinger, mécanisme manuel non exécuté). Les tests nécessitant des données réelles (attribution complète, dashboards authentifiés) ont été explicitement bloqués sur décision de l'utilisateur (lecture seule), jamais contournés ni simulés. Aucune modification IA, aucun paiement réel, aucune action irréversible. Le verdict DEPLOYED_WITH_LIMITATIONS reflète fidèlement cet état mixte : succès technique du déploiement backend, limitations honnêtement documentées sur le frontend, l'authentification réelle et le paiement — jamais présenté comme PRODUCTION_READY, PAYMENT_VERIFIED ou PRODUCTION_BETTING_ACTIVATED."
+  },
+
+  "human_decision_log": {
+    "question_asked": "Comment procéder pour le smoke test d'attribution de parrainage nécessitant la création de comptes de test réels en production ?",
+    "options_presented": ["Créer des comptes de test taggés en production", "Rester en lecture seule uniquement (recommandé par défaut)"],
+    "human_answer": "Rester en lecture seule uniquement (recommandé par défaut)",
+    "respected": true
+  },
+
+  "absolute_rules_compliance": {
+    "ai_engine_modified": false,
+    "model_promoted": false,
+    "model_trained": false,
+    "betting_signal_generated": false,
+    "odds_api_called": false,
+    "real_payment_executed": false,
+    "kill_switch_disabled": false,
+    "mode3_activated": false,
+    "mode4_activated": false,
+    "admin_emails_modified_automatically": false,
+    "authentication_bypassed": false,
+    "hmac_bypassed": false,
+    "data_deleted": false,
+    "accounts_deleted": false,
+    "db_downgrade_executed": false,
+    "git_push_executed_this_phase": false,
+    "git_reset_rebase_amend_force_push_executed": false
+  },
+
+  "closing_statement": "PHASE 14.7 — XFOOT PRODUCTION DEPLOYMENT & CONTROLLED SMOKE TEST V1 TERMINÉE. LE RELEASE ebb23ec A ÉTÉ DÉPLOYÉ ET VÉRIFIÉ, OU LES LIMITATIONS D'ACCÈS/ENVIRONNEMENT ONT ÉTÉ DOCUMENTÉES HONNÊTEMENT. ROUTING, HTTPS, ADMIN, PROMOTEUR, ATTRIBUTION REFERRAL, ISOLATION, COMMISSION DE 40% ET SÉCURITÉ WEBHOOK ÉVALUÉS OU LIMITATIONS DOCUMENTÉES. AUCUN PAIEMENT RÉEL EFFECTUÉ SANS AUTORISATION HUMAINE SÉPARÉE. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ."
+}

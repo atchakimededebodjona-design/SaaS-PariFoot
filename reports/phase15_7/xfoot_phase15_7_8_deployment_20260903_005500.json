@@ -1,0 +1,84 @@
+{
+  "phase": "15.7.8 — PUSH + DÉPLOIEMENT PRODUCTION DU CORRECTIF REFERRAL",
+  "timestamp": "2026-09-03T00:55:00Z",
+
+  "1_pre_push": {
+    "HEAD_avant": "70970ee16422f591c15115847ed2834214a64a51",
+    "commit_verifie": ["frontend-design/api.js", "frontend-design/test_referral_capture.js"],
+    "conforme": true
+  },
+
+  "2_push": {
+    "commande": "git push origin main",
+    "resultat_brut": "dbf2124..70970ee  main -> main",
+    "HEAD_apres": "70970ee16422f591c15115847ed2834214a64a51",
+    "origin_main_apres": "70970ee16422f591c15115847ed2834214a64a51",
+    "git_ls_remote": "70970ee16422f591c15115847ed2834214a64a51",
+    "HEAD_egale_origin_main": true,
+    "force_push_utilise": false
+  },
+
+  "3_deploiement_backend": {
+    "fichiers_backend_dans_le_commit": 0,
+    "conclusion": "Aucun changement backend réel — le commit ne contient que 2 fichiers frontend. Railway se redéploiera très probablement automatiquement sur ce push (comportement connu), mais sans AUCUNE conséquence fonctionnelle (le code backend exécuté est byte-identique à avant). Aucun déploiement backend n'est inventé ou supposé nécessaire."
+  },
+
+  "4_deploiement_hostinger": {
+    "fichier_runtime_a_uploader": "frontend-design/api.js UNIQUEMENT",
+    "destination": "https://www.xfoot.site/api.js",
+    "upload_effectue_par_cet_assistant": false,
+    "raison": "Aucun accès FTP/File Manager Hostinger disponible pour cet assistant (confirmé constamment depuis le début de cette conversation) — action strictement humaine.",
+    "fichiers_explicitement_exclus_de_toute_recommandation_upload": ["test_referral_capture.js", "rapports", "fichiers de test", ".htaccess", "autres fichiers frontend"]
+  },
+
+  "5_verification_apres_upload": {
+    "statut": "PRÉALABLE (avant upload) — baseline établie pour comparaison ultérieure",
+    "sha256_local_committe": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5",
+    "sha256_production_actuelle": "48395c21533fa83a9447a7d309216733d99a1cf6331f3889da0403bd9debe0e3",
+    "match": false,
+    "http_status_production": 200,
+    "last_modified_production": "Tue, 01 Sep 2026 22:06:31 GMT (antérieur au correctif — confirme l'ancien fichier toujours servi)",
+    "presence_captureReferralFromUrl_production": "présente (fonction pré-existante, version non corrigée)",
+    "presence_pathname_fallback_production": false,
+    "AVERTISSEMENT_CACHE_CDN": "x-hcdn-cache-status: HIT sur cette requête — CONTRAIREMENT aux fichiers .html (toujours DYNAMIC, jamais mis en cache, confirmé à de multiples reprises dans cette conversation), api.js EST un actif mis en cache par le CDN Hostinger (Cache-Control observé historiquement : max-age=604800, voir incident Phase 14.9). CECI EST EXACTEMENT LE MÊME TYPE D'INCIDENT QUE LA PHASE 14.9 : après l'upload, il est probable que la production continue de servir une copie EN CACHE de l'ANCIEN api.js pendant un certain temps, même si le fichier origine a bien été remplacé. Une purge de cache CDN sera très probablement nécessaire (comme lors de la Phase 14.9R)."
+  },
+
+  "6_pas_de_parcours_utilisateur": {
+    "compte_cree": false,
+    "paiement_effectue": false,
+    "user_241_modifie": false,
+    "confirmation": "Le compte moimeme@test.com (241) reste strictement inchangé. Aucune tentative de validation fonctionnelle navigateur cette phase — réservée à une phase séparée."
+  },
+
+  "7_isolation": {
+    "htaccess_modifie": false,
+    "backend_modifie": false,
+    "db_modifiee": false,
+    "chariow_modifie": false,
+    "prix_modifies": false,
+    "tables_ai": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "strictement_identiques": true
+    }
+  },
+
+  "8_tests": {
+    "test_referral_capture_js": {"TOTAL": 17, "PASSED": 17, "FAILED": 0, "moment": "après push"},
+    "regression_backend": {"TOTAL": 66, "PASSED": 66, "FAILED": 0, "moment": "après push"},
+    "difference_liee_a_environnement_production": "AUCUNE détectée dans les tests locaux — la seule différence identifiée est la NON-CORRESPONDANCE entre le local committé et le fichier réellement servi par la production (§5), documentée honnêtement, non masquée."
+  },
+
+  "action_requise": {
+    "description": "Upload manuel HUMAIN requis : téléverser frontend-design/api.js (et UNIQUEMENT ce fichier) vers la destination correspondant à https://www.xfoot.site/api.js sur Hostinger (File Manager ou FTP), en remplaçant le fichier existant. Ne rien supprimer d'autre, ne toucher à aucun autre fichier.",
+    "point_attention_cache": "Après upload, si le SHA256 production ne correspond toujours pas au SHA256 local (6960e66d...) même après quelques minutes, une purge du cache CDN Hostinger pour ce fichier précis sera probablement nécessaire — comportement déjà rencontré et documenté en Phase 14.9/14.9R pour ce même fichier api.js.",
+    "prochaine_etape_apres_upload": "Prévenir cet assistant, qui reprendra la vérification byte-à-byte (SHA256), la détection d'un éventuel problème de cache CDN, et la confirmation explicite de la présence du fallback pathname en production — avant toute proposition de validation fonctionnelle navigateur (phase séparée)."
+  },
+
+  "verdict": {
+    "value": "PUSH_SUCCESS_HOSTINGER_VALIDATION_PENDING",
+    "rationale": "Push réussi et vérifié avec preuve (HEAD local = origin/main = git ls-remote = 70970ee). Aucun changement backend réel dans ce commit. L'upload Hostinger, seule étape restante, n'a pas pu être effectué par cet assistant (aucun accès FTP/File Manager) — confirmé par SHA256 production toujours différent du SHA256 local committé. Un risque de cache CDN spécifique à api.js (déjà rencontré en Phase 14.9) est documenté par anticipation, sans conclure prématurément à un blocage qui ne s'est pas encore produit."
+  },
+
+  "closing_statement": "PHASE 15.7.8 — PUSH RÉUSSI ET VÉRIFIÉ (70970ee, HEAD=origin/main=git ls-remote, IDENTIQUES). AUCUN CHANGEMENT BACKEND RÉEL (COMMIT 100% FRONTEND, 2 FICHIERS). UPLOAD HOSTINGER DE frontend-design/api.js NON EFFECTUÉ — HORS DE PORTÉE TECHNIQUE DE CET ASSISTANT (AUCUN ACCÈS FTP/FILE MANAGER). SHA256 PRODUCTION ACTUELLE CONFIRMÉ DIFFÉRENT DU SHA256 LOCAL COMMITTÉ. RISQUE DE CACHE CDN DOCUMENTÉ PAR ANTICIPATION (api.js EST mis en cache par hcdn, contrairement aux .html — incident déjà rencontré en Phase 14.9). 17/17 + 66/66 TESTS TOUJOURS VERTS APRÈS PUSH, 6 TABLES IA INCHANGÉES. AUCUNE MODIFICATION .htaccess/BACKEND/RAILWAY/DB/CHARIOW/PRIX. AUCUN COMPTE CRÉÉ, AUCUN PAIEMENT, COMPTE 241 INCHANGÉ. AUCUN COMMIT SUPPLÉMENTAIRE. VERDICT : PUSH_SUCCESS_HOSTINGER_VALIDATION_PENDING — EN ATTENTE DE L'UPLOAD MANUEL HUMAIN DE frontend-design/api.js (UNIQUEMENT CE FICHIER) VERS https://www.xfoot.site/api.js."
+}

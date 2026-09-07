@@ -1,0 +1,134 @@
+{
+  "phase": "15.9 — DURCISSEMENT DU WEBHOOK CHARIOW + RÉCUPÉRATION CONTRÔLÉE",
+  "timestamp": "2026-09-03T02:00:00Z",
+
+  "PARTIE_A_correction_webhook": {
+    "defaut_constate_A3": {
+      "confirme": true,
+      "description": "Deux points de silence identiques identifiés et confirmés par lecture ET par test exécuté : (1) tout event_type non reconnu produisait HTTP 200 + marqué traité, sans aucune trace ; (2) successful.sale sans custom_metadata.user_id retournait silencieusement, sans aucune trace, même en cas de custom_metadata totalement absente."
+    },
+    "correction_appliquee": {
+      "fichier_unique_modifie": "api/app/billing/router.py",
+      "fonction_chariow_pulse": {
+        "avant": "json.loads(payload) non protégé (500 non gérée possible) ; event absent tombait dans le même 'ignoré silencieusement' qu'un type reconnu-mais-non-géré ; aucun log nulle part.",
+        "apres": [
+          "json.JSONDecodeError capturé explicitement -> HTTP 400 'Corps de Pulse JSON invalide' (jamais une 500 générique)",
+          "event_type is None (champ 'event' absent) -> HTTP 400 explicite 'Champ event manquant' (distinct d'un type reconnu-mais-non-géré : un vrai Pulse Chariow porte TOUJOURS ce champ selon sa propre doc)",
+          "event_type présent mais non géré (ex. futur type Chariow) -> HTTP 200 CONSERVÉ (décision de conception délibérée, voir rationale) MAIS désormais logger.info() explicite avec la valeur exacte du type et le delivery_id"
+        ]
+      },
+      "fonction_handle_successful_sale": {
+        "avant": "custom_metadata.get('user_id') absent -> return silencieux, aucun log. sub introuvable -> return silencieux, aucun log.",
+        "apres": [
+          "user_id non numérique -> logger.warning() explicite, tentative de repli",
+          "ProviderSubscription introuvable par user_id -> logger.warning() explicite, tentative de repli",
+          "NOUVEAU repli EMAIL : réutilise _find_provider_subscription_by_email (fonction déjà existante et déjà testée pour les Pulses license.*, AUCUN nouveau mécanisme de confiance inventé) via sale.customer.email",
+          "repli email réussi -> logger.info() explicite",
+          "aucun repli ne fonctionne -> logger.warning('IGNORÉ : ...') explicite, PUIS return (toujours HTTP 200 à Chariow, mais désormais 100% diagnosticable)",
+          "sub.plan = custom_metadata.get('plan') or sub.plan — ne jamais écraser un plan déjà connu par une valeur absente en cas de repli email",
+          "recompute_entitlement() appelé avec sub.user_id (et non plus la variable locale user_id, qui n'existait pas dans le nouveau chemin de repli — bug introduit puis corrigé pendant cette même phase, avant tout test)"
+        ]
+      }
+    },
+    "decision_de_conception_explicite": {
+      "sujet": "Faut-il rejeter (4xx) un event_type reconnu-mais-non-géré, ou garder 200 ?",
+      "decision": "200 CONSERVÉ pour ce cas précis, uniquement journalisé",
+      "justification": "Le code existant documentait déjà explicitement (avant cette phase) que Chariow réessaie indéfiniment un Pulse non-200 — changer ce comportement pour TOUT type non reconnu risquerait de provoquer des tempêtes de retry pour de futurs types d'événements légitimes que Xfoot ne gère simplement pas encore (ex. remboursements). La distinction retenue : un event_type PRÉSENT mais inconnu reste 200 (accusé de réception honnête — Chariow a le droit d'ajouter des types), tandis qu'un champ 'event' ABSENT ou un JSON invalide (payload structurellement non conforme au contrat Pulse documenté) devient 400 (jamais un Pulse légitime de Chariow ne devrait avoir cette forme). Cette distinction est un jugement d'ingénierie explicite, présenté ici pour validation humaine plutôt que décidé silencieusement.",
+      "risque_residuel_assume": "Si Chariow envoyait réellement un type d'événement jamais documenté correspondant en fait à un PAIEMENT (ex. un renommage futur de 'successful.sale'), ce cas resterait un 200 silencieux AU NIVEAU HTTP — mais désormais VISIBLE dans les logs (logger.info avec le type exact), ce qui n'était PAS le cas avant cette phase."
+    },
+    "fichiers_modifies": ["api/app/billing/router.py"],
+    "fichiers_ajoutes": ["api/test_phase15_9_webhook_hardening.py"],
+    "aucun_autre_fichier_touche": true,
+
+    "tests": {
+      "nouveau_fichier_dedie": {
+        "TOTAL": 31, "PASSED": 31, "FAILED": 0,
+        "detail": "14 scénarios demandés (Tests 1-14) + variantes (4b JSON invalide) — capture RÉELLE des logs Python (pas une simple lecture de code) pour confirmer la journalisation effective."
+      },
+      "regression_complete": {"TOTAL": 67, "PASSED": 67, "FAILED": 0, "detail": "66 fichiers préexistants + le nouveau, tous verts"},
+      "aucune_regression_detectee": true
+    },
+
+    "securite_et_idempotence": {
+      "signature_invalide_401": "PASS (Test 7, non-régression confirmée)",
+      "delivery_id_rejoue_meme_contenu": "PASS (Test 8) — duplicate=true, aucun retraitement",
+      "delivery_id_rejoue_contenu_contradictoire": "PASS (Test 9) — la déduplication porte sur l'IDENTITÉ de la delivery (avant même le parsing du corps), donc un contenu contradictoire sur le même delivery_id est structurellement IMPOSSIBLE à traiter dangereusement — confirmé par test explicite",
+      "meme_evenement_3x": "PASS (Test 14) — exactement 1 commission, jamais de doublon",
+      "aucun_secret_journalise": "Confirmé par relecture des logger.warning/info/error ajoutés — jamais de payload complet, jamais de secret/token/Authorization/signature loggés, uniquement event_type, delivery_id, user_id/montants non sensibles"
+    },
+
+    "isolation_ai": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "strictement_identiques": true,
+      "aucun_fichier_app_ai_modifie": true
+    },
+
+    "git": {"commit_effectue": false, "push_effectue": false, "raison": "Aucune autorisation explicite donnée pour cette phase précise — correction et tests validés localement uniquement, en attente de validation humaine avant tout commit/push."}
+  },
+
+  "PARTIE_B_recuperation_paiement_reel": {
+    "paiement": {"reference": "pi_ih0s0eixhgm1", "montant": "1500 FCFA", "statut_chariow": "Terminé", "date": "2026-09-03", "user_id": 245, "email": "oktest@test.com", "promoter": "promoter-2", "promoter_user_id": 206},
+
+    "B1_recherche_voie_existante": {
+      "mecanismes_trouves": [
+        "POST /billing/activate-license (api/app/billing/router.py, endpoint DÉJÀ EXISTANT, jamais créé pour cette phase) — 'filet de sécurité si la redirection post-paiement échoue/tarde et que le Pulse successful.sale/license.activated n'est pas encore arrivé', exactement le scénario actuel.",
+        "AUCUN autre mécanisme de synchronisation/réconciliation Chariow trouvé dans tout api/app/billing/ (recherche exhaustive) — google_play_service.py a sa propre logique de sync, spécifique à un AUTRE provider, non réutilisable ici."
+      ],
+      "aucune_nouvelle_voie_inventee": true
+    },
+
+    "B2_mecanisme_officiel_identifie": {
+      "endpoint": "POST /billing/activate-license",
+      "fonctionnement": "L'utilisateur AUTHENTIFIÉ (current_user, donc nécessairement USER 245 lui-même connecté à son propre compte) colle sa clé de licence Chariow (reçue par email après achat). Le backend appelle _fetch_chariow_license(license_key) -> GET {CHARIOW_API_BASE_URL}/licenses/{license_key} — un VRAI appel en LECTURE SEULE à l'API OFFICIELLE Chariow (documentée chariow.dev/api-reference/licenses/get-license), jamais un scraping, jamais des credentials inventés.",
+      "verification_appartenance": "metadata.user_id en priorité, repli sur customer.email si absent — même modèle de confiance déjà utilisé et testé ailleurs.",
+      "action_cote_chariow_si_necessaire": "Si status='pending_activation', un SEUL appel POST officiel à /licenses/{key}/activate (déjà existant, déjà testé) — pas une invention de cette phase.",
+      "mise_a_jour_xfoot": "ProviderSubscription.status='active', plan, current_period_end = expires_at RÉEL renvoyé par Chariow — flux métier NORMAL, AUCUNE table modifiée directement.",
+      "GAP_REEL_DECOUVERT": "Ce endpoint N'APPELLE JAMAIS create_commission_for_confirmed_payment() (confirmé par recherche exhaustive : cette fonction n'a qu'UN SEUL point d'appel dans tout le code, à l'intérieur de _handle_successful_sale, jamais dans activate_license). CONSÉQUENCE : même si USER 245 utilise ce mécanisme officiel avec succès, SON ABONNEMENT deviendrait actif, MAIS AUCUNE COMMISSION ne serait créée pour promoter-2 — ce chemin de récupération est donc PARTIEL, pas complet.",
+      "action_requise_pour_utiliser_ce_chemin": "USER 245 (oktest@test.com) doit se connecter lui-même à son compte Xfoot et coller la clé de licence reçue par email de Chariow — action strictement humaine, cet assistant ne peut ni ne doit l'exécuter (aucune authentification en tant que 245 disponible, et même possible, ce serait usurper une action qui doit rester celle du titulaire du compte)."
+    },
+
+    "B3_replay_officiel_chariow": {
+      "disponibilite_verifiable_par_cet_assistant": false,
+      "raison": "Aucun accès au dashboard Chariow pour vérifier si une fonction de retry/replay de Pulse existe pour cette delivery précise.",
+      "condition_supplementaire_si_disponible": "Même si Chariow proposait un replay officiel, le REJOUER MAINTENANT ne changerait RIEN : le code EN PRODUCTION est encore l'ANCIEN code (le durcissement de la Partie A est validé LOCALEMENT uniquement, non committé, non poussé, non déployé) — un replay recevrait exactement le même traitement défaillant qu'au premier envoi. UN REPLAY OFFICIEL NE DEVIENDRAIT UTILE QU'APRÈS déploiement de la Partie A.",
+      "aucun_replay_tente": true
+    },
+
+    "B4_B5_verdict_recuperation": {
+      "recuperation_automatique_immediate_possible": false,
+      "raison_precise": "Aucune voie ne permet une récupération COMPLÈTE (subscription + commission) immédiatement dans le cadre de cette phase : (a) activate-license est un mécanisme officiel réel mais nécessite une action de USER 245 lui-même ET ne couvre pas la commission (gap architectural découvert) ; (b) un replay Chariow officiel, s'il existe, ne serait utile qu'après déploiement de la Partie A, non autorisé cette phase.",
+      "ce_qui_manque_precisement": [
+        "Action humaine de USER 245 (connexion + collage de la clé de licence) pour activer PARTIELLEMENT via activate-license — hors de portée de cet assistant.",
+        "Confirmation de l'existence d'un replay officiel Chariow — nécessite un accès dashboard Chariow que cet assistant n'a pas.",
+        "Autorisation humaine explicite de déployer la Partie A (commit + push + redéploiement Railway automatique, aucun fichier frontend impliqué cette fois) — condition préalable à toute utilité d'un éventuel replay Chariow.",
+        "Une extension du endpoint activate-license pour y ajouter la création de commission serait une VRAIE correction de code utile, mais elle EXCÈDE le périmètre de cette phase (Partie B interdit explicitement d'inventer une nouvelle voie ; ceci serait une modification fonctionnelle nouvelle, pas une simple utilisation d'un mécanisme déjà prévu) — proposée comme recommandation pour une phase séparée."
+      ]
+    },
+
+    "B6_B9_verifications_post_recuperation": "NON APPLICABLE — aucune récupération n'a été effectuée cette phase (aucune donnée fabriquée, conformément à la règle absolue).",
+
+    "B10_remboursement": "Aucun remboursement réel effectué. Mécanisme de reversal déjà existant et déjà testé (reverse_commissions_for_subscription, test_referral_promoter_platform.py) — non ré-exécuté cette phase, non nécessaire."
+  },
+
+  "PARTIE_C_limitations": {
+    "acces_manquants": [
+      "Aucun accès aux logs Railway (toujours, depuis le début de cette conversation)",
+      "Aucun accès au dashboard Chariow (Pulses/webhooks, historique de livraison, replay éventuel)",
+      "Aucun outil de navigateur — impossible d'agir au nom de USER 245 pour activate-license",
+      "Aucune autorisation de déploiement donnée cette phase"
+    ],
+    "impossibilite_de_recuperation_immediate": true,
+    "aucune_preuve_manquante_inventee": true,
+    "aucun_paiement_xfoot_declare_traite_uniquement_parce_que_chariow_dit_termine": true
+  },
+
+  "verdict": {
+    "value": "WEBHOOK_FIXED_REAL_PAYMENT_REQUIRES_OFFICIAL_REPLAY",
+    "rationale": "PARTIE A : le défaut de silence a été confirmé, corrigé de façon minimale et ciblée (1 seul fichier backend + 1 fichier de test), validé par 31/31 tests dédiés (incluant capture réelle des logs) et 67/67 en régression complète, sans aucune régression ni modification IA. PARTIE B : aucune récupération complète (subscription + commission) n'est possible immédiatement — le seul mécanisme officiel existant (activate-license) est partiel (ne couvre pas la commission, gap découvert et documenté) et nécessite une action de USER 245 lui-même ; un éventuel replay officiel Chariow ne deviendrait utile qu'après déploiement de la correction de la Partie A, non autorisé cette phase. Aucune donnée n'a été fabriquée, aucun paiement Xfoot n'a été déclaré traité sur la seule foi du statut Chariow."
+  },
+
+  "diff_reference": "git diff -- api/app/billing/router.py : 1 fichier changé, 82 insertions(+), 18 suppressions(-)",
+
+  "closing_statement": "PHASE 15.9 — PARTIE A TERMINÉE ET VALIDÉE LOCALEMENT : WEBHOOK DURCI (1 SEUL FICHIER api/app/billing/router.py + 1 NOUVEAU FICHIER DE TEST), 31/31 TESTS DÉDIÉS, 67/67 RÉGRESSION COMPLÈTE, 6 TABLES IA INCHANGÉES, AUCUNE RÉGRESSION. PARTIE B : AUCUNE RÉCUPÉRATION EFFECTUÉE — UN MÉCANISME OFFICIEL EXISTE (POST /billing/activate-license, LECTURE SEULE VIA L'API CHARIOW RÉELLE) MAIS EST PARTIEL (NE CRÉE PAS LA COMMISSION, GAP DÉCOUVERT) ET NÉCESSITE UNE ACTION DE USER 245 LUI-MÊME ; UN REPLAY OFFICIEL CHARIOW ÉVENTUEL NE SERAIT UTILE QU'APRÈS DÉPLOIEMENT DE LA CORRECTION, NON AUTORISÉ CETTE PHASE. AUCUNE DONNÉE FABRIQUÉE, AUCUN DEUXIÈME PAIEMENT, AUCUNE MODIFICATION DB/RAILWAY/CHARIOW, AUCUN COMMIT, AUCUN PUSH. VERDICT : WEBHOOK_FIXED_REAL_PAYMENT_REQUIRES_OFFICIAL_REPLAY — EN ATTENTE DE DÉCISIONS HUMAINES SÉPARÉES (DÉPLOIEMENT DE LA PARTIE A, ET/OU ACTION DE USER 245 VIA activate-license, ET/OU EXTENSION FUTURE DE CE ENDPOINT POUR COUVRIR LA COMMISSION)."
+}

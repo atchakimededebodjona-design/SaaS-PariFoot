@@ -1,0 +1,103 @@
+{
+  "phase": "15.7 — REFERRAL ATTRIBUTION FIX V1",
+  "timestamp": "2026-09-02T23:15:00Z",
+
+  "1_probleme_initial": "3 nouveaux comptes créés après passage par https://www.xfoot.site/promoter-2 apparaissent dans Admin -> Abonnés (donc ont bien atteint le checkout) mais avec PROMOTEUR='—' au lieu de 'promoter-2'.",
+
+  "2_comptes_de_reproduction": [
+    {"email": "demo@payement.com", "user_id": 236},
+    {"email": "demo11@test.com", "user_id": 238},
+    {"email": "demo2@payement.com", "user_id": 239}
+  ],
+
+  "3_cause_racine": {
+    "backend_rigoureusement_disculpe": "Un test de reproduction (api/test_phase15_7_referral_attribution_repro.py, TEST 1) rejoue EXACTEMENT la séquence et le FORMAT réels du navigateur : POST /referral/resolve/promoter-2 SANS authentification (mime captureReferralFromUrl), PUIS inscription+connexion, PUIS POST /referral/attribute AVEC un captured_at au format JS EXACT ('...Z', jamais '+00:00' comme les autres fichiers de test du dépôt). Résultat : ReferralAttribution CRÉÉE CORRECTEMENT, promoter_id exact, visible dans Admin -> Abonnés avec promoter_slug='promoter-2'. CECI PROUVE QUE LE BACKEND N'A AUCUN BUG dans ce mécanisme.",
+    "cause_identifiee_cote_frontend": {
+      "fichier": "frontend-design/login.html",
+      "lignes_avant_correctif": "73-82",
+      "bug": "captureReferralFromUrl() n'était appelée QUE dans la branche `else` de `if (getToken())` — si un token JWT résiduel d'une session PRÉCÉDENTE (ex. un autre compte de test dans le MÊME navigateur, jamais explicitement déconnecté) était déjà présent en localStorage au moment de visiter https://www.xfoot.site/promoter-2, login.html redirigeait IMMÉDIATEMENT vers dashboard.html SANS JAMAIS capturer le slug 'promoter-2' de l'URL — silencieusement, aucune erreur visible. Le slug était alors perdu pour de bon (dashboard.html ne porte plus ?ref= dans son URL).",
+      "confiance": "ÉLEVÉE mais NON CONFIRMÉE À 100% — cette hypothèse est cohérente avec l'historique de test de cette conversation (le même navigateur a servi à tester payment@test.com de manière intensive juste avant la création de ces 3 comptes), et c'est le SEUL écart de code réel identifié après un audit exhaustif (capture, stockage, persistance, sécurité, conditions métier — toutes auditées sans anomalie). Elle N'A CEPENDANT PAS pu être confirmée par observation directe du navigateur ayant réellement servi à créer 236/238/239 (aucun accès disponible)."
+    },
+    "hypotheses_ecartees_avec_preuve": [
+      "Format du timestamp captured_at ('Z' vs '+00:00') — testé directement avec Pydantic 2.13.4, parsé correctement dans les deux formats (tz-aware, UTC).",
+      "Bug de résolution du slug 'promoter-2' côté backend — testé et confirmé fonctionnel (200, valid:true) à plusieurs reprises.",
+      "Self-referral, promoteur inactif, fenêtre de 30 jours expirée, attribution déjà existante — toutes les conditions métier testées et fonctionnent comme attendu, aucune n'explique le cas des 3 comptes (tous nouveaux, promoter-2 ACTIVE).",
+      "CORS cassé sur /referral/* — écarté : register/login/checkout (même politique CORS globale) fonctionnent, donc CORS n'est pas sélectivement cassé pour un sous-ensemble de routes.",
+      "Bug d'affichage de l'endpoint Admin -> Abonnés (jointure/mapping cassé) — écarté par lecture de code (api/app/referral/admin_router.py:159-181) : la logique ne peut afficher '—' que si la ligne ReferralAttribution elle-même est absente, confirmé aussi empiriquement par TEST 2 du nouveau fichier de reproduction (promoter_slug correctement affiché quand l'attribution existe)."
+    ]
+  },
+
+  "4_fichiers_modifies": ["frontend-design/login.html"],
+  "4b_fichiers_ajoutes": ["api/test_phase15_7_referral_attribution_repro.py"],
+
+  "5_fonctions_modifiees": {
+    "login.html_script_inline": "Déplacement de l'appel à captureReferralFromUrl() — appelé maintenant INCONDITIONNELLEMENT, AVANT le test `if (getToken())`, au lieu d'être dans son bloc `else`. Aucune fonction JS elle-même modifiée (captureReferralFromUrl, attributeReferralIfPresent, api.js : AUCUN changé)."
+  },
+
+  "6_description_exacte_du_correctif": {
+    "avant": "if (getToken()) { window.location.href = \"dashboard.html\"; } else { captureReferralFromUrl(); }",
+    "apres": "captureReferralFromUrl(); if (getToken()) { window.location.href = \"dashboard.html\"; }",
+    "justification": "Capturer le referral dans localStorage est une opération SANS EFFET DE BORD (juste une écriture localStorage best-effort) et INDÉPENDANTE de l'état de connexion — la conditionner à l'absence de token n'avait aucune raison de sécurité ou de logique métier, seulement une supposition implicite (jamais documentée comme intentionnelle) que 'déjà connecté = pas besoin de capturer'. La séparer de la redirection corrige le bug sans toucher à AUCUNE règle de sécurité, de self-referral, de fenêtre d'attribution, ou de persistance — celles-ci restent 100% dans attribute_referral (backend), inchangé.",
+    "portee": "1 seul fichier frontend modifié, 0 ligne backend touchée, 0 ligne de sécurité touchée, /promoter-2 fonctionne toujours à l'identique (aucun changement d'URL/architecture)."
+  },
+
+  "7_tests_avant_correction": "Non applicable au sens strict — AUCUN test existant du dépôt ne reproduisait la séquence exacte captureReferralFromUrl-bypass-si-token-existant (c'est un scénario purement frontend/navigateur, jamais couvert par un test backend). Le nouveau test de reproduction (TEST 1, api/test_phase15_7_referral_attribution_repro.py) a été écrit et exécuté : il PASSE (24/24) car il teste le mécanisme BACKEND isolé de la séquence navigateur — il ne pouvait pas, par construction, révéler un bug purement frontend (pas de localStorage/JS réel dans un test Python). Ceci est documenté explicitement comme une limite du test (voir §19).",
+
+  "8_tests_apres_correction": {
+    "nouveau_fichier_repro": "24/24 tests réussis (api/test_phase15_7_referral_attribution_repro.py) — TEST 1 (reproduction exacte resolve->register->login->attribute au format 'Z') à TEST 7 (CheckoutRequest sans champ promoter_id)",
+    "regression_complete": {"TOTAL": 66, "PASSED": 66, "FAILED": 0, "SKIPPED": 0}
+  },
+
+  "9_resultat_du_parcours_reel": "NON EXÉCUTÉ PAR CET ASSISTANT — aucun outil de navigateur disponible. L'Étape 8 (fenêtre privée, aucun compte connecté, visite directe de /promoter-2, inscription immédiate, vérification Admin) requiert une exécution humaine réelle en production, non simulable depuis ce contexte. C'est la LIMITE PRINCIPALE de cette phase.",
+
+  "10_nouvel_user_id_de_validation": "NOT_APPLICABLE — aucun nouveau compte réel créé par cet assistant (aucune création de compte autorisée/possible cette phase). Le user_id du test de reproduction (backend uniquement, base isolée jamais api/app.db) n'a aucune valeur en production.",
+
+  "11_referralattribution_confirmee": "Confirmée UNIQUEMENT dans l'environnement de test isolé (voir §8) — PAS en production pour un nouveau compte réel post-correctif (nécessite l'Étape 8, non exécutable par cet assistant).",
+
+  "12_promoter_id": "Dans le test : celui du Promoter créé avec slug='promoter-2' dans la base de test isolée (sans rapport avec l'id réel de promoter-2 en production, jamais interrogé).",
+  "13_promoter_slug": "promoter-2 (confirmé dans le test ET re-confirmé en production via /referral/resolve/promoter-2, aucune écriture)",
+
+  "14_checkout_1500_fcfa": {
+    "code_local": "PRODUCT_IDS['monthly'] lit CHARIOW_PRODUCT_ID_MONTHLY (inchangé, correct) — valeur attendue prd_sgvapilx",
+    "rappel_point_ouvert_distinct": "Le statut de la correction Railway demandée en Phase 15.6-CORRECTION (CHARIOW_PRODUCT_ID_MONTHLY résolvant potentiellement encore vers l'ancien produit à 1000 FCFA) n'a TOUJOURS PAS été confirmé comme effectué. Ce point reste ouvert, indépendant du correctif referral de cette phase, mais tout aussi bloquant avant un paiement réel."
+  },
+  "15_chariow_product_id": "prd_sgvapilx (attendu, non re-vérifié sur Railway cette phase — hors périmètre)",
+  "16_commission_theorique": "40% × 1500 FCFA = 600 FCFA (formule vérifiée inchangée : floor(gross_paid_amount × commission_rate_bp / 10000), toujours basée sur le montant réel du webhook, jamais un prix catalogue)",
+
+  "17_ai_table_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "18_git_diff": {
+    "git_status_short": "M frontend-design/login.html ; ?? api/test_phase15_7_referral_attribution_repro.py (+ fichiers étrangers pré-existants inchangés : gates.py, evidence_snapshots.json, rapports historiques)",
+    "diff_stat": "frontend-design/login.html | 20 ++++++++++++++------ (1 file changed, 14 insertions(+), 6 deletions(-))",
+    "diff_strictement_limite_au_referral": true,
+    "git_add_point_ou_dash_A_utilise": false,
+    "commit_effectue": false,
+    "push_effectue": false
+  },
+
+  "19_limites": [
+    "AUCUN accès navigateur — le correctif n'a pas pu être validé par une reproduction RÉELLE en production (Étape 8). Seule une reproduction BACKEND rigoureuse (mêmes appels HTTP, même format de timestamp) a pu être exécutée et validée.",
+    "La cause racine identifiée (bypass de captureReferralFromUrl() si token résiduel) est la SEULE anomalie de code réelle trouvée après un audit exhaustif — mais elle n'a pas pu être confirmée comme LA cause exacte des 3 échecs réels (236/238/239), faute d'accès à l'historique réel de leurs navigateurs respectifs.",
+    "Un correctif frontend ne peut, par nature, jamais être prouvé à 100% par un test backend Python — le nouveau test de reproduction valide le MÉCANISME SERVEUR, pas le comportement RÉEL du navigateur après correctif.",
+    "Le point ouvert Railway (CHARIOW_PRODUCT_ID_MONTHLY, Phase 15.6-DIAG/CORRECTION) reste non résolu, indépendamment de cette phase.",
+    "Aucun commit, aucun push — le correctif reste local, non déployé, donc SANS AUCUN EFFET sur la production tant qu'il n'est ni committé, ni poussé, ni uploadé sur Hostinger (login.html est un fichier frontend, upload manuel requis comme pour billing.html/vip.html en Phase 15.4)."
+  ],
+
+  "20_recommandations": [
+    "Valider le correctif via l'Étape 8 EXACTEMENT comme spécifié : fenêtre privée, aucun compte connecté, visite DIRECTE de https://www.xfoot.site/promoter-2, inscription IMMÉDIATE avec un email jamais utilisé, AUCUNE autre connexion entre-temps — puis vérifier Admin -> Abonnés.",
+    "Si validé : demander une autorisation humaine EXPLICITE et DISTINCTE pour (a) committer ce correctif (1 fichier frontend + 1 nouveau fichier de test), (b) pousser, (c) uploader manuellement login.html sur Hostinger (aucun autre fichier).",
+    "Ne pas oublier le point ouvert distinct : confirmer/corriger CHARIOW_PRODUCT_ID_MONTHLY sur Railway (Phase 15.6-CORRECTION) AVANT tout paiement réel — un referral correctement attribué avec un montant facturé incorrect (1000 au lieu de 1500) resterait un problème séparé et bloquant.",
+    "Envisager, dans une phase future distincte et avec approbation humaine explicite, de rendre attributeReferralIfPresent() plus robuste (ex. tenter l'attribution dès la capture si un token existe déjà, plutôt que seulement après un submit de formulaire) — non fait ici pour respecter la règle du correctif LE PLUS PETIT POSSIBLE."
+  ],
+
+  "verdict": {
+    "value": "REFERRAL_FIX_IMPLEMENTED_TESTS_PASS",
+    "rationale": "Le backend a été rigoureusement disculpé par un test de reproduction fidèle (séquence ET format exacts du navigateur réel) — 24/24, y compris toutes les protections métier existantes (self-referral, promoteur inactif, non-écrasement, slug inexistant). La cause racine la plus probable, identifiée avec une confiance élevée après audit exhaustif du code, a été corrigée par le changement LE PLUS PETIT POSSIBLE (déplacement d'un seul appel de fonction dans login.html, 0 ligne backend touchée). Régression complète 66/66 verte, 6 tables IA inchangées, diff strictement limité au sujet referral, aucun commit/push. CEPENDANT, le parcours de production RÉEL (Étape 8) n'a pas pu être exécuté par cet assistant faute d'outil de navigateur — le correctif est donc démontré par les tests disponibles, mais NON ENCORE validé sur le parcours réel de production, d'où ce verdict plutôt que REFERRAL_FIX_IMPLEMENTED_AND_VALIDATED."
+  },
+
+  "closing_statement": "PHASE 15.7 — REFERRAL ATTRIBUTION FIX V1 : BACKEND RIGOUREUSEMENT DISCULPÉ PAR REPRODUCTION FIDÈLE DE LA SÉQUENCE ET DU FORMAT RÉELS (24/24). CAUSE RACINE LA PLUS PROBABLE IDENTIFIÉE (captureReferralFromUrl() bypassée si un token résiduel existe déjà en localStorage, frontend-design/login.html) ET CORRIGÉE PAR LE CHANGEMENT LE PLUS PETIT POSSIBLE (1 SEUL FICHIER FRONTEND, 0 LIGNE BACKEND, 0 RÈGLE DE SÉCURITÉ TOUCHÉE). 66/66 TESTS VERTS, 6 TABLES IA INCHANGÉES, DIFF STRICTEMENT LIMITÉ AU REFERRAL. AUCUN PAIEMENT, AUCUNE COMMISSION CRÉÉE, AUCUNE ÉCRITURE CHARIOW, AUCUN COMMIT, AUCUN PUSH. LE PARCOURS RÉEL DE PRODUCTION (ÉTAPE 8) RESTE À VALIDER PAR UN HUMAIN — SEULE PREUVE MANQUANTE AVANT UN VERDICT PLEINEMENT POSITIF."
+}

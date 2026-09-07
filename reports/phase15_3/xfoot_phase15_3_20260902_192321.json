@@ -1,0 +1,113 @@
+{
+  "phase": "15.3",
+  "title": "XFOOT — COMMIT TARIFICATION XFOOT V2",
+  "generated_at_utc": "2026-09-02T19:23:21Z",
+
+  "commit": {
+    "sha": "eeb01ec",
+    "sha_full": "eeb01ec",
+    "message_summary": "feat: update xfoot subscription pricing",
+    "parent": "901c468",
+    "branch": "main",
+    "files_changed": 6,
+    "insertions": 255,
+    "deletions": 13
+  },
+
+  "1_verifications_avant_commit": {
+    "backend_mapping_3_product_ids": {
+      "biweekly": "os.environ.get(\"CHARIOW_PRODUCT_ID_BIWEEKLY\", \"\") — api/app/core/chariow_config.py:49",
+      "monthly": "os.environ.get(\"CHARIOW_PRODUCT_ID_MONTHLY\", \"\") — ligne 50",
+      "yearly": "os.environ.get(\"CHARIOW_PRODUCT_ID_YEARLY\", \"\") — ligne 51",
+      "confirme": true
+    },
+    "billing_html_offres": ["2 semaines — 1000 FCFA/14 jours", "Mensuel — 1500 FCFA/mois", "Annuel — 28000 FCFA/an"],
+    "vip_html_offres": ["2 semaines — 1000 FCFA", "Mensuel — 1500 FCFA", "Annuel — 28000 FCFA"],
+    "ancienne_offre_1000_mois_presente": false,
+    "ancienne_offre_10000_an_presente": false,
+    "badge_economisez_2_mois_present": false,
+    "architecture_backend_checkout_referral_inchangee": true,
+    "aucun_autre_fichier_modifie": true
+  },
+
+  "2_tests": {
+    "TOTAL": 65, "PASSED": 65, "FAILED": 0, "SKIPPED": 0,
+    "detail": "64 fichiers préexistants + api/test_phase15_1_new_offers.py (9 scénarios/17 assertions) — réexécutés intégralement juste avant le commit.",
+    "tables_ia_6": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "identiques": true
+    },
+    "aucun_fichier_app_ai_modifie_par_ce_commit": true,
+    "aucun_historique_paiement_commission_modifie": true,
+    "aucune_donnee_chariow_ecrite": true
+  },
+
+  "3_diff": {
+    "git_status_short_avant_staging": "5 fichiers modifiés (api/.env.example, api/app/billing/router.py, api/app/core/chariow_config.py, frontend-design/billing.html, frontend-design/vip.html) + 1 nouveau (api/test_phase15_1_new_offers.py) + fichiers étrangers non liés (gates.py, evidence_snapshots.json, rapports historiques)",
+    "git_diff_stat_fichiers_cibles": "6 files changed, 255 insertions(+), 13 deletions(-)",
+    "git_diff_check": "aucune erreur",
+    "diff_contient_uniquement_tarification": true,
+    "git_add_point_ou_dash_A_utilise": false,
+    "methode_staging": "git add -- <6 chemins exacts>"
+  },
+
+  "4_commit_details": {
+    "sha": "eeb01ec",
+    "fichiers_commites": [
+      "api/.env.example",
+      "api/app/billing/router.py",
+      "api/app/core/chariow_config.py",
+      "api/test_phase15_1_new_offers.py",
+      "frontend-design/billing.html",
+      "frontend-design/vip.html"
+    ],
+    "fichiers_commites_correspondent_exactement_a_l_attendu": true,
+    "git_log_oneline_3": ["eeb01ec feat: update xfoot subscription pricing", "901c468 feat: show user_id in admin subscribers list", "ebb23ec feat: add xfoot promoter referral platform"],
+    "git_status_apres_commit": "Aucun des 6 fichiers commités n'apparaît plus dans git status — seuls les fichiers étrangers pré-existants (gates.py, evidence_snapshots.json, rapports historiques non liés) restent, inchangés par cette phase."
+  },
+
+  "5_confirmation_product_ids": {
+    "biweekly": {"product_id": "prd_1gje3jzz", "prix_fcfa": 1000, "duree": "14 jours"},
+    "monthly": {"product_id": "prd_sgvapilx", "prix_fcfa": 1500, "duree": "1 mois"},
+    "yearly": {"product_id": "prd_f90jpbh3", "prix_fcfa": 28000, "duree": "1 an"},
+    "verification_externe_reference": "reports/phase15_2/ — métadonnées publiques des pages produit confirmant nom+prix (nuance sur le format exact attendu par l'API documentée dans ce rapport)"
+  },
+
+  "6_confirmation_commission_40_pourcent": {
+    "formule": "commission = floor(gross_paid_amount × 4000bp / 10000)",
+    "biweekly": {"montant": 1000, "commission_theorique": 400},
+    "monthly": {"montant": 1500, "commission_theorique": 600},
+    "yearly": {"montant": 28000, "commission_theorique": 11200},
+    "regle_rappelee": "La commission RÉELLE reste calculée exclusivement sur le montant confirmé par le webhook Chariow, jamais sur un prix frontend — aucune ligne de code touchant ce principe n'a été modifiée par ce commit.",
+    "aucune_commission_reelle_generee_par_cette_phase": true
+  },
+
+  "7_preuves_absolues": {
+    "aucun_paiement_reel_effectue": true,
+    "aucun_checkout_chariow_reel_lance": true,
+    "aucune_ecriture_chariow": true,
+    "aucun_push_effectue": true,
+    "push_origin_main_execute": false,
+    "railway_modifie": false,
+    "hostinger_modifie": false,
+    "moteur_ia_modifie": false
+  },
+
+  "8_etat_final_repository": {
+    "HEAD": "eeb01ec",
+    "branch": "main",
+    "ahead_of_origin_main": 2,
+    "commits_locaux_non_pousses": ["901c468 feat: show user_id in admin subscribers list", "eeb01ec feat: update xfoot subscription pricing"],
+    "origin_main_inchange": true,
+    "production_toujours_sur_anciennes_offres": true,
+    "fichiers_restants_non_lies_a_cette_phase": ["api/app/ai/readiness/gates.py (Phase 13, étranger)", "reports/shadow/watch/evidence_snapshots.json (log généré, étranger)", "de nombreux rapports historiques non suivis (reports/phase9_5 à phase15_2)"]
+  },
+
+  "verdict_final": {
+    "value": "COMMITTED_LOCALLY",
+    "rationale": "Toutes les vérifications préalables ont réussi (mapping des 3 Product ID confirmé, offres correctement affichées, anciennes offres et badge inexact absents, architecture backend inchangée). 65/65 tests verts, 6 tables IA strictement identiques. Le diff a été revu et ne contient que les changements liés à la tarification. Exactement 6 fichiers ont été stagés par chemin explicite (jamais git add . / -A) et committés en un seul commit local (eeb01ec). Aucun push, aucun déploiement, aucun paiement, aucune écriture Chariow, aucune modification IA."
+  },
+
+  "closing_statement": "PHASE 15.3 — COMMIT TARIFICATION XFOOT V2 TERMINÉE. COMMIT LOCAL eeb01ec CRÉÉ AVEC EXACTEMENT LES 6 FICHIERS ATTENDUS. 65/65 TESTS VERTS, 6 TABLES IA INCHANGÉES, ARCHITECTURE CHECKOUT/REFERRAL/COMMISSION INTACTE. AUCUN PUSH, AUCUN DÉPLOIEMENT, AUCUN PAIEMENT RÉEL, AUCUNE ÉCRITURE CHARIOW, AUCUNE MODIFICATION DU MOTEUR IA. EN ATTENTE D'AUTORISATION HUMAINE POUR LA SUITE (PUSH/DÉPLOIEMENT)."
+}

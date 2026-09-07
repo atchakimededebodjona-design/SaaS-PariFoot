@@ -1,0 +1,207 @@
+{
+  "phase": "14.11",
+  "title": "XFOOT AUTHENTICATED PROMOTER + ADMIN REFERRAL SMOKE TEST V1",
+  "generated_at_utc": "2026-09-02T00:52:45Z",
+  "release_commit": "ebb23ec",
+
+  "1_environnement": {
+    "backend": "Railway, https://api.xfoot.site — déployé, stable",
+    "frontend": "Hostinger, https://www.xfoot.site — déployé, hotfix api.js/CDN confirmé stable (Phase 14.9R.2, reconfirmé cette phase)",
+    "comptes_test": {
+      "ADMIN_TEST": "compte administrateur de test, provisionné selon Phase 14.10R/14.10R.1, is_admin=true confirmé HUMAN-VERIFIED",
+      "PROMOTER_TEST": "compte promoteur de test, user_id=206, promoteur promoter-2 (statut ACTIVE), is_promoter=true confirmé HUMAN-VERIFIED"
+    },
+    "aucun_nouveau_compte_cree": true
+  },
+
+  "2_commit_verifie": {"HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801", "matches_ebb23ec": true, "aucune_modification_par_cette_phase": true},
+
+  "3_promoter_2_etat": {
+    "user_id": 206,
+    "slug": "promoter-2",
+    "statut": "ACTIVE",
+    "lien_referral": "https://www.xfoot.site/promoter-2",
+    "commission_rate": "40% (confirmé par lecture de code, DEFAULT_COMMISSION_RATE_BP=4000, inchangé depuis Phase 14)",
+    "reutilise_sans_recreation": true,
+    "aucune_modification_de_slug": true,
+    "aucun_second_promoteur_cree_pour_ce_user": true
+  },
+
+  "4_etape_1_authentification_admin": {
+    "methode": "HUMAN-VERIFIED — l'agent n'a jamais reçu ni mot de passe ni token, conformément à la règle absolue de toutes les phases précédentes ; l'humain a exécuté les vérifications dans son propre navigateur et relayé les résultats bruts.",
+    "GET_auth_me_is_admin": {"valeur": true, "statut": "HUMAN-VERIFIED"},
+    "admin_promoters_html_accessible": {"resultat": true, "statut": "HUMAN-VERIFIED"},
+    "promoter_2_visible_dans_la_liste": {"resultat": true, "statut_affiche": "ACTIVE", "statut": "HUMAN-VERIFIED"},
+    "onglet_abonnes_accessible": {"resultat": "chargement OK, abonnés affichés", "statut": "HUMAN-VERIFIED"},
+    "onglet_gains_accessible": {
+      "resultat": {"total_abonnements": 37, "ventes_payees": 0, "revenu_total_fcfa": 0, "commissions_totales_fcfa": 0, "net_apres_commissions_fcfa": 0, "commissions_reversees_fcfa": 0, "message": "Aucune vente attribuée pour l'instant."},
+      "statut": "HUMAN-VERIFIED"
+    },
+    "admin_ouvrant_promoter_html": {"resultat": "« Ce compte n'est pas un compte promoteur. »", "conforme_attendu": true, "interpretation": "Comportement attendu — le compte ADMIN_TEST n'a pas de ligne Promoter associée, get_current_promoter renvoie 403/message équivalent. Confirme qu'être Admin n'accorde AUCUN privilège Promoteur automatique (les deux rôles sont indépendants, aucune hiérarchie implicite dans le code).", "statut": "HUMAN-VERIFIED"}
+  },
+
+  "5_etape_2_authentification_promoteur": {
+    "methode": "HUMAN-VERIFIED",
+    "GET_auth_me_is_promoter": {"valeur": true, "statut": "HUMAN-VERIFIED"},
+    "promoter_html_accessible": {"resultat": true, "statut": "HUMAN-VERIFIED"},
+    "statut_affiche": "ACTIVE",
+    "slug_affiche": "promoter-2",
+    "lien_affiche": "https://www.xfoot.site/promoter-2",
+    "statistiques_dashboard": {
+      "visiteurs": 0, "inscriptions": 0, "abonnes_convertis": 0, "ventes_payees": 0,
+      "revenu_genere_fcfa": 0, "commission_totale_fcfa": 0, "commission_acquise_fcfa": 0,
+      "reversee_fcfa": 0, "disponible_fcfa": 0, "deja_versee_fcfa": 0,
+      "statut": "HUMAN-VERIFIED",
+      "interpretation": "Tous les compteurs à zéro sont EXACTEMENT le résultat attendu et correct — aucune vente n'a eu lieu, le ledger n'a donc aucune ligne à agréger pour ce promoteur. Ce n'est PAS un échec (conformément à la règle explicite de ne jamais transformer un 0 en anomalie)."
+    }
+  },
+
+  "6_etape_3_isolation_admin_promoteur": {
+    "promoter_vers_admin": {
+      "test": "PROMOTER_TEST ouvrant admin-promoters.html",
+      "resultat": "Accès refusé — « Accès réservé aux administrateurs. »",
+      "correspond_a_un_403_serveur": true,
+      "note": "Ce message précis (voir diagnostic Phase 14.10R.2) n'apparaît QUE si le backend a renvoyé 403 — jamais affiché sur un simple problème frontend. Confirme un vrai rejet serveur, pas une restriction cosmétique.",
+      "statut": "HUMAN-VERIFIED"
+    },
+    "admin_vers_promoter_data": {
+      "test": "ADMIN_TEST ouvrant promoter.html",
+      "resultat": "« Ce compte n'est pas un compte promoteur. »",
+      "interpretation": "Confirme l'absence d'élévation implicite Admin -> Promoteur — les deux autorisations sont vérifiées indépendamment, jamais l'une n'implique l'autre.",
+      "statut": "HUMAN-VERIFIED"
+    },
+    "admin_voit_promoter_2": {"resultat": true, "statut_affiche": "ACTIVE", "statut": "HUMAN-VERIFIED"},
+    "unauthenticated_reconfirme_read_only": {
+      "GET_promoter_me": 401, "GET_promoter_me_stats": 401, "GET_promoter_me_sales": 401,
+      "GET_admin_promoters": 401, "GET_admin_subscribers": 401, "GET_admin_earnings_totals": 401,
+      "statut": "READ-ONLY VERIFIED — reconfirmé réellement cette phase, méthode identique aux phases précédentes"
+    },
+    "conclusion_isolation": "VERIFIED — combinaison de preuves HUMAN-VERIFIED (403 réels observés dans les deux sens) et READ-ONLY VERIFIED (401 sans authentification) — jamais conclu sans preuve HTTP réelle, conformément à la règle explicite."
+  },
+
+  "7_etape_4_attribution_referral_sans_paiement": {
+    "test_lien": "POST https://api.xfoot.site/referral/resolve/promoter-2 (sans visitor_id, donc sans écriture DB per code : ReferralVisit n'est créée QUE si body.visitor_id est fourni)",
+    "resultat": {"valid": true, "http_code": 200},
+    "statut": "READ-ONLY VERIFIED",
+    "page_frontend": {"url": "https://www.xfoot.site/promoter-2", "http_code": 200, "interpretation": "Réécriture .htaccess fonctionnelle, sert login.html?ref=promoter-2 en interne (déjà vérifié Phase 14.9R.2)."},
+    "aucun_checkout_aucune_ecriture_chariow": true,
+    "aucune_vente_transformee_artificiellement": true
+  },
+
+  "8_etape_5_self_referral": {
+    "test_live_execute": false,
+    "raison": "Non exécuté cette phase (aucune exécution live du parcours self-referral n'a été demandée/relayée par l'humain) — documenté honnêtement comme NON EFFECTUÉ PAR SÉCURITÉ plutôt qu'inventé.",
+    "protection_reconfirmee_par_lecture_de_code": "app/referral/router.py::attribute_referral : if promoter.user_id == current_user.id: journalise SELF_REFERRAL_REJECTED, retourne attributed=False sans jamais créer de ReferralAttribution.",
+    "deja_prouve_par_execution_reelle_en_environnement_isole": "Phase 14, test_self_referral_no_commission (99 assertions), Phase 14.1 — 0 commission confirmée même après un paiement simulé sans attribution préalable.",
+    "statut": "BLOCKED / NOT TESTED (en production réelle cette phase) — VERIFIED (en environnement isolé, réutilisé sans réimplémentation, conformément à la consigne)"
+  },
+
+  "9_etape_6_commission": {
+    "invariant_code": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000), app/referral/money.py::compute_commission_amount, inchangé depuis Phase 14",
+    "jamais_prix_catalogue_montant_frontend_estime_ou_invente": "Reconfirmé par lecture de code — aucune route promoteur/publique n'accepte de champ commission/amount en entrée.",
+    "donnees_reelles_disponibles": false,
+    "valeur": "NOT_OBSERVED / NO_PAYMENT_DATA",
+    "aucune_vente_fabriquee": true,
+    "aucune_commission_reelle_generee": true
+  },
+
+  "10_etape_7_admin_dashboard": {
+    "promoteurs": {"resultat": "promoter-2 visible, statut ACTIVE", "statut": "HUMAN-VERIFIED"},
+    "abonnes": {"resultat": "37 abonnements listés, chargement OK", "statut": "HUMAN-VERIFIED"},
+    "gains": {"resultat": {"total_abonnements": 37, "ventes_payees": 0, "revenu_total": 0, "commissions_totales": 0, "net_apres_commissions": 0, "commissions_reversees": 0}, "statut": "HUMAN-VERIFIED"},
+    "coherence_grand_livre": "37 abonnements existent (données commerciales réelles pré-existantes, antérieures et sans rapport avec cette phase) mais 0 vente payée ATTRIBUÉE à un promoteur — cohérent : aucun de ces 37 abonnements n'a été souscrit via un lien de parrainage (aucune ReferralAttribution ne les relie à un promoteur), donc list_subscribers ne montre aucun promoter_slug pour eux et earnings/totals ne compte aucune commission. Comportement exactement attendu, pas une anomalie.",
+    "pagination_donnees_sensibles": "Non re-testé explicitement cette phase (déjà vérifié Phase 14/14.4 : aucune donnée de paiement sensible exposée, montant dérivé du ledger jamais d'un prix catalogue) — réutilisé sans réimplémentation."
+  },
+
+  "11_etape_8_promoter_dashboard": {
+    "lien": {"valeur": "https://www.xfoot.site/promoter-2", "statut": "HUMAN-VERIFIED"},
+    "visiteurs": 0, "inscriptions": 0, "abonnes_convertis": 0, "ventes_payees": 0,
+    "revenu_genere_fcfa": 0, "commission_totale_fcfa": 0, "commission_acquise_fcfa": 0,
+    "reversee_fcfa": 0, "disponible_fcfa": 0, "deja_versee_fcfa": 0,
+    "statut": "HUMAN-VERIFIED",
+    "coherence": "Cohérent avec l'onglet Gains admin (0 vente attribuée à promoter-2) — les deux vues (promoteur et admin) concordent exactement, aucune divergence."
+  },
+
+  "12_etape_9_webhook_security": {
+    "reutilise_de_phase_14_9r2_14_10_14_11": true,
+    "invalid_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement cette phase"},
+    "missing_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement cette phase"},
+    "aucun_webhook_paiement_simule_envoye": true,
+    "aucune_ecriture_financiere": true,
+    "statut": "READ-ONLY VERIFIED"
+  },
+
+  "13_etape_10_non_regression": {
+    "https": {"http_to_https_redirect": 301, "statut": "READ-ONLY VERIFIED"},
+    "cors": {"origine_autorisee": "access-control-allow-origin: https://www.xfoot.site renvoyé", "origine_hostile": "aucun header renvoyé", "statut": "READ-ONLY VERIFIED"},
+    "routes_protegees": "6/6 401 sans authentification, reconfirmé (§6)",
+    "api_js_hotfix": {"fonctions_phase14_presentes": "4/4 confirmées (applyRoleBasedNav, captureReferralFromUrl, attributeReferralIfPresent, getOrCreateVisitorId)", "statut": "READ-ONLY VERIFIED"},
+    "frontend_phase14": "promoter.html/admin-*.html confirmés accessibles et fonctionnels (HUMAN-VERIFIED, §4/§5)",
+    "tables_ia_6": {"before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9}, "after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9}, "identiques": true},
+    "app_ai_modifie": false,
+    "aucun_changement_de_code_introduit_par_cette_phase": true
+  },
+
+  "14_tests_regression": {
+    "TOTAL": 64, "PASSED": 64, "FAILED": 0, "SKIPPED": 0,
+    "phase14_assertions": 99, "phase14_1_assertions": 36,
+    "note": "Suites réutilisées sans réimplémentation, conformément à la consigne de réutiliser les preuves déjà établies."
+  },
+
+  "15_etat_financier_final": {
+    "avant": {"ventes_payees_promoter_2": 0, "commission_promoter_2": 0, "total_abonnements_systeme": 37, "commissions_totales_systeme_fcfa": 0},
+    "apres": {"ventes_payees_promoter_2": 0, "commission_promoter_2": 0, "total_abonnements_systeme": 37, "commissions_totales_systeme_fcfa": 0},
+    "aucune_vente_payee_supplementaire_apparue": true,
+    "aucune_commission_reelle_generee": true,
+    "aucun_montant_chariow_modifie": true,
+    "aucun_payout_cree": true,
+    "promoteur_reste_financierement_a_zero": true,
+    "donnee_preexistante_legitime_decouverte": "37 abonnements existants dans le système, aucun attribué à un promoteur (donnée commerciale réelle antérieure, sans rapport avec les tests de cette phase, non modifiée par cette phase)."
+  },
+
+  "16_confirmations_explicites": {
+    "aucun_paiement_reel_effectue": true,
+    "aucun_checkout_chariow_ouvert_ou_execute": true,
+    "aucun_appel_ecriture_chariow": true,
+    "aucune_commission_reelle_generee": true,
+    "aucun_compte_supplementaire_cree": true,
+    "aucune_suppression_de_compte": true,
+    "admin_emails_non_modifie": true,
+    "aucune_modification_de_code": true,
+    "aucune_modification_du_moteur_ia": true,
+    "aucune_modification_des_6_tables_ia_protegees": true,
+    "aucune_migration_db": true,
+    "aucun_signal_de_pari_production": true,
+    "aucun_mot_de_passe_token_cookie_expose": true,
+    "aucun_commit_aucun_push": true
+  },
+
+  "17_limitations": [
+    "Self-referral (Étape 5) non exécuté en conditions réelles cette phase — vérifié uniquement par lecture de code et réutilisation de preuves isolées déjà établies (Phase 14/14.1).",
+    "Commission/paiement réel : NOT_OBSERVED — aucune vente payée n'existe pour promoter-2, conformément à la règle absolue de ne jamais fabriquer de vente.",
+    "Pagination et exhaustivité des données sensibles côté admin-subscribers non re-testées explicitement cette phase (réutilisées de Phase 14/14.4).",
+    "37 abonnements pré-existants observés côté admin — donnée commerciale réelle, non liée aux tests, non investiguée plus avant (hors périmètre de cette phase de smoke test authentifié)."
+  ],
+
+  "18_verdict_final": {
+    "value": "AUTHENTICATED_SMOKE_TESTS_PASS",
+    "rationale": "Toutes les vérifications prévues et réalisables sans paiement réel sont cohérentes : authentification Admin et Promoteur toutes deux confirmées HUMAN-VERIFIED (is_admin=true, is_promoter=true) ; isolation bidirectionnelle Admin<->Promoteur confirmée par de vrais rejets 403 des deux côtés, combinée à 6/6 rejets 401 non-authentifiés reconfirmés en lecture seule ; promoter-2 visible et cohérent côté Admin ET côté Promoteur (statut ACTIVE, slug, lien, 0 partout des deux côtés, aucune divergence) ; sécurité webhook reconfirmée (signature invalide/absente -> 401) ; non-régression complète (HTTPS/CORS/routes protégées/hotfix api.js/64 tests locaux/6 tables IA inchangées/0 diff de code). Le seul point non exécuté (self-referral live) est honnêtement documenté comme non testé en production cette phase plutôt que simulé, et reste couvert par des preuves isolées déjà solides. Aucun paiement réel, aucune commission réelle, aucune donnée fabriquée."
+  },
+
+  "resume_fin_de_phase": {
+    "VERDICT": "AUTHENTICATED_SMOKE_TESTS_PASS",
+    "tests_pass": "12/13 catégories testées PASS (isolation, auth admin, auth promoteur, promoter_2 visible admin, dashboard promoteur, dashboard admin, webhook security, non-régression, HTTPS, CORS, hotfix api.js, 64 tests régression)",
+    "tests_blocked_not_tested": "1/13 (self-referral live) — documenté honnêtement, non un échec",
+    "tests_fail": 0,
+    "regression": "64/64 PASS, 0 FAIL",
+    "tables_ia_6": "IDENTIQUES avant/après (12459/12459/3610/15/568/9)",
+    "fichiers_rapport": ["reports/phase14_11/xfoot_phase14_11_20260902_005245.json", "reports/phase14_11/xfoot_phase14_11_20260902_005245.md"],
+    "blockers": "Aucun blocker réel — self-referral live simplement non exécuté par choix de sécurité (règle absolue : aucune transaction, même minimale, provoquée pour tester).",
+    "confirmation_zero_paiement_chariow": "CONFIRMÉ — aucun paiement réel, aucun checkout, aucun appel d'écriture Chariow n'a été effectué à aucun moment de cette phase.",
+    "etat_promoter_2": "ACTIVE, slug inchangé, user_id=206, 0 vente/commission/revenu — état identique avant et après cette phase.",
+    "etat_admin_test": "is_admin=true confirmé, accès complet aux 3 onglets admin, aucune donnée de promoteur propre (comportement attendu, admin != promoteur).",
+    "prochaine_etape_recommandee": "Décision humaine explicite et séparée pour une Phase 14.12 (ou équivalent) de test de paiement réel contrôlé — montant minimal, comptes déjà provisionnés (ou nouveaux comptes tagués dédiés), avec la procédure déjà documentée en Phase 14.8 §24 (plan/montant/résultat attendu/vérification croisée)."
+  },
+
+  "closing_statement": "PHASE 14.11 — XFOOT AUTHENTICATED PROMOTER + ADMIN REFERRAL SMOKE TEST V1 TERMINÉE. AUTHENTIFICATION ADMIN ET PROMOTEUR CONFIRMÉES (HUMAN-VERIFIED), ISOLATION BIDIRECTIONNELLE CONFIRMÉE PAR DE VRAIS REJETS 403/401, PROMOTER-2 COHÉRENT CÔTÉ ADMIN ET PROMOTEUR, SÉCURITÉ WEBHOOK ET NON-RÉGRESSION RECONFIRMÉES. AUCUN PAIEMENT RÉEL, AUCUN CHECKOUT CHARIOW, AUCUNE COMMISSION RÉELLE GÉNÉRÉE, AUCUNE DONNÉE FABRIQUÉE. AUCUNE MODIFICATION DU MOTEUR IA NI DES TABLES IA PROTÉGÉES. AUCUN COMMIT, AUCUN PUSH."
+}

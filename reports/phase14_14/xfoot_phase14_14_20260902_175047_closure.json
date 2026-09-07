@@ -1,0 +1,62 @@
+{
+  "phase": "14.14 — Clôture post-déploiement",
+  "generated_at_utc": "2026-09-02T17:50:47Z",
+  "reference": "Complète reports/phase14_14/xfoot_phase14_14_20260902_171134.json (BLOCKED) et reports/phase14_15/xfoot_phase14_15_20260902_173806.json (diagnostic)",
+  "local_commit": "901c4682026e4ed3eec899b60760f214931e2001",
+  "pushed": false,
+
+  "1_deploiement_confirme": {
+    "url": "https://www.xfoot.site/admin-subscribers.html",
+    "user_id_present": true,
+    "occurrences_marqueurs": 4,
+    "header_exact": "<thead><tr><th>Nom</th><th>User ID</th><th>Email</th><th>Plan</th><th>Montant payé</th><th>Date</th><th>Promoteur</th><th>Statut paiement</th></tr></thead>",
+    "position_conforme_a_la_specification": true,
+    "last_modified_avant": "Tue, 01 Sep 2026 21:34:20 GMT (constaté Phase 14.15)",
+    "last_modified_apres": "Wed, 02 Sep 2026 17:43:45 GMT",
+    "taille_avant_octets": 8025,
+    "taille_apres_octets": 9320
+  },
+
+  "2_preuve_la_plus_forte_comparaison_octet_pour_octet": {
+    "methode": "diff entre (a) le contenu du blob git au commit 901c468 (git show 901c468:frontend-design/admin-subscribers.html) et (b) le contenu HTTP réel actuellement servi par https://www.xfoot.site/admin-subscribers.html",
+    "resultat": "IDENTIQUE — 0 différence, 9320 octets des deux côtés",
+    "signification": "Le code déployé n'est pas seulement 'ressemblant' — c'est EXACTEMENT le même contenu, au bit près, que celui déjà exhaustivement audité et testé en Phase 14.13 (revue de code, syntaxe JS validée, 64/64 régression). Aucune divergence de version, aucun risque qu'une autre version ait été uploadée par erreur."
+  },
+
+  "3_reste_de_la_checklist_phase_14_14": {
+    "promoter_2_toujours_active": {"resultat": {"valid": true}, "http_code": 200, "statut": "VERIFIED (READ-ONLY)"},
+    "isolation_non_authentifiee": {
+      "GET_promoter_me": 401, "GET_admin_promoters": 401, "GET_admin_subscribers": 401,
+      "statut": "VERIFIED (READ-ONLY, reconfirmé réellement)"
+    },
+    "absence_donnee_en_dur_dans_le_html_statique": {
+      "verifie": true,
+      "resultat": "Aucun user_id littéral trouvé dans le HTML statique — la page reste purement dynamique, les données ne sont récupérées qu'au runtime via l'API authentifiée (comportement inchangé, sécurité intacte)."
+    },
+    "regression": {"TOTAL": 64, "PASSED": 64, "FAILED": 0, "SKIPPED": 0},
+    "tables_ia_6": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "identiques": true
+    }
+  },
+
+  "4_limitations_restantes": [
+    "Comparaison visuelle des valeurs user_id affichées vs valeurs API par un compte ADMIN_TEST authentifié (Étape 1 de la Phase 14.14, points fins) : non re-sollicitée cette phase — la preuve octet-pour-octet (§2) rend cette vérification redondante pour le CODE, mais un contrôle visuel humain final reste la seule façon de confirmer le rendu RÉEL dans un navigateur (CSS, alignement, lisibilité) si souhaité.",
+    "Test du bouton Copier en conditions réelles (clic + vérification du presse-papiers) : non re-sollicité, comportement inchangé et déjà revu en Phase 14.13 (réutilise le mécanisme exact de promoter.html)."
+  ],
+
+  "5_git_final": {
+    "HEAD": "901c4682026e4ed3eec899b60760f214931e2001",
+    "commit_effectue_cette_phase": false,
+    "push_effectue_cette_phase": false,
+    "code_modifie_cette_phase": false
+  },
+
+  "verdict_final": {
+    "value": "USER_ID_VALIDATION_PASS",
+    "rationale": "Le blocage de déploiement identifié en Phase 14.14/14.15 est résolu — confirmé par une preuve directe et la plus forte possible : le contenu HTTP réel de production est OCTET POUR OCTET identique au commit local déjà audité (901c468). La colonne USER ID et le bouton Copier sont visibles en production, à la position exacte spécifiée. Le reste de la checklist (promoter-2 ACTIVE, isolation non-authentifiée, absence de donnée en dur, 64/64 régression, 6 tables IA inchangées) est entièrement confirmé. Aucun paiement, aucun appel Chariow, aucun compte créé, aucune modification de code cette phase."
+  },
+
+  "closing_statement": "PHASE 14.14 — VALIDATION USER_ID + PROMOTEUR EXISTANT + COHÉRENCE ADMIN : DÉBLOCAGE CONFIRMÉ ET VALIDATION TERMINÉE AVEC SUCCÈS. LA COLONNE USER_ID EST DÉSORMAIS VISIBLE EN PRODUCTION, CONFIRMÉE OCTET POUR OCTET IDENTIQUE AU COMMIT AUDITÉ 901c468. PROMOTER-2 TOUJOURS ACTIVE, ISOLATION INTACTE, 64/64 RÉGRESSION VERTE, 6 TABLES IA INCHANGÉES. AUCUN PAIEMENT, AUCUN APPEL CHARIOW, AUCUN COMPTE CRÉÉ, AUCUNE MODIFICATION DE CODE CETTE PHASE. AUCUN COMMIT, AUCUN PUSH."
+}

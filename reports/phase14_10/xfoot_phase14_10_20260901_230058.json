@@ -1,0 +1,185 @@
+{
+  "phase": "14.10",
+  "title": "XFOOT AUTHENTICATED REFERRAL + ADMIN SMOKE TEST V1",
+  "generated_at_utc": "2026-09-01T23:00:58Z",
+  "release_commit": "ebb23ec",
+
+  "1_release": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true
+  },
+
+  "2_etat_git": {
+    "status": "2 fichiers Phase 13 pré-existants modifiés (gates.py, evidence_snapshots.json), étrangers à cette phase — inchangés depuis les phases précédentes.",
+    "aucune_modification_par_cette_phase": true,
+    "fichiers_historiques_non_suivis_laisses_intacts": true
+  },
+
+  "3_comptes_de_test_disponibles": {
+    "recherche_effectuee_dans": ["documentation du projet (*.md)", "fichiers .env/.env.example", "variables d'environnement (ADMIN_EMAILS)", "reports/ existants", "tests/fixtures du dépôt"],
+    "compte_promoteur_test_documente": "AUCUN TROUVÉ",
+    "compte_admin_test_documente": "AUCUN TROUVÉ",
+    "ADMIN_EMAILS_local": "ABSENT du .env",
+    "ADMIN_EMAILS_production": "UNKNOWN (inchangé depuis les phases précédentes)",
+    "conclusion": "CAS C — aucun compte de test légitime et déjà disponible n'existe dans l'environnement.",
+    "aucun_compte_cree": true,
+    "aucun_compte_personnel_utilise": true
+  },
+
+  "4_authentification_promoteur": {"value": "BLOCKED", "reason": "AUTHENTICATED_TEST_BLOCKED (§3)"},
+
+  "5_promoter_me": {
+    "value": "BLOCKED",
+    "reason": "Nécessite une authentification (§4).",
+    "verification_indirecte": "GET /promoter/me sans token -> 401, reconfirmé réellement (protection backend intacte)."
+  },
+
+  "6_referral_link": {
+    "value": "BLOCKED (donnée réelle non observable sans compte)",
+    "format_confirme_par_code": "https://www.xfoot.site/{slug} — app/referral/router.py::get_my_promoter_profile, f\"https://www.xfoot.site/{promoter.slug}\", jamais modifié depuis l'audit initial (Phase 14).",
+    "aucune_nouvelle_inscription_effectuee": true,
+    "aucune_attribution_creee": true
+  },
+
+  "7_dashboard_promoteur": {"value": "BLOCKED", "reason": "AUTHENTICATED_TEST_BLOCKED (§3)"},
+
+  "8_authentification_admin": {"value": "BLOCKED", "reason": "AUTHENTICATED_TEST_BLOCKED (§3), ADMIN_EMAILS production toujours UNKNOWN"},
+
+  "9_admin_promoteurs": {
+    "value": "BLOCKED",
+    "verification_indirecte": "GET /admin/promoters sans token -> 401, reconfirmé réellement."
+  },
+
+  "10_admin_abonnes": {
+    "value": "BLOCKED",
+    "verification_indirecte": "GET /admin/subscribers sans token -> 401, reconfirmé réellement.",
+    "principe_reconfirme_par_lecture_de_code": "admin_router.py::list_subscribers dérive amount_paid de la DERNIÈRE ReferralCommission liée au provider_subscription (jamais d'un prix catalogue supposé) — un abonnement sans commission liée renvoie amount_paid=None, jamais une valeur fabriquée."
+  },
+
+  "11_admin_gains": {
+    "value": "BLOCKED",
+    "invariant_reconfirme": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000), app/referral/money.py, inchangé depuis Phase 14.",
+    "exemple_reference": {"catalogue": 20000, "paye": 15000, "commission": 6000},
+    "aucune_transaction_creee_pour_tester": true
+  },
+
+  "12_isolation": {
+    "value": "ISOLATION_TEST_BLOCKED",
+    "reason": "Aucun compte disponible, a fortiori aucune paire de comptes (§3).",
+    "verification_structurelle_reconfirmee": "Aucune route promoteur n'accepte de promoter_id en paramètre client (app/referral/router.py, get_current_promoter dérive systématiquement de current_user via JWT) — inchangé, déjà testé exhaustivement en isolé (Phase 14/14.1)."
+  },
+
+  "13_protection_routes": {
+    "unauthenticated_tests": [
+      {"path": "/promoter/me", "status": 401},
+      {"path": "/promoter/me/stats", "status": 401},
+      {"path": "/promoter/me/sales", "status": 401},
+      {"path": "/admin/promoters", "status": 401},
+      {"path": "/admin/subscribers", "status": 401},
+      {"path": "/admin/earnings/totals", "status": 401}
+    ],
+    "toutes_correctement_protegees": true,
+    "aucune_donnee_admin_retournee": true,
+    "test_promoteur_vers_admin": "NON EFFECTUÉ — nécessiterait un compte promoteur réel, indisponible (§3)."
+  },
+
+  "14_attribution": {
+    "value": "ATTRIBUTION_LIVE_NOT_OBSERVED",
+    "note_explicite": "Ceci n'est PAS un bug — aucune inscription, vente ou paiement n'a été créé.",
+    "mecanisme_reconfirme_par_lecture_de_code": "POST /referral/attribute dérive converted_user_id exclusivement de current_user (JWT) ; promoter_id jamais accepté du client ; slug persistant via .htaccess (vérifié fonctionnel en Phase 14.9R.2)."
+  },
+
+  "15_commission": {
+    "value": "COMMISSION_LIVE_NOT_OBSERVED",
+    "note_explicite": "Ceci n'est PAS un bug — aucune commission n'a été créée ni fabriquée.",
+    "invariant": "commission = 40% × montant réellement payé, jamais avant paiement confirmé — reconfirmé par lecture de code (create_commission_for_confirmed_payment appelée exclusivement depuis _handle_successful_sale)."
+  },
+
+  "16_paiement": {
+    "REAL_PAYMENT_EXECUTED": "NO",
+    "CHARIOW_WRITE": "NO",
+    "REAL_COMMISSION_CREATED": "NO",
+    "note": "Aucune transaction historique n'a été consultée ni supposée — aucun endpoint n'a été appelé avec un compte réel cette phase."
+  },
+
+  "17_webhook": {
+    "invalid_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement"},
+    "missing_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement"},
+    "idempotence": "Analyse statique uniquement cette phase — déjà prouvée par exécution réelle en isolé (Phase 14 test 6, 10 livraisons -> 1 commission), non re-testable en production sans le vrai secret Chariow.",
+    "montant_jamais_controle_par_frontend": "Reconfirmé par lecture de code — inchangé.",
+    "aucun_webhook_ecriture_envoye": true
+  },
+
+  "18_frontend_api_coherence": {
+    "value": "NON TESTABLE DIRECTEMENT",
+    "reason": "Nécessite un écran authentifié réel pour comparer affichage vs réponse API (§3 bloqué).",
+    "verification_statique": "Code source frontend (promoter.html, admin-*.html) déjà audité (Phase 14/14.4/14.6) — aucune transformation financière côté client, commission jamais calculée en JS, uniquement affichée telle que renvoyée par le backend."
+  },
+
+  "19_cors_https": {
+    "origine_autorisee": {"origin": "https://www.xfoot.site", "resultat": "access-control-allow-origin renvoyé, fonctionnel"},
+    "origine_hostile": {"origin": "https://evil-attacker-example.test", "resultat": "aucun header renvoyé"},
+    "http_to_https": {"status": 301},
+    "audit_complet_non_refait": true
+  },
+
+  "20_ia_shadow": {
+    "git_diff_app_ai_references": 0,
+    "tables_ia_avant_apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identiques": true,
+    "signal_pari_genere": false,
+    "kill_switch_modifie": false,
+    "readiness_modifie_par_cette_phase": false,
+    "anciennes_phases_ia_relancees": false
+  },
+
+  "21_browser": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Aucun outil Playwright disponible — inchangé depuis toutes les phases précédentes. Aucun parcours simulé ou inventé."
+  },
+
+  "22_limitations": [
+    "AUTHENTICATED_TEST_BLOCKED — aucun compte de test promoteur ou admin légitime et documenté n'existe dans l'environnement.",
+    "ADMIN_EMAILS reste UNKNOWN en production.",
+    "ISOLATION_TEST_BLOCKED — nécessite 2 comptes.",
+    "ATTRIBUTION_LIVE_NOT_OBSERVED / COMMISSION_LIVE_NOT_OBSERVED — honnêtement documentés comme non observés, pas des échecs.",
+    "FRONTEND_API_COHERENCE non testable en conditions réelles authentifiées cette phase.",
+    "BROWSER_VALIDATION_UNAVAILABLE — inchangé.",
+    "Webhook idempotence non re-testable en production réelle (vrai secret jamais accessible)."
+  ],
+
+  "23_prochaines_actions": [
+    "Décision humaine : créer explicitement UN compte promoteur de test et UN compte admin de test en production (tagués clairement, ex. phase14_10_test_...), OU fournir des identifiants de test déjà existants et légitimes, pour permettre les vérifications authentifiées bloquées ici.",
+    "Confirmer ADMIN_EMAILS en production (Railway) pour lever le blocage sur les routes /admin/*.",
+    "Une fois des comptes disponibles : ré-exécuter les étapes 4-13 de cette phase (authentification, dashboards, isolation) en conditions réelles.",
+    "Le test de paiement réel reste un gate séparé, distinct de cette phase, nécessitant une autorisation humaine explicite dédiée (déjà documenté en Phase 14.8/14.9)."
+  ],
+
+  "resume_fin_de_phase": {
+    "RELEASE": "ebb23ec",
+    "FRONTEND": "PASS",
+    "BACKEND": "PASS",
+    "PROMOTER_ACCOUNT": "BLOCKED",
+    "PROMOTER_AUTH": "BLOCKED",
+    "PROMOTER_DASHBOARD": "BLOCKED",
+    "REFERRAL_LINK": "BLOCKED",
+    "ADMIN_ACCOUNT": "BLOCKED",
+    "ADMIN_AUTH": "BLOCKED",
+    "ADMIN_PROMOTERS": "BLOCKED",
+    "ADMIN_SUBSCRIBERS": "BLOCKED",
+    "ADMIN_EARNINGS": "BLOCKED",
+    "ISOLATION": "BLOCKED",
+    "LIVE_ATTRIBUTION": "NOT_OBSERVED",
+    "LIVE_COMMISSION": "NOT_OBSERVED",
+    "REAL_PAYMENT": "NO",
+    "CHARIOW_WRITE": "NO",
+    "AI_MODIFIED": "NO",
+    "BETTING_SIGNAL": "NO",
+    "GIT_COMMIT": "NO",
+    "GIT_PUSH": "NO",
+    "VERDICT": "AUTHENTICATED_TEST_BLOCKED",
+    "NEXT_HUMAN_ACTION": "Créer explicitement (ou fournir) UN compte promoteur de test et UN compte admin de test en production, clairement tagués, pour permettre les vérifications authentifiées."
+  },
+
+  "closing_statement": "PHASE 14.10 — XFOOT AUTHENTICATED REFERRAL + ADMIN SMOKE TEST V1 TERMINÉE. FRONTEND ET BACKEND CONFIRMÉS FONCTIONNELS (ROUTES PROTÉGÉES, CORS, HTTPS, SÉCURITÉ WEBHOOK). AUCUN COMPTE DE TEST PROMOTEUR/ADMIN LÉGITIME N'ÉTAIT DISPONIBLE — LES PARCOURS AUTHENTIFIÉS RESTENT AUTHENTICATED_TEST_BLOCKED, DOCUMENTÉ HONNÊTEMENT, JAMAIS CONTOURNÉ. AUCUN COMPTE CRÉÉ. AUCUN PAIEMENT RÉEL EFFECTUÉ. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ."
+}

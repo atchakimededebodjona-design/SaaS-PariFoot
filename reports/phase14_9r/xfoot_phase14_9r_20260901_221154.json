@@ -1,0 +1,95 @@
+{
+  "phase": "14.9R",
+  "title": "XFOOT HOTFIX VERIFICATION — api.js ONLY",
+  "generated_at_utc": "2026-09-01T22:11:54Z",
+  "release_commit": "ebb23ec",
+
+  "1_local_api_js": {
+    "matches_commit_ebb23ec": true,
+    "git_status_diff_empty": true,
+    "size_bytes": 8122,
+    "sha256": "48395c21533fa83a9447a7d309216733d99a1cf6331f3889da0403bd9debe0e3"
+  },
+
+  "2_production_api_js_plain_request": {
+    "method": "GET https://www.xfoot.site/api.js (exactement l'URL demandée par <script src=\"api.js\">, aucun paramètre)",
+    "size_bytes": 3666,
+    "sha256": "2356ec4254a1930de82f363bf0a406e42c9da8cf2ab453c138793ea726e40dd7",
+    "last_modified": "Fri, 28 Aug 2026 21:10:35 GMT",
+    "cache_control": "public, max-age=604800",
+    "confirmed_by_repeated_independent_requests": 3,
+    "conclusion": "IDENTIQUE À L'ANCIENNE VERSION CASSÉE — le fichier réellement reçu par tout visiteur réel (même URL exacte que celle utilisée par toutes les pages du site) est TOUJOURS l'ancienne version, non celle du commit ebb23ec."
+  },
+
+  "3_production_api_js_cache_busted_request": {
+    "method": "GET https://www.xfoot.site/api.js?cachebust=<timestamp> (contournement du cache CDN par une URL différente)",
+    "size_bytes": 8122,
+    "sha256": "48395c21533fa83a9447a7d309216733d99a1cf6331f3889da0403bd9debe0e3",
+    "matches_local_ebb23ec": true,
+    "conclusion": "L'ORIGINE (le fichier réellement stocké sur le serveur Hostinger) CONTIENT BIEN la version correcte du commit ebb23ec — l'upload humain a réellement réussi côté serveur."
+  },
+
+  "4_root_cause_precise": {
+    "diagnostic": "PROBLÈME DE CACHE CDN, PAS UN ÉCHEC D'UPLOAD.",
+    "preuve": "Le CDN Hostinger (hcdn) sert api.js avec Cache-Control: public, max-age=604800 (7 jours). La comparaison entre la réponse en-tête 'last-modified: Fri, 28 Aug 2026...' (ancienne date, servie à la requête simple) et la réponse fraîche obtenue via une URL différente (?cachebust=...) prouve que l'ancien contenu est mis en cache et continue d'être servi à l'URL canonique, indépendamment de la mise à jour réelle du fichier côté origine.",
+    "asymetrie_html_vs_js": "Les pages .html (ex. index.html) sont servies avec x-hcdn-cache-status: DYNAMIC (jamais mises en cache par le CDN) — c'est pourquoi la mise à jour des fichiers .html a été visible immédiatement en Phase 14.9, alors qu'api.js, mis en cache statiquement (max-age=604800), continue de servir l'ancienne version.",
+    "cause_structurelle_additionnelle": "Aucune des pages du commit ebb23ec (local ET production) ne référence api.js avec un paramètre de version anti-cache (contrairement à styles.css, référencé partout avec ?v=11, cf. HOSTINGER_DEPLOY.md qui documente explicitement cette pratique pour styles.css). L'absence de ce même mécanisme sur api.js est la raison structurelle pour laquelle ce problème de cache se manifeste."
+  },
+
+  "5_login_functionality": {
+    "status": "TOUJOURS CASSÉE pour un visiteur réel",
+    "raison": "Le navigateur d'un visiteur réel charge <script src=\"api.js\"> sans paramètre — exactement l'URL testée en §2, qui retourne encore l'ancienne version sans captureReferralFromUrl/applyRoleBasedNav.",
+    "consequence_inchangee": "Le gestionnaire submit du formulaire de connexion n'est toujours pas attaché — la connexion/inscription reste non fonctionnelle pour tout visiteur anonyme, comportement de soumission GET par défaut inchangé."
+  },
+
+  "6_main_pages_content_loading": {
+    "status": "TOUJOURS CASSÉ pour un utilisateur déjà connecté",
+    "raison": "Même cause — applyRoleBasedNav() reste indéfini côté client réel, le contenu principal (ligues, dashboard, etc.) ne se charge toujours pas sur les 11 pages concernées."
+  },
+
+  "7_page_availability_http_status": {
+    "login_html": 200, "index_html": 200, "promoter_html": 200, "admin_promoters_html": 200, "admin_subscribers_html": 200,
+    "note": "Toutes répondent 200 — le problème n'est PAS l'accessibilité HTTP des pages, c'est le contenu JS effectivement exécuté dans le navigateur d'un vrai visiteur."
+  },
+
+  "8_browser_playwright": {"value": "BROWSER_VALIDATION_UNAVAILABLE", "note": "Diagnostic établi par comparaison directe de contenu HTTP (méthode équivalente en rigueur pour ce cas précis, car le bug est déterministe et dépend uniquement du contenu JS reçu, pas d'un état d'interaction)."},
+
+  "9_no_account_session_created": true,
+
+  "10_api_base_url": {"value": "https://api.xfoot.site", "confirmed_in_production_api_js": true, "unchanged": true},
+
+  "11_secrets": {"scanned": true, "found": false},
+
+  "12_ai_tables": {
+    "local_counts": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "unchanged": true
+  },
+
+  "13_app_ai_modified": {"git_diff_app_ai_references": 0, "value": false},
+
+  "recommandation_non_executee_cette_phase": {
+    "action_immediate_recommandee": "Purger le cache CDN Hostinger pour /api.js via hPanel (option généralement nommée 'Vider le cache' / 'Purge cache' dans la section CDN/Performance du panel Hostinger) — cela forcerait le CDN à revalider et servir la version déjà correctement uploadée à l'origine (confirmée présente, §3), sans nécessiter un nouvel upload.",
+    "action_alternative": "Attendre l'expiration naturelle du cache (jusqu'à 7 jours à partir de la mise en cache initiale de l'ancienne version, antérieure à cette vérification) — non recommandé, trop lent.",
+    "action_structurelle_pour_eviter_la_recidive": "Ajouter un paramètre de version à la référence <script src=\"api.js?v=X\"> dans toutes les pages (même mécanisme déjà utilisé pour styles.css?v=11) — nécessiterait un nouveau commit/déploiement, hors périmètre read-only de cette phase, proposé comme action de suivi.",
+    "aucune_de_ces_actions_executee": true
+  },
+
+  "14_verdict_final": {
+    "value": "NEEDS_FIXES",
+    "rationale": "L'upload du fichier corrigé a RÉELLEMENT réussi côté origine (preuve directe : requête avec paramètre anti-cache renvoie exactement le hash attendu du commit ebb23ec). MAIS l'anomalie fonctionnelle réelle PERSISTE pour tout visiteur réel du site, car le CDN Hostinger continue de servir l'ancienne version en cache à l'URL canonique exacte utilisée par toutes les pages (aucun paramètre de version). Connexion/inscription restent cassées pour les anonymes, chargement de contenu cassé pour les connectés — exactement comme en Phase 14.9, aucune amélioration observable côté utilisateur final à l'heure de cette vérification. Ne pas conclure 'corrigé' sur la seule base que l'origine a été mise à jour — la preuve déterminante est le contenu réellement reçu à l'URL canonique, qui reste incorrect."
+  },
+
+  "resume_fin_de_phase": {
+    "api_js_local_version_hash": "8122 octets — sha256:48395c21…9debe0e3",
+    "api_js_production_version_hash": "3666 octets — sha256:2356ec42…6e40dd7 (à l'URL canonique https://www.xfoot.site/api.js, sans paramètre)",
+    "correspondance": "NON à l'URL canonique (CDN cache stale) / OUI à l'origine (confirmé via URL avec paramètre anti-cache)",
+    "login_fonctionnalite": "TOUJOURS CASSÉE pour un visiteur réel",
+    "pages_principales": "HTTP 200 mais contenu dynamique toujours cassé pour un utilisateur connecté",
+    "api_base_url": "https://api.xfoot.site — correct, inchangé",
+    "ia_modifiee": "NO",
+    "paiement_execute": "NO",
+    "verdict": "NEEDS_FIXES"
+  },
+
+  "closing_statement": "PHASE 14.9R — XFOOT HOTFIX VERIFICATION (api.js ONLY) TERMINÉE. LE FICHIER CORRIGÉ A ÉTÉ RÉELLEMENT UPLOADÉ CÔTÉ ORIGINE HOSTINGER (CONFIRMÉ PAR PREUVE DIRECTE), MAIS LE CACHE CDN CONTINUE DE SERVIR L'ANCIENNE VERSION CASSÉE À L'URL CANONIQUE UTILISÉE PAR TOUTES LES PAGES DU SITE — L'ANOMALIE CRITIQUE DE LA PHASE 14.9 PERSISTE DONC POUR TOUT VISITEUR RÉEL À CE STADE. AUCUNE ACTION CORRECTIVE N'A ÉTÉ APPLIQUÉE AUTOMATIQUEMENT. AUCUN COMPTE CRÉÉ. AUCUN PAIEMENT RÉEL. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ."
+}

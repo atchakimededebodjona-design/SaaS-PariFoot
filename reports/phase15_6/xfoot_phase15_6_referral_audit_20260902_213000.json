@@ -1,0 +1,101 @@
+{
+  "phase": "15.6 — PRE-PAYMENT REFERRAL ATTRIBUTION AUDIT V1",
+  "timestamp": "2026-09-02T21:30:00Z",
+
+  "buyer_email": "payment@test.com",
+  "buyer_user_id": 209,
+  "expected_promoter_slug": "promoter-2",
+  "expected_promoter_user_id": 206,
+
+  "step1_attribution_model": {
+    "table": "referral_attribution (api/app/models/promoter.py:76-114)",
+    "colonnes_cles": ["id", "promoter_id (FK promoter.id)", "visitor_id (best-effort, non sécurité)", "converted_user_id (FK user.id, UNIQUE)", "source", "attributed_at", "captured_at"],
+    "contrainte_unique": "UniqueConstraint('converted_user_id') — un utilisateur ne peut avoir qu'UNE SEULE attribution, jamais réécrite après coup (LAST VALID REFERRER résolu côté client AVANT création de la ligne serveur)",
+    "logique_de_creation": "POST /referral/attribute (api/app/referral/router.py:100-138) — authentifié (current_user requis) : no-op silencieux si déjà attribué, rejette promoteur inexistant/non-ACTIVE, rejette self-referral (journalisé SELF_REFERRAL_REJECTED), rejette hors fenêtre 30 jours si captured_at fourni, sinon INSERT ReferralAttribution",
+    "logique_de_recuperation_au_paiement": "create_commission_for_confirmed_payment (api/app/referral/commission_service.py:41-120), appelée UNIQUEMENT depuis _handle_successful_sale (billing/router.py) : SELECT ReferralAttribution WHERE converted_user_id = provider_subscription.user_id (le user_id de l'ACHETEUR, dérivé du webhook custom_metadata.user_id — jamais du checkout front-end) — lecture FRAÎCHE en base au moment de la confirmation, pas une valeur transportée depuis le checkout",
+    "logique_utilisee_a_la_confirmation": "Idem — la seule source de vérité au moment du paiement est CETTE requête SQL, exécutée dans _handle_successful_sale, jamais un cache ni une valeur mémorisée plus tôt dans le parcours"
+  },
+
+  "step2_buyer": {
+    "utilisateur_existant": "NOT_VERIFIABLE (aucun accès DB/admin cette session — relayé par l'utilisateur en Étape 1 de la Phase 15.6 initiale : existe, non-promoteur)",
+    "role_statut": "NOT_VERIFIABLE",
+    "attribution_referral_existante": "NOT_VERIFIABLE",
+    "date_etat_attribution": "NOT_VERIFIABLE",
+    "methode_tentee": "Aucun endpoint public ne permet cette lecture sans authentification (voir Phase 15.6 Étapes 1-2, déjà documenté) — non re-tenté ici pour éviter un appel redondant"
+  },
+
+  "step3_promoter": {
+    "slug_existe": "PASS (vérifié Phase 15.6 Étape 1 via POST /referral/resolve/promoter-2 sans visitor_id — 200 {valid:true})",
+    "status_active": "PASS (même vérification — 'valid:true' signifie exactement existant+ACTIVE par construction du code)",
+    "user_id_206": "NOT_VERIFIABLE (endpoint public ne l'expose jamais, par design de confidentialité — voir app/referral/router.py:69-75)"
+  },
+
+  "step4_attribution_search": {
+    "recherche_effectuee": "AUCUNE — nécessiterait une requête SQL directe (interdite : 'aucune modification/lecture SQL directe' n'est explicitement interdite pour la lecture, MAIS aucun accès à la base de production Postgres Railway n'existe pour cet assistant, en lecture comme en écriture)",
+    "enregistrements_trouves": "NOT_VERIFIABLE",
+    "cible_de_attribution": "NOT_VERIFIABLE"
+  },
+
+  "step5_persistence": {
+    "verdict_categorie": "D — ATTRIBUTION_AMBIGUOUS (au sens de : indéterminé faute d'accès, PAS au sens de 'plusieurs états contradictoires observés')",
+    "precision": "Aucune des 4 catégories (A/B/C/D telles que définies) ne peut être choisie avec preuve — B (ATTRIBUTION_NOT_PERSISTED) et A (ATTRIBUTION_PERSISTED) sont toutes deux des affirmations POSITIVES qui exigeraient une observation réelle. Faute de preuve dans un sens ou dans l'autre, le statut le plus honnête est un blocage d'accès, pas une catégorie A-D forcée."
+  },
+
+  "step6_checkout_usage": {
+    "source_promoter_id_au_checkout": "AUCUNE — le checkout (POST /billing/checkout) n'envoie et ne lit JAMAIS de promoter_id. Il envoie uniquement custom_metadata={user_id, plan} à Chariow (api/app/billing/router.py:257). L'attribution promoteur est ENTIÈREMENT DÉCOUPLÉE du checkout.",
+    "source_promoter_id_au_webhook": "SELECT ReferralAttribution WHERE converted_user_id = <user_id extrait de sale.custom_metadata> — exécutée dans commission_service.py::create_commission_for_confirmed_payment, appelée depuis _handle_successful_sale (billing/router.py:600-652)",
+    "relation_avec_payment_transaction_id": "provider_subscription_id (lié à l'achat confirmé) + source_event_id = x-pulse-delivery-id du Pulse Chariow, utilisé pour l'idempotence de la commission (contrainte UNIQUE)",
+    "mecanisme_idempotence": "Double couche : (1) ProcessedPulseDelivery dédup le Pulse lui-même avant même d'appeler le handler, (2) UniqueConstraint sur ReferralCommission.source_event_id en défense en profondeur — vérifié par les tests (test_referral_promoter_platform.py, scénario idempotence)",
+    "calcul_commission": "compute_commission_amount(gross_paid_amount, promoter.commission_rate_bp) = floor(gross_paid_amount * commission_rate_bp / 10000) — gross_paid_amount vient de extract_actual_paid_amount(sale_body, plan), qui priorise TOUJOURS le montant du webhook Chariow, jamais un prix catalogue",
+    "conclusion_architecturale": "SI une ligne ReferralAttribution existe déjà pour converted_user_id=209 pointant vers le Promoter dont user_id=206, ALORS la commission sera automatiquement et correctement calculée à la confirmation du paiement, quel que soit ce qui s'est passé pendant le checkout lui-même — le mécanisme ne dépend d'AUCUNE donnée transportée par le checkout. Ceci est une garantie de CODE, pas une observation de DONNÉES réelles (voir limitation ci-dessous)."
+  },
+
+  "step7_no_payment_confirmation": {
+    "vente_payee_issue_de_ce_test": "NOT_VERIFIABLE",
+    "commission_generee_par_ce_test": "NOT_VERIFIABLE",
+    "paiement_chariow_confirme_par_ce_test": "NOT_VERIFIABLE",
+    "note": "Aucun accès admin/DB — ne peut être confirmé techniquement par cet assistant. L'utilisateur a indiqué en Étape 1 de la Phase 15.6 initiale : 0 ventes, 0 FCFA commission — information relayée, non re-vérifiée techniquement ici."
+  },
+
+  "step8_tests": {
+    "TOTAL_FICHIERS": 65,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "suites_referral_cibles": {
+      "test_referral_promoter_platform.py": "99/99 assertions, exit 0",
+      "test_phase14_1_production_integration.py": "36/36 tests, exit 0"
+    },
+    "aucune_modification_de_test": true,
+    "aucune_regression": true
+  },
+
+  "step9_ai_isolation": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "step10_git": {
+    "HEAD": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "git_status_short": "aucun changement lié à cette phase — uniquement des fichiers étrangers pré-existants",
+    "commit": false,
+    "push": false
+  },
+
+  "exact_blockers_limitations": [
+    "Aucun accès à la base de données de production (Postgres Railway) cette session — impossible d'exécuter une requête SELECT sur referral_attribution pour user_id=209.",
+    "Aucun token/identifiant pour payment@test.com, promoter-2, ou un compte admin — impossible d'interroger GET /billing/subscription, GET /promoter/me/sales, GET /admin/subscribers, GET /admin/earnings.",
+    "Aucun outil de navigateur — impossible d'observer le comportement réel côté client (localStorage, appel effectif de POST /referral/attribute lors d'une session réelle).",
+    "Le SEUL point techniquement vérifié avec des données réelles est l'existence + statut ACTIVE de promoter-2 (via l'endpoint public /referral/resolve, sans écriture).",
+    "L'analyse du mécanisme (Étapes 1 et 6) est complète et fondée sur le code source réel inspecté — mais elle prouve UNIQUEMENT que le système FONCTIONNERAIT CORRECTEMENT SI une attribution existe, jamais QU'une attribution existe réellement pour ce compte précis."
+  ],
+
+  "reponse_a_la_question_centrale": {
+    "question": "Si payment@test.com paie maintenant 1500 FCFA, le paiement sera-t-il réellement attribué à promoter-2 et la commission attendue sera-t-elle 600 FCFA ?",
+    "reponse": "NE PEUT PAS ÊTRE RÉPONDU PAR OUI SUR SIMPLE DÉDUCTION. Le MÉCANISME est vérifié correct et suffisant (si une ligne ReferralAttribution existe pour converted_user_id=209 -> promoter_id de promoter-2, la commission sera calculée correctement, indépendamment du checkout). Mais l'EXISTENCE RÉELLE de cette ligne pour ce compte précis n'a pas pu être observée par cet assistant faute d'accès DB/admin. Une confirmation positive nécessite soit un accès admin/DB (relais humain ou token), soit d'observer directement, après le paiement, si la commission de 600 FCFA apparaît bien pour promoter-2 (preuve a posteriori, pas une garantie a priori)."
+  },
+
+  "verdict": {
+    "value": "AUDIT_BLOCKED",
+    "rationale": "Les accès nécessaires (base de données de production, ou tokens authentifiés pour payment@test.com/promoter-2/admin) ne sont pas disponibles cette session, empêchant une vérification fiable et positive de l'existence de l'attribution serveur pour user_id=209 -> promoter_id (user_id=206). Le mécanisme applicatif lui-même a été entièrement audité au niveau du code (Étapes 1 et 6) et est jugé correct et suffisant, ce qui est un signal positif indirect, mais insuffisant pour un verdict REFERRAL_ATTRIBUTION_CONFIRMED, lequel exige une preuve positive sur les données réelles, jamais une déduction."
+  }
+}

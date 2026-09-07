@@ -1,0 +1,334 @@
+{
+  "phase": "14.2",
+  "title": "XFOOT DEPLOYMENT & PRODUCTION ACTIVATION VERIFICATION V1",
+  "generated_at_utc": "2026-09-01T00:14:24Z",
+  "scope_note": "Préparation/vérification de déploiement uniquement. Aucun paiement réel automatique. Aucun push git effectué. Moteur IA non touché.",
+
+  "1_executive_summary": "Aucun déploiement réel n'a été effectué (DEPLOYMENT_ACCESS_UNAVAILABLE — aucun accès Railway/Hostinger/CLI depuis cet environnement, et un déploiement nécessiterait un `git push` explicitement interdit sans autorisation). L'inspection confirme : (a) la base git locale contient désormais 4 commits d'avance sur origin/main, dont un commit Phase 9-13 fait par l'utilisateur lui-même HORS de cette conversation ; (b) le code Phase 14/14.1 reste entièrement non commité ; (c) production (Railway + Hostinger) toujours confirmée sans le code Phase 14 (routes/pages absentes) ; (d) PAYMENT_ENVIRONMENT toujours UNKNOWN ; (e) sécurité webhook vérifiée dans le code (signature HMAC timing-safe, idempotence, montant jamais dérivé du frontend) ; (f) 64/64 suites de tests vertes, 6 tables IA identiques avant/après. Un plan de déploiement complet est produit (fichiers, migrations, variables d'environnement, rollback) mais NON exécuté.",
+
+  "2_git_baseline": {
+    "git_log_oneline_5": [
+      "00dd971 feat: complete AI shadow and production readiness phases",
+      "a2811c2 feat: add Xfoot odds temporal integrity audit v1",
+      "e85f79f Phase 8D — Odds Research Prototype & Walk-Forward V1 (recherche)",
+      "309e591 Phase 8C — External Data Source Audit V1 (due diligence)",
+      "2160b4f Phase 8A — Data Intelligence & Feature Registry V1"
+    ],
+    "branch_status": "main...origin/main [ahead 4]",
+    "important_finding": "Le commit HEAD (00dd971, 'feat: complete AI shadow and production readiness phases') a été créé par l'utilisateur lui-même (Atchaki Mede Debodjona <atchakimededebodjona@gmail.com>, 2026-08-31 21:59:21 UTC) EN DEHORS de cette conversation — cette session n'a jamais exécuté git commit. Il regroupe les fichiers Phase 9.4-13 (app/ai/decision, historical, pipeline, readiness, safety, shadow, value + tests associés) qui étaient auparavant non suivis. Ce commit N'INCLUT PAS les fichiers Phase 14/14.1/14.2 (referral/promoter), qui restent non commités.",
+    "modifications_phase14_2_this_session": ["reports/phase14_2/ (nouveau)"],
+    "modifications_phase14_1": ["api/test_phase14_1_production_integration.py", "reports/phase14_1/"],
+    "modifications_phase14": [
+      "api/alembic/env.py (M)", "api/app/auth/router.py (M)", "api/app/billing/router.py (M)", "api/app/models/user.py (M)", "api/main.py (M)",
+      "frontend-design/api.js (M)", "frontend-design/{arena,billing,dashboard,history,index,live,login,vip}.html (M)",
+      "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py (??)", "api/app/models/promoter.py (??)", "api/app/referral/ (??)",
+      "api/test_referral_promoter_platform.py (??)", "frontend-design/.htaccess (??)", "frontend-design/{admin-earnings,admin-promoters,admin-subscribers,promoter}.html (??)",
+      "reports/phase14/ (??)"
+    ],
+    "modifications_anterieures_non_liees": [
+      "api/app/ai/readiness/gates.py (M) — extension de la liste de faux-positifs du scanner de secrets, Phase 13, antérieure à Phase 14",
+      "reports/shadow/watch/evidence_snapshots.json (M) — log d'exécution des suites shadow, généré par les tests, pas une modification de code",
+      "reports/phase9_5|11|12|13/*, api/test_phase13.py, scripts/phase13_evidence_maturation.py (??) — artefacts Phase 9.5-13, antérieurs à Phase 14"
+    ],
+    "fichiers_non_lies_signales": [
+      "'tatus --shortgit status --short' — fichier résiduel d'une commande shell malformée, déjà signalé en Phase 14.1, non supprimé automatiquement, sans lien avec ce travail."
+    ]
+  },
+
+  "3_phase14_inspection": {
+    "PHASE14_DEPLOYMENT_FILES": {
+      "backend_new": [
+        "api/app/models/promoter.py",
+        "api/app/referral/__init__.py",
+        "api/app/referral/money.py",
+        "api/app/referral/slug.py",
+        "api/app/referral/commission_service.py",
+        "api/app/referral/promoter_service.py",
+        "api/app/referral/dependencies.py",
+        "api/app/referral/stats.py",
+        "api/app/referral/router.py",
+        "api/app/referral/admin_router.py",
+        "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py"
+      ],
+      "backend_modified": [
+        "api/app/models/user.py (+is_promoter sur UserRead)",
+        "api/app/auth/router.py (calcul is_promoter dans /auth/me)",
+        "api/app/billing/router.py (appel commission_service depuis _handle_successful_sale et _handle_license_status)",
+        "api/main.py (+2 app.include_router : referral_router, referral_admin_router)",
+        "api/alembic/env.py (+import des 5 modèles Promoter/Referral*)"
+      ],
+      "frontend_new": ["frontend-design/promoter.html", "frontend-design/admin-promoters.html", "frontend-design/admin-subscribers.html", "frontend-design/admin-earnings.html", "frontend-design/.htaccess"],
+      "frontend_modified": ["frontend-design/api.js", "frontend-design/login.html", "frontend-design/{index,live,arena,vip,history,billing,dashboard}.html"],
+      "scripts": "Aucun script de déploiement Phase 14 spécifique — le déploiement suit le mécanisme existant du projet (push vers origin/main -> Railway/Hostinger, voir HOSTINGER_DEPLOY.md).",
+      "migrations": ["5787c4b3b963_phase14_referral_promoter_platform.py — 1 seule migration, crée exactement 5 tables (promoter, referral_attribution, referral_commission, referral_visit, referral_audit_event)"],
+      "routes_added": [
+        "POST /referral/resolve/{slug}", "POST /referral/attribute",
+        "GET /promoter/me", "GET /promoter/me/stats", "GET /promoter/me/sales",
+        "GET /admin/promoters", "POST /admin/promoters", "POST /admin/promoters/{id}/status", "GET /admin/promoters/{id}",
+        "GET /admin/subscribers", "GET /admin/earnings/totals", "GET /admin/earnings/by-promoter"
+      ],
+      "env_vars_new": ["REFERRAL_DEFAULT_CURRENCY (optionnel, défaut XOF)", "REFERRAL_PLAN_PRICE_MONTHLY (optionnel, repli si le webhook ne porte pas de montant)", "REFERRAL_PLAN_PRICE_YEARLY (optionnel, idem)"],
+      "dependencies_new": "Aucune nouvelle dépendance Python/JS — réutilisation exclusive de SQLModel/FastAPI/Alembic déjà présents.",
+      "server_config": "Aucune configuration serveur nouvelle côté Railway (le service FastAPI existant sert simplement 12 routes de plus). Côté Hostinger : 1 nouveau fichier .htaccess requis (actuellement absent du dossier frontend-design/ déployé)."
+    }
+  },
+
+  "4_deployment_diff": {
+    "method": "GET/HEAD/OPTIONS uniquement, aucune écriture serveur distant.",
+    "DEPLOYED_VERSION": "Antérieure à Phase 9.4 (aucune route Phase 6-14 visible dans openapi.json de production — seules /auth, /billing, /leagues, /live-scores, /fixtures, /models, /predictions, /ratings, /health sont présentes) — le commit exact déployé n'est pas déterminable en lecture seule (pas de endpoint de version exposé), mais il précède au minimum tout ce qui a été commité localement dans cette session ET le commit 00dd971 (Phase 9-13), puisque même les routes /models/shadow/* du commit 00dd971 sont déjà présentes en prod (probablement déployées séparément lors d'une session antérieure) alors que les routes Phase 14 ne le sont pas.",
+    "LOCAL_VERSION": "main local = origin/main + 4 commits non poussés (dont 00dd971) + modifications Phase 14/14.1/14.2 non commitées.",
+    "MISSING_ROUTES": ["/referral/resolve/{slug}", "/referral/attribute", "/promoter/me", "/promoter/me/stats", "/promoter/me/sales", "/admin/promoters", "/admin/promoters/{id}", "/admin/promoters/{id}/status", "/admin/subscribers", "/admin/earnings/totals", "/admin/earnings/by-promoter"],
+    "MISSING_FEATURES": ["Pages frontend promoter.html/admin-*.html (404 en production)", "Nav rôle-gated Promoteur/Admin sur les pages existantes (le JS n'existe pas encore en prod)", "Capture/attribution de parrainage sur login.html (le code n'existe pas encore en prod)", ".htaccess de réécriture de slug (fichier absent du déploiement Hostinger actuel)"]
+  },
+
+  "5_domain": {
+    "https_www_xfoot_site": {"status": 200, "server": "hcdn (Hostinger)", "hsts_upgrade": "content-security-policy: upgrade-insecure-requests présent", "http3": "alt-svc h3 annoncé"},
+    "http_to_https_redirect": {"from": "http://www.xfoot.site/", "code": 301, "to": "https://www.xfoot.site/", "result": "OK — HTTPS forcé"},
+    "https_api_xfoot_site_health": {"status_get": 200, "server": "railway-hikari (Railway)"},
+    "certificate": "Négociation TLS réussie sur les deux domaines (curl n'a signalé aucune erreur de certificat) — validité/émetteur exacts non extraits (hors périmètre read-only nécessaire ici)."
+  },
+
+  "6_api": {
+    "openapi_json_reachable": true,
+    "openapi_url": "https://api.xfoot.site/openapi.json",
+    "routes_confirmed_present": ["/auth/login", "/auth/me", "/auth/register", "/billing/checkout", "/billing/pulse", "/billing/subscription", "/billing/activate-license", "/billing/entitlement", "/billing/google/rtdn", "/billing/google/verify", "/health", "/leagues", "/live-scores", "/fixtures/week", "/models/*", "/predictions/*", "/ratings/{league}"],
+    "routes_confirmed_absent": ["/promoter/*", "/referral/*", "/admin/*"],
+    "public_routes_tested_by_actual_code_names_not_guessed": {
+      "/promoter/me": 404, "/promoter/me/sales": "non testé séparément (déjà 404 confirmé sur le préfixe /promoter/* via openapi.json et /promoter/me)", "/referral/resolve/{slug}": 404, "/admin/promoters": 404
+    },
+    "note_on_prompt_route_names": "Le prompt Phase 14.2 mentionne '/promoter' et '/promoter/dashboard' — CES ROUTES N'EXISTENT PAS dans le code Phase 14 (vérifié : seules /promoter/me, /promoter/me/stats, /promoter/me/sales existent côté API ; le dashboard est une PAGE FRONTEND statique promoter.html, pas une route API). Conformément à la consigne 'ne pas supposer leurs noms', les tests ci-dessus utilisent les noms réels du code, pas ceux du prompt."
+  },
+
+  "7_routing": {
+    "htaccess_local_inspected": true,
+    "content_summary": "RewriteEngine On ; ne réécrit jamais un fichier/dossier existant réellement (RewriteCond !-f !-d) ; un segment unique URL-safe -> /login.html?ref=$1 [L,QSA] ; aucune redirection visible (302/301), réécriture interne uniquement.",
+    "spa_fallback": "Non applicable — ce projet n'est pas une SPA, chaque page est un fichier .html statique distinct servi directement par Hostinger.",
+    "api_routing": "Séparé du frontend — api.xfoot.site (Railway) et www.xfoot.site (Hostinger) sont deux hôtes distincts, CORS-séparés (ALLOWED_ORIGINS), aucune règle .htaccess ne concerne l'API.",
+    "https_in_htaccess": "Aucune règle HTTPS dans le .htaccess Phase 14 lui-même — la redirection HTTP->HTTPS observée en production (§5) est gérée en amont par l'infrastructure Hostinger (hcdn), indépendamment de ce fichier.",
+    "conflicts_with_promoter_slugs": "Prévenus par construction : RESERVED_SLUGS (app/referral/slug.py) liste explicitement login/register/dashboard/billing/history/live/vip/arena/admin/api/etc. — aucun de ces mots ne peut devenir un slug promoteur (voir create_promoter/slug_is_available, déjà testé Phase 14 tests 16/16b)."
+  },
+
+  "8_htaccess": {
+    "value": "HTACCESS_UNVERIFIED",
+    "reason": "Fichier présent localement, jamais déployé sur le compte Hostinger réel (confirmé activement en Phase 14.1 et reconfirmé ici : les chemins de slug réservés testés en production renvoient tous 404 par défaut, pas de comportement de réécriture)."
+  },
+
+  "9_promoter_slug_routing": {
+    "conceptual_behavior_from_code": {
+      "slug_valide_promoteur_actif": "app/referral/router.py::resolve_referral_slug -> {valid: true}, ReferralVisit enregistrée (anonyme) ; puis app/referral/router.py::attribute_referral (après authentification) -> ReferralAttribution créée si aucune attribution préexistante et si ce n'est pas un self-referral.",
+      "slug_inexistant": "resolve_referral_slug -> {valid: false} — comportement HTTP identique (jamais de 404 distinctif ni d'info admin exposée, §32 Phase 14) ; côté page statique, un slug non réécrit par .htaccess suit le comportement Hostinger par défaut (404), observé en §5/§6.",
+      "slug_reserve": "is_reserved_slug() bloque toute création de promoteur sur admin/api/login/register/dashboard/pricing/billing/etc. — testé (Phase 14, tests 16/16b)."
+    },
+    "real_test_against_production": "IMPOSSIBLE — PHASE14_NOT_DEPLOYED (voir §6). Testé uniquement contre l'environnement isolé (Phase 14 + 14.1, 36+99 assertions)."
+  },
+
+  "10_database": {
+    "migration_file": "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py",
+    "down_revision": "c4f8a1d75e93 (chaîne alembic linéaire, pas de branch)",
+    "idempotent": "CREATE TABLE standard (non IF NOT EXISTS explicite, mais alembic garantit l'application unique via sa table de version) — comportement standard du projet, cohérent avec les migrations précédentes.",
+    "tables_created": ["promoter", "referral_attribution", "referral_commission", "referral_visit", "referral_audit_event"],
+    "ai_tables_modified": false,
+    "compatibility_with_production_db": "NON VÉRIFIÉE DIRECTEMENT (aucun accès à la base de production PostgreSQL Railway depuis cet environnement) — la migration est de nature strictement additive (5 CREATE TABLE, aucun ALTER sur une table existante), ce qui réduit fortement le risque de conflit avec le schéma réel, mais ceci reste une inférence à partir du contenu de la migration, pas une vérification empirique contre la base cible.",
+    "pre_migration_action": "Aucune migration n'a été exécutée contre une base autre que la base de développement locale (api/app.db, déjà appliquée et vérifiée en Phase 14)."
+  },
+
+  "11_ai_database_isolation": {
+    "before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identical": true,
+    "scope": "Capturé avant/après l'intégralité des 64 suites de tests exécutées dans cette phase (locale uniquement — aucune opération n'a touché une base de production)."
+  },
+
+  "12_environment_variables": {
+    "names_only_presence_checked_locally": {
+      "CHARIOW_API_KEY": "PRESENT",
+      "CHARIOW_PULSE_SECRET": "PRESENT",
+      "CHARIOW_PRODUCT_ID_MONTHLY": "PRESENT",
+      "CHARIOW_PRODUCT_ID_YEARLY": "PRESENT",
+      "JWT_SECRET_KEY": "PRESENT",
+      "ADMIN_EMAILS": "ABSENT (local uniquement — nécessaire en production pour que require_admin fonctionne ; son état sur Railway n'est pas vérifiable depuis cet environnement)",
+      "ENV": "ABSENT (donc pas de garde 'production' actif en local)"
+    },
+    "values_ever_displayed": false,
+    "hardcoded_secret_in_code": false,
+    "secret_in_git_diff_or_status": false,
+    "secret_in_reports": false,
+    "note": "L'état RÉEL des variables sur Railway (production) n'est PAS vérifiable depuis cet environnement (aucun accès au dashboard Railway) — seule la présence locale a pu être confirmée."
+  },
+
+  "13_payment_environment": {
+    "value": "UNKNOWN",
+    "method": "Inspection du code (chariow_config.py, .env.example) + documentation locale — aucune preuve suffisante d'un mode sandbox distinct n'a été trouvée nulle part dans ce dépôt, à aucun moment des Phases 14/14.1/14.2. Le nom de la variable (CHARIOW_API_KEY) n'a PAS été utilisé seul pour déduire l'environnement, conformément à la consigne.",
+    "unchanged_since_phase14_1": true
+  },
+
+  "14_chariow": {
+    "write_calls_made": false,
+    "read_only_calls_to_chariow_api": false,
+    "reason": "Même le statut de l'environnement de l'API n'est pas certain (UNKNOWN) -> aucun appel, ni lecture ni écriture, n'a été effectué vers https://api.chariow.com dans cette phase.",
+    "value": "PAYMENT_PROVIDER_ENVIRONMENT_UNVERIFIED"
+  },
+
+  "15_webhook": {
+    "url": "POST /billing/pulse (api.xfoot.site/billing/pulse une fois déployé)",
+    "method": "POST",
+    "events_handled": ["successful.sale", "license.activated", "license.expired", "license.revoked", "license.nearing_expiry"],
+    "signature_header": "x-chariow-signature (sha256=<hex hmac-sha256 du corps brut>)",
+    "signature_verification": "app/billing/router.py::_verify_pulse_signature — hmac.new(CHARIOW_PULSE_SECRET, payload, sha256), comparé via hmac.compare_digest (résistant aux attaques temporelles). Signature absente/invalide -> HTTP 401, événement JAMAIS traité.",
+    "idempotence": "Header x-pulse-delivery-id -> table ProcessedPulseDelivery, vérifiée AVANT tout traitement métier ; doublon détecté -> {received: true, duplicate: true}, aucun retraitement.",
+    "payment_id_field": "x-pulse-delivery-id -> stocké comme ReferralCommission.source_event_id (contrainte UNIQUE, défense en profondeur en plus du dédup ci-dessus)",
+    "amount_field": "sale.amount (ou variantes amount_paid/paid_amount/total_amount/total/price) dans le corps JSON du Pulse, PROTÉGÉ par la signature globale du corps — un attaquant ne peut pas falsifier ce montant sans connaître CHARIOW_PULSE_SECRET.",
+    "currency": "XOF (FCFA)",
+    "subscription_reference": "ProviderSubscription (résolue via custom_metadata.user_id, lui-même fixé côté SERVEUR à la création du checkout — jamais un champ client à ce stade, voir §16)",
+    "secret_ever_displayed": false
+  },
+
+  "16_webhook_security": {
+    "authenticity_verified": true,
+    "invalid_signature_rejected": true,
+    "idempotent": true,
+    "amount_never_trusted_from_browser": {
+      "verified": true,
+      "evidence": "app/billing/router.py ligne ~257 : metadata={'user_id': str(current_user.id), 'plan': body.plan} au moment du checkout — current_user.id provient de get_current_user (JWT serveur), jamais du corps client directement. Le MONTANT réel utilisé pour la commission (extract_actual_paid_amount) provient EXCLUSIVEMENT du corps signé du Pulse successful.sale (ou d'un prix fixe configuré serveur), jamais d'un champ envoyé par le frontend au moment du checkout ou d'ailleurs."
+    },
+    "commission_never_created_from_frontend_event_alone": {
+      "verified": true,
+      "evidence": "Aucune route accessible au frontend ne crée de ReferralCommission — la seule fonction d'écriture (create_commission_for_confirmed_payment) n'est appelée que depuis _handle_successful_sale, lui-même déclenché uniquement par un Pulse Chariow signé et vérifié."
+    }
+  },
+
+  "17_referral_attribution": {
+    "status": "Comportement vérifié dans l'environnement isolé (Phase 14 + 14.1) — non re-testé ici (pas de nouveau point d'intégration découvert), non testable contre la production réelle (PHASE14_NOT_DEPLOYED)."
+  },
+
+  "18_account_attribution": {
+    "status": "Idem §17 — déjà couvert, non redupliqué, non testable en production réelle actuellement."
+  },
+
+  "19_payment_confirmation": {
+    "REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION": {
+      "triggered": true,
+      "why_necessary": "Pour clore définitivement la vérification d'intégration production (objectif central des Phases 14.1/14.2), une confirmation de paiement RÉELLEMENT reçue par le webhook de production (pas une simulation locale) est nécessaire — c'est le seul test qui prouve que la chaîne complète (Chariow réel -> Pulse réel -> serveur Railway réel -> commission réelle) fonctionne, au-delà de la preuve déjà apportée en environnement isolé.",
+      "amount_needed": "Le montant du plan le MOINS CHER actuellement configuré dans le dashboard Chariow (probablement le plan mensuel) — montant exact NON déterminable depuis ce code sans accès à ce dashboard.",
+      "plan_needed": "monthly (licence mensuelle, l'option la moins coûteuse des deux configurées : CHARIOW_PRODUCT_ID_MONTHLY)",
+      "test_account_needed": "Un compte promoteur ET un compte client entièrement nouveaux, explicitement tagués (ex. phase14_2_test_realpromoter@example.com référent, phase14_2_test_realclient@example.com client), créés spécifiquement pour ce test autorisé — jamais un compte utilisateur réel existant.",
+      "expected_result": "Exactement 1 ligne ReferralCommission créée en production, gross_paid_amount == montant réellement débité, commission_amount == floor(gross_paid_amount x 4000/10000), visible à la fois dans GET /promoter/me/sales (compte promoteur de test) et GET /admin/subscribers + /admin/earnings/totals (compte admin) — idempotence à revérifier si Chariow renvoie le Pulse plusieurs fois.",
+      "status": "EN ATTENTE — aucune action n'a été entreprise, aucun paiement n'a été déclenché."
+    }
+  },
+
+  "20_commission": {
+    "status": "Formule et montants revérifiés dans l'environnement isolé (Phases 14/14.1, 4 montants distincts testés dont un scénario avec remise réelle) — non re-testable contre un paiement production réel sans franchir §19."
+  },
+
+  "21_idempotence": {
+    "status": "Vérifiée en environnement isolé (10 livraisons identiques -> 1 commission, Phase 14 test 6) — non re-testable contre un webhook Chariow réel sans franchir §19."
+  },
+
+  "22_refund": {
+    "value": "REFUND_REAL_VALIDATION_PENDING",
+    "note": "Comportement de reversal vérifié en environnement isolé (Phase 14 test 7 : PAID->REFUNDED->REVERSED, historique jamais supprimé). Non vérifié contre un remboursement Chariow réel — nécessiterait d'abord un paiement réel (§19), donc également en attente d'autorisation humaine."
+  },
+
+  "23_promoter_dashboard": {
+    "status": "Logique et cohérence ledger<->dashboard vérifiées en environnement isolé avec réconciliation exacte (Phase 14.1, §17 de ce rapport-là) — non vérifiable avec authentification réelle en production tant que PHASE14_NOT_DEPLOYED."
+  },
+
+  "24_admin_dashboard": {
+    "status": "Idem §23 — matrice d'autorisation (401/403/403/200) déjà vérifiée en environnement isolé (Phase 14, tests 11/12/14/15), non re-testable en production réelle actuellement."
+  },
+
+  "25_authorization": {
+    "reused": "Tests 11/12/14/15 de la Phase 14 (401 non authentifié, 403 user normal, 403 promoteur->admin, 200 admin) — non redupliqués, toujours valides dans le code inspecté (aucune régression, voir §26 de ce rapport)."
+  },
+
+  "26_browser_validation": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Toujours aucun outil Playwright/navigateur interactif disponible dans cet environnement. Non prétendu comme testé."
+  },
+
+  "27_ai_isolation": {
+    "structural": "Réutilisé (Phase 14 test 19 : aucun module app/referral/* ne référence les modèles IA).",
+    "empirical": "Voir §11 — comptages identiques avant/après cette session."
+  },
+
+  "28_security": {
+    "diff_scanned": true,
+    "status_scanned": true,
+    "reports_scanned": true,
+    "logs_scanned": true,
+    "secrets_found": false,
+    "api_keys_found": false,
+    "tokens_found": false,
+    "credentials_found": false
+  },
+
+  "29_regression": {
+    "total_test_files": 64,
+    "result": "64/64 exit code 0, 0 échec — incluant les fichiers Phase 14 (99 assertions) et Phase 14.1 (36 assertions), plus les 62 suites préexistantes (IA/shadow/readiness/safety/pipeline/auth/billing/premium/entitlement).",
+    "stopped_early": false
+  },
+
+  "30_deployment": {
+    "DEPLOYMENT_ACCESS_UNAVAILABLE": true,
+    "reason": "Aucun accès Railway CLI/dashboard, aucun accès Hostinger (FTP/SFTP/panel), aucun outil de déploiement installé dans cet environnement (railway, vercel, lftp introuvables). Le mécanisme de déploiement du projet est un push vers origin/main (GitHub) déclenchant Railway/Hostinger — un git push est explicitement interdit sans autorisation humaine dans TOUTES les phases précédentes et celle-ci. Aucun déploiement n'a donc été tenté, ni simulé, ni prétendu.",
+    "FILES_TO_DEPLOY": "Voir 3_phase14_inspection.PHASE14_DEPLOYMENT_FILES (liste complète backend + frontend).",
+    "MIGRATIONS_TO_RUN": ["5787c4b3b963_phase14_referral_promoter_platform.py (alembic upgrade head, sur la base PostgreSQL de production)"],
+    "ENV_VARS_REQUIRED": {
+      "already_likely_present_in_production_railway": ["CHARIOW_API_KEY", "CHARIOW_PULSE_SECRET", "CHARIOW_PRODUCT_ID_MONTHLY", "CHARIOW_PRODUCT_ID_YEARLY", "JWT_SECRET_KEY", "DATABASE_URL"],
+      "must_be_confirmed_present_for_phase14_to_function": ["ADMIN_EMAILS (sinon require_admin bloque TOUT accès admin, y compris légitime)"],
+      "optional_new_for_phase14": ["REFERRAL_PLAN_PRICE_MONTHLY", "REFERRAL_PLAN_PRICE_YEARLY (repli seulement si le webhook Chariow ne porte jamais de montant — à activer seulement si observé nécessaire après déploiement)"]
+    },
+    "ROUTES_ADDED": "Voir 3_phase14_inspection.PHASE14_DEPLOYMENT_FILES.routes_added (12 routes).",
+    "deployment_sequence_recommended": [
+      "1. Revue humaine du diff complet (ce travail n'a jamais été commité).",
+      "2. git add + commit séparé pour Phase 14/14.1 (affiliation) — distinct du commit Phase 9-13 déjà fait par l'utilisateur.",
+      "3. Vérifier/compléter ADMIN_EMAILS sur Railway AVANT le déploiement (sinon la zone admin serait inaccessible même déployée correctement).",
+      "4. git push origin main (déclenche le déploiement Railway automatique).",
+      "5. alembic upgrade head sur la base de production (généralement automatique au démarrage du service Railway si configuré ainsi — à confirmer via le Procfile/README du projet).",
+      "6. Upload manuel de frontend-design/ (dont le nouveau .htaccess) vers Hostinger (processus déjà documenté dans HOSTINGER_DEPLOY.md, hors du mécanisme git push).",
+      "7. Revérifier avec les MÊMES requêtes en lecture seule que ce rapport (openapi.json, 404 attendus disparus) pour confirmer le déploiement.",
+      "8. Exécuter le test de paiement réel autorisé (§19) une fois déployé."
+    ]
+  },
+
+  "31_rollback": {
+    "CURRENT_VERSION": "origin/main @ (commit exact non déterminable en lecture seule — antérieur à 2160b4f 'Phase 8A', voir §4)",
+    "TARGET_VERSION": "main local une fois commité (HEAD actuel 00dd971 + un futur commit Phase 14/14.1 affiliation)",
+    "ROLLBACK_METHOD": "Standard Railway : redéploiement du commit précédent via le dashboard Railway (historique de déploiements) ; standard Hostinger : re-upload des fichiers frontend-design/ précédents (pas de versioning natif côté hébergement statique — nécessite une sauvegarde manuelle préalable des fichiers actuels avant tout upload).",
+    "value": "ROLLBACK_UNVERIFIED",
+    "reason": "Aucun déploiement n'a eu lieu dans cette phase, donc aucun rollback n'a pu être testé en conditions réelles. La méthode ci-dessus est la procédure standard documentée pour Railway/Hostinger, jamais exercée ici."
+  },
+
+  "29b_limitations": [
+    "DEPLOYMENT_ACCESS_UNAVAILABLE : aucun mécanisme de déploiement réel accessible depuis cet environnement.",
+    "DEPLOYED_VERSION exact non déterminable en lecture seule (pas d'endpoint de version exposé par l'API de production).",
+    "Compatibilité de la migration avec le schéma PostgreSQL de production non vérifiée empiriquement (inférence structurelle seulement).",
+    "État réel de ADMIN_EMAILS et autres variables sur Railway non vérifiable depuis cet environnement.",
+    "PAYMENT_ENVIRONMENT toujours UNKNOWN — aucun paiement réel tenté, REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION émis (§19).",
+    "REFUND_REAL_VALIDATION_PENDING — dépend de §19.",
+    "BROWSER_VALIDATION_UNAVAILABLE — inchangé.",
+    "ROLLBACK_UNVERIFIED — procédure documentée, jamais exercée."
+  ],
+
+  "30b_required_next": [
+    "Décision humaine : autoriser ou non le paiement de test réel décrit en §19 (montant/plan/comptes/résultat attendu déjà spécifiés).",
+    "Décision humaine : autoriser un commit séparé pour Phase 14/14.1 (affiliation), distinct du commit Phase 9-13 déjà réalisé par l'utilisateur.",
+    "Confirmer/compléter ADMIN_EMAILS sur Railway avant tout déploiement de la zone admin.",
+    "Vérifier auprès de Chariow l'existence d'un mode sandbox (question posée depuis la Phase 14, toujours sans réponse confirmée).",
+    "Une fois déployé : répéter les vérifications de routing en lecture seule de ce rapport pour confirmer le déploiement, puis exécuter le test de paiement réel autorisé."
+  ],
+
+  "31_final_verdict": {
+    "value": "DEPLOYMENT_BLOCKED",
+    "rationale": "Le code est prêt (99+36 assertions vertes, 64/64 régression, sécurité webhook vérifiée dans le code, plan de déploiement complet produit), mais AUCUN déploiement n'a pu être réalisé faute d'accès aux mécanismes réels (Railway/Hostinger/git push) — DEPLOYMENT_ACCESS_UNAVAILABLE. Ce blocage est un fait d'accès, pas un défaut du code. PAYMENT_VERIFICATION_BLOCKED (Phase 14.1) reste également vrai en parallèle (PAYMENT_ENVIRONMENT toujours UNKNOWN, REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION émis pour la suite). Jamais PRODUCTION_READY : rien n'est déployé."
+  },
+
+  "git_final_status": {
+    "committed_this_session": false,
+    "pushed_this_session": false,
+    "note": "git status --short / git diff --stat / git diff --name-only exécutés et consignés dans le .md associé."
+  },
+
+  "closing_statement": "PHASE 14.2 — XFOOT DEPLOYMENT & PRODUCTION INTEGRATION VERIFICATION V1 TERMINÉE. DÉPLOIEMENT, ROUTING, ATTRIBUTION, INTÉGRATION PAIEMENT ET COMMISSION DE 40% VÉRIFIÉS OU LIMITATIONS DOCUMENTÉES. AUCUN PAIEMENT RÉEL EFFECTUÉ SANS AUTORISATION HUMAINE EXPLICITE. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. EN ATTENTE DE VALIDATION HUMAINE."
+}

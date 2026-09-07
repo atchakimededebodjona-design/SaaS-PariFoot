@@ -1,0 +1,108 @@
+{
+  "phase": "15.6-R2 — DIAGNOSTIC ATTRIBUTION REFERRAL RÉELLE",
+  "timestamp": "2026-09-02T22:30:00Z",
+
+  "compte_diagnostique": {"email": "demo@payement.com", "user_id": 236, "visible_admin_subscribers": true, "payment_status": "NONE", "colonne_promoteur_admin": "—"},
+  "promoteur_attendu": {"slug": "promoter-2", "user_id": 206, "status": "ACTIVE"},
+
+  "premisse_deja_etablie_par_206_visible": {
+    "explication": "Contrairement au cas de la Phase 15.6-R (compte inconnu, absence non expliquée), ICI le compte 236 EST DÉJÀ visible dans Admin → Abonnés. D'après le diagnostic de code établi en Phase 15.6-R (api/app/referral/admin_router.py:152-155), cela prouve qu'une ligne ProviderSubscription(provider='chariow') existe déjà pour user_id=236 — cette hypothèse alternative ('compte jamais passé par le checkout') est donc ÉCARTÉE pour ce compte précis. Le problème est ailleurs, forcément."
+  },
+
+  "step1_referral_attribution_236": {
+    "recherche": "NOT_VERIFIABLE — aucun accès DB production cette session",
+    "deduction_par_le_code_admin": {
+      "logique_admin_router": "api/app/referral/admin_router.py:159-181 — attribution = attributions.get(sub.user_id) ; promoter = promoters_by_id.get(attribution.promoter_id) if attribution else None ; promoter_slug=promoter.slug if promoter else None",
+      "promoters_by_id_construction": "Construit à partir de promoter_ids EXTRAIT DIRECTEMENT de {a.promoter_id for a in attributions.values()} — si une ReferralAttribution existe, son promoter_id est PAR CONSTRUCTION dans promoter_ids, donc promoters_by_id.get(...) ne peut échouer QUE si le Promoter lui-même a été supprimé de la table promoter (aucun endpoint DELETE sur Promoter n'existe dans tout le code — architecturalement quasi impossible)",
+      "conclusion_deduite": "PROMOTEUR = '—' affiché pour 236 signifie, avec une confiance très élevée fondée sur la lecture du code, qu'AUCUNE ligne ReferralAttribution n'existe pour converted_user_id=236 — PAS un bug d'affichage admin, PAS un mapping cassé. C'est un cas B (attribution jamais persistée), pas un cas E (bug d'affichage)."
+    }
+  },
+
+  "step2_trace_du_parcours_capture_persistance": {
+    "chaine_normale": "captureReferralFromUrl() [login.html:81, au chargement, lit ?ref= et POST /referral/resolve] -> localStorage(xfoot_referral_slug) -> [soumission du formulaire register/login] -> attributeReferralIfPresent() [login.html:190, awaited AVANT redirection] -> POST /referral/attribute -> ReferralAttribution créée",
+
+    "point_de_defaillance_identifie_avec_haute_confiance": {
+      "titre": "BYPASS DE captureReferralFromUrl() SI UN TOKEN EXISTE DÉJÀ EN LOCALSTORAGE",
+      "code_exact": "login.html:73-82 : if (getToken()) { window.location.href = 'dashboard.html'; } else { captureReferralFromUrl(); }",
+      "explication": "Si le NAVIGATEUR utilisé pour visiter https://www.xfoot.site/promoter-2 possédait déjà un token JWT valide (xfoot_token en localStorage) provenant d'une session ANTÉRIEURE (ex. connexion précédente à payment@test.com dans le MÊME navigateur, utilisé pour les tests des phases précédentes de cette même conversation), alors login.html redirige IMMÉDIATEMENT vers dashboard.html SANS JAMAIS appeler captureReferralFromUrl() — le slug 'promoter-2' de l'URL est silencieusement ignoré, aucune erreur visible.",
+      "compatibilite_avec_les_faits_connus": "Le même navigateur/poste a servi à tester payment@test.com (user_id 209) dans les étapes précédentes de cette Phase 15.6 — un token pour ce compte a très probablement été posé en localStorage à ce moment-là et n'a peut-être jamais été explicitement effacé (clearToken() n'est appelé QUE par un clic explicite sur 'Déconnexion' — aucune expiration automatique visible côté client) avant la tentative d'inscription de demo@payement.com."
+    },
+
+    "second_point_de_defaillance_possible": {
+      "titre": "CONSOMMATION DU SLUG PAR UNE CONNEXION INTERMÉDIAIRE NON LIÉE",
+      "explication": "attributeReferralIfPresent() est appelée à CHAQUE soumission réussie du formulaire login.html — que ce soit une INSCRIPTION ou une SIMPLE CONNEXION (login.html:186-190, dans le même bloc try, indépendant de mode==='register'). Son bloc finally (ligne 166-169) retire TOUJOURS xfoot_referral_slug/xfoot_referral_captured_at du localStorage, que l'attribution ait réussi, échoué, ou n'ait rien trouvé à faire. Scénario plausible : visite de /promoter-2 (slug capturé) -> AVANT de s'inscrire, une connexion normale à payment@test.com est effectuée dans le même navigateur (ex. pour vérifier quelque chose) -> cette connexion consomme et efface le slug capturé (qu'elle réussisse ou échoue à l'attribuer à 209) -> inscription ultérieure de demo@payement.com dans le MÊME navigateur, SANS repasser par /promoter-2 -> plus aucun slug en localStorage -> attributeReferralIfPresent() ne trouve rien (slug vide -> return immédiat, ligne 156) -> aucune attribution créée pour 236.",
+      "verification_clearToken": "clearToken() (appelé par le bouton Déconnexion sur toutes les pages authentifiées) NE TOUCHE JAMAIS xfoot_referral_slug/xfoot_referral_captured_at (vérifié : grep sur tout frontend-design/, ces clés ne sont manipulées que dans api.js::captureReferralFromUrl/attributeReferralIfPresent) — donc une simple déconnexion entre deux comptes ne réinitialise PAS ce risque, seule une nouvelle visite via /promoter-2 recapture le slug."
+    },
+
+    "conditions_metier_ecartees": {
+      "self_referral": "Écarté — demo@payement.com (236) ≠ user_id du compte promoteur (206)",
+      "promoteur_inactif": "Écarté — promoter-2 confirmé ACTIVE (endpoint public, re-vérifié cette phase)",
+      "fenetre_attribution_30_jours": "Écarté a priori — le compte a été créé récemment selon le contexte fourni, bien en dessous de 30 jours",
+      "regex_slug_htaccess": "Écarté — 'promoter-2' correspond exactement au pattern ^([a-z0-9][a-z0-9-]{0,38}[a-z0-9]|[a-z0-9])$ de frontend-design/.htaccess:28, réécriture confirmée fonctionnelle (200, sert login.html, testé à plusieurs reprises dans cette conversation)"
+    },
+
+    "conclusion_etape2": "AUCUNE preuve d'erreur réseau ou de rejet métier — le motif le plus probable est un problème de SÉQUENCEMENT côté navigateur (token pré-existant OU slug consommé par une action intermédiaire), PAS un bug du mécanisme d'attribution lui-même, qui reste par ailleurs vérifié correct dans son fonctionnement isolé (voir Phase 15.6-R, Étape 4)."
+  },
+
+  "step3_admin_display_bug_check": "NON APPLICABLE — Étape 1 conclut que la ligne ReferralAttribution elle-même est absente (déduction code, confiance élevée), donc il ne s'agit PAS d'un bug d'affichage admin isolé (l'endpoint afficherait correctement le slug SI la ligne existait, voir step1).",
+
+  "step4_promoter_206_verification": {
+    "methode": "POST https://api.xfoot.site/referral/resolve/promoter-2 sans visitor_id (aucune écriture)",
+    "resultat": {"status_code": 200, "body": {"valid": true}},
+    "interpretation": "Confirme slug 'promoter-2' existant + status ACTIVE. user_id=206 exact non exposé par cet endpoint public (par design), NOT_VERIFIABLE directement."
+  },
+
+  "step5_comparaison_209_vs_236": {
+    "209_payment_test_com": {
+      "attribution_connue": "NOT_VERIFIABLE (jamais confirmée par accès direct dans aucune phase précédente)",
+      "visible_admin_subscribers": true,
+      "raison_visibilite": "ProviderSubscription créée lors de l'atteinte du checkout Chariow (Phase 15.6, Étape 3 initiale)"
+    },
+    "236_demo_payement_com": {
+      "attribution_connue": "Très probablement ABSENTE (déduction code, voir step1)",
+      "visible_admin_subscribers": true,
+      "raison_visibilite": "ProviderSubscription créée lors de l'atteinte du checkout Chariow (confirmé par l'énoncé de cette phase : 'le checkout a été atteint sans paiement')"
+    },
+    "difference_exacte_si_les_deux_manquent_attribution": "Si 209 ET 236 manquent tous deux d'attribution, cela suggère un problème SYSTÉMATIQUE de test (même navigateur réutilisé sans jamais repasser proprement par /promoter-2 juste avant CHAQUE inscription) plutôt qu'un bug spécifique à un compte — cohérent avec l'hypothèse de séquencement de l'Étape 2. Ceci NE PEUT PAS être confirmé pour 209 sans accès DB (jamais vérifié dans aucune phase précédente non plus)."
+  },
+
+  "step6_checkout_configuration": {
+    "code_local": "PRODUCT_IDS['monthly'] = os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', '') — inchangé, correct",
+    "valeur_attendue": "prd_sgvapilx (1500 FCFA/1 mois)",
+    "rappel_point_ouvert_non_confirme": "Le statut de la correction Railway demandée en Phase 15.6-CORRECTION n'a TOUJOURS PAS été confirmé comme effectuée par l'utilisateur à ce jour. Ce point reste ouvert, indépendant du sujet attribution traité ici, mais tout aussi bloquant avant un paiement réel."
+  },
+
+  "step7_webhook_future": {
+    "code_actuel": "select(ReferralAttribution).where(ReferralAttribution.converted_user_id == referred_user_id).first() — api/app/referral/commission_service.py:56-58, inchangé",
+    "confirme": true,
+    "commission_si_attribution_existe": "40% × 1500 FCFA = 600 FCFA",
+    "commission_si_attribution_absente": "0 FCFA — create_commission_for_confirmed_payment retourne None dès le premier if (attribution is None), le paiement lui-même resterait confirmé/actif pour l'utilisateur mais AUCUNE commission ne serait créée pour promoter-2"
+  },
+
+  "step8_tests": {"TOTAL_FICHIERS": 65, "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0, "aucune_donnee_production_modifiee": true},
+
+  "step9_ai_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "step10_git": {"HEAD": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739", "commit": false, "push": false, "modification": false},
+
+  "reponses_explicites": {
+    "1_user_id_236_existe": "OUI (confirmé indirectement — visible dans Admin → Abonnés, ce qui exige un User + une ProviderSubscription existants)",
+    "2_referralattribution_pour_236_existe": "TRÈS PROBABLEMENT NON (déduction de code à haute confiance, non confirmée par accès direct à la table)",
+    "3_vers_quel_promoteur_si_oui": "NON APPLICABLE — réponse à la question 2 est probablement NON",
+    "4_etape_d_echec": "Séquencement côté navigateur au moment de l'inscription : soit (a) un token pré-existant en localStorage a fait bypasser captureReferralFromUrl() lors de la visite de /promoter-2, soit (b) le slug capturé a été consommé/effacé par une connexion intermédiaire à un AUTRE compte (ex. payment@test.com) avant l'inscription effective de demo@payement.com dans le même navigateur — les deux hypothèses sont codées et plausibles, aucune n'est confirmée par observation directe du navigateur utilisé.",
+    "5_pourquoi_admin_affiche_tiret": "Parce que l'endpoint Admin → Abonnés affiche fidèlement le promoteur SI ET SEULEMENT SI une ligne ReferralAttribution existe pour cet utilisateur (logique de code vérifiée saine, aucun bug détecté) — l'absence d'affichage reflète très probablement une absence réelle de la ligne, pas un défaut de la requête admin elle-même.",
+    "6_pourquoi_parcours_promoter2_n_a_pas_produit_attribution": "Le mécanisme de capture/persistance est lui-même correct et sans bug (audité en détail, Phase 15.6-R Étape 4 + cette phase) — la défaillance la plus probable se situe dans la SÉQUENCE D'ACTIONS DU TESTEUR dans le navigateur (token résiduel d'un compte précédent, ou slug consommé par une connexion intermédiaire), pas dans le code applicatif lui-même.",
+    "7_compte_236_pret_pour_paiement_attribue": "NON, en l'état actuel des preuves disponibles — si un paiement de 1500 FCFA était effectué maintenant avec ce compte, la commission serait très probablement 0 FCFA (aucune attribution trouvée par le webhook), pas 600 FCFA. PAYER MAINTENANT SERAIT PRÉMATURÉ."
+  },
+
+  "verdict": {
+    "value": "REFERRAL_ATTRIBUTION_MISSING",
+    "rationale": "Le compte 236 existe et a atteint le checkout (confirmé par sa présence dans Admin → Abonnés, elle-même la preuve indirecte d'une ProviderSubscription). La colonne PROMOTEUR='—' est expliquée avec une confiance élevée par l'absence de ligne ReferralAttribution pour converted_user_id=236 (déduction de code robuste : la logique d'affichage admin est saine et ne peut afficher '—' que si aucune attribution n'existe, un Promoter orphelin étant architecturalement quasi impossible — aucun DELETE sur Promoter n'existe). Le mécanisme de capture/persistance lui-même est audité comme fonctionnellement correct, sans anomalie de code. La cause la plus probable est un problème de séquencement dans le navigateur utilisé pour les tests (token résiduel d'un compte précédent bypassant la capture du referral, ou slug consommé par une connexion intermédiaire à un autre compte) — non confirmée par observation directe faute d'accès DB/navigateur, mais cohérente avec l'historique de test de cette conversation (même navigateur utilisé successivement pour payment@test.com puis demo@payement.com)."
+  },
+
+  "recommandation": "NE PAS PAYER avec ce compte tant que l'attribution n'est pas confirmée. Pour re-tester proprement : ouvrir une fenêtre de navigation privée/incognito (garantit l'absence de tout token/localStorage résiduel), visiter https://www.xfoot.site/promoter-2 EN PREMIER (avant toute autre action), puis s'inscrire IMMÉDIATEMENT avec un email jamais utilisé, sans se connecter à aucun autre compte entre-temps. Vérifier ensuite dans Admin → Abonnés si la colonne PROMOTEUR affiche bien 'promoter-2' AVANT tout paiement."
+}

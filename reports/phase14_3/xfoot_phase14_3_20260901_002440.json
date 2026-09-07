@@ -1,0 +1,369 @@
+{
+  "phase": "14.3",
+  "title": "XFOOT DEPLOYMENT PACKAGE & GO-LIVE READINESS V1",
+  "generated_at_utc": "2026-09-01T00:24:40Z",
+
+  "1_executive_summary": "Package de Go-Live complet produit et documenté (manifeste, checklists Chariow/Hostinger/Railway, matrices d'autorisation et d'environnement, plan de smoke tests, gates d'approbation humaine). AUCUNE action irréversible entreprise : pas de commit, pas de push, pas de déploiement, pas de paiement réel, pas d'appel Chariow en écriture. 64/64 tests verts, 6 tables IA identiques avant/après. Bloqueurs inchangés depuis la Phase 14.2 : DEPLOYMENT_ACCESS_UNAVAILABLE et PAYMENT_ENVIRONMENT=UNKNOWN — documentés, non contournés.",
+
+  "2_git_baseline": {
+    "CURRENT_HEAD": "00dd971 (feat: complete AI shadow and production readiness phases)",
+    "ORIGIN_HEAD": "2160b4f (Phase 8A) — origin/main n'a pas encore reçu les commits locaux les plus récents",
+    "COMMITS_AHEAD": 4,
+    "COMMITS_BEHIND": 0,
+    "PHASE14_CHANGES": "Voir deployment_manifest.json (BACKEND_FILES/FRONTEND_FILES) — intégralement non commités.",
+    "UNRELATED_CHANGES": [
+      "api/app/ai/readiness/gates.py (Phase 13, extension liste faux-positifs scanner de secrets)",
+      "reports/shadow/watch/evidence_snapshots.json (log d'exécution de tests, pas du code)",
+      "reports/phase9_5|11|12|13/*, api/test_phase13.py, scripts/phase13_evidence_maturation.py (Phase 9.5-13)"
+    ],
+    "commit_00dd971_attribution": "Confirmé (rappel explicite demandé par le prompt) : ce commit a été créé par l'utilisateur (atchakimededebodjona@gmail.com) HORS de cette conversation, 2026-08-31 21:59:21 UTC. Aucune phase de cette conversation ne l'a produit ni ne se l'attribue.",
+    "other_worktrees_detected": {
+      "note": "git branch -vv révèle 4 worktrees Git supplémentaires (agents en arrière-plan antérieurs), chacun sur sa propre branche avec des commits réels non liés à cette conversation : 'Ajoute les pays francophones d'Afrique de l'Ouest au formulaire d'abonnement' (x3, même commit 70305a1), 'Corrige le rapprochement des résultats et resserre la fenêtre Historique' (8eba619), 'Ajoute XFOOT AI Arena : logging multi-modèles, Ensemble Engine et service ML en direct' (953965d).",
+      "in_scope_for_phase14_3": false,
+      "reason": "Ces worktrees sont des copies de travail séparées, non fusionnées dans main, sans rapport avec le programme d'affiliation — mentionnées ici pour transparence uniquement, hors périmètre de ce package de déploiement."
+    }
+  },
+
+  "3_phase14_changes": {
+    "reference": "Détail complet dans reports/phase14_3/deployment_manifest.json (FILES/ROUTES/MIGRATIONS/ENV_VARS)",
+    "changeset_isolation": {
+      "A_go_live_necessaire": "13 fichiers backend + 14 fichiers frontend listés dans le manifeste — tout le code affiliation lui-même.",
+      "B_phase9_13_deja_committe": "commit 00dd971 (app/ai/decision, historical, pipeline, readiness, safety, shadow, value + tests) — DÉJÀ committé par l'utilisateur, hors périmètre de CE package.",
+      "C_fichiers_de_recherche": "scripts/*.py de recherche Phase 8-13 (odds_research, decision_layer_research, etc.) — non liés au Go-Live affiliation, non inclus dans ce package.",
+      "D_rapports": "reports/phase9_5, phase11, phase12, phase13, phase14, phase14_1, phase14_2, phase14_3 — documentation, jamais du code exécutable, non inclus dans un déploiement.",
+      "E_frontend_sans_rapport": "Aucun changement frontend hors-sujet détecté dans le diff actuel (tous les fichiers frontend modifiés sont directement liés au nav rôle-gated ou à la capture de parrainage Phase 14).",
+      "F_debris": "'tatus --shortgit status --short' — voir section fichier résiduel ci-dessous."
+    }
+  },
+
+  "4_fichier_residuel": {
+    "file_name": "tatus --shortgit status --short",
+    "exists": true,
+    "size_bytes": 1494,
+    "line_count": 17,
+    "type": "texte brut — sortie d'un `git diff` (en-têtes diff --git, index, +++/---) capturée dans un fichier",
+    "tracked_by_git": false,
+    "probable_origin": "Débris d'une commande shell antérieure à cette conversation, où une chaîne de type `git diff ... > \"...status --shortgit status --short\"` a été mal formée (guillemets/concaténation), créant ce fichier au lieu d'exécuter les deux commandes voulues séparément.",
+    "content_sensitivity": "Aucune (fragment de diff sur api/app/ai/readiness/gates.py déjà vu et documenté en Phase 14.2, aucun secret).",
+    "verdict": "SAFE_TO_REMOVE",
+    "action_taken": "AUCUNE — non supprimé automatiquement, conformément à la consigne. Une suppression nécessite une action explicite de l'utilisateur."
+  },
+
+  "5_deployment_manifest": {
+    "location": "reports/phase14_3/deployment_manifest.json et .md",
+    "note": "Document séparé et complet — voir ce fichier pour LOCAL_COMMIT/TARGET_ENVIRONMENT/BACKEND_FILES/FRONTEND_FILES/MIGRATIONS/ENVIRONMENT_VARIABLES/ROUTES/WEBHOOKS/CRITICAL_DEPENDENCIES/ROLLBACK_REQUIREMENTS. Aucune valeur secrète n'y figure (noms de variables uniquement)."
+  },
+
+  "6_environment_matrix": {
+    "table": [
+      {"variable": "DATABASE_URL", "local": "N/A (SQLite dev, api/app.db)", "production": "UNKNOWN (présumée PostgreSQL configurée, service déjà actif)", "verified": "UNKNOWN"},
+      {"variable": "ADMIN_EMAILS", "local": "ABSENT", "production": "UNKNOWN", "verified": "UNKNOWN — CRITIQUE"},
+      {"variable": "CHARIOW_API_KEY", "local": "PRESENT", "production": "UNKNOWN", "verified": "UNKNOWN"},
+      {"variable": "CHARIOW_PULSE_SECRET (webhook secret)", "local": "PRESENT", "production": "UNKNOWN", "verified": "UNKNOWN"},
+      {"variable": "JWT_SECRET_KEY (application secret)", "local": "PRESENT", "production": "UNKNOWN", "verified": "UNKNOWN"},
+      {"variable": "FRONTEND_URL / API URL réelle (api.xfoot.site)", "local": "http://localhost:3000 (défaut .env.example)", "production": "https://api.xfoot.site (confirmé actif, GET /health -> 200)", "verified": "PASS (production seulement, confirmé en lecture seule)"},
+      {"variable": "ALLOWED_ORIGINS (CORS)", "local": "http://localhost:3000 (défaut)", "production": "UNKNOWN dans le détail, mais fonctionnellement correct (le frontend actuel appelle déjà l'API avec succès)", "verified": "PASS indirect (déduit du fonctionnement observé, pas lu directement)"}
+    ],
+    "rule_applied": "Aucune case 'Production' marquée PASS sans preuve directe — seule la ligne API URL/CORS obtient un PASS, car directement observée par requête HTTP réelle (§5 des Phases précédentes). Toutes les autres restent UNKNOWN, jamais une supposition déguisée en confirmation."
+  },
+
+  "7_database_migration_plan": {
+    "MIGRATION_PLAN": [
+      {
+        "order": 1,
+        "revision": "5787c4b3b963",
+        "depends_on": "c4f8a1d75e93 (déjà appliquée, tables User/ProviderSubscription/Entitlement préexistantes)",
+        "tables_created": ["promoter (PK id, FK user_id unique, slug unique, status, commission_rate_bp, timestamps)",
+          "referral_attribution (PK id, FK promoter_id, FK converted_user_id UNIQUE, visitor_id, source, timestamps)",
+          "referral_audit_event (PK id, event_type, FK promoter_id nullable, FK actor_user_id nullable, detail, created_at)",
+          "referral_commission (PK id, FK promoter_id, FK referred_user_id, FK provider_subscription_id, plan, source_event_id UNIQUE, gross_paid_amount, currency, commission_rate_bp, commission_amount, status, reversed_at/reason, timestamps)",
+          "referral_visit (PK id, FK promoter_id, visitor_id, visited_at)"],
+        "constraints": ["UNIQUE(promoter.user_id)", "UNIQUE(promoter.slug)", "UNIQUE(referral_attribution.converted_user_id)", "UNIQUE(referral_commission.source_event_id)", "5x ForeignKeyConstraint vers user/promoter/provider_subscription"],
+        "indexes": ["ix_promoter_slug (unique)", "ix_promoter_user_id (unique)", "ix_referral_attribution_{converted_user_id,promoter_id,visitor_id}", "ix_referral_audit_event_promoter_id", "ix_referral_commission_{promoter_id,provider_subscription_id,referred_user_id,source_event_id}", "ix_referral_visit_{promoter_id,visitor_id}"],
+        "rollback_possible": true,
+        "rollback_command": "alembic downgrade -1 (downgrade() présent, drop des 5 tables + leurs index, dans l'ordre inverse exact de la création)",
+        "idempotence": "Standard Alembic — la table alembic_version empêche une double application ; les CREATE TABLE eux-mêmes ne sont PAS `IF NOT EXISTS` explicite (comportement standard du projet, cohérent avec les migrations précédentes du dépôt)."
+      }
+    ],
+    "executed_against": "api/app.db (SQLite local, développement) UNIQUEMENT — jamais exécutée contre une base de production.",
+    "production_execution_status": "NON EXÉCUTÉE"
+  },
+
+  "8_ai_database_protection": {
+    "row_counts_before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "row_counts_after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identical": true,
+    "migration_touches_ai_tables": false,
+    "code_imports_ai_engine": false,
+    "proof": "Migration 5787c4b3b963 ne référence que promoter/referral_*/user/provider_subscription (voir DDL). Aucun module app/referral/*.py n'importe Match/MatchStats/ModelPrediction/ModelVersion/TeamRating/PredictionLog (vérifié structurellement, Phase 14 test 19, réutilisé)."
+  },
+
+  "9_route_inventory": {
+    "PUBLIC": [
+      {"method": "POST", "path": "/referral/resolve/{slug}", "auth_required": false, "role_required": null, "rw": "WRITE (ReferralVisit anonyme uniquement)", "payment_impact": false, "security_check": "réponse uniforme {valid:false} pour slug inexistant OU inactif — aucune fuite d'information admin"}
+    ],
+    "AUTHENTICATED_USER": [
+      {"method": "POST", "path": "/referral/attribute", "auth_required": true, "role_required": "aucun rôle spécifique (tout utilisateur connecté)", "rw": "WRITE (ReferralAttribution)", "payment_impact": false, "security_check": "self-referral bloqué et journalisé ; une seule attribution par utilisateur (contrainte UNIQUE)"}
+    ],
+    "PROMOTER": [
+      {"method": "GET", "path": "/promoter/me", "auth_required": true, "role_required": "promoteur (dérivé de current_user, jamais un promoter_id client)", "rw": "READ_ONLY", "payment_impact": false, "security_check": "403 si l'utilisateur n'a pas de compte Promoter"},
+      {"method": "GET", "path": "/promoter/me/stats", "auth_required": true, "role_required": "promoteur", "rw": "READ_ONLY", "payment_impact": false, "security_check": "agrégats scopés à promoter.id du token, jamais un paramètre client"},
+      {"method": "GET", "path": "/promoter/me/sales", "auth_required": true, "role_required": "promoteur", "rw": "READ_ONLY", "payment_impact": false, "security_check": "isolation testée (Phase 14.1) contre promoter_id forgé en query-string ET en corps POST"}
+    ],
+    "ADMIN": [
+      {"method": "GET/POST", "path": "/admin/promoters", "auth_required": true, "role_required": "admin (require_admin, allowlist ADMIN_EMAILS, backend)", "rw": "READ+WRITE", "payment_impact": false, "security_check": "403 non-admin, 401 non authentifié"},
+      {"method": "POST", "path": "/admin/promoters/{id}/status", "auth_required": true, "role_required": "admin", "rw": "WRITE (statut promoteur)", "payment_impact": false, "security_check": "audit trail (PROMOTER_ACTIVATED/DEACTIVATED/SUSPENDED)"},
+      {"method": "GET", "path": "/admin/promoters/{id}", "auth_required": true, "role_required": "admin", "rw": "READ_ONLY", "payment_impact": false, "security_check": "403 non-admin"},
+      {"method": "GET", "path": "/admin/subscribers", "auth_required": true, "role_required": "admin", "rw": "READ_ONLY", "payment_impact": false, "security_check": "aucune donnée sensible de paiement exposée"},
+      {"method": "GET", "path": "/admin/earnings/totals", "auth_required": true, "role_required": "admin", "rw": "READ_ONLY", "payment_impact": false, "security_check": "totaux recalculés par agrégation SQL, jamais un compteur mutable"},
+      {"method": "GET", "path": "/admin/earnings/by-promoter", "auth_required": true, "role_required": "admin", "rw": "READ_ONLY", "payment_impact": false, "security_check": "idem"}
+    ],
+    "note_payment_impact": "AUCUNE route Phase 14 elle-même n'a d'impact paiement direct — la commission est créée exclusivement en réaction au webhook /billing/pulse (déjà existant, non listé ici car non modifié par ce périmètre de routes, documenté séparément en §12 Webhook Security)."
+  },
+
+  "10_authorization_matrix": {
+    "table": [
+      {"action": "Voir la page landing /{slug}", "visiteur": "OUI (public)", "user": "OUI", "promoteur": "OUI", "admin": "OUI"},
+      {"action": "S'attribuer un parrainage (POST /referral/attribute)", "visiteur": "NON (401)", "user": "OUI (sauf self-referral -> rejeté)", "promoteur": "OUI (sauf soi-même -> rejeté)", "admin": "OUI (même règles)"},
+      {"action": "Voir /promoter/me (son propre profil)", "visiteur": "NON (401)", "user": "NON (403, pas de compte Promoter)", "promoteur": "OUI (le sien uniquement)", "admin": "NON, sauf s'il a AUSSI un compte Promoter"},
+      {"action": "Voir les ventes d'un AUTRE promoteur", "visiteur": "NON", "user": "NON", "promoteur": "NON (jamais, même avec un promoter_id forgé, testé Phase 14.1)", "admin": "OUI (vue globale /admin/subscribers)"},
+      {"action": "Accéder à /admin/*", "visiteur": "NON (401)", "user": "NON (403)", "promoteur": "NON (403, sauf s'il est AUSSI admin)", "admin": "OUI"},
+      {"action": "Changer le statut d'un promoteur", "visiteur": "NON", "user": "NON", "promoteur": "NON", "admin": "OUI"},
+      {"action": "Forger promoter_id pour accéder aux données d'un tiers", "visiteur": "N/A", "user": "N/A", "promoteur": "ÉCHOUE TOUJOURS (dérivé du JWT, jamais d'un paramètre client)", "admin": "N/A (l'admin voit tout légitimement via ses propres routes)"}
+    ],
+    "verification_method": "Tests automatisés (Phase 14 : 11/12/14/15/18 ; Phase 14.1 : test isolation /promoter/me/sales) — 100% en environnement isolé, aucune de ces routes n'existant en production actuellement."
+  },
+
+  "11_referral_flow": {
+    "path": "www.xfoot.site/{slug} -> capture client (localStorage, aucune donnée serveur) -> login.html -> inscription/connexion -> POST /referral/attribute (serveur, authentifié) -> ReferralAttribution créée -> checkout Chariow -> Pulse successful.sale -> ReferralCommission créée.",
+    "slug_normalization": "normalize_slug() : NFKD, accents retirés, minuscule, tout hors [a-z0-9-] -> '-', tirets bordure/répétés collapsés — vérifié testé.",
+    "collisions": "RESERVED_SLUGS dérivée d'une inspection réelle des routes (pages statiques + segments API + mots explicites du prompt Phase 14) — testé (16/16b).",
+    "slug_inexistant": "{valid: false} — même réponse qu'un promoteur inactif, aucune distinction exposée.",
+    "slug_reserve": "Bloqué à la création (create_promoter lève ValueError), jamais un promoteur créé sur un mot réservé.",
+    "attribution_persistante": "ReferralAttribution.converted_user_id UNIQUE — une fois créée, définitive, aucun appel ultérieur ne peut la réécraser (no-op silencieux ALREADY_ATTRIBUTED).",
+    "attribution_non_falsifiable_cote_client": "Créée uniquement côté serveur via POST /referral/attribute, dérivée du slug fourni ET de current_user (JWT) — le client ne peut jamais injecter un promoter_id ou un converted_user_id directement."
+  },
+
+  "12_financial_ledger": {
+    "formula": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000)",
+    "verified_examples": [
+      {"catalogue": 20000, "reellement_paye": 15000, "taux": "40%", "commission": 6000, "verifie": true, "test_source": "Phase 14.1, test_actual_paid_amount_discount_scenario_end_to_end"},
+      {"catalogue": "N/A (pas de remise)", "reellement_paye": 10000, "taux": "40%", "commission": 4000, "verifie": true},
+      {"catalogue": "N/A", "reellement_paye": 20000, "taux": "40%", "commission": 8000, "verifie": true}
+    ],
+    "source_of_truth": "table referral_commission (ledger) — jamais un compteur dérivé, jamais le prix catalogue quand un montant webhook réel existe."
+  },
+
+  "13_payment_state_machine": {
+    "states": "CLICK (non persisté serveur) -> ATTRIBUTED (ReferralAttribution) -> CHECKOUT (lien Chariow généré, ProviderSubscription status=pending implicite) -> PENDING (aucun Pulse reçu) -> CONFIRMED (Pulse successful.sale vérifié) -> COMMISSION (ReferralCommission créée, statut ACCRUED).",
+    "branches": {
+      "FAILED": "Aucun Pulse successful.sale n'est jamais envoyé pour un paiement échoué (nature même de l'événement Chariow) -> aucune commission, état terminal sans transition vers CONFIRMED.",
+      "CANCELLED": "Non modélisé comme état Chariow distinct dans ce dépôt (le provider ne semble pas émettre d'événement 'cancelled' séparé de 'failed'/absence de Pulse) — documenté comme non observé, pas fabriqué.",
+      "REFUNDED": "Pulse license.revoked -> reverse_commissions_for_subscription() -> commission ACCRUED devient REVERSED, jamais supprimée."
+    },
+    "proof_no_commission_before_confirmed": "create_commission_for_confirmed_payment() n'est appelée QUE depuis _handle_successful_sale (déclenché uniquement par un Pulse vérifié) — aucun autre chemin de code n'écrit dans referral_commission (vérifié structurellement + testé, Phase 14.1 test_no_false_commission_consolidated_sweep, 7 étapes intermédiaires toutes à 0 commission)."
+  },
+
+  "14_idempotence": {
+    "webhook_delivery": "x-pulse-delivery-id -> ProcessedPulseDelivery (dédup avant traitement, préexistant) — même paiement livré 10 fois testé -> 1 seule commission (Phase 14 test 6).",
+    "commission_ledger": "UniqueConstraint(referral_commission.source_event_id) — défense en profondeur indépendante du dédup ci-dessus.",
+    "attribution": "UniqueConstraint(referral_attribution.converted_user_id) — un utilisateur ne peut être attribué qu'une seule fois, tentative répétée = no-op (ALREADY_ATTRIBUTED)."
+  },
+
+  "15_webhook_security": {
+    "signature": "x-chariow-signature = 'sha256=' + HMAC-SHA256(payload_brut, CHARIOW_PULSE_SECRET)",
+    "constant_time_comparison": true,
+    "verification_function": "app/billing/router.py::_verify_pulse_signature (hmac.compare_digest)",
+    "invalid_signature_result": "HTTP 401, événement jamais traité",
+    "payload_validation": "json.loads(payload) après vérification de signature uniquement — jamais parsé avant authentification",
+    "payment_id": "x-pulse-delivery-id",
+    "amount_currency": "sale.amount (ou variantes), XOF — toujours à l'intérieur du corps signé",
+    "idempotence": "voir §14",
+    "secret_ever_exposed": false
+  },
+
+  "16_chariow": {
+    "CHARIOW_GO_LIVE_CHECKLIST": {
+      "environnement_identifie": false,
+      "api_credentials_configures": "présents en local (valeur non affichée) ; état production UNKNOWN",
+      "webhook_configure": "endpoint existant côté code (/billing/pulse) ; configuration réelle du Pulse dans le dashboard Chariow production NON vérifiable depuis cet environnement",
+      "webhook_secret_configure": "présent en local ; état production UNKNOWN",
+      "callback_verifie": "logique de vérification testée en isolé (signature valide/invalide) ; jamais testée contre un VRAI Pulse Chariow",
+      "payment_status_mapping_verifie": "successful.sale/license.activated/expired/revoked/nearing_expiry tous mappés dans le code, testés en isolé",
+      "amount_validation_verifiee": "testée en isolé (webhook prioritaire sur prix catalogue, jamais fabriqué si absent)",
+      "idempotence_verifiee": "testée en isolé (10 livraisons dupliquées -> 1 commission)",
+      "refund_handling_verifie": "testé en isolé uniquement — REFUND_REAL_VALIDATION_PENDING contre un vrai remboursement",
+      "commission_ledger_verifie": "testé en isolé, réconciliation exacte à 4 vues (Phase 14.1)"
+    },
+    "PAYMENT_ENVIRONMENT": "UNKNOWN — inchangé depuis Phase 14.1/14.2, aucune nouvelle preuve trouvée.",
+    "write_calls_this_phase": 0
+  },
+
+  "17_hostinger": {
+    "HOSTINGER_CHECKLIST": {
+      "variables": "N/A (hébergement statique, pas de variables d'environnement serveur côté Hostinger)",
+      "build": "N/A (pas de build — fichiers .html/.js/.css servis tels quels)",
+      "migrations": "N/A",
+      "restart": "N/A (pas de processus serveur à redémarrer)",
+      "healthcheck": "https://www.xfoot.site/ confirmé 200 EN L'ÉTAT ACTUEL (avant déploiement Phase 14)",
+      "domain": "www.xfoot.site confirmé actif, servi par Hostinger (hcdn)",
+      "https": "confirmé — HTTP redirige 301 vers HTTPS",
+      "api_url_reference_frontend": "frontend-design/api.js pointe vers api.xfoot.site (à confirmer inchangé après déploiement, mais Phase 14 ne modifie pas cette configuration)",
+      "cors": "N/A côté Hostinger (le CORS se configure côté Railway/API)",
+      "logs": "NON ACCESSIBLES depuis cet environnement (pas d'accès au panel Hostinger)",
+      "rollback": "documenté (deployment_manifest.json) mais jamais exercé — nécessite sauvegarde manuelle préalable"
+    }
+  },
+
+  "18_railway": {
+    "RAILWAY_CHECKLIST": {
+      "variables": "NON VÉRIFIABLES depuis cet environnement (pas d'accès au dashboard Railway) — voir §6 Environment Matrix pour l'état LOCAL uniquement",
+      "build": "présumé automatique (Procfile présent : api/Procfile) — contenu non modifié par Phase 14",
+      "migrations": "alembic upgrade head — mécanisme d'exécution en production (automatique au démarrage ou manuel) NON confirmé depuis cet environnement, à vérifier dans la configuration Railway réelle avant déploiement",
+      "restart": "géré automatiquement par Railway lors d'un nouveau déploiement (comportement standard de la plateforme, non spécifique à ce projet)",
+      "healthcheck": "https://api.xfoot.site/health confirmé 200 EN L'ÉTAT ACTUEL (avant déploiement Phase 14)",
+      "domain": "api.xfoot.site confirmé actif, servi par Railway",
+      "https": "confirmé (négociation TLS réussie)",
+      "cors": "ALLOWED_ORIGINS doit inclure https://www.xfoot.site — présumé déjà correct (le frontend fonctionne déjà), Phase 14 n'ajoute aucune nouvelle origine",
+      "logs": "NON ACCESSIBLES depuis cet environnement (pas d'accès au dashboard Railway)",
+      "rollback": "historique de déploiements Railway (méthode standard de la plateforme) — jamais exercé pour ce projet dans le cadre de cette conversation"
+    }
+  },
+
+  "19_deployment_sequence": [
+    "1. backup DB — NON RÉALISABLE depuis cet environnement (pas d'accès à la base production) ; à faire via le mécanisme de sauvegarde Railway/PostgreSQL avant toute migration.",
+    "2. vérifier environnement — PAYMENT_ENVIRONMENT reste UNKNOWN, ADMIN_EMAILS reste UNKNOWN en production : à confirmer AVANT de continuer.",
+    "3. déployer backend — nécessite git push (hors périmètre autorisé de cette phase).",
+    "4. exécuter migrations — alembic upgrade head contre la base production, après le déploiement backend.",
+    "5. vérifier API — répéter les requêtes en lecture seule de ce rapport (openapi.json doit désormais lister /promoter/*, /referral/*, /admin/*).",
+    "6. déployer frontend — upload manuel frontend-design/ vers Hostinger, dont le nouveau .htaccess.",
+    "7. vérifier routing — tester /{slug-de-test} en conditions réelles.",
+    "8. vérifier authentication — /auth/me doit renvoyer is_promoter correctement.",
+    "9. vérifier referral — POST /referral/resolve/{slug} et /referral/attribute en conditions réelles avec un compte de test.",
+    "10. vérifier webhook — confirmer la configuration du Pulse dans le dashboard Chariow pointe bien vers https://api.xfoot.site/billing/pulse.",
+    "11. vérifier dashboard promoteur — promoter.html avec un compte de test.",
+    "12. vérifier dashboard admin — admin-*.html avec le compte admin réel.",
+    "13. vérifier logs — surveiller les logs Railway pour toute erreur 500 dans les premières minutes.",
+    "14. vérifier DB purity — recompter les 6 tables IA après déploiement, comparer aux valeurs de ce rapport (doivent être identiques).",
+    "15. smoke test — exécuter le plan §24 ci-dessous.",
+    "16. validation humaine — décision finale avant toute activation publique du programme et avant tout test de paiement réel (§16 Chariow)."
+  ],
+
+  "20_rollback": {
+    "CURRENT_VERSION": "origin/main (commit exact non déterminable en lecture seule, antérieur à Phase 9.4)",
+    "TARGET_VERSION": "commit local à créer regroupant Phase 14 (affiliation), distinct du commit 00dd971 déjà fait",
+    "ROLLBACK_METHOD": "Railway : redéploiement du commit précédent (dashboard) ; DB : alembic downgrade -1 ; Frontend : re-upload manuel des fichiers Hostinger précédents",
+    "DATABASE_ROLLBACK": "alembic downgrade -1 — supprime exactement les 5 tables affiliation, downgrade() vérifié structurellement (miroir exact de upgrade), jamais exécuté en conditions réelles",
+    "FRONTEND_ROLLBACK": "nécessite une sauvegarde manuelle préalable des fichiers Hostinger actuels (pas de versioning natif de l'hébergement statique)",
+    "BACKEND_ROLLBACK": "standard Railway (historique de déploiements, pas de commande spécifique à ce projet)",
+    "VERIFICATION_AFTER_ROLLBACK": "répéter les requêtes en lecture seule (openapi.json doit revenir à l'état actuel, sans /promoter/*, /referral/*, /admin/*)",
+    "value": "ROLLBACK_UNVERIFIED"
+  },
+
+  "21_smoke_test_plan": [
+    {"id": "TEST 01", "name": "homepage", "status": "READY", "note": "https://www.xfoot.site/ déjà confirmé 200 (état actuel) — à revérifier post-déploiement"},
+    {"id": "TEST 02", "name": "login", "status": "READY", "note": "route/page déjà existante et fonctionnelle en production"},
+    {"id": "TEST 03", "name": "registration", "status": "READY", "note": "POST /auth/register déjà existant et fonctionnel en production"},
+    {"id": "TEST 04", "name": "referral slug", "status": "BLOCKED", "note": "nécessite le déploiement Phase 14 (route /referral/resolve/{slug} absente actuellement)"},
+    {"id": "TEST 05", "name": "promoter dashboard", "status": "BLOCKED", "note": "page promoter.html absente actuellement"},
+    {"id": "TEST 06", "name": "admin dashboard", "status": "BLOCKED", "note": "pages admin-*.html absentes actuellement"},
+    {"id": "TEST 07", "name": "unauthorized admin (403/401)", "status": "BLOCKED", "note": "routes /admin/* absentes actuellement — testable seulement une fois déployé"},
+    {"id": "TEST 08", "name": "promoter isolation", "status": "BLOCKED", "note": "idem — déjà prouvé en isolé (Phase 14.1), à revérifier en conditions réelles post-déploiement"},
+    {"id": "TEST 09", "name": "webhook invalid signature", "status": "BLOCKED", "note": "testable dès le déploiement backend, SANS paiement réel (signature invalide volontaire, read/write sur l'endpoint mais sans conséquence financière)"},
+    {"id": "TEST 10", "name": "payment pending", "status": "BLOCKED", "note": "nécessite un checkout réel généré (pas de paiement, juste l'état pending) — possible après déploiement sans franchir la règle de paiement réel"},
+    {"id": "TEST 11", "name": "payment confirmed", "status": "REQUIRES_HUMAN_AUTHORIZATION", "note": "nécessite un paiement réel confirmé — voir REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION (Phase 14.2, toujours en attente)"},
+    {"id": "TEST 12", "name": "commission", "status": "REQUIRES_HUMAN_AUTHORIZATION", "note": "dépend de TEST 11"},
+    {"id": "TEST 13", "name": "duplicate webhook", "status": "REQUIRES_HUMAN_AUTHORIZATION", "note": "dépend d'un paiement réel confirmé pour être testé en conditions réelles (déjà prouvé en isolé, Phase 14 test 6)"},
+    {"id": "TEST 14", "name": "refund", "status": "REQUIRES_HUMAN_AUTHORIZATION", "note": "dépend de TEST 11 — REFUND_REAL_VALIDATION_PENDING"}
+  ],
+
+  "22_browser_validation": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Toujours aucun outil Playwright/navigateur interactif disponible dans cet environnement. Aucun résultat navigateur simulé ou prétendu."
+  },
+
+  "23_security": {
+    "scanned": ["git diff", "git status", "fichiers suivis modifiés/nouveaux", "reports/phase14*", "logs de test locaux"],
+    "secrets_found": false,
+    "api_keys_values_found": false,
+    "tokens_found": false,
+    "credentials_found": false,
+    "variable_names_appearing": "Oui, uniquement les NOMS (CHARIOW_API_KEY, ADMIN_EMAILS, etc.) — jamais une valeur."
+  },
+
+  "24_regression": {
+    "TOTAL": 64,
+    "PASSED": 64,
+    "FAILED": 0,
+    "SKIPPED": 0,
+    "includes": "Phase 14 (99 assertions), Phase 14.1 (36 assertions), + 62 suites préexistantes (IA/shadow/readiness/safety/pipeline/auth/billing/premium/entitlement). Aucun fichier de test Phase 14.2 distinct n'existe (14.2 était une phase de vérification/documentation, pas de nouveau code testable créé)."
+  },
+
+  "25_ai_isolation": {
+    "row_counts_before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "row_counts_after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identical": true,
+    "structural_proof": "réutilisée (Phase 14 test 19)"
+  },
+
+  "26_human_approval_gates": [
+    {"gate": "git commit (Phase 14/14.1 affiliation)", "status": "EN ATTENTE"},
+    {"gate": "git push", "status": "EN ATTENTE"},
+    {"gate": "production deployment (Railway + Hostinger)", "status": "EN ATTENTE"},
+    {"gate": "database migration production (alembic upgrade head sur PostgreSQL réel)", "status": "EN ATTENTE"},
+    {"gate": "Chariow production configuration (confirmation sandbox/production, configuration du Pulse)", "status": "EN ATTENTE"},
+    {"gate": "real payment (voir REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION, Phase 14.2)", "status": "EN ATTENTE"},
+    {"gate": "refund test production", "status": "EN ATTENTE (dépend du paiement réel ci-dessus)"},
+    {"gate": "public promoter activation (ouverture réelle du programme aux utilisateurs)", "status": "EN ATTENTE"}
+  ],
+
+  "27_final_go_live_matrix": [
+    {"gate": "CODE", "status": "PASS", "evidence": "13 fichiers backend + 14 fichiers frontend, complets et cohérents (manifeste)", "blocker": null},
+    {"gate": "TESTS", "status": "PASS", "evidence": "64/64 fichiers de test, 0 échec, 135 assertions Phase 14+14.1", "blocker": null},
+    {"gate": "DATABASE", "status": "PASS (local) / UNKNOWN (production)", "evidence": "migration additive appliquée et vérifiée localement ; jamais exécutée en production", "blocker": "accès base de production"},
+    {"gate": "SECURITY", "status": "PASS", "evidence": "signature HMAC constant-time, idempotence à 2 niveaux, montant jamais dérivé du frontend, aucun secret exposé", "blocker": null},
+    {"gate": "AUTHORIZATION", "status": "PASS", "evidence": "matrice §10, tests 11/12/14/15/18 Phase 14 + isolation Phase 14.1", "blocker": null},
+    {"gate": "REFERRAL", "status": "PASS (isolé) / BLOCKED (réel)", "evidence": "flux complet testé en isolé", "blocker": "PHASE14_NOT_DEPLOYED"},
+    {"gate": "LEDGER", "status": "PASS", "evidence": "réconciliation exacte à 4 vues (Phase 14.1 §17)", "blocker": null},
+    {"gate": "WEBHOOK", "status": "PASS (code) / UNKNOWN (config Chariow réelle)", "evidence": "sécurité vérifiée dans le code", "blocker": "accès dashboard Chariow"},
+    {"gate": "PAYMENT", "status": "BLOCKED", "evidence": "aucun paiement réel tenté", "blocker": "PAYMENT_ENVIRONMENT=UNKNOWN, REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION"},
+    {"gate": "FRONTEND", "status": "PASS (local) / BLOCKED (déployé)", "evidence": "12 pages, JS syntaxiquement valide, servies 200 en local", "blocker": "non déployé sur Hostinger"},
+    {"gate": "BACKEND", "status": "PASS (local) / BLOCKED (déployé)", "evidence": "12 routes fonctionnelles en environnement isolé", "blocker": "non déployé sur Railway"},
+    {"gate": "DOMAIN", "status": "PASS", "evidence": "www.xfoot.site et api.xfoot.site confirmés actifs, HTTPS forcé", "blocker": null},
+    {"gate": "HTTPS", "status": "PASS", "evidence": "redirection 301 http->https confirmée, TLS négocié avec succès", "blocker": null},
+    {"gate": "MONITORING", "status": "UNKNOWN", "evidence": "aucun accès aux logs Railway/Hostinger depuis cet environnement", "blocker": "accès dashboards"},
+    {"gate": "ROLLBACK", "status": "DOCUMENTED, UNVERIFIED", "evidence": "downgrade() alembic présent et structurellement correct ; méthode Railway/Hostinger documentée, jamais exercée", "blocker": "aucun déploiement réel effectué à rollback-tester"},
+    {"gate": "DEPLOYMENT_ACCESS", "status": "BLOCKED", "evidence": "aucun CLI/accès Railway/Hostinger disponible", "blocker": "DEPLOYMENT_ACCESS_UNAVAILABLE"},
+    {"gate": "HUMAN_APPROVAL", "status": "EN ATTENTE", "evidence": "8 gates listés en §26, aucun encore approuvé", "blocker": "décision humaine requise"}
+  ],
+
+  "28_limitations": [
+    "DEPLOYMENT_ACCESS_UNAVAILABLE — inchangé depuis Phase 14.2.",
+    "PAYMENT_ENVIRONMENT = UNKNOWN — inchangé, aucune nouvelle preuve.",
+    "État réel des variables d'environnement en production (ADMIN_EMAILS en particulier) non vérifiable.",
+    "Mécanisme d'exécution des migrations en production (automatique au démarrage Railway ou manuel) non confirmé.",
+    "ROLLBACK_UNVERIFIED — jamais exercé en conditions réelles.",
+    "BROWSER_VALIDATION_UNAVAILABLE — inchangé.",
+    "MONITORING (logs Railway/Hostinger) non accessible depuis cet environnement."
+  ],
+
+  "29_required_next": [
+    "Décision humaine sur les 8 gates listés en §26.",
+    "Confirmer ADMIN_EMAILS et les autres variables sur Railway avant tout déploiement.",
+    "Confirmer le mécanisme d'exécution des migrations en production (Procfile / release command Railway).",
+    "Une fois déployé : exécuter le plan de smoke tests §21 (TEST 01-10 immédiatement disponibles, TEST 11-14 après autorisation de paiement réel).",
+    "Nettoyer manuellement le fichier résiduel 'tatus --shortgit status --short' si confirmé sans valeur (SAFE_TO_REMOVE, §4)."
+  ],
+
+  "30_final_verdict": {
+    "value": "GO_LIVE_PACKAGE_READY_WITH_LIMITATIONS",
+    "rationale": "Le PACKAGE de Go-Live lui-même (manifeste, checklists, matrices, plan de smoke tests, gates d'approbation) est complet, cohérent et entièrement documenté à partir de preuves réelles (code inspecté, tests exécutés, requêtes HTTP réelles en lecture seule). Ce n'est PAS un DEPLOYMENT_ACCESS_BLOCKED pur : contrairement à la Phase 14.2 qui cherchait à déployer, cette phase cherchait à PRÉPARER un package — objectif atteint. Les limitations documentées (accès de déploiement, environnement de paiement, monitoring) sont des faits d'accès externes, pas des défauts du package lui-même. Jamais PRODUCTION_READY : rien n'est déployé, aucun paiement réel n'a validé la chaîne complète."
+  },
+
+  "git_final_status": {
+    "committed_this_session": false,
+    "pushed_this_session": false
+  },
+
+  "closing_statement": "PHASE 14.3 — XFOOT DEPLOYMENT PACKAGE & GO-LIVE READINESS V1 TERMINÉE. PACKAGE DE DÉPLOIEMENT, CHECKLIST GO-LIVE, SÉCURITÉ, ATTRIBUTION, COMMISSION DE 40%, PAIEMENT ET ROLLBACK DOCUMENTÉS OU LIMITATIONS IDENTIFIÉES. AUCUN DÉPLOIEMENT PRODUCTION EFFECTUÉ SANS AUTORISATION EXPLICITE. AUCUN PAIEMENT RÉEL EFFECTUÉ SANS AUTORISATION HUMAINE EXPLICITE. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. EN ATTENTE DE VALIDATION HUMAINE."
+}

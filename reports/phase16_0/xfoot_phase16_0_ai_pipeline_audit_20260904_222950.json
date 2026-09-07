@@ -1,0 +1,223 @@
+{
+  "phase": "16.0",
+  "title": "Audit complet du moteur IA prospectif (READ-ONLY)",
+  "generated_at_utc": "2026-09-04T22:29:50Z",
+  "methodology": "100% read-only. 3 agents en parallèle (traçage du pipeline live depuis main.py, audit du pipeline shadow/track record, audit readiness/registre de modèles/rollback) + requêtes SELECT directes de cet agent sur api/app.db (lecture seule, aucune écriture). Chaque affirmation ci-dessous est sourcée par un fichier:ligne ou une requête SQL précise. Aucun code modifié, aucun commit, aucun push, aucune migration, aucun entraînement, aucune écriture DB, aucun changement Railway.",
+
+  "partie_a_cartographie_pipeline": {
+    "1_recuperation_fixtures": {
+      "existe": true, "utilisee_par_chemin_live": "partiel",
+      "statut": "live mais découplée",
+      "preuve": "GET /fixtures/week (main.py:1392) -> _get_weekly_fixtures() (main.py:1340) -> fetch_upcoming_fixtures (api-football, main.py:1347-1348), avec repli codé en dur _OFFICIAL_WEEKLY_SCHEDULE_2026 (main.py:1273-1332) si l'API ne renvoie rien. Cache 2h (main.py:1334-1337).",
+      "faiblesse": "Aucun lien serveur entre une fixture et sa prédiction : le frontend appelle /fixtures/week pour afficher les boutons, puis /predictions/{league}/{home}/{away} indépendamment avec de simples chaînes de caractères (équipes) — aucun identifiant de fixture, aucune jointure DB."
+    },
+    "2_snapshot_point_in_time": {
+      "existe": true, "utilisee_par_chemin_live": "partiel (1 des 2 implémentations)",
+      "statut": "scindé : 1 vivante, 1 orpheline",
+      "preuve": "app/ai/features/snapshot.py::build_feature_snapshot — importé UNIQUEMENT par app/ai/shadow/live.py et shadow/replay.py (jamais main.py) : ORPHELINE. app/ai/engine/live_features.py::build_live_features — filtre réellement Match.date < as_of (live_features.py:88,99,198), testé (test_live_features.py), appelé depuis arena/models_common.py:469, atteignable via POST /models/ensemble/predict.",
+      "faiblesse": "Le produit principal (Dixon-Coles, endpoint GET /predictions/...) n'utilise NI l'un NI l'autre : il consomme un artefact statique par ligue (model_artifacts/*.json ou table model_artifact) rafraîchi seulement par le cron hebdomadaire de réentraînement, jamais un snapshot par requête."
+    },
+    "3_generation_features": {
+      "existe": true, "utilisee_par_chemin_live": "partiel (1 des 3 implémentations)",
+      "statut": "scindé",
+      "preuve": "engine/features.py::build_ml_features_from_db — entraînement offline uniquement (arena/retraining.py, tests), jamais main.py. engine/live_features.py — live via Arena endpoint (voir #2). features/feature_sets.py + features/registry.py — importés uniquement par readiness/gates.py et shadow/monitoring.py : morts du trafic live. features/research_features_v1.py — test-only.",
+      "faiblesse": "Le produit principal ne génère aucune feature au sens ML : LeagueModel.score_matrix (main.py:484-499) consomme directement les scalaires attack/defense/home_advantage/rho pré-entraînés."
+    },
+    "4_selection_modele": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "code mort",
+      "preuve": "app/ai/arena/model_selection.py (evaluate_model_window:73, select_candidate_model:138) — grep confirmé : main.py ne l'importe JAMAIS. Seuls importeurs : decision/quality.py (lui-même orphelin) et pipeline/schemas.py (orphelin) + tests. Table model_selection_decisions = 3 lignes SEULEMENT (toutes status='insufficient_data', calibration_verdict=NULL) et shadow_selection_predictions = 0 ligne.",
+      "faiblesse": "Le chemin live utilise à la place ModelOrchestrator.default_models() (arena/orchestrator.py:50-62) — une liste FIXE et codée en dur de 4 adaptateurs, appelés inconditionnellement. Aucune logique dynamique de sélection du meilleur modèle n'est jamais exécutée."
+    },
+    "5_model_version_utilisee": {
+      "existe": true, "utilisee_par_chemin_live": true,
+      "statut": "live mais aucune vraie 'sélection' dynamique",
+      "preuve": "Chemin A (produit principal) : LEAGUE_MODELS[league] (main.py:968) — dict en mémoire peuplé une fois au démarrage (_load_all_leagues/_load_leagues_from_db, main.py:638,662,829-835). Le ModelVersion n'est touché qu'APRÈS la prédiction, pour logging uniquement (get_or_create_active_model_version, main.py:927-930). Chemin B (Arena) : chaque adaptateur lit is_active=True (models_common.py:194-197,243-245,398-400) — un booléen statique, changé uniquement par l'action admin humaine POST /models/promotion/promote (main.py:2029)."
+    },
+    "6_generation_prediction": {
+      "existe": true, "utilisee_par_chemin_live": "partiel, implémentations dupliquées",
+      "statut": "scindé, duplication constatée",
+      "preuve": "engine/dixon_coles.py — jamais utilisé live (arena/research.py + tests uniquement) ; le produit principal a sa PROPRE implémentation indépendante (LeagueModel, main.py:484-627, y compris un heuristique predict_match_stats non issu d'un modèle entraîné, documenté comme tel dans son propre docstring). engine/elo.py::EloEngine n'exécute JAMAIS en live — models_common.py:274-280 réimplémente la formule en ligne (commenté explicitement comme duplication volontaire). arena/ensemble.py::build_live_ensemble est vivant via l'endpoint Arena uniquement.",
+      "faiblesse": "XGBoost/LightGBM live 'structurellement affamés' (models_common.py:25-35) : dépendent d'un artefact ModelVersion.artifact + is_active, eux-mêmes dépendants d'un cycle de réentraînement/promotion qui ne tourne pas réellement en continu (voir Partie F/H)."
+    },
+    "7_stockage_prediction": {
+      "existe": true, "utilisee_par_chemin_live": true,
+      "statut": "vivant, mais volume live extrêmement faible",
+      "preuve": "prediction_log (app/models/prediction_log.py:35, écrit par _log_prediction main.py:864-904) : 9 lignes, 5 résolues. model_predictions (app/models/model_prediction.py:30) : 3610 lignes — 3600 source='backtest' (résolues trivialement, scripts de recherche offline), SEULEMENT 10 source='live' (2 par model_type × 5 types = 2 appels réels à /models/ensemble/predict depuis le début du projet)."
+    },
+    "8_decision_layer": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "entièrement orpheline",
+      "preuve": "app/ai/decision/decision.py::assess_decision — docstring explicite 'RESEARCH + SHADOW ONLY' (decision.py:10-13). grep confirmé : main.py n'importe RIEN de app.ai.decision (le seul mot 'decision' dans main.py:1925 est une variable locale de app.ai.arena.promotion, sans rapport). Seule chaîne d'appel : pipeline/orchestrator.py::run_pipeline -> assess_decision, lui-même appelé uniquement par shadow/prospective.py — et AUCUN de ces modules n'a de point d'entrée automatique (aucun __main__/argparse, aucune référence cron)."
+    },
+    "9_shadow_record": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "100% manuel, jamais automatique",
+      "preuve": "run_prospective_capture (shadow/prospective.py:179-246) — SEULE fonction créant un enregistrement shadow, invoquée EXCLUSIVEMENT par scripts/prospective_shadow.py (CLI humain, argparse). Recherche exhaustive de scheduler/cron/BackgroundTasks dans tout le dépôt : 4 configs cron Railway trouvées (railway.cron.json, railway.cron.live_predictions.json, railway.cron.results.json, railway.cron.evaluate_models.json) — AUCUNE ne référence un script shadow/*. Le store reports/shadow/shadow_decision_store.json contient exactement {} (0 enregistrement) au moment de l'audit.",
+      "note": "Un SECOND mécanisme 'Shadow' distinct existe (Phase 6/7, table shadow_selection_predictions, alimentée par scripts/model_selection_shadow.py) — également 0 ligne, également jamais cron'd. Le code lui-même documente explicitement ces 'DEUX mécanismes Shadow distincts, jamais fusionnés' (shadow/evidence.py:20-31)."
+    },
+    "10_resultat_reel": {
+      "existe": true, "utilisee_par_chemin_live": "partiel",
+      "statut": "automatique pour prediction_log, cassé/stagnant pour les prédictions live de model_predictions",
+      "preuve": "fetch_daily_results.py (cron quotidien 06:30 UTC, railway.cron.results.json) résout prediction_log (5/9 résolues). Les 10 lignes model_predictions source='live' (toutes match_date=2026-08-19) restent 100% status='pending', jamais résolues, alors que cette date est désormais passée par rapport à 'aujourd'hui' (2026-09-04 dans cet environnement) — confirme que la résolution de CE chemin précis n'est pas opérationnelle (ou cible une base de production différente de la copie locale)."
+    },
+    "11_evaluation": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "code réel et correct, jamais exécuté sur données réelles non vides",
+      "preuve": "shadow/metrics.py::compute_shadow_track_record (accuracy, log_loss, brier_score, IC95% Wilson, classify_maturity à seuils 10/30/100) et arena/track_record.py (comparaison production vs shadow par bootstrap + test de McNemar, calibration, stabilité) sont du code réel, non des stubs. MAIS : les 43/43 snapshots de reports/shadow/watch/evidence_snapshots.json montrent captured=0, maturity='NO_DATA', readiness_verdict='NO_GO' à chaque exécution enregistrée."
+    },
+    "12_track_record": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "NOT_AVAILABLE (0 observation)",
+      "preuve": "gate_track_record (readiness/gates.py:346-364) : real_prospective_track_record_sample_size = 0 (store shadow vide) -> maturity='NO_DATA'."
+    },
+    "13_monitoring": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "réel mais manuel, jamais cron'd",
+      "preuve": "shadow/monitoring.py::compute_shadow_health (docstring : 'STRICTEMENT READ-ONLY', monitoring.py:18-21) — invoqué uniquement par scripts/shadow_monitor.py (CLI manuel). derive_health_status renvoie 'NO_DATA' car future_fixtures==0 (monitoring.py:425-426)."
+    },
+    "14_readiness_gate": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "23 gates réels, jamais appelés par le chemin live (audit-only)",
+      "preuve": "readiness/gates.py (576 lignes lues intégralement) définit 23 fonctions gate_*. readiness/matrix.py combine en un verdict final. 4 des 9 gates CRITIQUES (schemas.py:39-42) sont actuellement non-PASS : PROVENANCE=NOT_AVAILABLE, ROLLBACK=NOT_AVAILABLE, MONITORING=CONDITIONAL, TRACK_RECORD=NOT_AVAILABLE -> matrix.py:98-112 -> final_verdict='NO_GO'. Voir Partie E pour la chaîne causale exacte du libellé 'NO_DATA' affiché."
+    },
+    "15_rollback": {
+      "existe": true, "utilisee_par_chemin_live": false,
+      "statut": "code réel, écrit en DB si appelé, mais JAMAIS exécuté (0 événement)",
+      "preuve": "safety/rollback.py::execute_rollback (lignes 70-136) — appelle apply_promotion + crée une ligne ModelPromotionEvent (reason préfixé 'ROLLBACK:'). Docstring explicite : 'JAMAIS appelé par un script contre api/app.db dans cette phase' (rollback.py:12-16). Confirmé : table model_promotion_events = 0 ligne. Aucun appelant hors tests trouvé par grep exhaustif de tout api/."
+    }
+  },
+
+  "partie_b_etat_tables": {
+    "match": {"role": "historique des matchs réels (résultats)", "volume": 12459, "fraicheur": "date MIN=2019-08-09, MAX=2026-05-24 — AUCUNE ligne postérieure à 'aujourd'hui' (2026-09-04) : 0 fixture future dans cette table", "dependances": "source de vérité pour le résultat réel, consommée par match_stats/model_predictions/prediction_log/team_ratings"},
+    "match_stats": {"role": "statistiques détaillées par match (tirs, cartons, etc.)", "volume": 12459, "fraicheur": "1:1 avec match, même horizon"},
+    "model_predictions": {"role": "prédictions du pipeline Arena (multi-modèles)", "volume": 3610, "detail": "3600 source='backtest' (résolues, historique) + 10 source='live' (toutes match_date=2026-08-19, 100% status='pending', jamais résolues)", "fraicheur": "predicted_at 2026-08-18 19:46 -> 2026-08-19 00:48 — fenêtre de 5h seulement, un run ponctuel, pas un fonctionnement continu"},
+    "model_versions": {"role": "registre des versions de modèles", "volume": 15, "detail": "5 active (dixon_coles-v1 id9, elo-v4 id11, xgboost-v3 id12, lightgbm-v3 id13, ensemble-v3 id14), 10 retired, 0 shadow/candidate", "point_in_time": "tous trained_at ~2026-08-16/18, cohérent avec 'now'"},
+    "team_ratings": {"role": "ratings Elo/Dixon-Coles par équipe/ligue", "volume": 568, "fraicheur": "computed_at 2026-08-18 19:45 -> 22:46 (~3h), 4 model_version_id distincts seulement — un batch ponctuel"},
+    "prediction_log": {"role": "historique de prédictions affiché au produit principal (feature utilisateur)", "volume": 9, "detail": "5/9 résolues via fetch_daily_results.py (cron quotidien)", "fraicheur": "match_date 2026-08-17 -> 2026-08-19, volume extrêmement faible depuis le lancement"},
+    "tables_annexes_verifiees": {
+      "model_selection_decisions": 3, "shadow_selection_predictions": 0, "model_promotion_events": 0
+    }
+  },
+
+  "partie_c_predictions_prospectives": {
+    "reponse": "PARTIELLEMENT OUI — le produit principal (endpoint Dixon-Coles) génère de VRAIES prédictions prospectives pour de vrais utilisateurs sur de vraies fixtures à venir, et une boucle prédiction->résultat réel existe et fonctionne (prediction_log, 5/9 résolues automatiquement). Mais cette boucle réelle n'alimente JAMAIS le système d'évaluation/readiness sophistiqué construit en Phases 9-13 (aucune capture shadow), et le volume est extrêmement faible (9 prédictions produit + 10 prédictions Arena depuis le début du projet).",
+    "timestamp_as_of": "Le produit principal n'a pas de timestamp as_of par requête — il utilise un artefact par ligue rafraîchi hebdomadairement (pas de fuite structurelle car l'artefact précède toujours les matchs qu'il sert, mais pas la rigueur 'snapshot exact par prédiction' visée par les Phases 9-13). Le chemin Arena (POST /models/ensemble/predict), lui, applique un vrai filtre Match.date < as_of par requête (engine/live_features.py:88,99,198, testé).",
+    "snapshot_fige": "Existe uniquement pour le chemin Arena, quasi jamais emprunté (2 appels réels).",
+    "donnees_avant_match_uniquement": "Garanti par construction pour Arena (filtre explicite) ; garanti de façon plus grossière pour le produit principal (artefact toujours entraîné avant les matchs qu'il sert, mais pas vérifié par requête).",
+    "version_modele_enregistree": "Oui pour les deux chemins, mais pour le produit principal elle est enregistrée APRÈS coup, pour le logging, jamais utilisée pour déterminer la prédiction elle-même.",
+    "provenance_features": "Traçable pour Arena (build_live_features documente sa provenance) ; opaque pour le produit principal (scalaires pré-entraînés, pas de features par requête).",
+    "reproductibilite": "Faible pour le produit principal (pas de lien fixture<->prédiction en base, pas de snapshot par requête archivé) ; forte pour Arena mais quasi jamais exercée.",
+    "points_faibles_identifies": [
+      "Aucun identifiant de fixture ne relie une prédiction à sa fixture d'origine côté serveur (chaînes de caractères envoyées par le client)",
+      "Le produit principal ne fait aucun snapshot par requête — dépendance à un artefact rafraîchi hebdomadairement",
+      "XGBoost/LightGBM live dépendent d'un cycle de réentraînement/promotion qui ne tourne pas réellement",
+      "model_selection.py (évaluation dynamique train/val/test) est du code mort — les modèles 'actifs' l'ont été rendus manuellement",
+      "Aucune prédiction live ne reçoit jamais d'évaluation de qualité/éligibilité (decision layer orphelin)",
+      "Aucune capture systématique dans le système de preuve (shadow) — même les 10 prédictions live existantes ne sont jamais entrées dans le track record"
+    ]
+  },
+
+  "partie_d_track_record": {
+    "comment_une_prediction_devient_evaluable": "Pour prediction_log : automatiquement, quand fetch_daily_results.py (cron quotidien 06:30 UTC) trouve un résultat réel correspondant dans `match` après la date du match. Pour le mécanisme Shadow (app/ai/shadow/*) : uniquement quand un humain exécute scripts/prospective_shadow.py --resolve, qui appelle resolution.py::resolve_record (lit model_predictions -> prediction_log -> match, dans cet ordre de priorité).",
+    "quand_le_resultat_reel_est_recupere": "Automatique et quotidien pour prediction_log (résultats déjà observés : 5/9). Jamais automatique pour le store Shadow.",
+    "metriques_reellement_calculees": ["accuracy", "log_loss", "brier_score", "accuracy_ci_95 (intervalle de Wilson)", "classify_maturity (NO_DATA/EARLY_DATA/TRACKING/STATISTICALLY_INFORMATIVE, seuils 10/30/100)", "comparaison production vs shadow (bootstrap + McNemar, arena/track_record.py)", "calibration tracking", "stability tracking"],
+    "metriques_seulement_prevues_jamais_calculees_sur_donnees_reelles": ["value_tracking_status — retourne structurellement NOT_AVAILABLE (aucune intégration odds jamais construite)"],
+    "preuve_jamais_execute_sur_donnees_reelles": "43/43 snapshots de reports/shadow/watch/evidence_snapshots.json affichent captured=0 / NO_DATA / NO_GO. shadow_decision_store.json = {}. shadow_selection_predictions = 0 ligne."
+  },
+
+  "partie_e_readiness_pourquoi_no_data": {
+    "chaine_causale_exacte": [
+      "1. human_review.py::derive_phase10_verdict (lignes 177-201) est la fonction qui produit le libellé vu dans les rapports.",
+      "2. Elle vérifie EN PREMIER (avant même de regarder le verdict du gate matrix) : 'if future_fixtures == 0 and real_prospective_resolved == 0: return \"NO_DATA\"' (human_review.py:187-188).",
+      "3. future_fixtures == 0 est VRAI : 0 ligne dans `match` avec date > maintenant (max(date)=2026-05-24 < 2026-09-04).",
+      "4. real_prospective_resolved == 0 est VRAI : le store Shadow (reports/shadow/shadow_decision_store.json) est vide.",
+      "5. Le code retourne donc 'NO_DATA' inconditionnellement, sans même exposer le 'NO_GO' sous-jacent du gate matrix.",
+      "6. Ce 'NO_GO' sous-jacent (matrix.py:98-112) est lui-même causé par 4 des 9 gates CRITIQUES en échec : PROVENANCE, ROLLBACK, MONITORING, TRACK_RECORD — tous les 4 retombent sur la même cause racine : le store Shadow n'a jamais été alimenté ET la table model_promotion_events n'a jamais reçu de ligne."
+    ],
+    "conditions_precises_qui_echouent": {
+      "PROVENANCE": "0 ShadowDecisionRecord — jamais exercé sur une donnée réelle (gates.py:371-380)",
+      "ROLLBACK": "0 ligne dans model_promotion_events (SELECT COUNT(*) FROM model_promotion_events = 0)",
+      "MONITORING": "compute_shadow_health retourne NO_DATA (future_fixtures==0 dans sa propre vérification, monitoring.py:425-426)",
+      "TRACK_RECORD": "0 observation Shadow REAL+RESOLVED -> classify_maturity='NO_DATA'"
+    },
+    "gates_non_lies_a_cette_cause": {
+      "CALIBRATION": "NOT_AVAILABLE — 0 des 3 model_selection_decisions n'a de calibration_verdict renseigné",
+      "SAMPLE_SIZE": "FAIL — les 3 décisions ont toutes status='insufficient_data'",
+      "STATISTICAL_EVIDENCE": "FAIL — 0 décision status='selected'",
+      "ODDS/VALUE/LEGAL_PROVIDER_STATUS": "CONDITIONAL/NOT_AVAILABLE — intégration fournisseur de cotes jamais construite, hors sujet du pipeline de prédiction lui-même"
+    }
+  },
+
+  "partie_f_modeles": [
+    {"id": 9, "name": "xfoot-dixon-coles-v1", "model_type": "dixon_coles", "status": "active", "is_active": true, "usage_reel": "SEUL modèle réellement utilisé par le produit principal (via artefact en mémoire, pas via ce ModelVersion directement pour la prédiction elle-même, seulement pour le logging après coup)"},
+    {"id": 11, "name": "xfoot-elo-v4", "model_type": "elo", "status": "active", "is_active": true, "usage_reel": "Exercé uniquement via l'endpoint Arena (2 appels réels au total)"},
+    {"id": 12, "name": "xfoot-xgboost-v3", "model_type": "xgboost", "status": "active", "is_active": true, "usage_reel": "Idem — Arena uniquement, dépend d'un artefact ModelVersion.artifact déjà présent"},
+    {"id": 13, "name": "xfoot-lightgbm-v3", "model_type": "lightgbm", "status": "active", "is_active": true, "usage_reel": "Idem"},
+    {"id": 14, "name": "xfoot-ensemble-v3", "model_type": "ensemble", "status": "active", "is_active": true, "usage_reel": "Combine les 4 précédents via pondération log-loss (arena/ensemble.py), Arena uniquement"},
+    {"count_retired": 10, "note": "Toutes les versions retirées (xgboost-v1/v2, lightgbm-v1/v2, elo-v1/v2/v3, ensemble-v1/v2/v4) ont été désactivées manuellement après une évaluation walk-forward n'ayant montré 'PAS DE GAIN CLAIR' vs Dixon-Coles — décision humaine documentée dans leurs propres champs 'notes', pas par model_selection.py"},
+    {"shadow_candidate_versions": 0, "note": "Aucune version n'a jamais eu status='shadow' — confirme que evaluate_live_models.py (cron quotidien 07:00 UTC) n'a jamais eu de version à évaluer depuis son déploiement"}
+  ],
+
+  "partie_g_shadow_pipeline": {
+    "1_predictions_shadow_creees_automatiquement": false,
+    "2_stockees": "Oui, mais dans un fichier JSON local (reports/shadow/shadow_decision_store.json), jamais une table DB — actuellement vide ({})",
+    "3_comparees_aux_resultats": "Le code existe (resolution.py) mais n'est déclenché que manuellement (flag --resolve), jamais automatiquement",
+    "4_monitoring_les_consomme": "Oui côté code (monitoring.py lit le store), mais monitoring.py lui-même n'est invoqué que manuellement (scripts/shadow_monitor.py)",
+    "5_readiness_les_lit": "Oui — PROVENANCE/TRACK_RECORD/MONITORING lisent exactement ce store, et rapportent honnêtement NOT_AVAILABLE/NO_DATA car il est vide",
+    "rupture_de_chaine_identifiee": "Aucun code ne relie le SEUL pipeline réellement automatique (generate_live_predictions.py, cron quotidien 05:30 UTC -> table model_predictions) à la capture Shadow (run_prospective_capture). Un humain doit combler manuellement cet écart en exécutant scripts/prospective_shadow.py — ce qui n'a essentiellement jamais été fait de façon soutenue (store vide)."
+  },
+
+  "partie_h_rollback_kill_switch": {
+    "kill_switch": {
+      "persistance": "Fichier JSON (reports/safety/kill_switch_state.json), jamais une table SQL (kill_switch.py:14) — actuellement ABSENT",
+      "etat_actuel": "ENABLED (non déclenché) — un fichier absent est traité par défaut comme l'état légitime 'ENABLED' (kill_switch.py:70-71), pas une erreur",
+      "declencheurs": "12 codes définis (KILL_SWITCH_TRIGGERS) — 1 seul manuel (MANUAL_OPERATOR_TRIGGER), les 11 autres (TEMPORAL_LEAK, MODEL_MISMATCH, etc.) sont censés être levés automatiquement par des appelants",
+      "probleme": "AUCUN appelant dans le chemin live (main.py) n'appelle jamais trigger() — confirmé par grep exhaustif : main.py n'importe RIEN de app.ai.safety. Le kill switch existe, fonctionne s'il est appelé, mais ne surveille RIEN en pratique aujourd'hui."
+    },
+    "rollback": {
+      "mecanisme": "safety/rollback.py::execute_rollback — retrouve la dernière version 'retired' par model_type et la réactive (apply_promotion + nouvelle ligne ModelPromotionEvent, reason='ROLLBACK:...')",
+      "jamais_execute": "model_promotion_events = 0 ligne, confirmé — aucun rollback ni aucune promotion n'a jamais été appliqué contre api/app.db",
+      "appelants": "Aucun hors tests (test_safety_controls.py et al.) — non wiré dans main.py ni dans aucun cron"
+    },
+    "feature_flags": {
+      "conclusion": "AUCUN flag d'environnement runtime (SHADOW_MODE/AI_MODE/PRODUCTION_MODE/ENABLE_LIVE_PREDICTIONS) n'existe. ACTIVATION_MODES (MODE_0 à MODE_4) est un vocabulaire purement descriptif en sortie de rapport, jamais appliqué (schemas.py:62-63 : 'conceptuels, jamais appliqués automatiquement'). AUTO_PROMOTION_ENABLED (défaut 'false') est le seul vrai interrupteur, et il ne gouverne QUE si evaluate_live_models.py est autorisé à auto-promouvoir — sans effet sur le service live."
+    },
+    "coherence_avec_pipeline_reel": "L'ensemble de la couche sécurité (kill switch + rollback + gates readiness) est une couche d'AUDIT/RAPPORT bien construite et testée, mais totalement découplée du chemin de service réel : main.py n'importe ni app.ai.safety ni app.ai.readiness. Rien ne demande la permission de cette couche avant de servir une prédiction."
+  },
+
+  "partie_i_dette_technique": {
+    "CRITIQUE": [
+      {"item": "Aucune capture Shadow automatique", "impact": "PROVENANCE/TRACK_RECORD/MONITORING resteront NO_DATA indéfiniment, quelle que soit la durée de fonctionnement", "fichier": "app/ai/shadow/prospective.py (aucune config cron ne le référence)", "dependance": "nécessite un nouveau job planifié (Railway cron) après generate_live_predictions.py"},
+      {"item": "Table `match` sans fixture future (max date 2026-05-24 < aujourd'hui)", "impact": "la condition future_fixtures==0 est structurellement toujours vraie avec la source de données actuelle", "fichier": "table match vs fixtures API-Football jamais écrites dans match", "dependance": "clarifier/relier la source de fixtures live à la table match, ou changer la condition de lecture"},
+      {"item": "Decision layer jamais branché sur le trafic live", "impact": "aucune prédiction live ne reçoit d'évaluation d'éligibilité/confiance/qualité automatique", "fichier": "app/ai/decision/decision.py (main.py ne l'importe jamais)", "dependance": "nécessite de brancher assess_decision dans le chemin de service"},
+      {"item": "Rollback jamais exercé en conditions réelles (0 ModelPromotionEvent)", "impact": "mécanisme non éprouvé en opération réelle malgré sa capacité d'écriture DB", "fichier": "app/ai/safety/rollback.py", "dependance": "nécessite un premier exercice contrôlé (hors scope de cette phase, READ-ONLY)"}
+    ],
+    "ELEVE": [
+      {"item": "XGBoost/LightGBM live dépendent d'un cycle de réentraînement/promotion non opérant", "impact": "ces modèles restent figés sur leur dernier artefact manuel, jamais réévalués en continu", "fichier": "app/ai/arena/promotion.py (AUTO_PROMOTION_ENABLED=false par défaut)", "dependance": "0 version status='shadow' à évaluer"},
+      {"item": "Aucun lien serveur fixture<->prédiction pour le produit principal", "impact": "risque de désynchronisation nom d'équipe/date, aucune traçabilité forte", "fichier": "main.py (endpoint /predictions/{league}/{home}/{away})", "dependance": "nécessiterait un identifiant de fixture partagé"},
+      {"item": "model_selection.py entièrement mort", "impact": "le statut 'actif' des modèles est un artefact de décisions humaines ponctuelles, pas d'un processus d'évaluation continu", "fichier": "app/ai/arena/model_selection.py", "dependance": "aucun appelant hors tests/code mort"},
+      {"item": "11 des 12 déclencheurs du kill switch ne sont jamais levés par le code live", "impact": "le mécanisme de sécurité existe sur le papier sans surveillance réelle", "fichier": "app/ai/safety/kill_switch.py + main.py (aucun import)", "dependance": "nécessite un branchement dans le chemin de service"}
+    ],
+    "MOYEN": [
+      {"item": "Deux implémentations Dixon-Coles indépendantes (engine/dixon_coles.py vs LeagueModel dans main.py)", "impact": "risque de dérive entre recherche et production", "fichier": "api/main.py:484-627 vs app/ai/engine/dixon_coles.py"},
+      {"item": "Deux implémentations Elo indépendantes (engine/elo.py vs formule en ligne)", "impact": "même risque, déjà reconnu en commentaire dans le code", "fichier": "app/ai/arena/models_common.py:274-280"},
+      {"item": "Volume de trafic live extrêmement faible (9 + 10 lignes depuis le lancement)", "impact": "même corrigée, l'accumulation de données réelles restera lente au rythme d'usage actuel", "fichier": "prediction_log, model_predictions"},
+      {"item": "features/snapshot.py orphelin alors qu'il semble être le module 'canonique' documenté", "impact": "confusion architecturale possible pour un futur mainteneur", "fichier": "app/ai/features/snapshot.py vs app/ai/engine/live_features.py (le vrai module vivant)"}
+    ],
+    "FAIBLE": [
+      {"item": "Gates ODDS/VALUE/LEGAL_PROVIDER_STATUS bloqués (intégration fournisseur de cotes jamais construite)", "impact": "faible, déjà explicitement déprioritisé", "fichier": "app/ai/readiness/gates.py:264-294,519-529"},
+      {"item": "Filtrage exact de la liste blanche du gate SECURITY non re-dérivé indépendamment", "impact": "faible, gate déjà PASS et sans rapport avec la chaîne NO_DATA", "fichier": "app/ai/readiness/gates.py:489-512"}
+    ]
+  },
+
+  "partie_j_proposition_phase16_1": {
+    "titre_propose": "Brancher automatiquement la capture Shadow sur le cron déjà existant generate_live_predictions.py",
+    "description": "Après l'écriture quotidienne (05:30 UTC) de nouvelles lignes model_predictions par le cron déjà en place, appeler automatiquement l'équivalent de run_prospective_capture (shadow/prospective.py) pour les enregistrer dans le Shadow Decision Store — puis ajouter un second appel de résolution (équivalent de scripts/prospective_shadow.py --resolve) juste après le cron fetch_daily_results.py (06:30 UTC) déjà existant.",
+    "justification_plus_petite_priorite": "C'est le SEUL changement qui attaque directement la cause racine identifiée en Partie E (store Shadow vide) sans nécessiter de nouvel entraînement, de nouvelle table, ni de modification de schéma — il réutilise deux fonctions déjà écrites et déjà testées (run_prospective_capture, resolve_record) et deux jobs cron déjà planifiés. Toutes les autres pistes (branchement du decision layer, relance du cycle de réentraînement XGBoost/LightGBM, réparation du lien fixture<->prédiction) sont soit de portée plus large, soit dépendantes de données réelles qui n'existeront que si cette capture commence à fonctionner en premier.",
+    "hors_scope_phase16_1": "Ne pas encore résoudre le problème 'future_fixtures==0' de la table match (Partie I, CRITIQUE #2) — même les 10 prédictions live déjà passées (2026-08-19) n'ont jamais été capturées, donc combler la capture est un préalable indépendant du problème de fraîcheur des fixtures futures."
+  },
+
+  "verdict": "AI_PIPELINE_INCOMPLETE",
+  "verdict_justification": "Le moteur IA n'est ni cassé ni bloqué par un obstacle externe : le produit principal sert réellement de vraies prédictions prospectives à de vrais utilisateurs, avec une boucle résultat réelle partiellement fonctionnelle (prediction_log). Mais l'infrastructure sophistiquée des Phases 9-13 (shadow, track record, decision layer, readiness, rollback) est intégralement construite, testée, mais STRUCTURELLEMENT DÉCONNECTÉE du seul pipeline automatique existant — 0 capture Shadow n'a jamais eu lieu, 0 rollback n'a jamais été exercé, 0 decision layer n'a jamais évalué une prédiction live. Une phase suivante, unique et bien délimitée (Partie J), est identifiée et ne dépend d'aucun blocage externe."
+}

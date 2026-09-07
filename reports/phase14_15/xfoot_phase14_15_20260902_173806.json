@@ -1,0 +1,146 @@
+{
+  "phase": "14.15",
+  "title": "XFOOT — DIAGNOSTIC DÉPLOIEMENT FRONTEND USER_ID HOSTINGER",
+  "generated_at_utc": "2026-09-02T17:38:06Z",
+  "scope_note": "Phase strictement diagnostique — aucune écriture code/production/paiement.",
+
+  "1_commit_local": {
+    "HEAD": "901c4682026e4ed3eec899b60760f214931e2001",
+    "existe_localement": true,
+    "message": "feat: show user_id in admin subscribers list",
+    "date_commit": "2026-09-02 01:30:00 +0000",
+    "fichier_modifie": "frontend-design/admin-subscribers.html (1 fichier, 21 insertions, 1 suppression)"
+  },
+
+  "2_3_contenu_au_commit_901c468": {
+    "colonne_user_id_presente": true,
+    "preuve_header": "<thead><tr><th>Nom</th><th>User ID</th><th>Email</th>...</tr></thead>",
+    "bouton_copier_present": true,
+    "preuve_bouton": "fmtUserId(userId) génère un <button class=\"... copy-user-id-btn\" data-user-id=\"${userId}\">Copier</button>",
+    "valeur_provenance": "s.user_id — champ direct de la réponse JSON de GET /admin/subscribers, aucune transformation",
+    "methode_verification": "git show 901c468:frontend-design/admin-subscribers.html (lecture directe du blob commité, sans dépendre du working tree)"
+  },
+
+  "4_statut_git_du_commit": {
+    "local_uniquement": true,
+    "present_sur_origin": false,
+    "preuve": "git ls-remote origin HEAD refs/heads/main -> ebb23ecd33729aca5b78731f1a062b936a79c801 (= ebb23ec, PAS 901c468) — requête réseau réelle réussie, pas une supposition.",
+    "deja_integre_dans_main_local": true,
+    "autre_branche_distante": "Aucune vérifiée nécessaire — le commit n'existe que dans l'historique local de main, jamais transmis au remote.",
+    "action_prise": "AUCUNE — uniquement rapporté, rien poussé."
+  },
+
+  "5_rappel_regle": "Aucun git push effectué à aucun moment de cette phase.",
+
+  "6_autres_copies_du_fichier": {
+    "recherche": "find . -iname 'admin-subscribers.html' -not -path '*/.git/*'",
+    "resultat": ["frontend-design/admin-subscribers.html"],
+    "nombre_de_copies": 1,
+    "ambiguite_sur_le_fichier_source": false,
+    "conclusion": "Un seul fichier source existe dans le dépôt — aucune confusion possible sur 'quel fichier' aurait dû être uploadé."
+  },
+
+  "7_mecanisme_deploiement_hostinger": {
+    "source": "HOSTINGER_DEPLOY.md (racine du dépôt)",
+    "mecanisme_confirme": "Upload MANUEL uniquement — dashboard Hostinger (hpanel) → Fichiers → Gestionnaire de fichiers (ou FTP classique) → dossier public_html/ de xfoot.site.",
+    "aucun_ci_cd": true,
+    "aucun_deploiement_automatique_sur_push": true,
+    "inchange_depuis_phase_14_8r": true
+  },
+
+  "8_9_comparaison_local_vs_production": {
+    "methode": "Deux requêtes HTTP indépendantes vers la MÊME URL de production : (a) URL canonique exacte demandée par un navigateur réel, (b) URL avec paramètre anti-cache pour forcer un contournement de tout cache éventuel.",
+    "url_canonique": {
+      "url": "https://www.xfoot.site/admin-subscribers.html",
+      "taille_octets": 8025,
+      "occurrences_USER_ID_fmtUserId_copy_btn": 0
+    },
+    "url_avec_parametre_anti_cache": {
+      "url": "https://www.xfoot.site/admin-subscribers.html?cachebust=<timestamp>",
+      "taille_octets": 8025,
+      "occurrences_USER_ID_fmtUserId_copy_btn": 0
+    },
+    "resultat": "IDENTIQUE dans les deux cas — 0 occurrence de la colonne USER ID dans les deux requêtes.",
+    "interpretation": "Si un cache CDN avait retenu une ancienne copie, la requête avec paramètre anti-cache (technique ayant précédemment révélé le vrai contenu d'origine lors de l'incident api.js, Phase 14.9R) aurait dû montrer un contenu DIFFÉRENT et plus récent. Ce n'est PAS le cas ici : les deux requêtes montrent EXACTEMENT le même contenu ancien — ceci élimine directement l'hypothèse d'un cache."
+  },
+
+  "10_headers_http": {
+    "url": "https://www.xfoot.site/admin-subscribers.html",
+    "last_modified": "Tue, 01 Sep 2026 21:34:20 GMT",
+    "etag": "W/\"1f59-6a9744dc-82063ab7f181b9f3;gz\"",
+    "cache_control": "ABSENT de la réponse (aucun header Cache-Control renvoyé pour ce fichier .html)",
+    "x_hcdn_cache_status": "DYNAMIC",
+    "interpretation_dynamic": "Confirmé et reproductible (déjà établi lors du diagnostic api.js, Phase 14.9R.2) : Hostinger ne met JAMAIS en cache les fichiers .html (statut DYNAMIC systématique) — CONTRAIREMENT aux fichiers statiques comme api.js/styles.css qui, eux, portent un Cache-Control avec longue durée et un statut HIT/MISS. Pour un fichier .html, CHAQUE requête atteint directement l'origine, sans aucune couche de cache intermédiaire possible.",
+    "conclusion_directe": "Puisque ce fichier n'est structurellement JAMAIS mis en cache, ET que Last-Modified (1er septembre 21:34:20 UTC) est ANTÉRIEUR au commit local 901c468 (2 septembre 01:30:00 UTC) de plus de 4 heures, la seule explication cohérente est que LE FICHIER SUR LE SERVEUR D'ORIGINE LUI-MÊME N'A JAMAIS ÉTÉ REMPLACÉ."
+  },
+
+  "11_cause_racine_demontree": {
+    "cause": "A",
+    "libelle": "fichier jamais uploadé",
+    "causes_explicitement_ecartees": {
+      "B_mauvais_fichier_uploade": "Écartée — un seul fichier source existe (§6), aucune confusion possible.",
+      "C_mauvais_repertoire_hostinger": "Écartée — le reste du site (page elle-même, navigation, styles) se charge et fonctionne normalement à cette URL, confirmant que le répertoire de publication lui-même est correct ; seul le contenu de CE fichier précis n'a pas été mis à jour.",
+      "D_cache_navigateur": "Écartée — les vérifications de cette phase sont effectuées par requêtes HTTP serveur-à-serveur (curl), sans navigateur, sans cookie, sans cache local d'aucune sorte ; de plus l'humain avait déjà effectué un Ctrl+F5 (purge cache navigateur) sans effet, cohérent avec cette conclusion.",
+      "E_cache_serveur_CDN": "Écartée avec preuve directe — x-hcdn-cache-status: DYNAMIC (jamais mis en cache) + contenu strictement identique entre requête canonique et requête anti-cache.",
+      "F_autre_mecanisme_de_publication": "Aucun indice trouvé (§7) — mécanisme unique et déjà documenté (upload manuel FTP/File Manager), aucun autre chemin de publication identifié dans le projet."
+    },
+    "preuve_synthese": [
+      "1 seul fichier source dans le dépôt (§6)",
+      "Mécanisme de publication = upload manuel uniquement, jamais automatique (§7)",
+      "Contenu identique entre requête canonique et requête anti-cache (§8/§9)",
+      "x-hcdn-cache-status: DYNAMIC — aucune mise en cache possible pour ce type de fichier (§10)",
+      "Last-Modified de production (1er sept. 21:34:20 UTC) strictement antérieur au commit local 901c468 (2 sept. 01:30:00 UTC) — chronologiquement impossible que ce fichier reflète ce commit (§10)"
+    ]
+  },
+
+  "12_action_si_cache": "NON APPLICABLE — la cause n'est pas un cache (voir §11).",
+
+  "13_procedure_humaine_exacte": {
+    "fichier_unique_a_remplacer": "frontend-design/admin-subscribers.html",
+    "version_a_utiliser": "celle du commit local 901c468 (déjà présente dans le working tree actuel du dépôt, aucune action git nécessaire pour l'obtenir)",
+    "etapes": [
+      "1. Se connecter à hpanel.hostinger.com.",
+      "2. Fichiers → Gestionnaire de fichiers (ou client FTP) pour le domaine xfoot.site.",
+      "3. Naviguer jusqu'à public_html/ (racine — PAS un sous-dossier, cohérent avec la structure déjà en place pour les autres fichiers).",
+      "4. Localiser le fichier admin-subscribers.html existant.",
+      "5. L'écraser/remplacer par le contenu du fichier local C:\\Users\\CHP SOTOUBOUA\\aime\\SaaS parifoot\\frontend-design\\admin-subscribers.html (version actuelle du commit 901c468).",
+      "6. Vérifier après upload : https://www.xfoot.site/admin-subscribers.html doit contenir la colonne 'User ID' et un bouton 'Copier' par ligne.",
+      "7. Aucun autre fichier n'a besoin d'être touché (voir §14)."
+    ],
+    "credentials_jamais_demandes": true
+  },
+
+  "14_autres_fichiers_a_remplacer": {
+    "necessaire": false,
+    "justification": "Le commit 901c468 ne modifie QU'UN SEUL fichier (frontend-design/admin-subscribers.html, confirmé §1 : '1 file changed'). Aucune dépendance vers api.js, styles.css ou tout autre fichier n'a été introduite par ce changement — la fonction fmtUserId() et son gestionnaire d'événement sont entièrement auto-contenus dans admin-subscribers.html, ne réutilisant que des fonctions déjà présentes dans l'api.js actuellement en ligne (apiFetch, clearToken, etc., inchangées)."
+  },
+
+  "tests_de_fin": {
+    "production_accessible": "OUI (200 sur les deux requêtes §8/§9)",
+    "USER_ID_dans_production": "NON",
+    "version_locale_901c468_confirmee": "OUI (§2/§3)",
+    "version_production_identifiee": "OUI — version antérieure au 1er septembre 21:34:20 UTC, sans la colonne USER ID",
+    "difference_locale_production": "OUI — confirmée textuellement et par date",
+    "cache_identifie": "NON (explicitement écarté comme cause, voir §11)",
+    "mecanisme_hostinger_identifie": "OUI (upload manuel uniquement, §7)",
+    "aucune_modification_backend": "CONFIRMÉ",
+    "aucune_modification_chariow": "CONFIRMÉ",
+    "aucune_modification_ia": "CONFIRMÉ",
+    "tables_ia_6_inchangees": {"avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9}, "apres": "identique (aucune opération DB effectuée cette phase)"}
+  },
+
+  "git_final": {
+    "HEAD": "901c4682026e4ed3eec899b60760f214931e2001",
+    "commit_effectue_cette_phase": false,
+    "push_effectue_cette_phase": false,
+    "fichiers_modifies_par_cette_phase": []
+  },
+
+  "verdict_final": {
+    "value": "DEPLOYMENT_FILE_MISSING",
+    "verdict_secondaire_actionnable": "NEEDS_HUMAN_UPLOAD",
+    "rationale": "Cinq preuves indépendantes convergent sans ambiguïté vers une seule cause : le fichier admin-subscribers.html sur l'origine Hostinger n'a jamais été remplacé par la version du commit 901c468. Toutes les autres causes possibles (mauvais fichier, mauvais répertoire, cache navigateur, cache CDN, autre mécanisme de publication) ont été explicitement testées et écartées avec preuve directe — notamment la preuve chronologique définitive : le Last-Modified de production (1er septembre 21:34:20 UTC) est antérieur de plus de 4 heures au commit local lui-même (2 septembre 01:30:00 UTC), rendant matériellement impossible que ce fichier reflète ce commit."
+  },
+
+  "closing_statement": "PHASE 14.15 — DIAGNOSTIC DÉPLOIEMENT FRONTEND USER_ID HOSTINGER TERMINÉE. CAUSE DÉMONTRÉE SANS AMBIGUÏTÉ : LE FICHIER admin-subscribers.html N'A JAMAIS ÉTÉ UPLOADÉ SUR HOSTINGER DEPUIS LE COMMIT LOCAL 901c468 — CE N'EST PAS UN PROBLÈME DE CACHE (EXPLICITEMENT ÉCARTÉ PAR PREUVE DIRECTE), NI UN PROBLÈME DE CODE. UN SEUL FICHIER DOIT ÊTRE REMPLACÉ SUR HOSTINGER, PROCÉDURE EXACTE FOURNIE. AUCUNE MODIFICATION DE CODE, BACKEND, CHARIOW OU MOTEUR IA. AUCUN COMMIT, AUCUN PUSH, AUCUNE ÉCRITURE PRODUCTION."
+}

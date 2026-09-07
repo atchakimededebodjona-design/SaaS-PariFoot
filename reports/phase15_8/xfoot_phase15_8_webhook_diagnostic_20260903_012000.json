@@ -1,0 +1,125 @@
+{
+  "phase": "15.8-DIAG — DIAGNOSTIC PAIEMENT CHARIOW CONFIRMÉ MAIS NON TRAITÉ PAR XFOOT",
+  "timestamp": "2026-09-03T01:20:00Z",
+
+  "1_faits_etablis": {
+    "source_chariow": {
+      "payment_reference": "pi_ih0s0eixhgm1",
+      "montant": "1500 FCFA",
+      "produit": "xfoot 1 mois",
+      "statut": "Terminé",
+      "methode": "CHARIOW - MIMO GLOBAL",
+      "date": "2026-09-03"
+    },
+    "source_xfoot_admin_abonnes": {"user_id": 245, "email": "oktest@test.com", "promoteur": "promoter-2", "plan": "—", "montant_paye": "—", "statut_paiement": "NONE"},
+    "source_xfoot_admin_gains": {"ventes_payees": 0, "revenu_total": 0, "commissions_totales": 0},
+    "note": "Les deux sources sont documentées séparément, jamais mélangées. Chariow affirme un paiement terminé ; Xfoot n'a strictement rien enregistré de ce paiement."
+  },
+
+  "2_contrat_webhook_audite": {
+    "endpoint": "POST /billing/pulse (api/app/billing/router.py:555-597)",
+    "authentification": "Aucune (public) — sécurisé exclusivement par signature HMAC",
+    "validation_signature": "Header x-chariow-signature = 'sha256=' + HMAC-SHA256(corps_brut, CHARIOW_PULSE_SECRET) hex. Si absent/invalide -> HTTP 401 IMMÉDIAT, rien traité.",
+    "secret_utilise": "CHARIOW_PULSE_SECRET (variable d'environnement Railway) — valeur runtime NON VÉRIFIABLE par cet assistant (aucun accès Railway)",
+    "format_payload_attendu": "JSON à plat (pas de wrapper 'data'), champ racine 'event' donnant le type, champs additionnels variables selon le type ('sale', 'license', 'customer', ...)",
+    "champ_transaction_id": "x-pulse-delivery-id (header HTTP, utilisé pour l'idempotence) — PAS un champ du corps JSON",
+    "champ_montant": "Recherché par extract_actual_paid_amount() dans plusieurs clés candidates du corps 'sale' : amount/amount_paid/paid_amount/total_amount/total/price — JAMAIS documenté comme confirmé contre un vrai paiement avant celui-ci (voir app/referral/money.py, commentaire explicite : 'aucune preuve dans ce dépôt qu'un champ montant y soit présent')",
+    "champ_statut": "Le code NE LIT AUCUN CHAMP DE STATUT — la seule information utilisée est le TYPE D'ÉVÉNEMENT au niveau racine ('event'), jamais un statut imbriqué dans l'objet sale/license",
+    "champ_identification_utilisateur": "sale.custom_metadata.user_id (chaîne convertie en int) — fixé par Xfoot lui-même à la création du checkout (POST /billing/checkout), sale.custom_metadata étant supposé être l'écho par Chariow du custom_metadata envoyé initialement",
+    "mapping_produit_plan": "AUCUN mapping produit->plan dans le traitement du Pulse successful.sale — le plan est lu directement depuis sale.custom_metadata.plan (la valeur que Xfoot avait lui-même envoyée à la création du checkout, jamais redérivée du product_id Chariow à ce stade)",
+    "comportement_evenement_attendu": "Le code compare STRICTEMENT event_type == 'successful.sale' (chaîne exacte, sensible à la casse) — voir app/billing/router.py:580",
+    "idempotence": "Double couche : ProcessedPulseDelivery (déduplique par x-pulse-delivery-id AVANT tout traitement) + UniqueConstraint sur ReferralCommission.source_event_id (défense en profondeur)",
+    "COMPORTEMENT_CRITIQUE_DECOUVERT": "Pour TOUT event_type qui ne correspond à AUCUN des 5 cas explicitement gérés (successful.sale, license.activated, license.expired, license.revoked, license.nearing_expiry), le code NE FAIT RIEN — silencieusement — MAIS retourne quand même HTTP 200 {'received': true} ET marque la delivery comme traitée (ProcessedPulseDelivery), voir app/billing/router.py:590-595. AUCUNE erreur, AUCUN log d'échec, AUCUNE trace visible ne distingue ce cas d'un traitement réellement réussi, ni pour Chariow (qui voit un 200 et ne retente jamais) ni pour Xfoot (rien n'est journalisé)."
+  },
+
+  "3_webhook_recu": {
+    "verifiable_par_cet_assistant": false,
+    "raison": "Aucun accès aux logs de production Railway, aucun accès au dashboard Chariow (historique de livraison des Pulses)",
+    "resultat": "F — impossible de vérifier directement",
+    "action_recommandee_humaine": "Consulter (a) les logs Railway du service backend autour de l'horodatage du paiement pour une ligne 'POST /billing/pulse', (b) si Chariow expose un historique de livraison des Pulses/webhooks dans son dashboard, vérifier s'il y a une tentative de livraison vers l'URL Xfoot, son statut HTTP retourné, et le corps JSON exact envoyé."
+  },
+
+  "4_reponses_http_webhook": "NOT_VERIFIABLE — mêmes raisons que §3. Si les logs Railway sont consultés par l'utilisateur, chercher précisément le timestamp, le status code retourné (200 dans TOUS les cas gérés OU ignorés silencieusement, 401 uniquement si signature invalide), et surtout examiner si un WARNING 'Création de commission de parrainage impossible' apparaît (indiquerait que successful.sale A été traité mais que la commission spécifiquement a échoué — distinct du cas où rien n'a été traité du tout).",
+
+  "5_mapping_utilisateur": {
+    "mecanisme": "Le checkout (POST /billing/checkout, déjà utilisé par USER 245 pour atteindre Chariow) envoie custom_metadata={'user_id': str(245), 'plan': 'monthly'} à l'API Chariow (api/app/billing/router.py:257). Le webhook s'attend à ce que Chariow RENVOIE cette même structure sous sale.custom_metadata dans le Pulse successful.sale.",
+    "point_de_fragilite_historique_documente": "CE DÉPÔT CONTIENT UNE TRACE DOCUMENTÉE D'UN BUG HISTORIQUE RÉEL DE CETTE EXACTE NATURE : les commentaires de api/app/billing/router.py (lignes 271-279, 356-363) font explicitement référence à 'la correction du bug metadata/custom_metadata' — des achats antérieurs avaient une licence Chariow SANS AUCUNE metadata du tout (pas juste user_id manquant), nécessitant un repli sur customer.email comme mécanisme de vérification alternatif pour /billing/activate-license. CECI PROUVE QUE LE NOMMAGE/LA STRUCTURE EXACTE SOUS LAQUELLE CHARIOW ÉCHO SES METADATA N'EST PAS UNE HYPOTHÈSE FIABLE À 100%, DÉJÀ CONSTATÉ AU MOINS UNE FOIS DANS L'HISTOIRE DE CE PROJET.",
+    "consequence_si_reproduit_sur_le_pulse": "Si le même type de divergence existe pour le Pulse successful.sale (ex. Chariow place les metadata ailleurs que sous sale.custom_metadata, ou sous une clé différemment nommée), alors sale.get('custom_metadata') retournerait {} , custom_metadata.get('user_id') retournerait None, et _handle_successful_sale() retournerait SILENCIEUSEMENT à la ligne 620-621 — MÊME SI event_type == 'successful.sale' correspondait parfaitement."
+  },
+
+  "6_mapping_produit": {
+    "product_id_attendu": "prd_sgvapilx (mensuel, 1500 FCFA)",
+    "variable_railway_CHARIOW_PRODUCT_ID_MONTHLY": "Affirmée corrigée par l'utilisateur avant ce paiement (Phase 15.6-CORRECTION) — NON RE-VÉRIFIÉE INDÉPENDAMMENT par cet assistant cette phase (aucun accès Railway)",
+    "utilisation_reelle_dans_le_traitement_pulse": "AUCUNE — le traitement du Pulse successful.sale ne relit JAMAIS le product_id Chariow ni PRODUCT_IDS : il utilise EXCLUSIVEMENT sale.custom_metadata.plan (la valeur que Xfoot avait lui-même choisie et envoyée au moment du checkout). Le mapping Product ID -> plan n'intervient QUE côté sortant (création du checkout), jamais côté entrant (traitement du Pulse).",
+    "conclusion": "Un éventuel problème de configuration CHARIOW_PRODUCT_ID_MONTHLY affecterait le MONTANT FACTURÉ par Chariow (déjà vérifié correct : Chariow affiche bien 1500 FCFA pour ce paiement), mais N'EST PAS EN CAUSE dans l'absence de traitement du webhook lui-même — ce sont deux mécanismes indépendants."
+  },
+
+  "7_traitement_statut": {
+    "statut_chariow_affiche_UI": "Terminé",
+    "important_distinction": "'Terminé' est un LABEL D'INTERFACE UTILISATEUR (localisé en français) affiché sur le dashboard Chariow pour l'humain — CE N'EST PAS le champ JSON 'event' comparé par le code Xfoot. Le code compare exclusivement le champ racine 'event' du corps du Pulse à la chaîne exacte 'successful.sale' (sensible à la casse, aucune tolérance).",
+    "verification_de_correspondance": "IMPOSSIBLE SANS VOIR LE CORPS JSON RÉEL DU PULSE ENVOYÉ PAR CHARIOW POUR CE PAIEMENT — aucune preuve dans ce dépôt, avant ce paiement, qu'un Pulse successful.sale RÉEL (pas fabriqué par nos propres tests) ait jamais été reçu et inspecté. Tous les tests existants du dépôt (test_referral_promoter_platform.py, _test_support.py::activate_subscription, etc.) FABRIQUENT eux-mêmes la valeur 'event':'successful.sale' — aucun n'a jamais validé cette chaîne contre un événement Chariow authentique.",
+    "risque_identifie": "Si Chariow envoie en réalité une chaîne différente (ex. 'sale.successful', 'payment.completed', 'order.completed', ou toute autre variante), le webhook chariow_pulse (app/billing/router.py:578-592) l'ignorerait SILENCIEUSEMENT (voir §2, comportement critique découvert) — symptôme EXACTEMENT identique à ce qui est observé (Chariow='Terminé', Xfoot=rien, aucune erreur nulle part)."
+  },
+
+  "8_idempotence": {
+    "verifiable_par_cet_assistant": false,
+    "raison": "Aucun accès DB/logs pour interroger ProcessedPulseDelivery, ReferralCommission, ProviderSubscription pour pi_ih0s0eixhgm1",
+    "recommandation": "Si un accès DB/admin devient disponible, vérifier EXACTEMENT une seule fois : (a) ProcessedPulseDelivery contient-il UNE ligne dont le pulse_delivery_id correspond au x-pulse-delivery-id envoyé par Chariow pour ce paiement (si connu) ? Si OUI mais qu'aucun ProviderSubscription/ReferralCommission n'a été créé, cela confirmerait directement le scénario du §2 (event ignoré silencieusement OU custom_metadata manquant) — et signifierait aussi qu'un simple RETRY par Chariow du MÊME delivery_id ne changerait RIEN (déjà marqué traité)."
+  },
+
+  "9_etat_referral": {
+    "attribution_prealable_confirmee_par_le_contexte": "USER 245 -> promoter 206 (promoter-2), déjà établie avant ce paiement (confirmé par l'affichage Admin -> Abonnés : PROMOTEUR='promoter-2' déjà visible, alors que PLAN/MONTANT/STATUT sont vides — ceci est cohérent : l'attribution ReferralAttribution existe et est affichée par jointure indépendamment de l'existence d'un paiement, exactement le mécanisme audité en Phase 15.6-R2/15.7.5)",
+    "flux_attendu_si_pulse_traite_normalement": "successful.sale traité -> ProviderSubscription.status='active' -> create_commission_for_confirmed_payment() -> SELECT ReferralAttribution WHERE converted_user_id=245 -> promoter_id trouvé (206) -> commission=floor(1500*4000/10000)=600 FCFA -> ReferralCommission créée, status=ACCRUED",
+    "constat": "Ce flux N'A JAMAIS ÉTÉ ATTEINT — puisque ProviderSubscription.status n'a jamais changé (confirmé par Admin Abonnés : statut='NONE'), _handle_successful_sale() n'a soit jamais été appelée, soit est retournée avant la ligne 634 (sub.status='active'). Le mécanisme d'attribution/commission LUI-MÊME n'est PAS mis en cause — il n'a simplement jamais été atteint."
+  },
+
+  "10_ledger_commission": {
+    "verifiable_par_cet_assistant": false,
+    "attendu_selon_admin_gains": "0 commission (cohérent avec Admin -> Gains affichant 0 FCFA de commissions totales)",
+    "incoherence_recherchee": "AUCUNE incohérence trouvée dans les données fournies — Admin Gains=0 est cohérent avec Admin Abonnés montrant statut='NONE' pour 245. Pas de signal d'une commission fantôme."
+  },
+
+  "11_providersubscription": {
+    "verifiable_par_cet_assistant": false,
+    "deduction_indirecte": "Une ligne ProviderSubscription(user_id=245, provider='chariow') DOIT déjà exister avec status='none' — créée automatiquement lors du premier appel à POST /billing/checkout par USER 245 (via _get_or_create_provider_subscription, appelée inconditionnellement avant la création du lien Chariow, api/app/billing/router.py:248). Ceci est cohérent avec le fait que 245 apparaît déjà dans Admin -> Abonnés (qui liste précisément les lignes ProviderSubscription, voir audit Phase 15.7.5) AVANT même la confirmation du paiement.",
+    "consequence": "Le chemin 'sub is None -> return' de _handle_successful_sale() (ligne 630-631) est donc TRÈS PROBABLEMENT ÉCARTÉ — la ligne existe déjà. Ceci renforce, par élimination, la plausibilité des deux autres points de rupture silencieuse identifiés en §2/§7 (event_type non reconnu, ou custom_metadata.user_id absent)."
+  },
+
+  "12_timing_asynchrone": {
+    "mecanisme_de_queue_ou_worker_recherche": "AUCUN trouvé dans tout api/app/billing/ (recherche exhaustive : BackgroundTasks, celery, queue, asyncio.create_task, worker — zéro résultat)",
+    "conclusion": "Le traitement du Pulse chariow_pulse() est ENTIÈREMENT SYNCHRONE — si le webhook a été reçu avec une signature valide et un event_type reconnu, le résultat (ProviderSubscription mise à jour, commission créée) est immédiat, dans le même cycle requête/réponse. AUCUN délai de traitement interne à Xfoot n'est possible par conception.",
+    "seule_source_de_delai_legitime_restante": "Un délai de LIVRAISON du côté de Chariow lui-même (Chariow pourrait envoyer le Pulse quelques minutes après la confirmation du paiement, pratique courante chez certains fournisseurs) — EXTERNE à Xfoot, non vérifiable par cet assistant, dépend du temps écoulé depuis le paiement (non connu précisément par cet assistant)."
+  },
+
+  "13_aucun_replay_effectue": {
+    "confirmation": "Aucune requête artificielle envoyée vers POST /billing/pulse en production cette phase. Aucun mécanisme de replay testé, même localement, cette phase (diagnostic de lecture de code uniquement)."
+  },
+
+  "14_aucune_correction_effectuee": {
+    "backend": false, "frontend": false, "railway": false, "db": false,
+    "webhook": false, "configuration": false, "chariow": false,
+    "commit": false, "push": false
+  },
+
+  "cause_racine_la_plus_probable_NON_DEMONTREE_AVEC_CERTITUDE": {
+    "hypothese_A_leading": "Le champ JSON racine 'event' envoyé par Chariow pour ce paiement réel ne correspond PAS exactement à la chaîne 'successful.sale' attendue par le code — cette chaîne a toujours été dérivée de documentation externe (chariow.dev), JAMAIS validée contre un événement réel avant ce paiement. Le webhook, dans ce cas, retourne 200 et NE FAIT RIEN, sans laisser de trace d'erreur.",
+    "hypothese_B": "Le champ 'event' correspond bien, mais sale.custom_metadata ne contient pas user_id sous la structure attendue — reproduction possible d'un bug DÉJÀ DOCUMENTÉ et déjà rencontré une fois dans ce projet (voir §5) pour un mécanisme de metadata Chariow analogue.",
+    "hypothese_C": "Le webhook n'a même jamais été reçu (signature invalide car CHARIOW_PULSE_SECRET mal configuré sur Railway, OU le Pulse n'a jamais été configuré côté Chariow pour pointer vers /billing/pulse) — indiscernable des hypothèses A/B sans accès aux logs Railway ou à l'historique de livraison Chariow.",
+    "aucune_des_trois_ne_peut_etre_confirmee_ou_infirmee_sans_acces_externe": true
+  },
+
+  "verdict": {
+    "value": "WEBHOOK_DIAGNOSTIC_BLOCKED",
+    "rationale": "Le code a été audité de façon exhaustive et révèle un DÉFAUT DE CONCEPTION RÉEL ET DÉMONTRÉ (pas une hypothèse) : tout event_type non reconnu, ou tout Pulse successful.sale dont sale.custom_metadata.user_id est absent, produit un HTTP 200 sans AUCUNE trace d'erreur — indiscernable d'un succès pour Chariow comme pour tout observateur externe. Ce défaut est cohérent à 100% avec les symptômes observés et renforcé par un historique DOCUMENTÉ d'un bug analogue déjà rencontré dans ce même projet (metadata/custom_metadata). Cependant, aucun accès aux logs de production Railway ni au dashboard Chariow n'était disponible pour cet assistant — impossible de confirmer LAQUELLE des 3 hypothèses (A/B/C) explique précisément ce paiement précis, ni même de confirmer avec certitude que le webhook a été reçu. Le verdict formellement honnête est donc un blocage de vérification, malgré une cause de code très fortement suspectée et documentée en détail ci-dessus."
+  },
+
+  "action_requise_humaine": [
+    "Consulter les logs Railway du service backend autour de l'horodatage du paiement pi_ih0s0eixhgm1, rechercher une entrée POST /billing/pulse (status code, éventuel warning).",
+    "Consulter, si disponible, l'historique de livraison des Pulses/webhooks dans le dashboard Chariow — vérifier si une tentative de livraison existe vers l'URL Xfoot, quel corps JSON exact a été envoyé (en particulier la valeur du champ 'event' et la structure de sale.custom_metadata), et quel code de réponse Xfoot a retourné.",
+    "Si ces logs confirment que le Pulse a bien été reçu avec event='successful.sale' et un HTTP 200, mais qu'aucune donnée n'a changé côté Xfoot, cela confirmerait précisément l'hypothèse B (custom_metadata mal structuré).",
+    "Si les logs montrent un event différent de 'successful.sale', cela confirmerait l'hypothèse A.",
+    "Si aucune requête POST /billing/pulse n'apparaît du tout dans les logs Railway autour de cet horodatage, cela orienterait vers l'hypothèse C (jamais reçu)."
+  ],
+
+  "closing_statement": "PHASE 15.8-DIAG — DIAGNOSTIC WEBHOOK : AUCUNE CORRECTION EFFECTUÉE, DIAGNOSTIC LECTURE SEULE UNIQUEMENT. AUDIT EXHAUSTIF DU CODE RÉVÈLE UN DÉFAUT DE CONCEPTION RÉEL — TOUT event_type NON RECONNU OU CUSTOM_METADATA MANQUANT PRODUIT UN HTTP 200 SILENCIEUX, SANS AUCUNE TRACE D'ERREUR, EXACTEMENT COHÉRENT AVEC LES SYMPTÔMES OBSERVÉS. RENFORCÉ PAR UN BUG HISTORIQUE DOCUMENTÉ DE MÊME NATURE (metadata/custom_metadata) DÉJÀ RENCONTRÉ DANS CE PROJET. AUCUN ACCÈS AUX LOGS RAILWAY NI AU DASHBOARD CHARIOW POUR CONFIRMER LAQUELLE DES 3 HYPOTHÈSES (event_type INCORRECT / custom_metadata MAL STRUCTURÉ / WEBHOOK JAMAIS REÇU) EXPLIQUE CE PAIEMENT PRÉCIS. AUCUN SECOND PAIEMENT, AUCUN REPLAY, AUCUNE MODIFICATION DB/BACKEND/RAILWAY/CHARIOW/CODE, AUCUN COMMIT, AUCUN PUSH. VERDICT : WEBHOOK_DIAGNOSTIC_BLOCKED — ACTION HUMAINE REQUISE : CONSULTER LES LOGS RAILWAY ET/OU L'HISTORIQUE DE LIVRAISON DES PULSES CHARIOW POUR pi_ih0s0eixhgm1 AVANT TOUTE DÉCISION DE CORRECTION."
+}

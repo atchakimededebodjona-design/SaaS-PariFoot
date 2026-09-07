@@ -1,0 +1,97 @@
+{
+  "phase": "15.6-R — DIAGNOSTIC INSCRIPTION + ATTRIBUTION REFERRAL",
+  "timestamp": "2026-09-02T21:50:00Z",
+
+  "promoter_slug": "promoter-2",
+  "promoter_user_id": 206,
+  "promoter_status": "ACTIVE (re-confirmé indirectement via /referral/resolve, aucun accès direct au user_id)",
+
+  "old_buyer_email": "payment@test.com",
+  "old_buyer_user_id": 209,
+
+  "new_buyer_email": "NOT_VERIFIABLE — aucun accès DB/admin cette session pour l'identifier ; l'utilisateur ne l'a pas communiqué dans cette phase",
+  "new_buyer_user_id": "NOT_VERIFIABLE",
+
+  "account_exists": "NOT_VERIFIABLE (aucun accès DB/admin)",
+  "account_visible_in_admin_subscribers": "NON, confirmé par l'utilisateur (observation initiale de cette phase)",
+
+  "referral_attribution_found": "NOT_VERIFIABLE (aucun accès DB)",
+  "referral_promoter_id": "NOT_VERIFIABLE",
+  "referral_promoter_slug": "NOT_VERIFIABLE",
+  "referral_attribution_persisted": "NOT_VERIFIABLE",
+
+  "step3_admin_subscribers_diagnostic": {
+    "endpoint": "GET /admin/subscribers (api/app/referral/admin_router.py:146-183)",
+    "decouverte_critique": "Cet endpoint N'INTERROGE PAS la table `user`. Il interroge EXCLUSIVEMENT `ProviderSubscription` : `select(ProviderSubscription).where(ProviderSubscription.provider == 'chariow')` (ligne 152-155). Pour CHAQUE ligne ProviderSubscription trouvée, il va ensuite chercher le User correspondant (session.get(User, sub.user_id)) — donc l'inclusion dans 'Admin → Abonnés' dépend à 100% de l'EXISTENCE PRÉALABLE d'une ligne ProviderSubscription pour cet utilisateur, jamais de la simple existence d'un compte User.",
+    "condition_exacte": "ProviderSubscription(provider='chariow') doit exister pour user_id — sans quoi l'utilisateur, même parfaitement inscrit et même avec une ReferralAttribution valide, N'APPARAÎT JAMAIS dans cette liste.",
+    "quand_une_ProviderSubscription_est_creee": "UNIQUEMENT via _get_or_create_provider_subscription (api/app/billing/router.py:111-133), appelée UNE SEULE FOIS dans TOUT le code : à l'intérieur de create_checkout_session (POST /billing/checkout, ligne 248) — c'est-à-dire au moment où l'utilisateur clique 'Continuer vers le paiement' et sélectionne une offre, PAS au moment de l'inscription.",
+    "comparaison_avec_payment_test_com_209": "payment@test.com (209) EST visible dans Admin → Abonnés — ce qui prouve qu'une ligne ProviderSubscription existe déjà pour ce compte, cohérent avec le fait que ce compte a déjà été utilisé pour atteindre l'écran de checkout Chariow lors du diagnostic précédent (Phase 15.6, Étape 3 du parcours initial) — CET APPEL À POST /billing/checkout a créé la ligne ProviderSubscription, même sans paiement complété.",
+    "conclusion_probable_NON_CONFIRMEE_PAR_DONNEES": "Si le nouveau compte s'est inscrit via /promoter-2 mais N'A PAS ENCORE cliqué sur 'Continuer vers le paiement' (n'a jamais appelé POST /billing/checkout), alors son ABSENCE d'Admin → Abonnés est ENTIÈREMENT ATTENDUE et NORMALE — ce n'est pas un bug, c'est la conséquence directe et documentée de la conception de cet endpoint (une liste d'ABONNÉS/de personnes ayant engagé un checkout, PAS une liste de tous les comptes inscrits). Ceci est une hypothèse de haute confiance fondée sur le code, NON CONFIRMÉE par observation directe de la base (voir limitations)."
+  },
+
+  "step4_referral_link_mechanism": {
+    "resolution_slug": "https://www.xfoot.site/promoter-2 → réécrit par .htaccess (server-side, Apache mod_rewrite) → sert login.html avec ?ref=promoter-2 dans l'URL (confirmé Phase 15.6 Étape 2 : GET renvoie login.html, 200, sans redirection HTTP)",
+    "capture_avant_inscription": "frontend-design/api.js::captureReferralFromUrl() (appelée à la ligne 81 de login.html, au chargement de la page, AVANT tout envoi de formulaire) — lit ?ref= dans l'URL, appelle POST /referral/resolve/{slug} (public, sans écriture sauf ReferralVisit si visitor_id fourni), et SI valid=true, stocke slug+timestamp dans localStorage (xfoot_referral_slug, xfoot_referral_captured_at) — PUREMENT CÔTÉ CLIENT à ce stade, RIEN n'est encore persisté côté serveur",
+    "moment_de_persistance_serveur": "login.html ligne 169-196 : à la soumission du formulaire, SI mode='register' → register() (POST /auth/register) PUIS login() (POST /auth/login, pose le token) PUIS AWAIT attributeReferralIfPresent() — CETTE dernière étape lit le localStorage et appelle POST /referral/attribute AVANT la redirection vers dashboard.html (le await bloque la redirection jusqu'à la fin de cet appel, best-effort si erreur réseau)",
+    "fonction_service_responsable": "app/referral/router.py::attribute_referral (POST /referral/attribute, api/app/referral/router.py:100-138) — crée la ligne ReferralAttribution en base si : pas déjà attribué, promoteur valide et ACTIVE, pas de self-referral, dans la fenêtre de 30 jours",
+    "conclusion": "Le mécanisme de capture ET de persistance est complet, cohérent et audité comme correct au niveau du code — AUCUNE anomalie détectée dans cette chaîne. Reste à confirmer avec des données réelles (voir limitations) que l'appel réseau a effectivement réussi pour ce compte précis (ex. connexion internet interrompue pendant l'inscription, erreur silencieuse best-effort non visible à l'utilisateur)."
+  },
+
+  "step5_referral_attribution_lookup": "NOT_VERIFIABLE — aucun accès DB pour interroger la table referral_attribution, ni pour le nouveau compte ni pour re-confirmer 209",
+
+  "step6_scenario_classification": {
+    "verdict_categorie": "G — AUDIT_BLOCKED (pour les faits de données)",
+    "precision": "Impossible de choisir entre A/B/C/D/E/F avec preuve, faute d'accès DB/admin. CEPENDANT, le diagnostic du code (Étape 3) fournit une explication alternative et très probable qui NE nécessite AUCUNE anomalie ni aucun bug côté attribution : l'absence dans Admin → Abonnés peut être simplement due à l'absence de ProviderSubscription (compte jamais encore passé par le checkout), indépendamment du succès ou de l'échec de l'attribution referral elle-même. Ces deux faits (visibilité admin / existence attribution) sont DÉCOUPLÉS dans ce système — l'un ne prouve ni n'infirme l'autre."
+  },
+
+  "step7_webhook_attribution_lookup_reconfirmation": {
+    "code_actuel_inspecte": "api/app/referral/commission_service.py:56-58 (inchangé depuis l'audit précédent, re-vérifié à l'instant)",
+    "extrait": "attribution = session.exec(select(ReferralAttribution).where(ReferralAttribution.converted_user_id == referred_user_id)).first()",
+    "confirme": "OUI — lecture SQL fraîche par converted_user_id, exécutée UNIQUEMENT au moment de _handle_successful_sale (paiement confirmé), jamais une valeur mise en cache ou transportée depuis le checkout.",
+    "commission_attendue_si_attribution_existe": "40% × 1500 FCFA = 600 FCFA (formule inchangée : floor(gross_paid_amount × commission_rate_bp / 10000), gross_paid_amount toujours issu du webhook Chariow)"
+  },
+
+  "step8_checkout_configuration": {
+    "code_local": "PRODUCT_IDS['monthly'] = os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', '') — api/app/core/chariow_config.py:50, inchangé, correct",
+    "valeur_attendue": "prd_sgvapilx (1500 FCFA/1 mois)",
+    "AVERTISSEMENT_CROISE": "Le diagnostic Phase 15.6-DIAG (rapport checkout_diagnostic_20260902_210500) a établi avec haute confiance que la VALEUR de CHARIOW_PRODUCT_ID_MONTHLY sur Railway résolvait encore vers l'ANCIEN Product ID (1000 FCFA observé chez Chariow, pas 1500). Une phase de correction Railway (Phase 15.6-CORRECTION) a été demandée mais son EXÉCUTION ET SA VÉRIFICATION N'ONT PAS ÉTÉ CONFIRMÉES par l'utilisateur avant cette phase-ci. CE POINT RESTE OUVERT ET NON RÉSOLU — indépendant du sujet attribution/inscription traité ici, mais tout aussi bloquant avant un paiement réel de 1500 FCFA."
+  },
+
+  "step9_tests": {
+    "TOTAL_FICHIERS": 65,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "suites_ciblees": {
+      "test_referral_promoter_platform.py": "99/99 assertions, exit 0",
+      "test_phase14_1_production_integration.py": "36/36 tests, exit 0"
+    },
+    "aucune_modification_de_test": true
+  },
+
+  "step10_ai_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "step11_git": {
+    "HEAD": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "git_status_short": "aucun changement lié à cette phase — uniquement fichiers étrangers pré-existants",
+    "commit": false,
+    "push": false
+  },
+
+  "blockers": [
+    "Aucun accès à la base de données de production (Postgres Railway) cette session.",
+    "Aucun token/identifiant pour le nouveau compte, payment@test.com, promoter-2, ou un compte admin.",
+    "Aucun outil de navigateur pour observer le localStorage réel ou reproduire le parcours d'inscription.",
+    "L'email et le user_id du nouveau compte n'ont pas été communiqués par l'utilisateur dans cette phase — impossible de les déterminer sans invention (règle explicite respectée).",
+    "Le statut de la correction Railway (Phase 15.6-CORRECTION, CHARIOW_PRODUCT_ID_MONTHLY) reste également non confirmé — point ouvert distinct mais tout aussi bloquant avant paiement réel."
+  ],
+
+  "verdict": {
+    "value": "AUDIT_BLOCKED",
+    "rationale": "Les faits de données (existence du nouveau compte, existence/cible de son attribution) ne peuvent pas être établis faute d'accès DB/admin. Cependant, le diagnostic du code (Étape 3) apporte une découverte structurelle de haute valeur : GET /admin/subscribers ne liste QUE les utilisateurs possédant déjà une ligne ProviderSubscription (créée uniquement au premier appel de POST /billing/checkout, jamais à l'inscription) — donc un compte fraîchement inscrit qui n'a PAS ENCORE tenté de checkout est ATTENDU comme absent de cette liste, indépendamment de tout succès ou échec de son attribution referral. Ceci n'est très probablement PAS un bug (CAS E), mais un comportement par conception de l'endpoint — hypothèse de haute confiance, non confirmée par observation directe des données réelles."
+  },
+
+  "recommandation_pour_lever_le_blocage": "Demander à l'utilisateur, via le dashboard admin, de chercher le nouveau compte non pas dans 'Abonnés' mais dans une liste d'UTILISATEURS bruts si elle existe, OU de faire cliquer ce compte jusqu'à 'Continuer vers le paiement' (sans payer) pour créer la ligne ProviderSubscription et vérifier s'il apparaît alors dans Admin → Abonnés avec promoter_slug='promoter-2' déjà renseigné (ce qui confirmerait a posteriori que l'attribution avait bien été persistée dès l'inscription)."
+}

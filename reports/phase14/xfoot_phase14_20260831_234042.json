@@ -1,0 +1,236 @@
+{
+  "phase": "14",
+  "title": "XFOOT REFERRAL & PROMOTER PLATFORM V1",
+  "generated_at_utc": "2026-08-31T23:40:42Z",
+  "mode": "MODE_1_SHADOW_ONLY inherited — no betting/production AI signal touched; this phase is a separate SaaS billing/affiliate feature",
+
+  "1_executive_summary": {
+    "text": "Implémentation complète d'un programme de promotion/affiliation Xfoot V1 : lien personnel https://www.xfoot.site/{slug}, attribution serveur au moment de l'inscription (jamais au clic), commission de 40% du montant RÉELLEMENT payé — créée UNIQUEMENT en réaction au Pulse Chariow successful.sale déjà en place (jamais au signup/checkout/plan), idempotente (double protection : ProcessedPulseDelivery existant + contrainte UNIQUE nouvelle), réversible sur remboursement/révocation (jamais de suppression d'historique). 5 tables strictement additives. Dashboards Promoteur et Admin (3 pages) livrés avec autorisation backend réelle (403/401 testés). 99/99 assertions Phase 14 vertes, 0 régression sur les 66 suites de tests existantes (dont les 6 tables IA vérifiées inchangées). Un seul point non vérifiable en conditions réelles : le comportement de l'.htaccess sur l'hébergement Hostinger réel (pas d'accès au compte). Rien commité, rien poussé."
+  },
+
+  "2_existing_auth_inspection": {
+    "findings": [
+      "get_current_user (app/auth/security.py) : JWT Bearer -> User, réutilisé tel quel comme dépendance racine de get_current_promoter.",
+      "require_admin (app/auth/admin.py, Phase 10) : allowlist ADMIN_EMAILS relue à CHAQUE requête (jamais mise en cache), 403 sinon — réutilisé tel quel pour toute route /admin/* de ce module, aucun nouveau mécanisme d'identification admin créé.",
+      "require_active_subscription (app/billing/dependencies.py) : basé sur Entitlement, non réutilisé ici (le programme de promotion ne requiert pas d'abonnement actif pour être promoteur).",
+      "UserRead (app/models/user.py) étendu d'un seul champ calculé is_promoter (query Promoter.user_id==user.id), même schéma qui portait déjà is_admin."
+    ]
+  },
+
+  "3_existing_payment_inspection": {
+    "findings": [
+      "Chariow = provider unique en production : produit \"Paiement unique\" à PRIX FIXE (pas d'abonnement récurrent, pas de mode \"prix libre\") — confirmé via app/core/chariow_config.py (Product ID monthly/yearly configurés, aucun champ prix).",
+      "ProviderSubscription (app/models/provider_subscription.py) est la source de vérité abonnement/paiement réelle et actuelle — la table Subscription héritée reste lecture seule, non touchée.",
+      "Webhooks : Pulses signés HMAC-SHA256 (x-chariow-signature), dédupliqués par x-pulse-delivery-id via ProcessedPulseDelivery (déjà existant, déjà testé) — événements pertinents : successful.sale (confirmation de paiement), license.revoked (remboursement/révocation).",
+      "Point exact de confirmation identifié : app/billing/router.py::_handle_successful_sale — c'est l'UNIQUE endroit où un paiement Chariow devient PAID/CONFIRMED dans ce dépôt ; la commission est créée depuis ce point, jamais ailleurs.",
+      "Aucun champ montant payé n'était stocké nulle part avant cette phase — gap identifié et traité par app/referral/money.py::extract_actual_paid_amount (voir section 9)."
+    ]
+  },
+
+  "4_referral_architecture": {
+    "flow": "REFERRAL CLICK (client, non persisté) -> VISITOR (ReferralVisit, anonyme, optionnel) -> landing (login.html) -> ACCOUNT CREATION (POST /auth/register) -> REFERRAL ATTRIBUTION (POST /referral/attribute, authentifié) -> SUBSCRIPTION (Chariow checkout) -> PAYMENT CONFIRMED (Pulse successful.sale) -> 40% COMMISSION (ReferralCommission) -> PROMOTER LEDGER -> PROMOTER DASHBOARD / ADMIN DASHBOARD.",
+    "new_tables": ["promoter", "referral_attribution", "referral_commission", "referral_visit", "referral_audit_event"],
+    "no_existing_table_modified": true,
+    "justification": "Aucune structure existante (User, ProviderSubscription, Entitlement) ne pouvait représenter promoteur/attribution/ledger sans mélanger des responsabilités non liées — 5 tables nouvelles, strictement additives, chacune répondant à un seul rôle du flux ci-dessus (voir docstring de app/models/promoter.py)."
+  },
+
+  "5_promoter_accounts": {
+    "statuses": ["ACTIVE", "INACTIVE", "SUSPENDED"],
+    "rule": "Promoter.user_id est unique (1-1 avec un compte User réel, jamais un compte fictif). set_promoter_status() ne modifie que Promoter.status — aucune ligne ReferralCommission déjà créée n'est jamais mutée ni supprimée par un changement de statut ; seules les FUTURES commissions sont bloquées (voir commission_service.py, promoter.status != 'ACTIVE' -> return None).",
+    "read_access_while_inactive": "get_current_promoter() garde l'accès en LECTURE au dashboard même INACTIVE/SUSPENDED — seule la création de commission future est bloquée, jamais la consultation de l'historique."
+  },
+
+  "6_slug_referral_links": {
+    "format": "1-40 caractères, [a-z0-9-], normalisé (accents retirés, minuscule, tirets collapsés) via normalize_slug().",
+    "reserved_slugs_source": "Liste dérivée d'une inspection réelle : pages statiques frontend-design/*.html (index, login, register, billing, dashboard, history, live, vip, arena, design-system, promoter), segments API réels (health, leagues, predictions, live-scores, ratings, fixtures, models, auth, billing, referral, r, promoters, admin) + mots explicitement listés par le prompt (settings, support, pricing, subscription, logout, api, static, assets, favicon.ico, robots.txt, sitemap.xml, www) — voir app/referral/slug.py, RESERVED_SLUGS.",
+    "generation": "generate_base_slug('Jean Dupont') -> 'jean-dupont' ; collision -> next_slug_candidate déterministe -> 'jean-dupont-2', 'jean-dupont-3'...",
+    "slug_change": "Non implémenté en V1 (aucune route de changement) — documenté comme limitation ; le schéma (slug indexé, unique, séparé de l'historique par des FK sur promoter_id, jamais sur le slug lui-même) permettrait un futur changement sans casser ReferralCommission (les lignes référencent promoter_id, jamais le slug)."
+  },
+
+  "7_attribution": {
+    "mechanism": "Deux temps : (a) capture client pure (localStorage xfoot_referral_slug + captured_at, api.js::captureReferralFromUrl, appelée sur login.html à l'arrivée avec ?ref=slug) — RIEN n'est envoyé au serveur à ce stade (§8 : pas de donnée personnelle stockée pour un simple visiteur) ; (b) attribution serveur (POST /referral/attribute, authentifié) appelée juste après connexion réussie, créant la ligne ReferralAttribution UNIQUEMENT à ce moment.",
+    "rule": "LAST VALID REFERRER — résolu côté capture client (un nouveau ?ref= écrase le localStorage précédent tant qu'aucun compte n'existe) ; une fois ReferralAttribution créée (contrainte UNIQUE sur converted_user_id), elle est définitive, un appel répété est un no-op silencieux (reason=ALREADY_ATTRIBUTED).",
+    "window_days": 30,
+    "window_justification": "Aucune convention pré-existante dans ce dépôt (recherche explicite avant migration) — 30 jours retenu comme standard de facto de l'industrie de l'affiliation, documenté explicitement comme PREMIÈRE convention du projet plutôt que présenté comme une règle préexistante."
+  },
+
+  "8_payment_confirmation": {
+    "source_of_truth_point": "app/billing/router.py::_handle_successful_sale (déclenché par le Pulse Chariow 'successful.sale', après vérification de signature + dédup ProcessedPulseDelivery) — SEUL endroit du code où commission_service.create_commission_for_confirmed_payment est appelée.",
+    "never_created_at": ["click", "signup", "checkout creation", "subscription creation seule", "sélection de plan"],
+    "states_distinguished": ["PENDING (checkout créé, aucun Pulse reçu)", "PAID/ACTIVE (successful.sale traité)", "FAILED (aucun Pulse successful.sale)", "REVOKED/REFUNDED (license.revoked)"],
+    "unavailable_case": "Si aucun montant n'est trouvé (ni dans le webhook, ni via un prix fixe configuré), la fonction retourne None sans créer de commission — journalisé PAYMENT_CONFIRMATION_UNAVAILABLE, jamais de montant fabriqué (§43)."
+  },
+
+  "9_commission_calculation": {
+    "formula": "commission_amount = floor(gross_paid_amount * commission_rate_bp / 10000)",
+    "rate_v1_bp": 4000,
+    "rate_v1_percent": 40,
+    "amount_source_priority": ["clé montant présente dans le corps du Pulse successful.sale (amount/amount_paid/paid_amount/total_amount/total/price)", "sinon prix fixe configuré par plan (REFERRAL_PLAN_PRICE_MONTHLY/_YEARLY) — légitime uniquement parce que le produit Chariow de ce projet est à PRIX FIXE unique (pas de 'prix libre'), donc prix configuré == montant réellement payable, jamais une supposition sur un provider à prix variable", "sinon aucun montant -> aucune commission (PAYMENT_CONFIRMATION_UNAVAILABLE)"],
+    "worked_examples_tested": ["10000 × 4000bp = 4000", "15000 × 4000bp = 6000"],
+    "never_uses_list_price_when_real_amount_available": true
+  },
+
+  "10_commission_ledger": {
+    "table": "referral_commission",
+    "sole_source_of_truth": true,
+    "columns_answering_spec": ["promoter_id", "referred_user_id", "provider_subscription_id", "plan", "gross_paid_amount", "currency", "commission_rate_bp (copié au moment T, jamais relu depuis Promoter après coup)", "commission_amount", "status (ACCRUED|REVERSED)", "created_at/updated_at", "reversed_at/reversed_reason"],
+    "idempotency": "UniqueConstraint(source_event_id) + dédup ProcessedPulseDelivery en amont (défense en profondeur, deux niveaux indépendants)."
+  },
+
+  "11_refund_handling": {
+    "trigger": "Pulse Chariow license.revoked -> app/billing/router.py::_handle_license_status(new_status='revoked') -> reverse_commissions_for_subscription().",
+    "behavior": "Toutes les lignes ACCRUED de la ProviderSubscription concernée passent à REVERSED (status/reversed_at/reversed_reason) — AUCUNE suppression, AUCUNE mutation de gross_paid_amount/commission_amount déjà écrits.",
+    "partial_refund": "Non traité (Chariow ne fournit qu'un statut binaire actif/révoqué dans ce dépôt, aucun montant de remboursement partiel observable) — documenté comme limitation explicite plutôt que fabriqué (conforme à la consigne §35 : 'sinon signaler comme nécessitant une gestion manuelle')."
+  },
+
+  "12_promoter_dashboard": {
+    "route": "frontend-design/promoter.html (+ backend GET /promoter/me, /promoter/me/stats, /promoter/me/sales)",
+    "content": ["lien de parrainage + bouton copier", "visiteurs attribués (COUNT DISTINCT ReferralVisit.visitor_id)", "inscriptions attribuées (COUNT ReferralAttribution)", "abonnés convertis / ventes payées (COUNT ReferralCommission)", "revenu généré (SUM gross_paid_amount)", "commission totale/disponible/reversée", "tableau des ventes paginé : Date/Client masqué/Plan/Montant payé/Commission/Statut"],
+    "payout_note": "Aucun système de versement (payout) n'existe dans ce dépôt — le dashboard affiche explicitement 'COMMISSION ACCRUED' et un bandeau 'Système de versement non encore implémenté', jamais un mécanisme inventé."
+  },
+
+  "13_admin_dashboard": {
+    "routes": ["frontend-design/admin-promoters.html", "frontend-design/admin-subscribers.html", "frontend-design/admin-earnings.html"],
+    "backend_enforcement": "Chaque endpoint /admin/* dépend de require_admin (backend, jamais une route cachée ou un simple lien absent du menu) — testé : utilisateur normal 403, promoteur 403, non authentifié 401, admin 200 (voir section 17)."
+  },
+
+  "14_subscriber_management": {
+    "route": "GET /admin/subscribers (paginé, N+1 évité via requêtes groupées sur attributions/promoteurs/commissions)",
+    "columns": ["Nom", "Email", "Plan", "Montant payé (dernière commission liée, jamais un prix catalogue)", "Date", "Promoteur attribué", "Statut paiement"],
+    "no_sensitive_payment_data": true
+  },
+
+  "15_promoter_management": {
+    "route_list_create": "GET/POST /admin/promoters (recherche q, filtre status_filter, pagination)",
+    "route_status": "POST /admin/promoters/{id}/status (ACTIVE/INACTIVE/SUSPENDED)",
+    "route_detail": "GET /admin/promoters/{id} (nom/email/slug/lien/statut/date + stats complètes)",
+    "never_hard_delete": true
+  },
+
+  "16_earnings": {
+    "route_totals": "GET /admin/earnings/totals -> total_subscriptions, total_paid_sales_accrued, total_revenue, total_commissions, net_after_commissions, reversed_commissions — tout recalculé par agrégation SQL, jamais un compteur mutable.",
+    "route_leaderboard": "GET /admin/earnings/by-promoter?sort=commission|sales|revenue"
+  },
+
+  "17_security_tests": {
+    "executed_in": "api/test_referral_promoter_platform.py (25 scénarios, 99 assertions)",
+    "scenarios_covered": [
+      "accès non authentifié -> 401",
+      "utilisateur normal -> dashboard promoteur -> 403",
+      "promoteur A ne voit jamais les données de promoteur B",
+      "promoteur -> admin -> 403",
+      "admin -> gestion promoteurs OK",
+      "injection de slug (caractères dangereux/slash) -> rejeté",
+      "slug réservé -> rejeté",
+      "slug dupliqué -> rejeté / auto-suffixé selon le contexte",
+      "self-referral -> commission 0, SELF_REFERRAL_REJECTED journalisé",
+      "promoter_id forgé -> jamais un mécanisme d'autorisation valide",
+      "webhook de paiement dupliqué -> une seule commission",
+      "paiement FAILED -> commission 0",
+      "promoteur inactif -> nouvelle attribution refusée",
+      "promoteur actif -> attribution valide"
+    ],
+    "result": "99 passed, 0 failed"
+  },
+
+  "18_authorization": {
+    "promoter_endpoints": "get_current_promoter dérive TOUJOURS le promoteur depuis current_user (JWT) — aucun endpoint promoteur n'accepte de promoter_id client.",
+    "admin_endpoints": "require_admin (allowlist ADMIN_EMAILS, Phase 10, réutilisé tel quel) — vérifié à chaque requête."
+  },
+
+  "19_privacy": {
+    "rules_applied": [
+      "Aucune donnée personnelle stockée pour un simple clic/visite (ReferralVisit = UUID anonyme + horodatage uniquement, ni IP ni user-agent).",
+      "ReferralAttribution créée uniquement à l'inscription réelle, jamais avant.",
+      "Vue promoteur sur ses ventes : client masqué (_mask_email_or_name — prénom si connu, sinon email partiellement masqué), jamais l'email complet, jamais de donnée de paiement.",
+      "Aucun secret/token/mot de passe/clé API exposé par un endpoint de ce module."
+    ]
+  },
+
+  "20_fraud_abuse_controls": {
+    "implemented": [
+      "self-referral bloqué à deux niveaux (attribution ET commission) + journalisé SELF_REFERRAL_REJECTED",
+      "idempotence webhook à deux niveaux (ProcessedPulseDelivery + UniqueConstraint source_event_id)",
+      "promoteur inactif/suspendu bloqué pour toute NOUVELLE attribution et toute NOUVELLE commission",
+      "promoter_id jamais accepté depuis le client (dérivation serveur systématique)"
+    ],
+    "explicitly_out_of_scope_v1": "Pas de détection de fraude comportementale avancée (multi-comptes, patterns d'IP, etc.) — non demandé pour cette phase, documenté comme limitation."
+  },
+
+  "21_database_changes": {
+    "migration": "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py",
+    "method": "alembic revision --autogenerate (convention déjà établie du projet, DDL non modifiée à la main)",
+    "tables_created": ["promoter", "referral_attribution", "referral_commission", "referral_visit", "referral_audit_event"],
+    "applied_to_local_db": true,
+    "verified_no_other_table_touched": true
+  },
+
+  "22_ai_db_isolation": {
+    "tables_checked": ["match", "match_stats", "model_predictions", "model_versions", "team_ratings", "prediction_log"],
+    "row_counts_current": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "verdict": "Inchangées — aucune écriture de ce module n'a jamais de chemin de code vers ces tables (aucun import croisé entre app/referral/ et app/ai/)."
+  },
+
+  "23_tests": {
+    "new_test_file": "api/test_referral_promoter_platform.py",
+    "scenarios": 25,
+    "assertions": 99,
+    "result": "99 passed, 0 failed",
+    "financial_tests_verbatim": [
+      "10000 × 40% = 4000 : OK",
+      "15000 × 40% = 6000 : OK",
+      "paiement FAILED -> commission 0 : OK",
+      "paiement PENDING -> commission 0 : OK",
+      "paiement PAID -> commission créée : OK",
+      "même paiement reçu deux fois (et 3e/10e) -> une seule commission : OK",
+      "remboursement -> commission REVERSED (jamais supprimée) : OK",
+      "self-referral -> commission 0 : OK",
+      "promoteur inactif -> attribution refusée : OK",
+      "promoteur actif -> attribution valide : OK"
+    ]
+  },
+
+  "24_regression": {
+    "total_test_files_run": 66,
+    "total_result": "0 failure across all files (each executed as its own script, exit code 0)",
+    "includes": ["toutes les suites Phase 6 à 13 (IA/shadow/readiness/safety/pipeline)", "test_auth.py", "test_chariow_billing.py", "test_google_play_billing.py", "test_premium.py", "test_entitlement.py", "test_main.py"]
+  },
+
+  "25_production_impact": {
+    "backend_modified": ["api/app/models/user.py (+is_promoter)", "api/app/auth/router.py (calcul is_promoter)", "api/app/billing/router.py (appel commission_service depuis les handlers Pulse existants)", "api/main.py (+2 include_router)", "api/alembic/env.py (+import modèles)"],
+    "backend_new": ["api/app/models/promoter.py", "api/app/referral/ (7 fichiers)", "1 migration Alembic"],
+    "frontend_modified": ["api.js (+91 lignes : attribution/nav rôle)", "index.html, live.html, arena.html, vip.html, history.html, billing.html, dashboard.html (+liens nav rôle-gated / applyRoleBasedNav)", "login.html (+capture/attribution référent)"],
+    "frontend_new": ["promoter.html", "admin-promoters.html", "admin-subscribers.html", "admin-earnings.html", ".htaccess"],
+    "ai_engine_touched": false,
+    "betting_signal_generated": false,
+    "explicitly_not_modified": ["app/ai/**", "app/*/shadow*", "odds engine", "decision layer (hors ajout §sécurité de faux-positifs déjà présent avant cette session, non lié à Phase 14)"]
+  },
+
+  "26_limitations": [
+    ".htaccess : code complet mais NON vérifié sur le compte Hostinger réel (pas d'accès) — le flux d'attribution fonctionne de toute façon via login.html?ref=slug indépendamment de la réécriture d'URL propre.",
+    "Pas de changement de slug par le promoteur en V1 (schéma le permettrait sans casser l'historique, non implémenté).",
+    "Remboursement partiel non géré (Chariow n'expose qu'un statut binaire dans ce dépôt) — documenté, non fabriqué.",
+    "Pas de système de versement (payout) — affichage 'accrued' uniquement, conforme à la consigne de ne rien inventer.",
+    "Pas de vérification navigateur réelle (Playwright) des nouvelles pages dans cette session — aucun outil d'automatisation navigateur disponible dans cet environnement ; vérifié à la place : syntaxe JS de chaque page (node vm, 0 erreur), service HTTP local de chaque page (200 sur les 12 pages + api.js + styles.css), et par lecture de code croisée avec les endpoints backend réellement testés."
+  ],
+
+  "27_required_next": [
+    "Déployer et vérifier réellement le comportement de .htaccess sur l'hébergement Hostinger de production.",
+    "Vérification manuelle en navigateur réel (ou avec un outil Playwright disponible) du flux complet : /{slug} -> login.html?ref=slug -> inscription -> attribution -> paiement Chariow réel -> apparition de la commission.",
+    "Décision produit sur un futur mécanisme de versement (payout) si le programme est activé en production.",
+    "Validation humaine explicite avant toute activation ADMIN_EMAILS/commission en environnement de production réel (aucune donnée réelle de production n'a été touchée par ce travail)."
+  ],
+
+  "28_final_verdict": {
+    "value": "IMPLEMENTED_WITH_LIMITATIONS",
+    "rationale": "Backend + frontend + sécurité + tests financiers + régression : tous implémentés et vérifiés par exécution réelle (99/99 + 66 suites vertes, isolation IA confirmée). Deux limitations honnêtes empêchent un verdict plus fort : le comportement .htaccess en production réelle est non vérifiable sans accès Hostinger, et aucune vérification visuelle navigateur (Playwright) des nouvelles pages n'a pu être effectuée faute d'outil disponible dans cet environnement — remplacée par une vérification de service HTTP + syntaxe JS statique, moins forte qu'un test d'interaction réel. Jamais PRODUCTION_READY : aucune donnée réelle de production n'a été exercée (webhooks Chariow réels non simulés en dehors des tests signés localement)."
+  },
+
+  "git_status": {
+    "committed": false,
+    "pushed": false,
+    "note": "git status --short / git diff --stat / git diff --name-only exécutés et consignés dans le rapport .md associé."
+  },
+
+  "closing_statement": "PHASE 14 — XFOOT REFERRAL & PROMOTER PLATFORM V1 TERMINÉE. PROGRAMME DE PROMOTION, ATTRIBUTION DES ABONNEMENTS ET COMMISSIONS DE 40% ÉVALUÉS/IMPLÉMENTÉS SUR PAIEMENTS RÉELLEMENT CONFIRMÉS. TABLEAU DE BORD PROMOTEUR ET ADMINISTRATEUR SÉCURISÉS. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. EN ATTENTE DE VALIDATION HUMAINE."
+}

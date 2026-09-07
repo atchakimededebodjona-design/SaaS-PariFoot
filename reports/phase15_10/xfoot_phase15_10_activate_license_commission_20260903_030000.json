@@ -1,0 +1,112 @@
+{
+  "phase": "15.10 — EXTENSION SÉCURISÉE DE activate-license : RÉCUPÉRATION ABONNEMENT + VENTE + COMMISSION",
+  "timestamp": "2026-09-03T03:00:00Z",
+
+  "PARTIE_A_code": {
+    "A1_A2_audit_prealable": {
+      "endpoint": "POST /billing/activate-license (api/app/billing/router.py:341-457, ligne exacte après extension)",
+      "authentification": "Depends(get_current_user) — Bearer JWT, jamais une identité fournie par le corps de la requête",
+      "donnees_demandees_au_client": "UNIQUEMENT license_key (ActivateLicenseRequest n'a AUCUN autre champ — ni email, ni promoter_id, ni user_id, ni montant)",
+      "appel_api_chariow": "GET {CHARIOW_API_BASE_URL}/licenses/{license_key} — LECTURE SEULE, endpoint officiel documenté (chariow.dev/api-reference/licenses/get-license), jamais un scraping",
+      "donnees_reponse_utilisees": ["status", "expires_at", "metadata (user_id, plan)", "customer.email", "product.id"],
+      "GAP_DECOUVERT_A2": "Aucun champ montant/prix n'est documenté ni utilisé dans license_data avant cette phase — extract_actual_paid_amount() (déjà existant, money.py) cherche des clés candidates (amount/amount_paid/price/...) à la RACINE de l'objet passé ; si Chariow ne les inclut pas dans l'objet licence, la fonction retombe honnêtement sur son repli déjà existant (prix fixe configuré via REFERRAL_PLAN_PRICE_*) ou sur 'unavailable' — JAMAIS un montant halluciné.",
+      "validation_paiement": "license_status doit être exactement 'active' (avec activation automatique si 'pending_activation') — sinon 400 explicite, rien touché",
+      "identification_utilisateur": "metadata.user_id en priorité, repli customer.email — mécanisme PRÉEXISTANT, inchangé",
+      "product_mapping": "plan = metadata.plan, ou déduit de product_id via PRODUCT_IDS si absent — PRÉEXISTANT, inchangé",
+      "idempotence_preexistante": "external_ref=license_key stocké sur ProviderSubscription — mais AUCUNE protection contre un double appel avant cette phase pour la partie commission (la subscription elle-même était déjà idempotente par simple écrasement des mêmes valeurs)."
+    },
+
+    "A3_correspondance_paiement_reel": {
+      "preuve_suffisante_disponible": true,
+      "raison": "license_status='active' EST la preuve Chariow que le paiement est confirmé (identique au principe déjà établi pour les Pulses) — aucun blocage ACTIVATION_PROOF_INSUFFICIENT."
+    },
+
+    "extension_implementee": {
+      "fichier_unique_modifie": "api/app/billing/router.py",
+      "fonctions_modifiees": ["activate_license (fonction existante, étendue)"],
+      "aucune_nouvelle_fonction_de_commission_creee": true,
+      "reutilisation_stricte": "create_commission_for_confirmed_payment (app/referral/commission_service.py) appelée telle quelle après l'activation de l'abonnement — AUCUNE seconde logique de calcul de commission écrite. sale_body=license_data (au lieu de l'objet 'sale' du Pulse) : extract_actual_paid_amount() y applique ses mêmes règles de repli déjà existantes.",
+      "idempotence_ajoutee": "delivery_id=f'activate-license:{license_key}' — dérivé de la clé de licence elle-même (stable, unique par achat Chariow), jamais transmis par le client comme identifiant de session. Un second appel avec la MÊME licence retombe sur la contrainte UNIQUE déjà en place sur ReferralCommission.source_event_id (IntegrityError déjà gérée par commission_service.py, y compris pour des appels concurrents).",
+      "securite_confirmee_sans_modification": {
+        "usurpation_de_licence_dune_autre_personne": "Déjà bloquée par la vérification d'appartenance PRÉEXISTANTE (403) — inchangée par cette phase",
+        "promoter_id_falsifie": "IMPOSSIBLE — ActivateLicenseRequest n'a pas ce champ ; le promoteur provient EXCLUSIVEMENT de la ReferralAttribution déjà en base pour l'utilisateur authentifié (même code que le webhook, jamais modifié)",
+        "email_falsifie": "IMPOSSIBLE — pas de champ email dans le contrat ; l'identité vient exclusivement du JWT (current_user)"
+      },
+      "correction_annulee_pendant_le_developpement": {
+        "tentative_initiale": "Rejet explicite (422) si plan reste indéterminable (ni metadata.plan ni product_id reconnu) — implémentée pour satisfaire le Test 5 'produit incorrect'.",
+        "raison_de_lannulation": "Cassait un test PRÉEXISTANT et délibéré (test_chariow_billing.py::test_activate_license_email_fallback_when_no_metadata) : une licence Chariow legacy, achetée AVANT la correction historique du bug metadata/custom_metadata, est intentionnellement activée MÊME sans plan résolvable — Chariow confirme un achat réel, refuser l'accès sur la seule absence d'un libellé de plan serait une régression fonctionnelle réelle pour d'authentiques clients historiques.",
+        "decision_finale": "Retirée. plan=None reste possible et accepté (comportement historique préservé) — documenté comme sans risque financier puisque le calcul de commission ne dépend jamais de `plan`, uniquement du montant réel."
+      }
+    },
+
+    "aucune_modification_webhook": true,
+    "fichier_pulse_touche": false
+  },
+
+  "PARTIE_B_tests": {
+    "nouveau_fichier": "api/test_phase15_10_activate_license_commission.py",
+    "resultat_nouveau_fichier": {"TOTAL": 33, "PASSED": 33, "FAILED": 0},
+    "correspondance_avec_les_14_tests_demandes": {
+      "test_1_licence_valide": "PASS — abonnement activé",
+      "test_2_paiement_confirme_referral": "PASS — commission 600 FCFA pour promoter 206-équivalent",
+      "test_3_licence_invalide": "PASS — 403, aucun abonnement, aucune commission",
+      "test_4_paiement_non_confirme": "PASS — licence expirée, 400, aucun abonnement actif, aucune commission",
+      "test_5_produit_incorrect": "REINTERPRETE — voir 'correction_annulee_pendant_le_developpement' ci-dessus : testé comme 'plan non résolvable -> activation quand même (comportement historique)', PAS comme un rejet, pour ne pas régresser un test préexistant",
+      "test_6_montant_incorrect": "PASS — montant absent de license_data (et aucun REFERRAL_PLAN_PRICE_* configuré dans l'environnement de test) -> abonnement activé, AUCUNE commission fabriquée",
+      "test_7_meme_payment_id_reutilise": "PASS — 3 appels séquentiels avec la même license_key -> exactement 1 commission",
+      "test_8_deux_appels_simultanes": "PARTIELLEMENT COUVERT — testé par rejeu séquentiel rapide s'appuyant sur la même contrainte UNIQUE en base (protection réellement au niveau DB, donc valide aussi pour un vrai scénario concurrent) ; AUCUN test de vraie concurrence multi-thread exécuté cette phase (limite technique du harness de test synchrone existant, cohérent avec le reste du dépôt)",
+      "test_9_utilisateur_different": "PASS — 403, aucune commission créée pour l'usurpateur, commission originale intacte",
+      "test_10_promoter_id_falsifie": "PASS — champ ignoré (absent du contrat), commission toujours rattachée au VRAI promoteur",
+      "test_11_email_falsifie": "PASS — champ ignoré, activation sur la VRAIE identité JWT",
+      "test_12_absence_attribution": "PASS — abonnement activé, commission=0, aucun faux promoteur",
+      "test_13_attribution_existante": "PASS — couvert par tests 1/2 et 7/8/14",
+      "test_14_replay_apres_commission_existante": "PASS — couvert par test 7/8"
+    },
+    "regression_complete": {"TOTAL": 68, "PASSED": 68, "FAILED": 0, "detail": "67 fichiers préexistants (incluant les 31 tests Phase 15.9) + le nouveau fichier, tous verts"},
+    "partie_F_non_regression_webhook": {
+      "confirme": true,
+      "detail": "test_phase15_9_webhook_hardening.py (31/31) re-exécuté dans la régression complète ci-dessus, sans modification — le webhook /billing/pulse continue de fonctionner exactement comme validé en Phase 15.9, cette phase n'y a touché aucune ligne."
+    }
+  },
+
+  "PARTIE_C_paiement_reel": {
+    "reference": "pi_ih0s0eixhgm1",
+    "montant": "1500 FCFA",
+    "statut_chariow": "Terminé",
+    "utilisateur": {"user_id": 245, "email": "oktest@test.com", "promoter": "promoter-2", "promoter_user_id": 206},
+    "resultat_activation": "NON EXÉCUTÉ CETTE PHASE — conformément à l'instruction explicite ('ne doit PAS être exécutée automatiquement').",
+    "raison_precise_de_non_execution": [
+      "L'agent n'a et ne doit jamais avoir la clé de licence Chariow de USER 245 — action strictement réservée à l'utilisateur humain authentifié en tant que oktest@test.com.",
+      "BLOCAGE STRUCTUREL SUPPLÉMENTAIRE, à signaler explicitement : le code de cette Phase 15.10 est encore ENTIÈREMENT LOCAL — non committé, non poussé, non déployé. Si USER 245 utilisait activate-license MAINTENANT en production, il obtiendrait l'ANCIEN comportement (Phase < 15.10) : abonnement activé, mais AUCUNE commission créée (le gap découvert en Phase 15.9 existe toujours en production). Le test réel du cas USER 245 n'a donc de sens qu'APRÈS un déploiement autorisé séparément."
+    ],
+    "abonnement": "NON MODIFIÉ", "vente": "NON MODIFIÉE", "commission": "NON CRÉÉE — aucune fabrication, conformément à la règle absolue"
+  },
+
+  "PARTIE_D_tables_ai": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "PARTIE_E_deploiement": {
+    "commit_effectue": false, "push_effectue": false, "upload_hostinger": false, "modification_railway": false,
+    "raison": "Aucune autorisation explicite donnée pour cette phase précise — validation locale uniquement, conformément à la règle absolue de cette phase."
+  },
+
+  "git_diff_reference": "git diff --stat -- api/app/billing/router.py (cumulatif Phase 15.9 + 15.10) : 1 fichier changé, 114 insertions(+), 18 suppressions(-)",
+
+  "observabilite_ajoutee": {
+    "logs_ajoutes": [
+      "logger.warning si création de commission impossible via activate-license (non bloquant)",
+      "aucun autre nouveau log — la journalisation de l'échec de commission réutilise le même pattern déjà en place côté webhook (Phase 15.9)"
+    ],
+    "aucune_donnee_sensible_journalisee": "Confirmé — jamais la clé de licence elle-même, jamais de token/secret/donnée bancaire, uniquement provider_subscription_id et le message d'exception (déjà non sensible par construction dans commission_service.py)."
+  },
+
+  "verdict": {
+    "value": "ACTIVATE_LICENSE_COMMISSION_IMPLEMENTED_TESTS_PASS",
+    "rationale": "Le mécanisme officiel existant (activate-license, preuve Chariow réelle en lecture seule) a été étendu de façon minimale (1 seul fichier backend, aucune nouvelle logique de commission — réutilisation stricte de create_commission_for_confirmed_payment) pour couvrir le gap découvert en Phase 15.9. 33/33 tests dédiés verts, 68/68 en régression complète, 6 tables IA inchangées, aucune régression sur le webhook (Phase 15.9 reconfirmée intacte). Sécurité vérifiée : ni promoter_id ni email ne peuvent être falsifiés par le client (absents du contrat), idempotence garantie par contrainte UNIQUE déjà en place. Le TEST RÉEL du paiement pi_ih0s0eixhgm1 (Partie D de la phase) n'a PAS été exécuté, conformément à l'instruction explicite ET parce que ce code reste local — non déployé, donc sans effet possible sur la production tant qu'une autorisation de déploiement séparée n'est pas donnée."
+  },
+
+  "closing_statement": "PHASE 15.10 — activate-license ÉTENDU AVEC SUCCÈS POUR COUVRIR LE GAP DE COMMISSION DÉCOUVERT EN PHASE 15.9 : RÉUTILISATION STRICTE DE create_commission_for_confirmed_payment (AUCUNE SECONDE LOGIQUE), IDEMPOTENCE VIA CLÉ DE LICENCE, SÉCURITÉ CONFIRMÉE (promoter_id ET email IMPOSSIBLES À FALSIFIER, ABSENTS DU CONTRAT CLIENT). UNE TENTATIVE INITIALE DE REJET SUR 'PLAN NON RÉSOLVABLE' A ÉTÉ ANNULÉE APRÈS AVOIR CASSÉ UN TEST PRÉEXISTANT LÉGITIME (LICENCES LEGACY) — COMPORTEMENT HISTORIQUE PRÉSERVÉ. 33/33 TESTS DÉDIÉS, 68/68 RÉGRESSION COMPLÈTE, 6 TABLES IA INCHANGÉES, WEBHOOK PHASE 15.9 RECONFIRMÉ INTACT. AUCUNE MODIFICATION DU WEBHOOK, AUCUNE DONNÉE FABRIQUÉE, AUCUNE COMMISSION CRÉÉE MANUELLEMENT, AUCUN DEUXIÈME PAIEMENT. LE TEST RÉEL SUR USER 245/pi_ih0s0eixhgm1 N'A PAS ÉTÉ TENTÉ — NI L'AGENT NE DOIT DÉTENIR SA LICENCE, NI CE CODE N'EST ENCORE DÉPLOYÉ EN PRODUCTION. AUCUN COMMIT, AUCUN PUSH, AUCUN UPLOAD HOSTINGER, AUCUNE MODIFICATION RAILWAY. VERDICT : ACTIVATE_LICENSE_COMMISSION_IMPLEMENTED_TESTS_PASS — EN ATTENTE D'UNE DÉCISION HUMAINE SÉPARÉE SUR LE DÉPLOIEMENT AVANT TOUTE TENTATIVE RÉELLE DE RÉCUPÉRATION DU PAIEMENT."
+}

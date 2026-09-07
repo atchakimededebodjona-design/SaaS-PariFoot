@@ -1,0 +1,191 @@
+{
+  "phase": "14.9",
+  "title": "XFOOT FRONTEND PRODUCTION VERIFICATION + AUTHENTICATED REFERRAL SMOKE TEST V1",
+  "generated_at_utc": "2026-09-01T21:53:00Z",
+  "release_commit": "ebb23ec",
+
+  "1_release_verifie": {
+    "HEAD": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "matches_ebb23ec": true,
+    "commit_created_this_phase": false,
+    "push_performed_this_phase": false
+  },
+
+  "2_etat_git": {
+    "git_status_short_relevant": [" M api/app/ai/readiness/gates.py", " M reports/shadow/watch/evidence_snapshots.json", "?? (rapports historiques, laissés intacts)"],
+    "aucun_fichier_du_projet_modifie_par_cette_phase": true
+  },
+
+  "3_frontend_production": {
+    "pages_testees": [
+      {"url": "https://www.xfoot.site/", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:21 GMT"},
+      {"url": "https://www.xfoot.site/index.html", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:21 GMT"},
+      {"url": "https://www.xfoot.site/promoter.html", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:21 GMT"},
+      {"url": "https://www.xfoot.site/admin-promoters.html", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:20 GMT"},
+      {"url": "https://www.xfoot.site/admin-subscribers.html", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:20 GMT"},
+      {"url": "https://www.xfoot.site/admin-earnings.html", "status": 200, "last_modified": "Tue, 01 Sep 2026 21:34:20 GMT"}
+    ],
+    "conclusion_html_upload": "L'upload manuel a réellement eu lieu (Last-Modified frais, distinct du 28 août précédent) — toutes les pages HTML Phase 14 sont désormais servies avec HTTP 200, confirmant le diagnostic et la checklist de la Phase 14.8R.",
+    "titre_promoter_html_confirme": "xFoot - Tableau de bord Promoteur"
+  },
+
+  "4_urls_testees": {
+    "methode": "GET/HEAD publics uniquement, aucune authentification, aucune écriture",
+    "total_requetes": 24
+  },
+
+  "5_resultats_http": {
+    "toutes_pages_html_200": true,
+    "aucun_404_restant_sur_pages_phase14": true
+  },
+
+  "6_htaccess": {
+    "test_effectue": "GET https://www.xfoot.site/phase14-9-slug-routing-probe (slug inexistant, forme valide)",
+    "resultat": "HTTP 200, contenu confirmé = <title>xFoot - Connexion</title> — réécriture interne vers login.html?ref=... fonctionnelle, exactement comme documenté dans .htaccess",
+    "test_slug_reserve": "GET https://www.xfoot.site/admin -> 200 (réécrit vers login.html, cohérent — aucun fichier admin.html réel n'existe, la règle .htaccess s'applique uniformément)",
+    ".htaccess_fonctionnel": true,
+    "aucune_modification_apportee": true,
+    "anomalie_htaccess": "AUCUNE — ce fichier fonctionne correctement."
+  },
+
+  "7_frontend_vers_api": {
+    "PRODUCTION_API_URL_en_ligne": "https://api.xfoot.site (confirmé dans le code source de api.js actuellement servi)",
+    "localhost_present_en_production": false,
+    "secrets_en_dur_detectes": false,
+    "anomalie_critique_detectee": true,
+    "description_anomalie": "L'upload manuel a mis à jour TOUTES les pages HTML (.html) vers leur version Phase 14 (commit ebb23ec), MAIS PAS le fichier api.js — celui-ci reste la version pré-Phase-14 (3666 octets en ligne vs 8122 octets attendus dans le commit ebb23ec). Preuve directe : le fichier api.js actuellement servi a été lu intégralement et se termine après la fonction getCurrentUser() — il ne contient AUCUNE des 4 fonctions ajoutées par Phase 14 : getOrCreateVisitorId, captureReferralFromUrl, attributeReferralIfPresent, applyRoleBasedNav.",
+    "consequence_1_login_casse": {
+      "fichier": "login.html",
+      "ligne": 81,
+      "detail": "Le script inline de login.html appelle `captureReferralFromUrl();` en haut de la branche 'utilisateur non connecté' (AVANT l'attachement du gestionnaire d'événement submit du formulaire). Cette fonction étant indéfinie dans l'api.js actuellement servi, elle lève une ReferenceError synchrone qui STOPPE l'exécution du reste du script — y compris `form.addEventListener('submit', ...)`, qui n'est donc JAMAIS attaché.",
+      "impact_reel": "Tout visiteur anonyme (sans token déjà en localStorage) qui clique sur 'Se connecter' ou 'Créer un compte' ne déclenche AUCUN appel API — le formulaire n'a pas de gestionnaire JS. Le formulaire HTML n'ayant ni attribut method ni action, le navigateur effectue une soumission GET par défaut vers la page elle-même, ce qui rechargerait login.html avec l'email et le mot de passe exposés en clair dans l'URL (paramètres de requête), au lieu d'authentifier l'utilisateur.",
+      "severite": "CRITIQUE — bloque la connexion ET l'inscription pour tout visiteur anonyme sur la production actuelle, avec un risque secondaire d'exposition de mot de passe en clair dans l'URL/historique navigateur/logs serveur si un utilisateur tente malgré tout de se connecter.",
+      "utilisateurs_deja_connectes_affectes": "NON directement sur login.html (redirection immédiate vers dashboard.html si un token existe déjà, avant l'appel à captureReferralFromUrl), MAIS affectés ailleurs (voir conséquence 2)."
+    },
+    "consequence_2_pages_principales_cassees": {
+      "fichiers": ["index.html", "live.html", "arena.html", "vip.html", "history.html", "billing.html", "dashboard.html", "promoter.html", "admin-promoters.html", "admin-subscribers.html", "admin-earnings.html"],
+      "detail": "Les 11 pages appellent `applyRoleBasedNav();` (vérifié individuellement par requête HTTP sur chacune, ligne exacte documentée par page) — fonction également absente de l'api.js actuellement servi. Sur index.html par exemple, cet appel se situe AVANT `loadLeagues();` et `loadWeeklyFixtures();` dans le même bloc <script> : la ReferenceError stoppe leur exécution, donc le contenu principal de la page (ligues, calendrier de la semaine) ne se charge jamais.",
+      "impact_reel": "Tout utilisateur DÉJÀ CONNECTÉ (avec un token localStorage valide) qui visite l'une de ces 11 pages voit son contenu principal ne pas se charger — la page affiche sa coquille HTML/CSS mais les données dynamiques (ligues, matchs, dashboard promoteur/admin, etc.) restent absentes, avec une erreur JavaScript visible dans la console du navigateur.",
+      "severite": "CRITIQUE — casse la fonctionnalité principale du site pour tout utilisateur déjà authentifié, sur la totalité des pages testées."
+    },
+    "cause_racine": "Upload manuel PARTIEL sur Hostinger — les fichiers .html et .htaccess ont été correctement mis à jour, mais api.js (un seul fichier) n'a pas été réuploadé.",
+    "correction_ne_pas_appliquer_automatiquement": true,
+    "action_corrective_unique_necessaire": "Uploader (écraser) UNIQUEMENT le fichier frontend-design/api.js du commit ebb23ec dans public_html/ — aucun autre fichier n'a besoin d'être retouché."
+  },
+
+  "8_cors": {
+    "origine_autorisee": {"origin": "https://www.xfoot.site", "resultat": "access-control-allow-origin: https://www.xfoot.site — fonctionnel"},
+    "origine_hostile": {"origin": "https://evil-attacker-example.test", "resultat": "aucun header access-control-allow-origin renvoyé — correctement rejeté"},
+    "configuration_modifiee": false
+  },
+
+  "9_routes_protegees": {
+    "tests": [
+      {"path": "/promoter/me", "status": 401},
+      {"path": "/promoter/me/stats", "status": 401},
+      {"path": "/promoter/me/sales", "status": 401},
+      {"path": "/admin/promoters", "status": 401},
+      {"path": "/admin/subscribers", "status": 401},
+      {"path": "/admin/earnings/totals", "status": 401}
+    ],
+    "toutes_correctement_protegees": true,
+    "donnees_privees_exposees": false
+  },
+
+  "10_authentification": {
+    "PROMOTER_TEST_ACCOUNT": "NOT_AVAILABLE",
+    "ADMIN_TEST_ACCOUNT": "NOT_AVAILABLE",
+    "value": "AUTHENTICATED_TEST_BLOCKED",
+    "raison": "Aucun compte de test explicitement autorisé n'existe dans l'environnement — la décision de lecture seule prise en Phase 14.7 reste pleinement applicable, non re-sollicitée. AUCUN compte créé, AUCUN compte personnel utilisé.",
+    "note_supplementaire": "Même si un compte de test avait été disponible cette phase, l'anomalie critique documentée en §7 aurait de toute façon empêché toute connexion réelle via l'interface (le bouton 'Se connecter' n'a plus de gestionnaire JS) — la découverte de cette anomalie a donc, de fait, une valeur diagnostique équivalente ou supérieure à un test authentifié réussi."
+  },
+
+  "11_isolation": {
+    "value": "ISOLATION_TEST_BLOCKED",
+    "raison": "Nécessite deux comptes promoteur de test — aucun disponible (§10).",
+    "verification_structurelle_reconfirmee": "promoter_id jamais accepté comme paramètre client sur aucune route (déjà vérifié Phase 14/14.1/14.6, code inchangé depuis)."
+  },
+
+  "12_attribution": {
+    "value": "ATTRIBUTION_LIVE_TEST_BLOCKED",
+    "raison_explicite": "Ceci n'est PAS un échec — aucune transaction réelle de test n'existe, conformément à la règle absolue de non-création de compte/paiement.",
+    "slug_persistant": "Confirmé par le test .htaccess (§6) — la réécriture fonctionne.",
+    "attribution_non_basee_sur_valeur_frontend": "Reconfirmé par lecture de code — POST /referral/attribute dérive converted_user_id du JWT (current_user), jamais d'un champ client.",
+    "promoter_id_non_forgeable": "Reconfirmé par lecture de code (§9/§11 réutilisées, inchangées).",
+    "commission_jamais_avant_confirmation": "Reconfirmé par lecture de code — create_commission_for_confirmed_payment() appelée exclusivement depuis _handle_successful_sale."
+  },
+
+  "13_commissions": {
+    "invariant": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000)",
+    "exemple_reference": {"catalogue": 20000, "paye": 15000, "commission": 6000},
+    "taxes_frais_non_introduits": true,
+    "confirmation_live": false,
+    "raison": "Aucune donnée réelle disponible (§10/§12)."
+  },
+
+  "14_paiement": {
+    "PAYMENT_PRODUCTION_OBSERVED": "NO",
+    "COMMISSION_PRODUCTION_OBSERVED": "NO",
+    "REFUND_PRODUCTION_OBSERVED": "NO",
+    "REVERSAL_PRODUCTION_OBSERVED": "NO",
+    "chariow_write_calls": 0,
+    "real_payment": false
+  },
+
+  "15_webhook": {
+    "invalid_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement"},
+    "missing_signature_test": {"result": 401, "verdict": "REJECT confirmé réellement"},
+    "hmac_jamais_desactive": true,
+    "aucune_ecriture_db_production": true
+  },
+
+  "16_securite": {
+    "aucun_secret_frontend": true,
+    "aucun_mot_de_passe_dans_logs_de_cette_phase": true,
+    "endpoints_proteges": true,
+    "acces_admin_controle_cote_backend": true,
+    "note": "L'anomalie §7 a une dimension sécurité secondaire (risque d'exposition de mot de passe en clair via une soumission de formulaire GET par défaut si un utilisateur tente de se connecter pendant que le bug est actif) — documentée en détail en §7, pas une faille du backend ni du code du commit ebb23ec, mais une conséquence du déploiement frontend partiel."
+  },
+
+  "17_ia_tables_protegees": {
+    "git_diff_app_ai_references": 0,
+    "tables_ia_modifiees": false,
+    "kill_switch_modifie": false,
+    "readiness_gates_modifies_par_cette_phase": false,
+    "signal_pari_production_genere": false,
+    "local_db_counts": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "note": "Comptages statiques (aucun test local exécuté cette phase, donc aucune variation attendue ni observée)."
+  },
+
+  "18_browser_tests": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Aucun outil Playwright/navigateur interactif disponible dans cet environnement. L'anomalie §7 a été diagnostiquée par lecture directe et précise du code JavaScript réellement servi (fetch HTTP + analyse statique), pas par observation visuelle d'une erreur console — méthode équivalente en rigueur, différente en nature, honnêtement caractérisée comme telle."
+  },
+
+  "19_limitations": [
+    "AUTHENTICATED_TEST_BLOCKED — aucun compte de test disponible.",
+    "ISOLATION_TEST_BLOCKED — nécessite 2 comptes.",
+    "ATTRIBUTION_LIVE_TEST_BLOCKED — aucune transaction réelle (pas un échec).",
+    "BROWSER_VALIDATION_UNAVAILABLE — pas d'outil Playwright.",
+    "ANOMALIE CRITIQUE NON CORRIGÉE — hors périmètre read-only de cette phase et hors accès Hostinger disponible ; documentée avec l'action corrective exacte."
+  ],
+
+  "20_verdict_final": {
+    "value": "NEEDS_FIXES",
+    "rationale": "Le frontend est bien déployé (toutes les pages Phase 14 répondent 200, .htaccess fonctionnel, CORS correct, routes protégées correctement 401, sécurité webhook confirmée) — MAIS une anomalie réelle, reproductible et critique a été découverte : le fichier api.js n'a pas été réuploadé lors du déploiement manuel, ce qui casse la connexion/inscription pour tout visiteur anonyme et casse le chargement du contenu principal pour tout utilisateur déjà connecté, sur la totalité des 11 pages concernées. Ceci n'est PAS l'absence de paiement réel (qui n'aurait jamais justifié NEEDS_FIXES) — c'est une anomalie fonctionnelle authentique, vérifiée par lecture directe du code effectivement servi en production, avec une cause racine unique et précise et une correction unique et précise (réuploader un seul fichier)."
+  },
+
+  "resume_fin_de_phase": {
+    "FRONTEND": {"deployed": "YES", "public_pages": "6/6 pages testées -> 200 (voir §3)"},
+    "BACKEND": {"api_reachable": "YES", "protected_routes": "6/6 -> 401 sans authentification (voir §9)"},
+    "AUTH": {"promoter_test_account": "BLOCKED", "admin_test_account": "BLOCKED", "isolation": "BLOCKED"},
+    "REFERRAL": {"live_attribution": "BLOCKED", "commission_live": "NOT_OBSERVED"},
+    "PAYMENT": {"real_payment": "NO", "chariow_write": "NO"},
+    "IA": {"modified": "NO", "production_betting_signal": "NO"},
+    "GIT": {"commit_created": "NO", "push_performed": "NO"},
+    "VERDICT": "NEEDS_FIXES",
+    "NEXT_HUMAN_ACTION": "Uploader (écraser) UNIQUEMENT le fichier frontend-design/api.js (8122 octets, commit ebb23ec) dans public_html/ sur Hostinger — c'est le seul fichier manquant/obsolète parmi tout le lot déjà uploadé. Aucun autre fichier n'a besoin d'être retouché."
+  },
+
+  "closing_statement": "PHASE 14.9 — XFOOT FRONTEND PRODUCTION VERIFICATION + AUTHENTICATED REFERRAL SMOKE TEST V1 TERMINÉE. LE FRONTEND EST DÉPLOYÉ ET LA MAJORITÉ DES VÉRIFICATIONS READ-ONLY SONT CONCLUANTES (HTACCESS, CORS, ROUTES PROTÉGÉES, SÉCURITÉ WEBHOOK), MAIS UNE ANOMALIE RÉELLE ET REPRODUCTIBLE A ÉTÉ DÉCOUVERTE : LE FICHIER api.js N'A PAS ÉTÉ MIS À JOUR, CASSANT LA CONNEXION/INSCRIPTION ET LE CHARGEMENT DU CONTENU PRINCIPAL SUR L'ENSEMBLE DU SITE. AUCUN COMPTE CRÉÉ. AUCUN PAIEMENT RÉEL EFFECTUÉ. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. LE TEST DE PAIEMENT RÉEL RESTE SOUMIS À UNE AUTORISATION HUMAINE SÉPARÉE, ET NE PEUT DE TOUTE FAÇON PAS ÊTRE ENVISAGÉ TANT QUE CETTE ANOMALIE N'EST PAS CORRIGÉE."
+}

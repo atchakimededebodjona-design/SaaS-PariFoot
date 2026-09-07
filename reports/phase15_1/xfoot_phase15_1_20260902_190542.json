@@ -1,0 +1,159 @@
+{
+  "phase": "15.1",
+  "title": "XFOOT — INTÉGRATION DES NOUVELLES OFFRES CHARIOW V1",
+  "generated_at_utc": "2026-09-02T19:05:42Z",
+  "base_commit": "901c4682026e4ed3eec899b60760f214931e2001",
+  "committed": false,
+  "pushed": false,
+
+  "1_offres_avant": [
+    {"plan_key": "monthly", "prix_affiche_fcfa": 1000, "duree": "1 mois", "product_id_env": "CHARIOW_PRODUCT_ID_MONTHLY (valeur réelle jamais affichée)"},
+    {"plan_key": "yearly", "prix_affiche_fcfa": 10000, "duree": "1 an", "product_id_env": "CHARIOW_PRODUCT_ID_YEARLY (valeur réelle jamais affichée)"}
+  ],
+  "2_offres_apres": [
+    {"plan_key": "biweekly", "prix_fcfa": 1000, "duree_jours": 14, "checkout_url_officielle": "https://jrykbuks.mychariow.co/prd_1gje3jzz", "product_id_extrait": "prd_1gje3jzz", "product_id_env": "CHARIOW_PRODUCT_ID_BIWEEKLY (nouvelle variable)"},
+    {"plan_key": "monthly", "prix_fcfa": 1500, "duree": "1 mois", "checkout_url_officielle": "https://jrykbuks.mychariow.co/prd_sgvapilx", "product_id_extrait": "prd_sgvapilx", "product_id_env": "CHARIOW_PRODUCT_ID_MONTHLY (à reconfigurer, voir §9)"},
+    {"plan_key": "yearly", "prix_fcfa": 28000, "duree": "1 an", "checkout_url_officielle": "https://jrykbuks.mychariow.co/prd_f90jpbh3", "product_id_extrait": "prd_f90jpbh3", "product_id_env": "CHARIOW_PRODUCT_ID_YEARLY (à reconfigurer, voir §9)"}
+  ],
+
+  "3_mapping_exact_plan_url": {
+    "biweekly": "https://jrykbuks.mychariow.co/prd_1gje3jzz",
+    "monthly": "https://jrykbuks.mychariow.co/prd_sgvapilx",
+    "yearly": "https://jrykbuks.mychariow.co/prd_f90jpbh3",
+    "aucune_url_inversee": true,
+    "aucun_identifiant_invente": true
+  },
+
+  "4_decision_architecturale_critique": {
+    "constat": "Le backend Xfoot n'utilise JAMAIS de lien de checkout statique. Le flux existant (POST /billing/checkout) collecte les informations client (nom/téléphone) puis appelle DYNAMIQUEMENT l'API Chariow (POST /checkout) avec un product_id, qui renvoie une checkout_url PERSONNALISÉE par session — c'est ce mécanisme qui permet l'attribution referral (custom_metadata={'user_id':..., 'plan':...}).",
+    "risque_identifie": "Faire pointer les boutons DIRECTEMENT vers les 3 URLs statiques fournies (interprétation littérale possible de l'énoncé) aurait COMPLÈTEMENT CASSÉ le système de parrainage/commission construit en Phase 14 : sans passer par notre backend, aucun custom_metadata.user_id n'est jamais envoyé à Chariow, donc _handle_successful_sale ne pourrait plus jamais identifier quel utilisateur Xfoot a payé, donc AUCUNE commission ne pourrait plus jamais être générée pour AUCUN promoteur.",
+    "decision_prise": "Les 3 URLs officielles ont été traitées comme la SOURCE des Product ID Chariow (le segment 'prd_XXXX' de chaque URL) — ces Product ID sont configurés dans le mécanisme dynamique EXISTANT (PRODUCT_IDS dans chariow_config.py), sans créer de second système de pricing, conformément à la consigne explicite 'ne pas créer un deuxième système de pricing parallèle' et à l'interdiction de toucher à la logique de commission.",
+    "convention_utilisee": "Le segment final d'une URL Chariow de la forme https://{store}.mychariow.co/{product_id} correspond, par convention standard de cette plateforme, exactement au product_id attendu par l'API POST /checkout déjà utilisée dans ce projet — inférence documentée explicitement, non vérifiée par un appel réseau réel à l'API Chariow cette phase (aucun appel Chariow autorisé), à confirmer par l'humain avant tout paiement réel (voir §12 Limitations)."
+  },
+
+  "5_fichiers_modifies": {
+    "backend": [
+      {"fichier": "api/app/core/chariow_config.py", "changement": "Ajout de la clé 'biweekly' à PRODUCT_IDS (nouvelle variable CHARIOW_PRODUCT_ID_BIWEEKLY) + documentation des 3 offres et de leurs Product ID dans le docstring."},
+      {"fichier": "api/app/billing/router.py", "changement": "Commentaire du champ CheckoutRequest.plan mis à jour ('biweekly, monthly ou yearly') — AUCUN changement fonctionnel, la validation reste dynamique contre PRODUCT_IDS."},
+      {"fichier": "api/.env.example", "changement": "Ajout de CHARIOW_PRODUCT_ID_BIWEEKLY=REPLACE_WITH_YOUR_BIWEEKLY_PRODUCT_ID + documentation des 3 offres (fichier modèle, aucune vraie valeur)."}
+    ],
+    "frontend": [
+      {"fichier": "frontend-design/billing.html", "changement": "3 cartes de plan (2 semaines/mensuel/annuel) avec les nouveaux prix ; suppression du badge 'Économisez 2 mois' (voir §6, devenu mathématiquement faux)."},
+      {"fichier": "frontend-design/vip.html", "changement": "Section WEB (aperçu, redirige vers billing.html) alignée sur les mêmes 3 offres pour cohérence — non explicitement demandé par l'Étape 3 mais nécessaire pour l'Objectif final ('Xfoot doit proposer exactement' ces 3 offres partout où elles sont montrées). Section ANDROID (Google Play Billing) non touchée, prix toujours dynamiques."}
+    ],
+    "tests": [{"fichier": "api/test_phase15_1_new_offers.py", "nouveau": true, "contenu": "9 scénarios / 17 assertions — voir §8."}],
+    "aucun_fichier_backend_logique_paiement_modifie_au_dela_du_commentaire": true,
+    "aucun_fichier_referral_commission_modifie": true,
+    "aucun_fichier_ia_modifie": true
+  },
+
+  "6_correction_factuelle_necessaire_badge_economies": {
+    "constat": "Le badge 'Économisez 2 mois' sur le plan Annuel était justifié par l'ancienne tarification (10000 FCFA/an vs 1000×12=12000 FCFA en mensuel — économie réelle). Avec la nouvelle tarification, 28000 FCFA/an EST SUPÉRIEUR à 1500×12=18000 FCFA en mensuel — il n'y a donc PLUS d'économie, le badge serait devenu une affirmation commerciale fausse.",
+    "action": "Badge supprimé des deux fichiers (billing.html et vip.html) — correction factuelle nécessaire à la cohérence, pas une simplification arbitraire.",
+    "aucune_nouvelle_affirmation_commerciale_inventee": true
+  },
+
+  "7_commissions_theoriques": {
+    "formule_inchangee": "commission = floor(gross_paid_amount × commission_rate_bp / 10000) — app/referral/money.py, 0 ligne modifiée",
+    "biweekly": {"montant_paye_fcfa": 1000, "commission_attendue_fcfa": 400, "verifie_par_test": true},
+    "monthly": {"montant_paye_fcfa": 1500, "commission_attendue_fcfa": 600, "verifie_par_test": true},
+    "yearly": {"montant_paye_fcfa": 28000, "commission_attendue_fcfa": 11200, "verifie_par_test": true},
+    "aucune_commission_reelle_generee_cette_phase": true,
+    "aucune_commission_historique_modifiee": true
+  },
+
+  "8_tests": {
+    "nouveau_fichier": "api/test_phase15_1_new_offers.py",
+    "scenarios": 9,
+    "assertions": 17,
+    "resultat": "17/17 réussis",
+    "checklist_couverte": [
+      "[x] plan 2 semaines reconnu -> bon Product ID (prd_1gje3jzz)",
+      "[x] plan mensuel reconnu -> bon Product ID (prd_sgvapilx)",
+      "[x] plan annuel reconnu -> bon Product ID (prd_f90jpbh3)",
+      "[x] commission théorique 400 FCFA (biweekly)",
+      "[x] commission théorique 600 FCFA (monthly)",
+      "[x] commission théorique 11200 FCFA (yearly)",
+      "[x] plan inconnu (ex. faute de frappe/ancienne clé hypothétique) -> toujours 400, jamais une offre par défaut",
+      "[x] aucune commission réelle générée par les tests de cette phase (0 ligne ReferralCommission dans la base de test isolée)",
+      "[ ] durée 14 jours / 1 mois / 1 an — NON TESTABLE côté Xfoot : confirmé par lecture de code (§4 de la Phase 15.1, section audit) que la durée n'est JAMAIS calculée par Xfoot — current_period_end vient exclusivement de expires_at renvoyé par Chariow (license.activated), donc entièrement déterminée par la configuration du produit dans le dashboard Chariow lui-même, hors de portée du code Xfoot",
+      "[x] aucune ancienne offre utilisée par erreur pour les nouveaux achats — test_unknown_plan_still_rejected_400 + les 3 tests de routage produit_id confirment un mapping strict clé->product_id, aucun repli implicite",
+      "[x] aucun ancien abonnement modifié — 0 ligne de code touchant ProviderSubscription/le webhook/l'activation ; réutilisé de la suite existante",
+      "[x] aucune ancienne transaction modifiée — idem, aucune migration, aucune écriture DB effectuée par cette phase (base de test isolée uniquement)",
+      "[x] logique webhook intacte — 0 ligne modifiée dans _handle_successful_sale/_handle_license_activated/_verify_pulse_signature",
+      "[x] idempotence intacte — mécanisme inchangé (ProcessedPulseDelivery + UniqueConstraint), déjà couvert par test_chariow_billing.py::test_pulse_dedup_on_delivery_id, réutilisé sans réimplémentation",
+      "[x] remboursement/réversion intact — reverse_commissions_for_subscription() non modifiée",
+      "[x] isolation Admin/Promoteur intacte — 0 ligne modifiée dans require_admin/get_current_promoter",
+      "[x] sécurité checkout intacte — le backend continue de dériver product_id exclusivement depuis PRODUCT_IDS[body.plan] (jamais un montant/URL fourni par le client) ; body.plan reste une simple clé de lookup, jamais un prix"
+    ],
+    "regression_complete": {"TOTAL": 65, "PASSED": 65, "FAILED": 0, "SKIPPED": 0, "note": "64 fichiers préexistants + le nouveau test_phase15_1_new_offers.py, tous verts."},
+    "js_syntax_check": {"billing.html": "OK", "vip.html": "OK"},
+    "http_serving_local": {"billing.html": 200, "vip.html": 200}
+  },
+
+  "9_verification_liens": {
+    "methode": "GET simple (curl), aucune interaction financière, aucun formulaire soumis",
+    "https_jrykbuks_mychariow_co_prd_1gje3jzz": {"http_code": 200, "reachable": true},
+    "https_jrykbuks_mychariow_co_prd_sgvapilx": {"http_code": 200, "reachable": true},
+    "https_jrykbuks_mychariow_co_prd_f90jpbh3": {"http_code": 200, "reachable": true},
+    "aucun_bouton_de_paiement_clique": true,
+    "aucune_transaction_declenchee": true
+  },
+
+  "10_compatibilite_historique": {
+    "anciennes_offres_chariow_supprimees": false,
+    "anciens_abonnements_modifies": false,
+    "anciennes_transactions_modifiees": false,
+    "anciennes_commissions_recalculees": false,
+    "preuve": "Aucune migration créée ni exécutée. Aucun code touchant ProviderSubscription, ReferralCommission, ou tout mécanisme d'activation/expiration n'a été modifié — seuls chariow_config.py (mapping plan->Product ID) et un commentaire dans billing/router.py ont changé côté backend. Le changement est purement CATALOGUE (quelles offres sont proposées pour un NOUVEL achat), jamais rétroactif."
+  },
+
+  "11_etat_production": {
+    "value": "IMPLEMENTED_WITH_EXTERNAL_DEPLOYMENT_PENDING",
+    "code_local": "Modifié et testé, non committé (autorisation humaine requise avant commit, conformément à la règle absolue de cette phase).",
+    "production_actuelle": "INCHANGÉE — aucune modification n'a été déployée ; www.xfoot.site/billing.html continue d'afficher les anciennes offres (1000/mois, 10000/an) tant qu'aucun upload Hostinger n'a eu lieu.",
+    "jamais_declare_actif_en_production": true,
+    "upload_hostinger_necessaire": {
+      "fichiers_a_uploader": ["frontend-design/billing.html", "frontend-design/vip.html"],
+      "rappel_explicite": "Le commit Git seul NE SUFFIT PAS à mettre ces fichiers en production — Hostinger n'a aucun mécanisme d'auto-déploiement (établi de façon répétée, Phases 14.8R/14.9R/14.15) : un upload MANUEL via hPanel (Gestionnaire de fichiers ou FTP) vers public_html/ est requis, exactement comme pour les hotfix précédents.",
+      "railway_backend": "Le changement de api/app/core/chariow_config.py et api/app/billing/router.py sera déployé automatiquement par Railway UNIQUEMENT après un git push (non effectué cette phase) — Railway se redéploie sur push, contrairement à Hostinger."
+    }
+  },
+
+  "12_preuves_absolues": {
+    "aucun_paiement_reel": {"confirme": true, "preuve": "Aucun appel réseau vers l'API Chariow (POST /checkout) ni vers les pages de checkout n'a été effectué avec de vraies informations de paiement — seules 3 requêtes GET simples vers les pages produit (§9) et des appels mockés dans les tests (aucun réseau réel, même discipline que test_chariow_billing.py)."},
+    "aucun_compte_cree": {"confirme": true, "preuve": "Les comptes 'phase15_1_test_*' créés par le nouveau fichier de test vivent exclusivement dans une base SQLite isolée (test_phase15_1_new_offers.db, supprimée après exécution), jamais api/app.db ni la production."},
+    "aucune_donnee_historique_modifiee": {"confirme": true, "preuve": "0 ligne de code touchant ProviderSubscription/ReferralCommission/ReferralAttribution ; aucune migration ; git diff limité à 5 fichiers (mapping catalogue + affichage) + 1 nouveau fichier de test."},
+    "tables_ia_6": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "identiques": true
+    },
+    "app_ai_modifie": false,
+    "shadow_readiness_kill_switch_modifies": false
+  },
+
+  "13_limitations": [
+    "L'inférence 'segment final de l'URL = Product ID Chariow attendu par l'API /checkout' (§4) N'A PAS été vérifiée par un appel réseau réel à Chariow cette phase (interdit) — à confirmer par l'humain (ex. en consultant le dashboard Chariow, section Produits) avant de configurer CHARIOW_PRODUCT_ID_* en production et avant tout paiement réel.",
+    "Le prix affiché sur les pages produit Chariow elles-mêmes n'a pas pu être extrait/confirmé par la simple requête GET (probablement un rendu JavaScript côté client, hors de portée d'une vérification curl) — les prix utilisés (1000/1500/28000 FCFA) sont ceux fournis explicitement par l'utilisateur dans l'énoncé de cette phase, jamais déduits ni inventés.",
+    "Aucun déploiement production n'a eu lieu (ni Railway via push, ni Hostinger via upload manuel) — voir §11.",
+    "CHARIOW_PRODUCT_ID_MONTHLY/_YEARLY devront être RECONFIGURÉS sur Railway avec les nouveaux Product ID (prd_sgvapilx/prd_f90jpbh3) — leurs valeurs actuelles en production correspondent aux ANCIENNES offres et n'ont pas été touchées par cette phase (aucun accès Railway)."
+  ],
+
+  "14_git": {
+    "fichiers_modifies": ["api/.env.example", "api/app/billing/router.py", "api/app/core/chariow_config.py", "frontend-design/billing.html", "frontend-design/vip.html"],
+    "fichiers_nouveaux": ["api/test_phase15_1_new_offers.py"],
+    "diff_stat": "5 files changed, 41 insertions(+), 13 deletions(-)",
+    "diff_check": "Aucune erreur d'espace/format détectée",
+    "commit_effectue": false,
+    "push_effectue": false,
+    "en_attente_autorisation_humaine": true
+  },
+
+  "verdict_final": {
+    "value": "IMPLEMENTED_WITH_EXTERNAL_DEPLOYMENT_PENDING",
+    "rationale": "Les 3 nouvelles offres sont intégrées dans le code (backend : mapping plan->Product ID étendu sans nouveau système ; frontend : billing.html et vip.html affichent exactement les 3 offres avec les bons prix) et validées par 65/65 tests (dont 17 assertions dédiées Phase 15.1, régression complète 0 échec). Aucune donnée historique, commission, ou table IA n'a été touchée. AUCUN déploiement n'a cependant eu lieu — ni push Git (Railway), ni upload manuel (Hostinger) — donc la production continue de servir les ANCIENNES offres tant que ces deux actions humaines n'ont pas eu lieu. Une décision architecturale critique a été prise et documentée explicitement (§4) : réutiliser le mécanisme de checkout dynamique existant plutôt que des liens statiques, pour préserver le système de commission déjà construit."
+  },
+
+  "closing_statement": "PHASE 15.1 — INTÉGRATION DES NOUVELLES OFFRES CHARIOW V1 : CODE IMPLÉMENTÉ ET TESTÉ (65/65), EN ATTENTE DE DÉPLOIEMENT EXTERNE (GIT PUSH + UPLOAD HOSTINGER) ET D'AUTORISATION HUMAINE POUR LE COMMIT. AUCUN PAIEMENT RÉEL, AUCUN COMPTE CRÉÉ, AUCUNE DONNÉE HISTORIQUE MODIFIÉE, AUCUNE COMMISSION RÉELLE GÉNÉRÉE, AUCUNE MODIFICATION DU MOTEUR IA NI DES 6 TABLES IA PROTÉGÉES. AUCUN COMMIT, AUCUN PUSH."
+}

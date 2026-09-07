@@ -1,0 +1,62 @@
+{
+  "phase": "15.6 — ÉTAPE 2",
+  "title": "ATTRIBUTION VIA LE LIEN PROMOTEUR",
+  "generated_at_utc": "2026-09-02T20:34:00Z",
+
+  "1_acheteur": {"email": "payment@test.com", "user_id": 209, "source": "relayé par l'utilisateur en Étape 1, non vérifié techniquement par cet assistant (aucun accès admin/DB)"},
+  "2_promoteur": {"slug": "promoter-2", "user_id": 206, "status": "ACTIVE (re-confirmé techniquement en Étape 1 via endpoint public)"},
+  "3_url_referral_utilisee": "https://www.xfoot.site/promoter-2",
+
+  "4_attribution": {
+    "statut": "NOT_OBSERVABLE_BY_ASSISTANT",
+    "raison": "Établir une attribution réelle exige (a) une session navigateur authentifiée en tant que payment@test.com, (b) l'exécution du JS client (captureReferralFromUrl/attributeReferralIfPresent, frontend-design/api.js), (c) un appel POST /referral/attribute avec un token valide. Cet assistant n'a ni outil de navigateur, ni identifiants/token pour payment@test.com cette session — structurellement incapable d'exécuter ces étapes lui-même."
+  },
+
+  "5_preuve_exacte_observee": {
+    "resolution_url_promoteur": {
+      "methode": "curl -i -L https://www.xfoot.site/promoter-2 (lecture seule, aucune connexion)",
+      "resultat": "HTTP 200, contenu = login.html ('xFoot - Connexion'), AUCUNE redirection HTTP 30x — confirme la réécriture .htaccess interne fonctionne comme documenté",
+      "limite": "Ceci prouve que le MÉCANISME D'ACCÈS à l'URL referral fonctionne, PAS que l'attribution serveur a été créée (qui nécessite login + appel POST /referral/attribute, invisibles à un simple GET/curl)"
+    },
+    "resolution_slug_publique_reconfirmee": {
+      "methode": "POST https://api.xfoot.site/referral/resolve/promoter-2 avec body={} (déjà exécuté en Étape 1, non ré-exécuté ici pour éviter un appel redondant)",
+      "resultat_etape1": {"valid": true},
+      "portee": "Confirme slug existant + ACTIVE, ne prouve aucune attribution à un utilisateur particulier"
+    },
+    "aucune_autre_preuve_obtenue": true
+  },
+
+  "6_etat_avant_paiement": {
+    "abonnement_payment_test_com": "NOT_VERIFIABLE (pas d'accès à GET /billing/subscription sans token de ce compte)",
+    "vente": "NOT_VERIFIABLE (pas d'accès admin/promoteur)",
+    "commission": "NOT_VERIFIABLE (idem)",
+    "note": "L'énoncé de contexte de cette étape indique '0 ventes / 0 FCFA commission' — information relayée par l'utilisateur, retenue mais non re-vérifiée techniquement par cet assistant cette étape faute d'accès."
+  },
+
+  "7_checkout": {
+    "atteint": "NO — non tenté par cet assistant (nécessite une session authentifiée payment@test.com, absente cette session)",
+    "product_id": "NOT_OBSERVED",
+    "montant": "NOT_OBSERVED",
+    "paiement_effectue": false
+  },
+
+  "8_modifications": {
+    "compte": false,
+    "DB": false,
+    "Chariow": false,
+    "abonnement": false,
+    "commission": false
+  },
+
+  "9_limitations": [
+    "Aucun outil de navigateur disponible pour cet assistant — impossible de se connecter comme payment@test.com, d'observer le localStorage/JS client, ou de naviguer jusqu'au checkout.",
+    "Aucun token/identifiant pour payment@test.com, promoter-2, ou un compte admin cette session — impossible d'interroger les endpoints authentifiés (GET /billing/subscription, GET /promoter/me/*, GET /admin/*).",
+    "La seule vérification techniquement possible cette étape est la résolution HTTP de l'URL referral (confirmée) et la validité publique du slug (confirmée en Étape 1) — l'attribution effective côté serveur pour CE compte précis reste non observée par cet assistant.",
+    "Un relais humain (exécution du parcours dans un vrai navigateur + lecture des dashboards) est nécessaire pour compléter cette étape."
+  ],
+
+  "verdict": {
+    "value": "ATTRIBUTION_PRE_PAYMENT_NOT_OBSERVABLE",
+    "rationale": "Non pas parce que le mécanisme est cassé, mais parce que cet assistant n'a techniquement aucun moyen d'exécuter les actions requises (connexion utilisateur, navigation JS, appel authentifié) sans un navigateur ou des identifiants qui ne lui ont pas été fournis cette session. Le mécanisme d'URL lui-même (résolution .htaccess + endpoint public de résolution de slug) fonctionne correctement, ce qui est un signal positif indirect, mais insuffisant pour cocher les critères stricts de PASS de cette étape (attribution effectivement établie ET démontrée)."
+  }
+}

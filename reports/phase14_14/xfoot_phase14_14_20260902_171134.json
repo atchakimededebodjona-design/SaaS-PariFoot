@@ -1,0 +1,105 @@
+{
+  "phase": "14.14",
+  "title": "XFOOT — VALIDATION USER_ID + PROMOTEUR EXISTANT + COHÉRENCE ADMIN",
+  "generated_at_utc": "2026-09-02T17:11:34Z",
+  "local_commit": "901c4682026e4ed3eec899b60760f214931e2001",
+  "pushed": false,
+
+  "0_constat_bloquant_initial": {
+    "titre": "La colonne USER ID (Phase 14.13) n'est PAS déployée sur www.xfoot.site",
+    "preuve": "GET https://www.xfoot.site/admin-subscribers.html — recherche de 'USER ID'/'fmtUserId'/'copy-user-id-btn' dans le HTML servi : 0 correspondance. En-tête Last-Modified : 'Tue, 01 Sep 2026 21:34:20 GMT' — identique à l'upload du 1er septembre (Phase 14.9R.2), antérieur au commit local 901c468 (Phase 14.13, réalisé après ce lot d'upload).",
+    "cause": "Le commit 901c468 existe uniquement en local (jamais push, confirmé) — et même s'il avait été poussé, Hostinger ne déploie jamais automatiquement le frontend (upload manuel requis via hPanel, établi de façon définitive en Phase 14.8R : dernier upload confirmé du 1er septembre, aucun mécanisme CI/CD).",
+    "consequence": "L'objectif central de cette phase ('valider EN PRODUCTION que la colonne USER ID permet d'identifier un utilisateur') est structurellement impossible à satisfaire dans son état actuel — pas un défaut du code (déjà vérifié IMPLEMENTED_AND_TESTED en Phase 14.13), un fait de déploiement.",
+    "action_humaine_necessaire": "Uploader manuellement frontend-design/admin-subscribers.html (version du commit 901c468) vers public_html/ sur Hostinger, comme fait précédemment pour le hotfix api.js (Phase 14.9R.2)."
+  },
+
+  "1_verifications_1_a_3_admin_test_ui": {
+    "value": "BLOCKED",
+    "raison": "Directement dépendant du constat §0 — la colonne USER ID n'existe pas encore dans la page réellement servie, aucune vérification visuelle/fonctionnelle par ADMIN_TEST n'est possible sur la fonctionnalité elle-même.",
+    "colonne_user_id_presente_en_production": false,
+    "verification_valeurs_exactes": "NON EFFECTUÉE — impossible tant que la colonne n'est pas en ligne",
+    "test_bouton_copier": "NON EFFECTUÉ — impossible tant que la colonne n'est pas en ligne",
+    "note": "Le CODE lui-même (local, commit 901c468) a déjà été revu et testé exhaustivement en Phase 14.13 : rendu direct de s.user_id sans transformation, bouton copier réutilisant le pattern existant — ceci reste valable, seule la PRÉSENCE EN PRODUCTION n'est pas vérifiable actuellement."
+  },
+
+  "2_identification_promoter_test_dans_la_liste": {"value": "BLOCKED", "raison": "Dépend de §1 — la page listant les abonnés avec user_id n'est pas accessible avec la nouvelle colonne."},
+
+  "3_comparaison_avec_user_id_206_connu": {"value": "BLOCKED", "raison": "Dépend de §1/§2."},
+
+  "4_promoter_2_toujours_active": {
+    "value": "VERIFIED (READ-ONLY)",
+    "methode": "POST https://api.xfoot.site/referral/resolve/promoter-2 (sans visitor_id, donc sans écriture DB)",
+    "resultat": {"valid": true, "http_code": 200},
+    "interpretation": "promoter-2 reste ACTIVE — aucune modification n'a eu lieu depuis la Phase 14.11/14.12."
+  },
+
+  "5_dashboard_promoteur": {
+    "value": "NOT_RE_VERIFIED_THIS_PHASE",
+    "raison": "Nécessiterait une reconnexion authentifiée de PROMOTER_TEST (règle absolue : ne jamais demander de mot de passe/token). L'agent n'a pas sollicité l'humain pour ce test spécifique cette phase, considérant que le fait bloquant §0 rend la comparaison croisée sans objet pour l'instant.",
+    "derniere_valeur_connue": "Phase 14.11 (HUMAN-VERIFIED) : slug=promoter-2, lien=https://www.xfoot.site/promoter-2, visiteurs=0, inscriptions=0, convertis=0, ventes=0, revenu=0, commission=0 — aucune raison structurelle de penser que ces valeurs ont changé (aucun paiement, aucune attribution nouvelle n'a eu lieu entre les deux phases, confirmé par §4 et l'absence de toute action d'écriture)."
+  },
+
+  "6_admin_gains": {
+    "value": "NOT_RE_VERIFIED_THIS_PHASE",
+    "raison": "Même limitation que §5 — nécessiterait une session ADMIN_TEST active.",
+    "derniere_valeur_connue": "Phase 14.11/14.12 (HUMAN-VERIFIED puis reconfirmé par lecture de code) : 0 vente attribuée, 0 revenu, 0 commission pour promoter-2 — cohérent avec l'absence de toute transaction entre les phases."
+  },
+
+  "7_absence_nouvelle_exposition_user_id": {
+    "value": "VERIFIED",
+    "preuve": "Revue de code déjà faite en Phase 14.13, reconfirmée : aucune nouvelle route créée, user_id visible uniquement dans la réponse JSON de GET /admin/subscribers (déjà protégée par require_admin, inchangée) et dans une page qui échoue systématiquement pour un appelant non-admin. Le fait que la page ne soit pas encore déployée en production ne change rien à cette analyse de sécurité côté code."
+  },
+
+  "8_isolation_reconfirmee": {
+    "non_admin_vers_admin_subscribers": {"resultat": 401, "statut": "VERIFIED (read-only, sans authentification — équivalent structurel du cas non-admin, la route rejette avant même de vérifier le rôle)"},
+    "non_admin_vers_admin_promoters": {"resultat": 401, "statut": "VERIFIED"},
+    "non_promoteur_vers_promoter_html": {"value": "NOT_RE_TESTED_THIS_PHASE_LIVE", "reference": "Déjà vérifié réellement en Phase 14.11 (message « Ce compte n'est pas un compte promoteur. » avec ADMIN_TEST) — code inchangé depuis, aucune raison de régression."},
+    "promoteur_vers_admin_promoters": {"value": "NOT_RE_TESTED_THIS_PHASE_LIVE", "reference": "Déjà vérifié réellement en Phase 14.11 (403, « Accès réservé aux administrateurs. » avec PROMOTER_TEST) — code inchangé depuis."},
+    "sans_authentification": {"promoter_me": 401, "admin_promoters": 401, "admin_subscribers": 401, "statut": "VERIFIED — reconfirmé réellement cette phase"}
+  },
+
+  "9_regression": {
+    "TOTAL": 64, "PASSED": 64, "FAILED": 0, "SKIPPED": 0,
+    "note": "Nombre inchangé depuis Phase 14.13 — aucune nouvelle suite de test n'a été ajoutée (aucune modification backend depuis)."
+  },
+
+  "10_tables_ia": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identiques": true
+  },
+
+  "11_etat_chariow_paiement": {"value": "NON TOUCHÉ", "aucun_appel_ecriture": true, "aucun_checkout": true, "aucune_transaction": true},
+
+  "12_git": {
+    "HEAD": "901c4682026e4ed3eec899b60760f214931e2001",
+    "commit_message": "feat: show user_id in admin subscribers list",
+    "pushed": false,
+    "fichiers_modifies_depuis_phase_14_13": {
+      "aucun_fichier_de_code_modifie": true,
+      "seuls_fichiers_M_presents": ["api/app/ai/readiness/gates.py (Phase 13, pré-existant, étranger)", "reports/shadow/watch/evidence_snapshots.json (log généré, étranger)"],
+      "nouveaux_fichiers_untracked": "Uniquement des rapports (reports/phase*/) et des fichiers de recherche Phase 9-13 déjà connus, aucun code."
+    },
+    "commit_effectue_cette_phase": false,
+    "push_effectue_cette_phase": false
+  },
+
+  "13_limitations": [
+    "BLOCAGE PRINCIPAL : la colonne USER ID n'est pas déployée en production — impossible de valider visuellement/fonctionnellement avec ADMIN_TEST tant qu'un upload manuel Hostinger n'a pas eu lieu.",
+    "Dashboard Promoteur et onglet Gains non re-vérifiés en direct cette phase (aucune sollicitation de reconnexion humaine pour des valeurs déjà connues et sans raison de changement).",
+    "Isolation Promoteur<->Admin non re-testée en conditions authentifiées réelles cette phase (réutilisée de Phase 14.11, code inchangé)."
+  ],
+
+  "verdict_final": {
+    "value": "BLOCKED",
+    "rationale": "L'objectif central de cette phase — valider EN PRODUCTION la colonne USER ID — ne peut pas être atteint car cette fonctionnalité n'est pas encore déployée sur Hostinger (le commit local 901c468 n'a jamais été poussé, et Hostinger n'a de toute façon aucun mécanisme d'auto-déploiement). Ce n'est PAS un défaut de code — la Phase 14.13 a déjà validé IMPLEMENTED_AND_TESTED sur la base d'une revue de code et de tests locaux rigoureux. Tout ce qui restait vérifiable indépendamment du déploiement frontend a été confirmé : promoter-2 toujours ACTIVE, isolation non-authentifiée intacte (401 sur les 3 routes testées), 64/64 régression verte, 6 tables IA strictement identiques, aucun fichier de code modifié depuis la Phase 14.13, aucun appel Chariow, rien committé ni poussé cette phase."
+  },
+
+  "action_humaine_requise": [
+    "1. Uploader manuellement frontend-design/admin-subscribers.html (version du commit local 901c468) vers public_html/ sur Hostinger — même procédure que pour le hotfix api.js (Phase 14.9R.2).",
+    "2. Revenir vers l'agent pour relancer la validation (Étapes 1-3 de cette phase) une fois la colonne réellement visible en production.",
+    "3. Décider séparément si le commit 901c468 doit être poussé vers origin/main (aucune urgence technique — le backend n'est pas concerné par ce changement)."
+  ],
+
+  "closing_statement": "PHASE 14.14 — VALIDATION USER_ID + PROMOTEUR EXISTANT + COHÉRENCE ADMIN TERMINÉE AVEC BLOCAGE DE DÉPLOIEMENT. LA COLONNE USER_ID (COMMIT LOCAL 901c468) N'EST PAS ENCORE EN LIGNE SUR HOSTINGER — VALIDATION EN PRODUCTION IMPOSSIBLE À CE STADE, FAIT DE DÉPLOIEMENT ET NON DÉFAUT DE CODE. PROMOTER-2 CONFIRMÉ TOUJOURS ACTIVE, ISOLATION NON-AUTHENTIFIÉE RECONFIRMÉE, 64/64 RÉGRESSION VERTE, 6 TABLES IA INCHANGÉES. AUCUN PAIEMENT, AUCUN APPEL CHARIOW, AUCUNE MODIFICATION DE CODE. AUCUN COMMIT, AUCUN PUSH CETTE PHASE."
+}

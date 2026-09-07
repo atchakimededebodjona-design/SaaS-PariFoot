@@ -1,0 +1,192 @@
+{
+  "phase": "15.5",
+  "title": "XFOOT — POST-DÉPLOIEMENT : OFFRES V15 + NON-RÉGRESSION DES ABONNEMENTS EXISTANTS",
+  "generated_at_utc": "2026-09-02T20:05:00Z",
+
+  "1_git_sha": {
+    "HEAD": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "sha_court": "eeb01ec",
+    "commit_scope_verifie": [
+      "api/.env.example", "api/app/billing/router.py", "api/app/core/chariow_config.py",
+      "api/test_phase15_1_new_offers.py", "frontend-design/billing.html", "frontend-design/vip.html"
+    ],
+    "scope_limite_au_pricing": true,
+    "aucun_commit_cree_cette_phase": true,
+    "aucun_push_effectue": true
+  },
+
+  "2_origin_main": {
+    "git_ls_remote": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "correspond_a_HEAD_local": true
+  },
+
+  "3_etat_railway": {
+    "GET https://api.xfoot.site/health": {"status_code": 200, "body_status": "ok"},
+    "endpoint_version_existe": false,
+    "limite_honnete": "Aucun endpoint de version/commit n'existe côté backend. Le SHA exact du processus Railway en cours d'exécution ne peut PAS être prouvé positivement par HTTP — seule la santé du service (200, réponses cohérentes) est vérifiable. Aucune preuve de déploiement inventée."
+  },
+
+  "4_etat_hostinger": {
+    "billing_html": {
+      "url": "https://www.xfoot.site/billing.html",
+      "status_code": 200,
+      "last_modified": "Wed, 02 Sep 2026 19:45:39 GMT",
+      "diff_vs_git_show_eeb01ec": "IDENTIQUE (byte-for-byte)",
+      "x_hcdn_cache_status": "DYNAMIC"
+    },
+    "vip_html": {
+      "url": "https://www.xfoot.site/vip.html",
+      "status_code": 200,
+      "last_modified": "Wed, 02 Sep 2026 19:45:39 GMT",
+      "diff_vs_git_show_eeb01ec": "IDENTIQUE (byte-for-byte)",
+      "x_hcdn_cache_status": "DYNAMIC"
+    },
+    "conclusion": "Upload manuel effectué par l'utilisateur entre la Phase 15.4 (19:31 UTC, anciennes offres encore servies) et cette phase (19:45 UTC, nouvelles offres confirmées) — preuve la plus forte utilisée : diff byte-for-byte contre le blob git du commit eeb01ec, identique des deux côtés."
+  },
+
+  "5_prix_visibles_en_production": {
+    "billing_html": ["1000 FCFA", "1500 FCFA", "28000 FCFA"],
+    "vip_html": ["1000 FCFA", "1500 FCFA", "28000 FCFA"],
+    "correspondance_attendue": true
+  },
+
+  "6_disparition_anciennes_offres_interface": {
+    "recherche_10000_FCFA": "AUCUNE OCCURRENCE",
+    "recherche_1000_FCFA_slash_mois": "AUCUNE OCCURRENCE",
+    "confirme": true,
+    "precision": "Il s'agit UNIQUEMENT d'une disparition de PRÉSENTATION COMMERCIALE côté billing.html/vip.html — voir §10 pour la confirmation que les anciens produits Chariow eux-mêmes restent intacts et que rien dans le code Xfoot ne les touche."
+  },
+
+  "7_badge_economisez_2_mois": {
+    "present_en_production": false,
+    "confirme_absent": true
+  },
+
+  "8_architecture_checkout": {
+    "billing_html_utilise_apiFetch_billing_checkout": true,
+    "aucun_lien_statique_mychariow_trouve_dans_billing_html": true,
+    "aucun_lien_statique_mychariow_trouve_dans_vip_html": true,
+    "vip_html_est_une_page_apercu_redirige_vers_billing_html": true,
+    "backend_conserve": {
+      "user_id_dans_custom_metadata": "api/app/billing/router.py:257 — metadata={'user_id': str(current_user.id), 'plan': body.plan}",
+      "controle_prix_cote_serveur": "PRODUCT_IDS[body.plan] envoyé à Chariow — jamais un montant fourni par le client",
+      "securite_webhook": "hmac.compare_digest sur x-chariow-signature, inchangé",
+      "idempotence": "ProcessedPulseDelivery + UniqueConstraint ReferralCommission.source_event_id, inchangés",
+      "commission_apres_confirmation_uniquement": "create_commission_for_confirmed_payment appelée UNIQUEMENT depuis _handle_successful_sale, inchangé"
+    }
+  },
+
+  "9_product_ids": {
+    "biweekly": {"product_id": "prd_1gje3jzz", "prix_attendu": "1000 FCFA / 2 semaines"},
+    "monthly": {"product_id": "prd_sgvapilx", "prix_attendu": "1500 FCFA / 1 mois"},
+    "yearly": {"product_id": "prd_f90jpbh3", "prix_attendu": "28000 FCFA / 1 an"},
+    "verifie_dans": "api/app/core/chariow_config.py:48-52",
+    "aucune_ecriture_chariow_effectuee": true,
+    "note_architecture": "Les clés 'monthly'/'yearly' sont RÉUTILISÉES (pas de 4e clé) — les variables d'environnement CHARIOW_PRODUCT_ID_MONTHLY/_YEARLY portent désormais les NOUVEAUX Product ID pour les NOUVEAUX achats. Ceci n'affecte JAMAIS un ProviderSubscription déjà écrit en base (current_period_end/status/plan proviennent du webhook Chariow au moment de l'achat passé, jamais recalculés depuis PRODUCT_IDS)."
+  },
+
+  "10_non_regression_abonnements_existants": {
+    "modele_donnees_verifie": {
+      "ProviderSubscription": "api/app/models/provider_subscription.py — plan (str libre), status, current_period_end, external_ref (licence Chariow), days_until_expiry — AUCUN champ dérivé de PRODUCT_IDS/catalogue au runtime",
+      "ReferralCommission": "api/app/models/promoter.py — gross_paid_amount, commission_rate_bp, commission_amount ÉCRITS UNE SEULE FOIS à la création (INSERT), jamais recalculés ; seul commission_amount.status peut transitionner ACCRUED->REVERSED"
+    },
+    "recherche_logique_migration_ancien_vers_nouveau_plan": {
+      "resultat": "AUCUNE TROUVÉE",
+      "fichiers_inspectes": [
+        "api/app/billing/router.py (checkout, pulse handlers)",
+        "api/app/billing/backfill.py (migration historique Subscription->ProviderSubscription, one-shot Alembic déjà appliqué, idempotent par skip si ligne déjà existante — ne réécrit jamais une ligne existante)",
+        "api/app/billing/entitlement_service.py (recompute_entitlement — lit ProviderSubscription.status/current_period_end tels quels, n'invente ni ne modifie de prix/plan)",
+        "api/app/referral/commission_service.py (INSERT unique + transition de statut uniquement)",
+        "api/app/referral/money.py (extract_actual_paid_amount — priorise TOUJOURS le montant du webhook ; PLAN_LIST_PRICES est un repli de secours SANS clé 'biweekly' configurée, voir limitation ci-dessous)"
+      ]
+    },
+    "recherche_logique_ancien_prix_vers_nouveau_prix": {"resultat": "AUCUNE TROUVÉE"},
+    "recherche_logique_expiration_automatique_liee_au_catalogue": {"resultat": "AUCUNE TROUVÉE"},
+    "recherche_recalcul_retroactif_commission": {"resultat": "AUCUNE TROUVÉE — ReferralCommission n'a aucun chemin de code UPDATE sur gross_paid_amount/commission_amount, uniquement sur status/reversed_at/reversed_reason lors d'un remboursement réel"},
+    "limitation_identifiee_non_bloquante_pour_regression": "app/referral/money.py::PLAN_LIST_PRICES (repli de secours si le webhook Chariow ne porte AUCUN montant) ne contient que 'monthly'/'yearly' (via REFERRAL_PLAN_PRICE_MONTHLY/_YEARLY), aucune entrée 'biweekly' n'a été ajoutée en Phase 15.1/15.3. Ceci concerne uniquement un scénario de secours pour un FUTUR achat biweekly dont le webhook manquerait de champ montant — n'affecte AUCUN abonnement existant, mais signalé comme point d'attention pour une phase future si ce repli devait être exercé."
+  },
+
+  "11_cas_concrets": {
+    "methode": "Analyse statique du code (aucune modification effectuée) — AUCUN accès direct à la base de données de production (Postgres Railway, pas de credentials), AUCUN compte de test avec un historique d'ancien plan fourni pour cette phase.",
+    "cas_A_ancien_utilisateur_1000_mois": "NOT_EMPIRICALLY_VERIFIED — garanti par absence structurelle de toute logique de modification (voir §10), mais non observé sur un compte réel cette phase",
+    "cas_B_ancien_utilisateur_10000_an": "NOT_EMPIRICALLY_VERIFIED — idem",
+    "cas_C_pas_de_transformation_automatique_vers_nouveau_plan": "CONFIRMÉ PAR ANALYSE STATIQUE — aucun code ne réécrit ProviderSubscription.plan en dehors d'un nouvel achat explicite (POST /billing/checkout) ou d'une activation de licence explicite (POST /billing/activate-license)",
+    "cas_D_ancien_abonnement_expire_non_supprime": "CONFIRMÉ PAR ANALYSE STATIQUE — aucune route DELETE sur ProviderSubscription n'existe dans tout le codebase (vérifié)",
+    "cas_E_ancienne_commission_non_recalculee": "CONFIRMÉ PAR ANALYSE STATIQUE — voir §10, aucun chemin UPDATE sur les montants",
+    "verdict_etape": "HISTORICAL_ACTIVE_SUBSCRIPTION_TEST_BLOCKED",
+    "raison_precise": "Aucun compte de test avec un abonnement historique réel (ancien plan 1000/mois ou 10000/an) n'a été fourni ou n'était accessible en lecture authentifiée pendant cette phase. Le verdict de non-régression repose donc sur une preuve de code statique forte (absence totale de chemin d'écriture susceptible de causer une régression) plutôt que sur une observation empirique directe d'un compte réel affecté."
+  },
+
+  "12_renouvellements_chariow": {
+    "anciens_produits_chariow_touches_par_xfoot": false,
+    "appels_ecriture_externes_dans_billing": [
+      "POST /checkout (crée un lien de paiement, ne modifie aucun produit)",
+      "POST /licenses/{key}/activate (active une licence déjà achetée par le client, ne modifie aucun produit)",
+      "google/verify, google/rtdn (Google Play, sans rapport avec Chariow)"
+    ],
+    "aucun_appel_de_gestion_produit_chariow_dans_le_code": true,
+    "comportement_reel_des_renouvellements_chariow_externes": "NON VÉRIFIABLE — Chariow est un système externe (SaaS tiers) ; Xfoot n'a aucune visibilité sur son comportement interne de renouvellement pour les anciens produits, et aucune API Chariow consultée cette phase ne le documente. Honnêtement documenté comme NON VÉRIFIABLE plutôt que supposé sûr ou dangereux."
+  },
+
+  "13_etat_promoteur_commission": {
+    "formule_verifiee": "commission = floor(gross_paid_amount * commission_rate_bp / 10000) — api/app/referral/money.py:96",
+    "jamais_base_sur_prix_catalogue": true,
+    "jamais_fourni_par_le_client": true,
+    "verifications_mathematiques_theoriques": {
+      "1000_FCFA": {"attendu": 400, "teste_dans": "test_phase15_1_new_offers.py"},
+      "1500_FCFA": {"attendu": 600, "teste_dans": "test_phase15_1_new_offers.py"},
+      "28000_FCFA": {"attendu": 11200, "teste_dans": "test_phase15_1_new_offers.py"}
+    },
+    "aucune_transaction_creee": true,
+    "aucun_appel_chariow_ecriture": true
+  },
+
+  "14_resultats_tests": {
+    "TOTAL_FICHIERS": 65,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "suites_ciblees_reverifiees_individuellement": {
+      "test_referral_promoter_platform.py": "99/99 assertions, exit 0",
+      "test_chariow_billing.py": "30/30 tests, exit 0",
+      "test_phase15_1_new_offers.py": "17/17 assertions, exit 0",
+      "test_phase14_1_production_integration.py": "36/36 tests, exit 0",
+      "test_auth.py": "8/8 tests, exit 0",
+      "test_entitlement.py": "8/8 tests, exit 0",
+      "test_provider_subscription_backfill.py": "4/4 tests, exit 0"
+    },
+    "aucune_regression_detectee": true
+  },
+
+  "15_etat_6_tables_ia": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true,
+    "diff_app_ai_star_dans_commit_eeb01ec": "AUCUN FICHIER app/ai/* PRÉSENT DANS LE COMMIT (scope vérifié §1)"
+  },
+
+  "16_limites_de_verification": [
+    "Aucun endpoint de version/SHA backend — correspondance exacte 'processus Railway en cours = eeb01ec' non prouvable positivement par HTTP, uniquement déduite (push confirmé + /health sain).",
+    "Aucun accès direct à la base de données de production (Postgres Railway) — l'analyse de non-régression des abonnements existants repose sur une lecture STATIQUE du code (garantie structurelle forte), PAS sur une observation empirique d'un compte réel avec un ancien plan.",
+    "Aucun compte de test avec historique d'ancien plan (1000/mois ou 10000/an) fourni cette phase — Cas A/B non empiriquement vérifiés, verdict HISTORICAL_ACTIVE_SUBSCRIPTION_TEST_BLOCKED pour cette sous-étape précise.",
+    "Comportement réel des renouvellements Chariow pour les anciens produits : système externe, non observable depuis le code Xfoot — documenté NON VÉRIFIABLE, jamais supposé.",
+    "PLAN_LIST_PRICES (repli de secours si webhook sans montant) ne couvre pas 'biweekly' — gap mineur signalé, sans impact sur les abonnements existants."
+  ],
+
+  "verdict_final": {
+    "value": "PRICING_DEPLOYED_HISTORICAL_SUBSCRIPTION_CHECK_BLOCKED",
+    "rationale": "Le nouveau pricing (1000/1500/28000 FCFA) est confirmé déployé en production sur billing.html ET vip.html, byte-for-byte identique au commit eeb01ec. Les anciennes offres/badge ont disparu de l'interface. L'architecture checkout backend (user_id, attribution, sécurité webhook, idempotence, commission-après-confirmation) est structurellement inchangée et vérifiée intacte. L'analyse statique du code ne révèle AUCUNE logique de migration/recalcul/expiration automatique susceptible d'affecter un abonnement ou une commission existants — mais cette garantie reste au niveau du CODE, pas d'une observation empirique d'un compte réel historique (aucun accès DB production, aucun compte de test fourni cette phase). Point critique de la Phase 15.5 (§6, Cas A/B) donc marqué BLOCKED plutôt que PASS, par honnêteté méthodologique, malgré l'absence de tout signal de régression."
+  },
+
+  "resume_court": {
+    "frontend_production": "PASS",
+    "nouvelles_offres": "PASS",
+    "anciennes_offres_retirees_interface": "PASS",
+    "abonnements_existants_non_impactes": "NOT_VERIFIABLE (garantie forte par analyse statique du code, aucune observation empirique de compte réel disponible)",
+    "renouvellements_chariow": "NOT_VERIFIABLE (système externe, Xfoot ne le modifie/n'y touche jamais)",
+    "promoteur": "PASS",
+    "tests": "65/65",
+    "ia": "UNCHANGED",
+    "verdict_final": "PRICING_DEPLOYED_HISTORICAL_SUBSCRIPTION_CHECK_BLOCKED"
+  },
+
+  "closing_statement": "PHASE 15.5 — POST-DÉPLOIEMENT OFFRES V15 + NON-RÉGRESSION : PRICING CONFIRMÉ DÉPLOYÉ EN PRODUCTION (billing.html ET vip.html IDENTIQUES BYTE-FOR-BYTE AU COMMIT eeb01ec, ANCIENNES OFFRES/BADGE ABSENTS). ARCHITECTURE CHECKOUT/REFERRAL/COMMISSION VÉRIFIÉE INTACTE. AUCUNE LOGIQUE DE MIGRATION, RECALCUL RÉTROACTIF OU EXPIRATION AUTOMATIQUE TROUVÉE DANS LE CODE — GARANTIE STRUCTURELLE FORTE MAIS NON CONFIRMÉE EMPIRIQUEMENT SUR UN COMPTE RÉEL HISTORIQUE (AUCUN ACCÈS DB PRODUCTION, AUCUN COMPTE DE TEST FOURNI CETTE PHASE). RENOUVELLEMENTS CHARIOW EXTERNES NON VÉRIFIABLES DEPUIS LE CODE XFOOT. 65/65 TESTS VERTS (EXIT CODE RÉEL), 6 TABLES IA STRICTEMENT INCHANGÉES. AUCUN PAIEMENT RÉEL, AUCUNE ÉCRITURE CHARIOW, AUCUN COMPTE CRÉÉ, AUCUN ABONNEMENT MODIFIÉ, AUCUN HISTORIQUE SUPPRIMÉ, AUCUN PRODUIT CHARIOW ANCIEN TOUCHÉ, AUCUN COMMIT, AUCUN PUSH. VERDICT : PRICING_DEPLOYED_HISTORICAL_SUBSCRIPTION_CHECK_BLOCKED — EN ATTENTE D'UN MOYEN DE VÉRIFICATION EMPIRIQUE (COMPTE DE TEST HISTORIQUE OU ACCÈS LECTURE ADMIN) POUR LEVER CE BLOCAGE."
+}

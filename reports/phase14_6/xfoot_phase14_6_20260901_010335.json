@@ -1,0 +1,359 @@
+{
+  "phase": "14.6",
+  "title": "XFOOT FINAL PRE-PUSH & PRODUCTION ACCESS VERIFICATION V1",
+  "generated_at_utc": "2026-09-01T01:03:35Z",
+  "checkpoint": "ebb23ec",
+
+  "1_git_baseline": {
+    "CURRENT_HEAD": "ebb23ec",
+    "EXPECTED_COMMIT": "ebb23ec",
+    "checkpoint_match": true,
+    "CURRENT_BRANCH": "main",
+    "ORIGIN_MAIN_LOCAL_TRACKING_REF": "origin/main (ref locale)",
+    "AHEAD_COUNT_LOCAL_TRACKING": 5,
+    "BEHIND_COUNT_LOCAL_TRACKING": 0,
+    "WORKTREE_STATE": "5 worktrees additionnels, tous prunable/STALE, inchangés depuis Phase 14.4/14.5",
+    "git_log_oneline_10": [
+      "ebb23ec feat: add xfoot promoter referral platform",
+      "00dd971 feat: complete AI shadow and production readiness phases",
+      "a2811c2 feat: add Xfoot odds temporal integrity audit v1",
+      "e85f79f Phase 8D — Odds Research Prototype & Walk-Forward V1 (recherche)",
+      "309e591 Phase 8C — External Data Source Audit V1 (due diligence)",
+      "2160b4f Phase 8A — Data Intelligence & Feature Registry V1",
+      "50b66aa Phase 6/7 — Model Selection Engine V1, Calibration Engine V1, Shadow Evaluation & Track Record V1",
+      "ff87ba5 Phase 5.7 — Ensemble Research & Backtest V2",
+      "81c5bdb Phase 8B — Feature Engineering & Walk-Forward Evaluation V1 (recherche)",
+      "2cd0d83 Corrige les équipes promues non reconnues (Malaga, Deportivo La Coruna, etc.)"
+    ],
+    "verdict": "CHECKPOINT_CONFIRMED — HEAD == ebb23ec, pas de CHECKPOINT_MISMATCH"
+  },
+
+  "2_working_tree": {
+    "working_tree_clean_strict": false,
+    "clarification": "git diff --stat n'est PAS vide : 2 fichiers tracked modifiés (api/app/ai/readiness/gates.py, reports/shadow/watch/evidence_snapshots.json) — TOUS DEUX antérieurs et étrangers au commit ebb23ec (Phase 13, non inclus dans le Release Candidate). Ceci NE BLOQUE PAS techniquement un push : git push ne transmet que l'historique des commits, jamais l'état non commité du working tree.",
+    "modified_tracked_files": [
+      {"path": "api/app/ai/readiness/gates.py", "category": "HISTORICAL", "reason": "Extension Phase 13 du scanner de faux-positifs de secrets — non lié à Phase 14, jamais inclus dans ebb23ec."},
+      {"path": "reports/shadow/watch/evidence_snapshots.json", "category": "REPORT", "reason": "Log généré automatiquement par l'exécution des suites shadow — régénéré à chaque run, jamais du code."}
+    ],
+    "untracked_files_classification": {
+      "REQUIRED": [],
+      "HISTORICAL": ["api/test_phase13.py", "scripts/phase13_evidence_maturation.py"],
+      "REPORT": ["reports/phase9_5/* (12 fichiers)", "reports/phase11/* (12 fichiers)", "reports/phase12/* (4 fichiers)", "reports/phase13/", "reports/phase14/", "reports/phase14_1/", "reports/phase14_2/", "reports/phase14_3/", "reports/phase14_4/", "reports/phase14_5/"],
+      "RESEARCH": [],
+      "TEMPORARY": [],
+      "UNKNOWN": []
+    },
+    "action_taken": "AUCUN fichier untracked ajouté ou supprimé — classification uniquement, conformément à la règle de cette phase.",
+    "unknown_count": 0
+  },
+
+  "3_commit_integrity": {
+    "git_show_stat_oneline": "ebb23ec feat: add xfoot promoter referral platform — 32 files changed, 3185 insertions(+), 3 deletions(-)",
+    "file_count_confirmed": 32,
+    "file_list_matches_allowlist_phase14_4_14_5": true,
+    "foreign_files_found": false,
+    "commit_message_confirmed": "feat: add xfoot promoter referral platform\n\nAdds a referral/affiliate program...",
+    "author": "Atchaki Mede Debodjona <atchakimededebodjona@gmail.com>",
+    "author_date": "Tue Sep 1 00:49:33 2026 +0000",
+    "committer": "Atchaki Mede Debodjona <atchakimededebodjona@gmail.com>",
+    "commit_date": "Tue Sep 1 00:49:33 2026 +0000",
+    "commit_sha_full": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "divergence_detected": false
+  },
+
+  "4_commit_content_security": {
+    "method": "git show ebb23ec > fichier, scan sur le texte complet du diff (3583 lignes)",
+    "strict_secret_patterns_searched": ["sk_live/sk_test", "-----BEGIN (clé privée)", "Bearer <token> en dur", "CHARIOW_API_KEY/PULSE_SECRET assigné littéralement", "password= littéral", "api_key= littéral"],
+    "strict_secret_matches": 0,
+    "informational_patterns_searched": ["localhost", "127.0.0.1", "TODO", "FIXME", "debugger", "console.log"],
+    "informational_matches": 0,
+    "note": "0 correspondance, même informationnelle, dans le DIFF réel introduit par ce commit (les quelques références localhost trouvées en Phase 14.5 provenaient de lignes de CONTEXTE pré-existantes de fichiers déjà présents, jamais des lignes '+' ajoutées par ce commit — confirmé en régénérant le scan directement sur `git show`, qui n'affiche que le diff).",
+    "documentary_variable_names_present": "Oui (ADMIN_EMAILS, CHARIOW_API_KEY, CHARIOW_PULSE_SECRET, THE_ODDS_API_KEY dans des commentaires/docstrings hors du RC) — jamais confondus avec une valeur secrète réelle.",
+    "SECRET_SCAN": "PASS"
+  },
+
+  "5_remote_verification": {
+    "git_remote_v": "origin https://github.com/atchakimededebodjona-design/SaaS-PariFoot.git (fetch/push)",
+    "REMOTE_REACHABLE": true,
+    "method": "git ls-remote origin HEAD refs/heads/main (lecture seule, aucune écriture)",
+    "REMOTE_MAIN_SHA": "2160b4f43f83fa71ab6491f20eec9f06bc04c6a4",
+    "REMOTE_BRANCH_EXISTS": true,
+    "LOCAL_HEAD": "ebb23ec",
+    "COMMITS_AHEAD_OF_REMOTE": 5,
+    "COMMITS_BEHIND_REMOTE": 0,
+    "fast_forward_possible": true,
+    "fast_forward_evidence": "git merge-base --is-ancestor 2160b4f ebb23ec confirmé vrai — le remote HEAD est un ancêtre direct du HEAD local, un push fast-forward serait techniquement possible sans conflit ni force.",
+    "note": "REMOTE_MAIN_SHA obtenu par une preuve réelle (ls-remote), jamais supposé identique sans vérification."
+  },
+
+  "6_push_readiness": {
+    "criteria": {
+      "head_correct": true,
+      "working_tree_dirty_but_non_blocking": true,
+      "commit_exact": true,
+      "allowlist_exacte": true,
+      "securite_pass": true,
+      "tests_pass": true,
+      "ai_isolation_pass": true,
+      "aucun_conflit_git_evident": true,
+      "remote_identifiable": true
+    },
+    "PUSH_ALLOWED_BY_TECHNICAL_CHECKS": true,
+    "disclaimer": "Cette valeur NE CONSTITUE PAS une autorisation humaine. Elle signifie uniquement : le repository semble techniquement prêt à recevoir le push (fast-forward possible, contenu propre, tests verts)."
+  },
+
+  "7_deployment_access_audit": {
+    "RAILWAY_ACCESS": "ABSENT",
+    "railway_cli_found": false,
+    "railway_env_tokens_found": false,
+    "HOSTINGER_ACCESS": "ABSENT",
+    "hostinger_ftp_lftp_found": false,
+    "note": "Vérifié par 'which railway/vercel/lftp' (tous absents du PATH) et recherche de variables d'environnement RAILWAY_*/HOSTINGER_* (aucune trouvée, noms uniquement recherchés, aucune valeur affichée). UNKNOWN n'a jamais été transformé en PASS — ici le résultat est un ABSENT confirmé, pas une supposition."
+  },
+
+  "8_production_environment_check": {
+    "variables": [
+      {"name": "ADMIN_EMAILS", "local": "MISSING", "production": "UNKNOWN", "status": "UNKNOWN — reste UNKNOWN, jamais transformé en PASS"},
+      {"name": "DATABASE_URL", "local": "MISSING (SQLite dev, aucune URL PostgreSQL locale)", "production": "présumée configurée (service Railway déjà actif) mais UNKNOWN dans le détail", "status": "UNKNOWN"},
+      {"name": "CHARIOW_API_KEY", "local": "CONFIGURED", "production": "UNKNOWN", "status": "UNKNOWN"},
+      {"name": "CHARIOW_PULSE_SECRET (webhook secret)", "local": "CONFIGURED", "production": "UNKNOWN", "status": "UNKNOWN"},
+      {"name": "CHARIOW_PRODUCT_ID_MONTHLY", "local": "CONFIGURED", "production": "UNKNOWN", "status": "UNKNOWN"},
+      {"name": "CHARIOW_PRODUCT_ID_YEARLY", "local": "CONFIGURED", "production": "UNKNOWN", "status": "UNKNOWN"},
+      {"name": "CORS / ALLOWED_ORIGINS", "local": "CONFIGURED (localhost par défaut)", "production": "fonctionnellement correcte (déduite du fonctionnement observé du frontend actuel)", "status": "UNKNOWN dans le détail exact, PASS indirect sur le fonctionnement"},
+      {"name": "frontend URL (référence api.xfoot.site)", "local": "CONFIGURED (défaut localhost)", "production": "CONFIRMÉE active (GET /health -> 200)", "status": "CONFIGURED — seule variable avec preuve HTTP directe"},
+      {"name": "backend URL (www.xfoot.site cible)", "local": "N/A", "production": "CONFIRMÉE active", "status": "CONFIGURED"}
+    ],
+    "ADMIN_EMAILS_explicit": "UNKNOWN — n'a jamais été transformé en PASS, conformément à la règle explicite répétée depuis Phase 14.3."
+  },
+
+  "9_production_routing": {
+    "https_www_xfoot_site": {"status": 200},
+    "http_to_https_redirect": {"status": 301, "confirmed": true},
+    "https_api_xfoot_site_health": {"status": 200},
+    "openapi_reachable": true,
+    "total_routes_in_production_openapi": 36,
+    "phase14_routes_found_in_production": [],
+    "CURRENT_PRODUCTION_VERSION": "Non identifiable précisément (aucun endpoint de version exposé) — mais confirmé antérieur à Phase 6-14 par absence de toute route /promoter, /referral, /admin, /models/shadow, etc.",
+    "PRODUCTION_PHASE14_DEPLOYED": false,
+    "explicit_note": "Ceci n'est PAS un bug du Release Candidate — le déploiement n'a simplement pas encore eu lieu, exactement comme en Phase 14.2/14.3/14.5."
+  },
+
+  "10_required_production_routes": {
+    "source": "Liste exacte extraite du code réel (api/app/referral/router.py et admin_router.py), jamais inventée",
+    "routes": [
+      "POST /referral/resolve/{slug}",
+      "POST /referral/attribute",
+      "GET /promoter/me",
+      "GET /promoter/me/stats",
+      "GET /promoter/me/sales",
+      "GET /admin/promoters",
+      "POST /admin/promoters",
+      "POST /admin/promoters/{promoter_id}/status",
+      "GET /admin/promoters/{promoter_id}",
+      "GET /admin/subscribers",
+      "GET /admin/earnings/totals",
+      "GET /admin/earnings/by-promoter"
+    ],
+    "all_currently_absent_from_production": true,
+    "note_on_prompt_naming": "Le prompt mentionne '/promoter/*' comme préfixe générique — la route racine '/promoter' seule (sans /me) n'existe pas dans le code ; seules les 3 routes /promoter/me[/stats][/sales] existent. Documenté fidèlement au code, jamais une route inventée."
+  },
+
+  "11_database_migration_readiness": {
+    "migration_present_in_commit": true,
+    "file": "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py",
+    "revision": "5787c4b3b963",
+    "down_revision": "c4f8a1d75e93",
+    "upgrade_present": true,
+    "downgrade_present": true,
+    "dependency_correct": "Chaîne linéaire, un seul parent, cohérente avec l'historique alembic local",
+    "ai_migration_touched": false,
+    "ai_table_names_in_file": "Présentes UNIQUEMENT dans le docstring explicatif ('jamais touchées'), aucune référence dans le DDL réel (upgrade/downgrade)",
+    "rollback_structurally_available": true,
+    "migration_executed_this_phase": false,
+    "api_app_db_modified_this_phase": false
+  },
+
+  "12_payment_readiness": {
+    "chariow_write_calls_this_phase": 0,
+    "real_payment_attempted": false,
+    "PAYMENT_ENVIRONMENT": "UNKNOWN",
+    "transformed_to_sandbox_or_pass": false,
+    "value": "REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION",
+    "reason": "Aucune nouvelle preuve indépendante n'a émergé depuis la Phase 14.2 quant au statut sandbox/production de la clé Chariow configurée."
+  },
+
+  "13_referral_commission_check": {
+    "formula_reconfirmed": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000)",
+    "discount_example_reconfirmed": {"catalogue": 20000, "paye": 15000, "commission": 6000, "jamais": 8000, "source": "api/test_phase14_1_production_integration.py::test_actual_paid_amount_discount_scenario_end_to_end, 36/36 PASS cette phase"},
+    "state_matrix_reconfirmed": {
+      "pending": "0 commission (test_pending_payment_no_commission, PASS)",
+      "failed": "0 commission (test_failed_payment_no_commission, PASS)",
+      "click_visite": "0 commission (test_no_false_commission_consolidated_sweep étape a, PASS)",
+      "inscription": "0 commission (étape b, PASS)",
+      "checkout_non_confirme": "0 commission (étape d, PASS)",
+      "paiement_confirme": "commission créée (test_paid_creates_commission + réconciliation Phase 14.1, PASS)",
+      "webhook_idempotent": "10 livraisons dupliquées -> 1 commission (test_duplicate_webhook_single_commission, PASS)"
+    },
+    "all_reconfirmed_this_phase_via_test_execution": true
+  },
+
+  "14_security_admin_isolation": {
+    "promoter_isolation": "Reconfirmé — /promoter/me/sales avec promoter_id forgé (query et body) n'expose jamais les données d'un tiers (test_promoter_isolation_on_sales_endpoint_forged_promoter_id, PASS cette phase)",
+    "admin_restricted_to_admin_emails": "require_admin (allowlist ADMIN_EMAILS) réutilisé tel quel, inchangé — mais état production toujours UNKNOWN (voir §8)",
+    "frontend_never_decides_commission": "Confirmé par lecture de code — aucune route frontend/client n'écrit dans referral_commission ; seule commission_service.py (backend, déclenché par webhook signé) le fait",
+    "webhook_signed": true,
+    "hmac_constant_time": "hmac.compare_digest utilisé (app/billing/router.py::_verify_pulse_signature)",
+    "idempotent": true,
+    "amount_from_verified_payment_source": true,
+    "no_frontend_privilege_escalation": "Confirmé — get_current_promoter et require_admin dérivent systématiquement de current_user (JWT), jamais d'un paramètre client"
+  },
+
+  "15_ai_isolation": {
+    "model_selection_calibration_value_engine_shadow_historical_readiness_training_promotion_modified": false,
+    "diff_ebb23ec_references_to_app_ai": 0,
+    "protected_tables_before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "protected_tables_after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identical": true,
+    "no_write_to_protected_tables": true
+  },
+
+  "16_tests": {
+    "named_minimum_tests": {
+      "test_production_readiness.py": "59 passed, 0 failed (sur 59 assertions)",
+      "test_safety_controls.py": "76 passed, 0 failed (sur 76 assertions, 40 scénarios)",
+      "test_phase14.py": "ABSENT du dépôt — le fichier de test réel de la Phase 14 s'appelle api/test_referral_promoter_platform.py (exécuté ci-dessous à sa place, jamais un résultat inventé pour un fichier inexistant)",
+      "test_referral_promoter_platform.py (réel Phase 14)": "99 passed, 0 failed (sur 99 assertions, 25 scénarios)"
+    },
+    "TOTAL": 64,
+    "PASSED": 64,
+    "FAILED": 0,
+    "SKIPPED": 0,
+    "regression_result": "Aucun échec — PUSH_BLOCKED non déclenché par les tests."
+  },
+
+  "17_database_purity": {
+    "before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "BEFORE_EQUALS_AFTER": true,
+    "result": "PUSH_BLOCKED non déclenché par la pureté DB"
+  },
+
+  "18_frontend_validation": {
+    "js_syntax": "5/5 pages vérifiées OK (promoter.html, admin-promoters.html, admin-subscribers.html, admin-earnings.html, login.html) — 0 erreur",
+    "pages_locally_accessible": true,
+    "referral_links": "Vérifiés cohérents (Phase 14/14.4)",
+    "promoter_dashboard": "promoter.html présent, JS valide",
+    "admin_dashboard": "admin-*.html présents, JS valides",
+    "localhost_hardcoded_in_new_pages": false,
+    "secrets_in_frontend": false,
+    "responsive_check": "Non réalisé (nécessite un navigateur interactif)",
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Aucune validation navigateur inventée."
+  },
+
+  "19_release_manifest": {
+    "phase": "14.6",
+    "checkpoint": "ebb23ec",
+    "working_tree_clean": false,
+    "commit_integrity": "CONFIRMED — 32 fichiers exacts, message/auteur/date cohérents, aucun fichier étranger",
+    "remote_status": "REACHABLE — origin/main réel = 2160b4f43f83fa71ab6491f20eec9f06bc04c6a4, 5 commits d'avance, 0 en retard, fast-forward possible",
+    "push_status": "NOT_EXECUTED",
+    "deployment_status": "NOT_EXECUTED",
+    "payment_status": "NOT_EXECUTED",
+    "admin_emails": "UNKNOWN",
+    "tests_green": true,
+    "database_pure": true,
+    "ai_isolation": true,
+    "production_deployed": false,
+    "final_verdict": "READY_FOR_HUMAN_PUSH_WITH_LIMITATIONS"
+  },
+
+  "20_human_push_handoff": {
+    "HUMAN_PUSH_COMMAND": "git push origin main",
+    "PUSH_COMMAND_PREPARED": true,
+    "PUSH_COMMAND_EXECUTED": false,
+    "preconditions_for_this_command": "HEAD doit rester ebb23ec (ou un commit ultérieur volontaire) au moment de l'exécution ; origin/main doit toujours être à 2160b4f (ou un ancêtre) pour un fast-forward propre — à revérifier par la personne humaine juste avant exécution, car cet état peut changer entre ce rapport et le moment de l'action."
+  },
+
+  "21_deployment_handoff": {
+    "steps_documented_only": [
+      "1. push (git push origin main — humain)",
+      "2. déploiement backend (automatique via Railway sur réception du push, à confirmer selon config réelle)",
+      "3. migration (alembic upgrade head contre la base de production)",
+      "4. déploiement frontend (upload manuel frontend-design/ vers Hostinger, incluant .htaccess)",
+      "5. vérification HTTPS (déjà confirmée fonctionnelle sur l'infrastructure actuelle)",
+      "6. smoke tests (plan détaillé en Phase 14.3 §21, réutilisable tel quel)",
+      "7. vérification Promoteur (POST /referral/resolve/{slug}, /referral/attribute, GET /promoter/me* avec un compte de test)",
+      "8. vérification Admin (GET /admin/* avec le compte admin réel, 403 avec un compte non-admin)",
+      "9. webhook (confirmer la configuration du Pulse Chariow pointant vers https://api.xfoot.site/billing/pulse)",
+      "10. paiement de test SI ET SEULEMENT SI explicitement autorisé par l'humain (voir Gate 8)"
+    ],
+    "executed_this_phase": false
+  },
+
+  "22_rollback_handoff": {
+    "PREVIOUS_GOOD_COMMIT": "2160b4f (dernier commit connu et vérifié sur origin/main réel, confirmé par ls-remote)",
+    "CURRENT_RELEASE": "ebb23ec",
+    "rollback_procedure_documented": [
+      "Backend : redéploiement du commit précédent via l'historique de déploiements Railway.",
+      "Database : alembic downgrade -1 (downgrade() présent, structurellement vérifié, jamais exécuté en conditions réelles).",
+      "Frontend : re-upload manuel des fichiers Hostinger précédents (sauvegarde manuelle préalable requise)."
+    ],
+    "git_revert_executed": false,
+    "git_reset_executed": false,
+    "production_rollback_executed": false,
+    "db_downgrade_executed": false
+  },
+
+  "23_human_approval_gates": [
+    {"gate": "GATE 1 — Git Push", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 2 — Railway Deployment", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 3 — Hostinger Deployment", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 4 — Production ADMIN_EMAILS", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 5 — Database Migration", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 6 — Production Smoke Tests", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 7 — Chariow Environment", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 8 — Real Payment Test", "status": "PENDING_HUMAN_APPROVAL"},
+    {"gate": "GATE 9 — Public Referral Activation", "status": "PENDING_HUMAN_APPROVAL"}
+  ],
+
+  "24_critical_separation_reconfirmed": {
+    "READY_FOR_HUMAN_PUSH_is_not_PUSH_EXECUTED": true,
+    "DEPLOYMENT_READY_is_not_DEPLOYED": true,
+    "PAYMENT_TEST_READY_is_not_PAYMENT_VERIFIED": true,
+    "CODE_READY_is_not_PRODUCTION_READY": true
+  },
+
+  "25_limitations": [
+    "Working tree non strictement propre (2 fichiers Phase 13 modifiés, étrangers au RC) — sans impact sur la faisabilité technique du push.",
+    "ADMIN_EMAILS en production reste UNKNOWN — jamais transformé en PASS.",
+    "DEPLOYMENT_ACCESS (Railway/Hostinger) reste ABSENT depuis ce poste.",
+    "PAYMENT_ENVIRONMENT reste UNKNOWN — REAL_PAYMENT_REQUIRES_HUMAN_AUTHORIZATION.",
+    "PRODUCTION_PHASE14_DEPLOYED = false — confirmé activement, pas un défaut du RC.",
+    "BROWSER_VALIDATION_UNAVAILABLE — inchangé.",
+    "Rollback documenté mais jamais exercé en conditions réelles."
+  ],
+
+  "26_final_verdict": {
+    "value": "READY_FOR_HUMAN_PUSH_WITH_LIMITATIONS",
+    "rationale": "Checkpoint ebb23ec confirmé (HEAD == ebb23ec, pas de CHECKPOINT_MISMATCH). Intégrité du commit vérifiée (32 fichiers exacts, 0 fichier étranger, message/auteur/date cohérents). Sécurité du contenu du commit : PASS (0 secret, même informationnel, dans le diff réel). Remote vérifié en lecture seule : joignable, fast-forward possible, 5 commits d'avance / 0 en retard sur le SHA réel d'origin/main. 64/64 tests verts (incluant les tests nommés explicitement + les 135 assertions Phase 14/14.1). 6 tables IA identiques avant/après. Isolation IA prouvée. PUSH_ALLOWED_BY_TECHNICAL_CHECKS = true. Les limitations documentées (ADMIN_EMAILS/PAYMENT_ENVIRONMENT/DEPLOYMENT_ACCESS = UNKNOWN ou ABSENT) restent explicitement non résolues et non masquées — d'où le suffixe WITH_LIMITATIONS plutôt qu'un verdict sans réserve. AUCUN push n'a été exécuté."
+  },
+
+  "git_final_state": {
+    "git_push_executed": false,
+    "git_merge_executed": false,
+    "git_rebase_executed": false,
+    "git_reset_executed": false,
+    "git_clean_executed": false,
+    "railway_deployment_executed": false,
+    "hostinger_deployment_executed": false,
+    "database_migration_production_executed": false,
+    "chariow_write_executed": false,
+    "real_payment_executed": false,
+    "production_activation_executed": false,
+    "kill_switch_modified": false,
+    "model_promoted_or_trained": false
+  },
+
+  "closing_statement": "PHASE 14.6 — XFOOT FINAL PRE-PUSH & PRODUCTION ACCESS VERIFICATION V1 TERMINÉE. LE CHECKPOINT ebb23ec, L'INTÉGRITÉ DU RELEASE CANDIDATE, LA SÉCURITÉ, LES TESTS, L'ISOLATION IA, LA PURETÉ DB ET LES CONDITIONS DE PUBLICATION ONT ÉTÉ VÉRIFIÉS OU LIMITATIONS DOCUMENTÉES. AUCUN GIT PUSH, AUCUN DÉPLOIEMENT PRODUCTION, AUCUNE MIGRATION PRODUCTION ET AUCUN PAIEMENT RÉEL EFFECTUÉ. EN ATTENTE D'AUTORISATION HUMAINE EXPLICITE POUR LE PUSH."
+}

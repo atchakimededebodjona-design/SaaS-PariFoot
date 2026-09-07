@@ -1,0 +1,70 @@
+{
+  "phase": "15.6 — ÉTAPE 1",
+  "title": "PRÉ-CHECKS AVANT PAIEMENT",
+  "generated_at_utc": "2026-09-02T20:17:00Z",
+
+  "acces_disponibles_cette_session": {
+    "credentials_payment_test_com": false,
+    "credentials_promoter_2": false,
+    "credentials_admin_test": false,
+    "acces_base_donnees_production": false,
+    "outil_navigateur": false,
+    "note": "Aucun jeton/mot de passe fourni cette session pour aucun des 3 comptes. Aucun accès direct à la base Postgres de production. Les seules vérifications possibles sont via des endpoints backend PUBLICS et sans écriture."
+  },
+
+  "1_payment_test_com": {
+    "existe": "NOT_VERIFIABLE",
+    "user_id": "NOT_VERIFIABLE",
+    "role": "NOT_VERIFIABLE",
+    "methode_tentee": "Aucun endpoint public ne permet de vérifier l'existence d'un compte par email sans risque de side-effect. POST /auth/register créerait le compte s'il n'existe pas (INTERDIT par les règles de cette étape) — jamais tenté. POST /auth/login nécessite un mot de passe (jamais demandé en chat). Aucun endpoint 'forgot password'/'check email' n'existe dans le code (api/app/auth/router.py inspecté : uniquement /register, /login, /me).",
+    "conclusion": "Vérification structurellement impossible sans accès admin ou relais humain."
+  },
+
+  "2_promoter_2": {
+    "existe": "PASS (vérifié)",
+    "status_active": "PASS (vérifié)",
+    "user_id_206": "NOT_VERIFIABLE",
+    "methode": "POST https://api.xfoot.site/referral/resolve/promoter-2 avec body={} (SANS visitor_id, pour garantir ZÉRO écriture en base — voir app/referral/router.py:65-81, la ligne ReferralVisit n'est ajoutée QUE si body.visitor_id est fourni)",
+    "resultat_http": {"status_code": 200, "body": {"valid": true}},
+    "interpretation": "Par construction (§32 du code, commentaire explicite), 'valid: true' signifie EXACTEMENT : le slug 'promoter-2' existe ET son statut est 'ACTIVE' — un slug inexistant ou un promoteur suspendu/inactif renvoient tous deux 'valid: false', volontairement indifférenciés pour ne jamais exposer d'information administrative à un appelant non authentifié. Ceci confirme donc existence + ACTIVE, mais NE PEUT PAS confirmer user_id=206 (information volontairement non exposée par cet endpoint public).",
+    "aucune_ecriture_effectuee": true
+  },
+
+  "3_separation_acheteur_promoteur": {
+    "emails_distincts": "NOT_VERIFIABLE (email du compte associé à promoter-2 non accessible sans admin)",
+    "user_id_distincts": "NOT_VERIFIABLE",
+    "acheteur_non_promoteur": "NOT_VERIFIABLE",
+    "conclusion": "Aucune des 3 sous-vérifications ne peut être établie sans accès authentifié (admin dashboard ou token)."
+  },
+
+  "4_activite_commerciale_prealable": {
+    "ventes_payees_existantes_pour_payment_test_com": "NOT_VERIFIABLE",
+    "commissions_existantes_pour_payment_test_com": "NOT_VERIFIABLE",
+    "attribution_existante": "NOT_VERIFIABLE",
+    "note": "Le compte utilisateur ayant confirmé oralement dans la conversation qu'il s'agit d'un compte neuf sans paiement antérieur — information notée mais NON vérifiée techniquement par cet assistant cette étape (aucune preuve read-only obtenue), conformément à la règle NE PAS l'inférer."
+  },
+
+  "5_verification_production": {
+    "site_accessible": true,
+    "GET https://www.xfoot.site/": "200 (vérifié précédemment en phases 15.4/15.5)",
+    "backend_health": "200 OK",
+    "aucun_contournement_authentification": true,
+    "aucun_faux_token_utilise": true,
+    "aucune_permission_modifiee": true
+  },
+
+  "aucune_modification_effectuee": {
+    "DB": false,
+    "Chariow": false,
+    "compte": false,
+    "paiement": false,
+    "code": false
+  },
+
+  "verdict": {
+    "value": "NOT_VERIFIABLE",
+    "rationale": "1 des 3 conditions PASS (promoter-2 existe + ACTIVE, confirmé sans écriture via l'endpoint public /referral/resolve). Les 2 autres conditions requises (existence de payment@test.com, séparation stricte acheteur/promoteur par user_id) ne peuvent PAS être établies avec les moyens disponibles cette session (aucun token, aucun accès admin, aucun accès DB, aucun outil navigateur). Conformément à la règle explicite de cette étape ('Si une information n'est pas accessible : la déclarer NOT_VERIFIABLE. NE PAS l'inférer.'), le verdict global ne peut être ni PASS ni un STOP_x précis (aucune condition n'a activement ÉCHOUÉ, elles sont non observables). Blocage structurel d'accès, pas un problème détecté sur les comptes eux-mêmes."
+  },
+
+  "action_requise": "Relais humain nécessaire pour CHECK 1, CHECK 3 (user_id), et CHECK 4 : consulter l'admin dashboard (ou fournir un token en lecture seule) pour confirmer (a) l'existence et le user_id de payment@test.com, (b) que son user_id diffère de celui de promoter-2 et qu'il n'a pas le rôle promoteur, (c) l'absence de vente/commission préexistante."
+}

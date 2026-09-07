@@ -1,0 +1,137 @@
+{
+  "phase": "15.15",
+  "title": "Commit + push + déploiement du système de retrait manuel + validation production sans versement réel",
+  "generated_at_utc": "2026-09-03T22:33:27Z",
+  "real_withdrawal_performed": false,
+  "commit": {
+    "sha": "a0dcbc76c955fea8e2ecf75ff2917ab900ea1e3f",
+    "message": "feat: add manual promoter withdrawals",
+    "files": [
+      "api/alembic/versions/99fd1d8ad121_phase15_14_promoter_withdrawal.py",
+      "api/app/models/promoter.py",
+      "api/app/referral/admin_router.py",
+      "api/app/referral/router.py",
+      "api/app/referral/stats.py",
+      "api/app/referral/withdrawal_service.py",
+      "api/test_phase15_14_manual_withdrawal.py",
+      "frontend-design/admin-earnings.html",
+      "frontend-design/admin-promoters.html",
+      "frontend-design/admin-subscribers.html",
+      "frontend-design/admin-withdrawals.html",
+      "frontend-design/promoter.html"
+    ],
+    "stat": "12 files changed, 1290 insertions(+), 12 deletions(-)",
+    "excluded_out_of_scope": "api/app/ai/readiness/gates.py (modification étrangère pré-existante, jamais indexée, git add explicite fichier par fichier utilisé — jamais git add . ni -A)"
+  },
+  "tests_before_commit": {
+    "test_phase15_14_manual_withdrawal.py": "56/56",
+    "regression_full": {
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_1_new_offers.py": "17/17",
+      "test_phase15_7_referral_attribution_repro.py": "24/24",
+      "test_phase15_9_webhook_hardening.py": "31/31",
+      "test_phase15_10_activate_license_commission.py": "33/33",
+      "test_phase15_12_amount_reconciliation.py": "36/36",
+      "test_chariow_billing.py": "30/30",
+      "test_entitlement.py": "8/8",
+      "test_provider_subscription_backfill.py": "4/4",
+      "test_google_play_billing.py": "44/44",
+      "test_auth.py": "8/8",
+      "test_main.py": "9/9"
+    },
+    "total_failures": 0
+  },
+  "migration": {
+    "revision": "99fd1d8ad121",
+    "mechanism_identified": "api/Procfile : 'web: alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT' — la migration est appliquée AUTOMATIQUEMENT par Railway à chaque démarrage du process web, jamais exécutée manuellement par cet agent (aucun mécanisme parallèle inventé)",
+    "manually_executed_against_production": false,
+    "previously_tested_locally": "upgrade/downgrade/re-upgrade déjà validés en Phase 15.14 sur une copie scratch de app.db (jamais la DB réelle)"
+  },
+  "ai_isolation_before_commit": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "ai_files_in_commit": false
+  },
+  "push": {
+    "authorized": true,
+    "authorization_source": "Titre et objectif de la Phase 15.15 eux-mêmes : 'COMMIT + PUSH + DÉPLOIEMENT' listés explicitement comme le but de cette phase",
+    "verification": {
+      "local_head": "a0dcbc76c955fea8e2ecf75ff2917ab900ea1e3f",
+      "origin_main_local_ref": "a0dcbc76c955fea8e2ecf75ff2917ab900ea1e3f",
+      "ls_remote_refs_heads_main": "a0dcbc76c955fea8e2ecf75ff2917ab900ea1e3f",
+      "all_three_match": true
+    }
+  },
+  "railway_deployment": {
+    "health_endpoint": "https://api.xfoot.site/health",
+    "health_http_status": 200,
+    "runtime_version_endpoint": "aucun n'existe (déjà constaté Phase 15.13), aucun nouvel endpoint créé pour cette seule vérification",
+    "functional_deployment_proof": {
+      "method": "Sondage répété de POST /promoter/me/withdrawals (route qui n'existait pas avant ce commit) : HTTP 404 (ancien code) -> HTTP 401 (nouveau code, endpoint existe et exige une authentification) après ~100 secondes de sondage post-push",
+      "conclusion": "Preuve fonctionnelle positive que le nouveau code est bien en production — plus fiable qu'un SHA non exposé"
+    }
+  },
+  "frontend_hostinger": {
+    "status": "NON DÉPLOYÉ — action strictement humaine, cet agent n'a aucun accès Hostinger (FTP/File Manager/dashboard), confirmé par HOSTINGER_DEPLOY.md ('Je n'ai pas accès à ton compte Railway ni Hostinger')",
+    "verified_live_state": {
+      "https://xfoot.site/promoter.html": "sert encore l'ANCIEN contenu (bannière 'PAYOUT_SYSTEM_NOT_YET_IMPLEMENTED' toujours présente)",
+      "https://xfoot.site/admin-withdrawals.html": "HTTP 404 (fichier jamais uploadé)"
+    },
+    "files_to_upload": [
+      "frontend-design/promoter.html",
+      "frontend-design/admin-earnings.html",
+      "frontend-design/admin-promoters.html",
+      "frontend-design/admin-subscribers.html",
+      "frontend-design/admin-withdrawals.html (nouveau fichier)"
+    ],
+    "files_to_never_upload": "tests, rapports, fichiers backend — non applicable ici, seuls les 5 fichiers HTML ci-dessus sont concernés",
+    "cache_purge": "non applicable tant que l'upload n'a pas eu lieu"
+  },
+  "routes_verified_live": {
+    "POST /promoter/me/withdrawals (sans auth)": 401,
+    "GET /promoter/me/withdrawals (sans auth)": 401,
+    "GET /admin/withdrawals (sans auth)": 401,
+    "POST /admin/withdrawals/{id}/confirm-paid (sans auth)": 401,
+    "POST /admin/withdrawals/{id}/reject (sans auth)": 401
+  },
+  "security_production": {
+    "item_1_unauthenticated_401": "CONFIRMÉ EN PRODUCTION (les 5 routes ci-dessus)",
+    "items_2_to_7_role_based": {
+      "status": "NOT_VERIFIABLE directement par cet agent",
+      "reason": "Aucun identifiant de production disponible (ni compte admin, ni compte promoter-2, ni compte utilisateur normal) — créer un nouveau compte de test en production via /auth/register n'a pas été jugé comme relevant de l'autorisation explicite de cette phase (action mutante sur l'infrastructure partagée, non demandée nommément) et a donc été évitée par prudence plutôt que tentée sans certitude d'autorisation.",
+      "indirect_evidence": "Le code exécuté en production est bit-identique au code testé localement (même commit a0dcbc7, aucune divergence possible) où cette matrice exacte (utilisateur normal/promoteur A/promoteur B/admin) a été prouvée par 56/56 tests dédiés, incluant l'isolation stricte entre promoteurs et la vérification require_admin"
+    }
+  },
+  "production_dashboards": {
+    "promoter_2_dashboard": "NOT_VERIFIABLE — aucun identifiant promoter-2, ET frontend pas encore déployé sur Hostinger (la nouvelle UI ne serait de toute façon pas visible)",
+    "admin_dashboard": "NOT_VERIFIABLE — aucun identifiant admin, ET frontend pas encore déployé"
+  },
+  "real_case_promoter_2": {
+    "expected_state": {"commission_accrued": 600, "commission_available": 600, "commission_paid_out": 0, "withdrawal_requests": 0},
+    "state_directly_reverified_this_phase": false,
+    "reason": "Aucun accès admin production pour relire l'état réel",
+    "logical_guarantee": "Cet agent n'a exécuté AUCUN appel authentifié vers /promoter/me/withdrawals, /admin/withdrawals ou les endpoints de confirmation/refus avec un compte réel pendant cette phase — seules des requêtes SANS authentification ont été envoyées (toutes rejetées en 401, aucune mutation possible). Aucune demande de retrait n'a donc pu être créée par cet agent, ni pour promoter-2 ni pour aucun autre promoteur réel.",
+    "no_real_payment": true,
+    "no_real_withdrawal_request_created": true,
+    "no_confirmation_performed": true
+  },
+  "regression_post_deployment": {
+    "GET /health": 200,
+    "GET /leagues": 200,
+    "GET /ratings/Ligue1": 200,
+    "POST /billing/checkout (no auth)": 401,
+    "POST /billing/activate-license (no auth)": 401,
+    "GET /promoter/me (no auth)": 401,
+    "GET /admin/promoters (no auth)": 401,
+    "GET /admin/earnings/totals (no auth)": 401,
+    "POST /auth/login (bad creds)": 401,
+    "conclusion": "aucune régression détectée sur les endpoints critiques existants"
+  },
+  "limitations": [
+    "Frontend Hostinger non déployé — action humaine requise (upload FTP/File Manager des 5 fichiers listés)",
+    "Aucun identifiant de production (admin, promoter-2, utilisateur normal) disponible pour cet agent — sécurité par rôle et dashboards non re-vérifiables directement en production, bien que déjà prouvés par 56/56 tests locaux sur le code identique désormais déployé",
+    "Aucun endpoint de version runtime — preuve de déploiement basée sur un changement de comportement fonctionnel (404->401) plutôt qu'un SHA exposé"
+  ],
+  "verdict": "MANUAL_WITHDRAWAL_FRONTEND_DEPLOYMENT_PENDING"
+}

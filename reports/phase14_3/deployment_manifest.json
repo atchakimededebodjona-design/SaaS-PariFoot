@@ -1,0 +1,102 @@
+{
+  "generated_at_utc": "2026-09-01T00:24:40Z",
+  "LOCAL_COMMIT": {
+    "HEAD": "00dd971",
+    "HEAD_message": "feat: complete AI shadow and production readiness phases",
+    "HEAD_author_note": "Créé par l'utilisateur (atchakimededebodjona@gmail.com) EN DEHORS de cette conversation, 2026-08-31 21:59:21 UTC — n'inclut PAS le code Phase 14/14.1/14.2/14.3 (affiliation), qui reste entièrement NON commité à cette date.",
+    "branch": "main",
+    "origin": "origin/main [ahead 4]",
+    "phase14_affiliation_code_status": "100% non commité (working tree modifié + fichiers non suivis)"
+  },
+  "TARGET_ENVIRONMENT": {
+    "backend": "Railway (api.xfoot.site) — FastAPI + PostgreSQL",
+    "frontend": "Hostinger (www.xfoot.site) — hébergement statique, sans build, sans exécution serveur",
+    "payment_provider": "Chariow — PAYMENT_ENVIRONMENT=UNKNOWN (voir rapport principal)",
+    "deployment_mechanism": "git push origin main (déclenche Railway) + upload manuel des fichiers frontend-design/ (Hostinger, hors git)"
+  },
+  "BACKEND_FILES": {
+    "new": [
+      "api/app/models/promoter.py",
+      "api/app/referral/__init__.py",
+      "api/app/referral/money.py",
+      "api/app/referral/slug.py",
+      "api/app/referral/commission_service.py",
+      "api/app/referral/promoter_service.py",
+      "api/app/referral/dependencies.py",
+      "api/app/referral/stats.py",
+      "api/app/referral/router.py",
+      "api/app/referral/admin_router.py",
+      "api/alembic/versions/5787c4b3b963_phase14_referral_promoter_platform.py",
+      "api/test_referral_promoter_platform.py",
+      "api/test_phase14_1_production_integration.py"
+    ],
+    "modified": [
+      "api/app/models/user.py",
+      "api/app/auth/router.py",
+      "api/app/billing/router.py",
+      "api/main.py",
+      "api/alembic/env.py"
+    ]
+  },
+  "FRONTEND_FILES": {
+    "new": ["frontend-design/promoter.html", "frontend-design/admin-promoters.html", "frontend-design/admin-subscribers.html", "frontend-design/admin-earnings.html", "frontend-design/.htaccess"],
+    "modified": ["frontend-design/api.js", "frontend-design/login.html", "frontend-design/index.html", "frontend-design/live.html", "frontend-design/arena.html", "frontend-design/vip.html", "frontend-design/history.html", "frontend-design/billing.html", "frontend-design/dashboard.html"]
+  },
+  "MIGRATIONS": [
+    {
+      "revision": "5787c4b3b963",
+      "down_revision": "c4f8a1d75e93",
+      "tables_created": ["promoter", "referral_attribution", "referral_audit_event", "referral_commission", "referral_visit"],
+      "nature": "strictement additive (5x CREATE TABLE, aucun ALTER sur une table existante)",
+      "downgrade_available": true,
+      "downgrade_verified": "structurellement (miroir exact de upgrade en ordre inverse) — jamais exécuté en conditions réelles (ni local ni production)",
+      "applied_locally": true,
+      "applied_to_production": false
+    }
+  ],
+  "ENVIRONMENT_VARIABLES": [
+    {"NAME": "CHARIOW_API_KEY", "REQUIRED": true, "PURPOSE": "création des liens de checkout Chariow", "SECRET": true, "PRODUCTION_STATUS": "UNKNOWN (non vérifiable)", "VERIFICATION_STATUS": "présence confirmée en LOCAL uniquement"},
+    {"NAME": "CHARIOW_PULSE_SECRET", "REQUIRED": true, "PURPOSE": "vérification HMAC des webhooks Chariow (Pulses)", "SECRET": true, "PRODUCTION_STATUS": "UNKNOWN", "VERIFICATION_STATUS": "présence confirmée en LOCAL uniquement"},
+    {"NAME": "CHARIOW_PRODUCT_ID_MONTHLY", "REQUIRED": true, "PURPOSE": "identifiant du produit licence mensuelle", "SECRET": false, "PRODUCTION_STATUS": "UNKNOWN", "VERIFICATION_STATUS": "présence confirmée en LOCAL uniquement"},
+    {"NAME": "CHARIOW_PRODUCT_ID_YEARLY", "REQUIRED": true, "PURPOSE": "identifiant du produit licence annuelle", "SECRET": false, "PRODUCTION_STATUS": "UNKNOWN", "VERIFICATION_STATUS": "présence confirmée en LOCAL uniquement"},
+    {"NAME": "JWT_SECRET_KEY", "REQUIRED": true, "PURPOSE": "signature des tokens d'authentification", "SECRET": true, "PRODUCTION_STATUS": "UNKNOWN", "VERIFICATION_STATUS": "présence confirmée en LOCAL uniquement"},
+    {"NAME": "DATABASE_URL", "REQUIRED": true, "PURPOSE": "connexion PostgreSQL production", "SECRET": true, "PRODUCTION_STATUS": "présumée configurée (le service Railway fonctionne déjà en production)", "VERIFICATION_STATUS": "non vérifiable depuis cet environnement"},
+    {"NAME": "ADMIN_EMAILS", "REQUIRED": true, "PURPOSE": "allowlist des comptes administrateur (require_admin)", "SECRET": false, "PRODUCTION_STATUS": "UNKNOWN — CRITIQUE : ABSENT du .env local, état production non vérifiable", "VERIFICATION_STATUS": "NON VÉRIFIÉ — bloquant potentiel pour toute la zone /admin/* si absent en production"},
+    {"NAME": "ALLOWED_ORIGINS", "REQUIRED": true, "PURPOSE": "CORS — doit inclure https://www.xfoot.site", "SECRET": false, "PRODUCTION_STATUS": "présumée déjà correcte (le frontend actuel fonctionne déjà contre l'API)", "VERIFICATION_STATUS": "non vérifiable directement, mais AUCUNE nouvelle origine n'est introduite par Phase 14 (même domaine)"},
+    {"NAME": "REFERRAL_PLAN_PRICE_MONTHLY", "REQUIRED": false, "PURPOSE": "repli de montant si le webhook Chariow ne porte aucun champ montant", "SECRET": false, "PRODUCTION_STATUS": "ABSENT partout (nouvelle variable Phase 14, jamais configurée)", "VERIFICATION_STATUS": "optionnel — à activer seulement si un besoin réel est observé après déploiement"},
+    {"NAME": "REFERRAL_PLAN_PRICE_YEARLY", "REQUIRED": false, "PURPOSE": "idem, plan annuel", "SECRET": false, "PRODUCTION_STATUS": "ABSENT partout", "VERIFICATION_STATUS": "optionnel"},
+    {"NAME": "ENV", "REQUIRED": false, "PURPOSE": "active le garde-fou 'variables Chariow manquantes -> RuntimeError' si =production", "SECRET": false, "PRODUCTION_STATUS": "UNKNOWN", "VERIFICATION_STATUS": "non vérifiable"}
+  ],
+  "ROUTES": [
+    {"method": "POST", "path": "/referral/resolve/{slug}", "auth": "aucune (public)"},
+    {"method": "POST", "path": "/referral/attribute", "auth": "utilisateur authentifié"},
+    {"method": "GET", "path": "/promoter/me", "auth": "promoteur authentifié"},
+    {"method": "GET", "path": "/promoter/me/stats", "auth": "promoteur authentifié"},
+    {"method": "GET", "path": "/promoter/me/sales", "auth": "promoteur authentifié"},
+    {"method": "GET", "path": "/admin/promoters", "auth": "admin"},
+    {"method": "POST", "path": "/admin/promoters", "auth": "admin"},
+    {"method": "POST", "path": "/admin/promoters/{promoter_id}/status", "auth": "admin"},
+    {"method": "GET", "path": "/admin/promoters/{promoter_id}", "auth": "admin"},
+    {"method": "GET", "path": "/admin/subscribers", "auth": "admin"},
+    {"method": "GET", "path": "/admin/earnings/totals", "auth": "admin"},
+    {"method": "GET", "path": "/admin/earnings/by-promoter", "auth": "admin"}
+  ],
+  "WEBHOOKS": {
+    "endpoint": "POST /billing/pulse (existant, réutilisé — jamais un nouveau webhook créé pour Phase 14)",
+    "new_behavior_added": "un appel best-effort à create_commission_for_confirmed_payment() depuis _handle_successful_sale, et à reverse_commissions_for_subscription() depuis _handle_license_status(new_status='revoked') — aucune modification de la logique de vérification de signature/idempotence elle-même.",
+    "signature_header": "x-chariow-signature",
+    "delivery_id_header": "x-pulse-delivery-id"
+  },
+  "CRITICAL_DEPENDENCIES": {
+    "new_python_packages": "aucune",
+    "new_js_libraries": "aucune",
+    "existing_reused": ["FastAPI", "SQLModel/SQLAlchemy", "Alembic", "slowapi (rate limiting)", "python-jose ou équivalent (JWT, déjà en place)"]
+  },
+  "ROLLBACK_REQUIREMENTS": {
+    "backend": "Railway : redéployer le commit précédent via l'historique de déploiements du dashboard (aucune commande CLI nécessaire si géré par l'UI Railway).",
+    "database": "alembic downgrade -1 (le fichier de migration fournit un downgrade() complet, structurellement vérifié mais jamais exécuté en conditions réelles) — supprime les 5 tables affiliation, ne touche aucune autre table.",
+    "frontend": "Hostinger : re-upload des fichiers frontend-design/ précédents — nécessite une SAUVEGARDE MANUELLE préalable des fichiers actuels avant tout nouvel upload (pas de versioning natif côté hébergement statique).",
+    "verified": false,
+    "note": "Aucun rollback n'a été exercé en conditions réelles — cette section documente la méthode, pas une preuve d'exécution (ROLLBACK_UNVERIFIED)."
+  }
+}

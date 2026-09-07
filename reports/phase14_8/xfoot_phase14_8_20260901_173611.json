@@ -1,0 +1,239 @@
+{
+  "phase": "14.8",
+  "title": "XFOOT FRONTEND PRODUCTION + AUTHENTICATED REFERRAL SMOKE TEST V1",
+  "generated_at_utc": "2026-09-01T17:36:11Z",
+  "release_commit": "ebb23ec",
+
+  "1_executive_summary": "Backend reconfirmé déployé et stable (11/11 routes Phase 14 live, inchangé depuis Phase 14.7). Frontend Hostinger TOUJOURS non déployé — aucun accès FTP/panel disponible depuis cet environnement, FRONTEND_DEPLOYMENT_BLOCKED. Validation de build locale : 12/12 pages JS-valides, API_BASE_URL correctement configuré sur https://api.xfoot.site en production. Aucun compte de test promoteur/admin disponible (décision utilisateur en Phase 14.7 : lecture seule uniquement, non re-sollicitée cette phase) — tous les tests authentifiés restent AUTHENTICATED_TEST_BLOCKED, jamais simulés. Tests non-financiers exécutés réellement en production : résolution de slug inexistant (safe), sécurité webhook (signature invalide/absente → 401), CORS restrictif confirmé (origine autorisée acceptée, origine non autorisée rejetée). Aucun paiement réel. Aucune modification IA.",
+
+  "2_git_baseline": {
+    "CURRENT_HEAD": "ebb23ec",
+    "origin_main_sha_via_ls_remote": "ebb23ecd33729aca5b78731f1a062b936a79c801",
+    "HEAD_equals_ebb23ec": true,
+    "origin_main_equals_ebb23ec": true,
+    "new_commit_created": false,
+    "untracked_files_added": false,
+    "release_candidate_modified": false
+  },
+
+  "3_release_version": {
+    "PRODUCTION_VERSION": "UNKNOWN (preuve directe) — aucun endpoint /version, aucune metadata de déploiement exposée dans les en-têtes HTTP (Server: railway-hikari, x-railway-request-id, x-railway-edge — aucun ne contient de SHA de commit).",
+    "high_confidence_inference": "ebb23ec — inchangé depuis Phase 14.7 (mêmes 11/11 routes, même comportement), origin/main == ebb23ec confirmé par preuve directe (ls-remote).",
+    "conclusion_never_assumed_solely_because_requested": true
+  },
+
+  "4_frontend_deployment": {
+    "HOSTINGER_ACCESS": "UNAVAILABLE",
+    "tools_checked": ["lftp (absent)", "ftp (binaire Windows présent mais aucun identifiant/hôte Hostinger connu ou configuré)"],
+    "env_tokens_checked": "Aucune variable HOSTINGER_*/FTP_* trouvée (noms uniquement, aucune valeur affichée)",
+    "value": "FRONTEND_DEPLOYMENT_BLOCKED",
+    "action_taken": "Aucune tentative de déploiement — jamais prétendu avoir déployé.",
+    "backend_modified": false
+  },
+
+  "4b_frontend_build": {
+    "html_valid": true,
+    "js_syntax_check": "12/12 pages OK (node vm, 0 erreur) : index, live, arena, vip, history, billing, dashboard, login, promoter, admin-promoters, admin-subscribers, admin-earnings",
+    "relative_paths": "Confirmés cohérents (liens internes déjà vérifiés Phase 14/14.4)",
+    "api_url_correct": "PRODUCTION_API_URL = 'https://api.xfoot.site' (HTTPS, en dur comme constante de repli) — API_BASE_URL bascule automatiquement vers cette valeur dès que window.location.hostname n'est PAS un hôte local (regex _LOCAL_HOSTNAME_RE), jamais l'inverse.",
+    "https_enforced_in_code": true,
+    "localhost_absent_from_production_path": true,
+    "secrets_absent": true,
+    "credentials_absent": true,
+    "admin_data_hardcoded": false,
+    "BUILD_PASS": true,
+    "note": "Aucun build compilé n'est nécessaire (site statique HTML/JS/CSS servi tel quel) — 'build' interprété ici comme validation statique complète."
+  },
+
+  "5_frontend_production_routes": {
+    "https_www_xfoot_site_root": {"status": 200},
+    "https_www_xfoot_site_login": {"status": 200},
+    "https_www_xfoot_site_promoter": {"status": 404, "expected_before_deployment": true},
+    "https_www_xfoot_site_admin_promoters": {"status": 404, "expected_before_deployment": true},
+    "https_www_xfoot_site_admin_subscribers": {"status": 404, "expected_before_deployment": true},
+    "https_www_xfoot_site_admin_earnings": {"status": 404, "expected_before_deployment": true},
+    "urls_source": "Extraites du code réel (frontend-design/*.html du commit ebb23ec), jamais inventées",
+    "conclusion": "404 attendu confirmé pour toutes les pages Phase 14 — cohérent avec FRONTEND_DEPLOYMENT_BLOCKED (§4), pas un bug."
+  },
+
+  "6_https_mixed_content": {
+    "http_to_https_redirect": {"from": "http://www.xfoot.site/", "status": 301, "to": "https://www.xfoot.site//"},
+    "https_functional": true,
+    "frontend_calls_https_api": true,
+    "evidence": "PRODUCTION_API_URL = 'https://api.xfoot.site' (jamais http://) — confirmé par lecture de code §4b",
+    "mixed_content_risk": "Aucun détecté"
+  },
+
+  "7_referral_url": {
+    "format_implemented": "https://www.xfoot.site/{slug} (résolution via POST /referral/resolve/{slug} côté API, réécriture .htaccess côté frontend — .htaccess non déployé, voir Phase 14.2)",
+    "test_performed": "POST https://api.xfoot.site/referral/resolve/phase14-8-nonexistent-slug-probe",
+    "result": "{\"valid\":false}, HTTP 200",
+    "safety": "Slug volontairement inexistant — le code (resolve_referral_slug) ne crée un ReferralVisit QUE si le promoteur existe et est actif ; aucune écriture DB pour un slug inexistant, confirmé par lecture de code.",
+    "attribution_conservation_test": "NON EFFECTUÉ — nécessiterait un parcours utilisateur réel (inscription), bloqué par la décision de lecture seule (§9)."
+  },
+
+  "8_authentication": {
+    "PROMOTER_TEST_ACCOUNT": "NOT_AVAILABLE",
+    "ADMIN_TEST_ACCOUNT": "NOT_AVAILABLE",
+    "reason": "Aucun compte de test n'a été créé ou fourni. En Phase 14.7, interrogé explicitement sur la création de comptes de test réels en production, l'utilisateur a choisi 'lecture seule uniquement' — cette décision n'a pas été révoquée et n'a pas été re-sollicitée cette phase (elle reste pleinement applicable).",
+    "value": "AUTHENTICATED_TEST_BLOCKED",
+    "no_arbitrary_admin_account_created": true,
+    "admin_emails_not_modified": true,
+    "no_real_user_password_requested": true
+  },
+
+  "9_promoter_dashboard": {"value": "NOT_AVAILABLE", "reason": "AUTHENTICATED_TEST_BLOCKED (§8) — aucune connexion possible sans compte."},
+
+  "10_promoter_isolation": {
+    "value": "NOT_AVAILABLE",
+    "reason": "Nécessite 2 comptes promoteur de test — aucun disponible (§8).",
+    "unauthenticated_check_performed": true,
+    "unauthenticated_result": "GET /promoter/me, /promoter/me/stats, /promoter/me/sales (sans token) -> 401 (×3), reconfirmé réellement cette phase.",
+    "already_proven_in_isolated_environment": "Phase 14.1, test_promoter_isolation_on_sales_endpoint_forged_promoter_id — promoter_id forgé (query + body) n'expose jamais les données d'un tiers."
+  },
+
+  "11_admin_dashboard": {"value": "NOT_AVAILABLE", "reason": "AUTHENTICATED_TEST_BLOCKED (§8) — aucun compte admin disponible ; ADMIN_EMAILS toujours UNKNOWN en production."},
+
+  "12_admin_isolation": {
+    "value": "PARTIAL — non-authenticated rejection confirmed only",
+    "unauthenticated_result": "GET /admin/promoters, /admin/subscribers, /admin/earnings/totals (sans token) -> 401 (×3), reconfirmé réellement cette phase.",
+    "promoter_to_admin_test": "NON EFFECTUÉ — nécessiterait un compte promoteur réel (§8).",
+    "admin_to_admin_test": "NON EFFECTUÉ — nécessiterait un compte admin réel (§8).",
+    "authentication_never_bypassed": true
+  },
+
+  "13_referral_attribution": {
+    "value": "BLOCKED_PENDING_HUMAN_DECISION",
+    "unchanged_since_phase_14_7": true,
+    "route_existence_confirmed": true,
+    "attributed_never_equals_paid": "Reconfirmé par lecture de code (ReferralAttribution et ReferralCommission sont deux tables distinctes, la seconde créée UNIQUEMENT depuis _handle_successful_sale, jamais depuis /referral/attribute)."
+  },
+
+  "14_payment_state_matrix": {
+    "CLICK": "NOT_OBSERVED (production) — 0 commission garanti par le code (aucune écriture referral_commission possible depuis /referral/resolve)",
+    "REGISTRATION": "NOT_OBSERVED (production) — 0 commission garanti par le code",
+    "CHECKOUT": "NOT_OBSERVED (production) — 0 commission garanti par le code (checkout ne fait qu'appeler Chariow pour un lien, jamais commission_service)",
+    "PENDING": "NOT_OBSERVED (production)",
+    "FAILED": "NOT_OBSERVED (production)",
+    "CONFIRMED": "NOT_OBSERVED (production) — jamais créé artificiellement, conformément à la règle absolue",
+    "note": "Chaque état a déjà été prouvé par exécution réelle en environnement isolé (Phase 14 tests 3/4/5, Phase 14.1 sweep consolidé, 135 assertions) — non re-observable en production sans données réelles, honnêtement documenté comme NOT_OBSERVED plutôt qu'un résultat inventé."
+  },
+
+  "15_commission_calculation": {
+    "invariant": "commission_amount = floor(gross_paid_amount × commission_rate_bp / 10000)",
+    "example": {"catalogue": 20000, "paye": 15000, "commission": 6000, "jamais": 8000},
+    "frontend_never_source_of_truth": "Confirmé par lecture de code du commit ebb23ec (identique à Phase 14.6) — aucun champ commission/amount n'est accepté en entrée d'aucune route promoteur ou publique.",
+    "live_confirmation_this_phase": false,
+    "reason": "Aucune donnée réelle disponible (§13/§14)."
+  },
+
+  "16_webhook_security": {
+    "invalid_signature_test": {"method": "POST /billing/pulse, x-chariow-signature falsifiée", "result": "401", "verdict": "REJECT confirmé réellement"},
+    "missing_signature_test": {"method": "POST /billing/pulse, sans header signature", "result": "401", "verdict": "REJECT confirmé réellement"},
+    "payload_altered_test": "NON EFFECTUÉ séparément — équivalent fonctionnel : toute altération du corps invalide la signature HMAC (le HMAC couvre le corps brut intégral), donc déjà couvert par les deux tests ci-dessus.",
+    "duplicate_test": "NON EFFECTUÉ — nécessiterait un premier événement valide, impossible sans le vrai secret Chariow (jamais accessible).",
+    "hmac_never_disabled": true,
+    "no_write_to_db_from_these_tests": true
+  },
+
+  "17_frontend_backend_consistency": {
+    "endpoints_used_by_frontend": "GET /auth/me, POST /referral/resolve/{slug}, POST /referral/attribute, GET /promoter/me[/stats][/sales], GET/POST /admin/promoters[...], GET /admin/subscribers, GET /admin/earnings/* — tous vérifiés présents dans l'API de production (§5 Phase 14.7, reconfirmé §5 stable cette phase)",
+    "http_methods_match": true,
+    "field_names_match": "Vérifié par lecture croisée code frontend (api.js, promoter.html, admin-*.html) ↔ backend (router.py, admin_router.py, Pydantic response models) — cohérents (SaleRow.amount_paid/commission, SubscriberRow.amount_paid/promoter_slug, etc.)",
+    "commission_never_computed_client_side": true,
+    "FRONTEND_BACKEND_MISMATCH_detected": false
+  },
+
+  "18_cors": {
+    "authorized_origin_test": {"origin": "https://www.xfoot.site", "result": "access-control-allow-origin: https://www.xfoot.site, access-control-allow-credentials: true, methods: DELETE/GET/HEAD/OPTIONS/PATCH/POST/PUT", "verdict": "OK — appels API fonctionnels depuis le domaine réel"},
+    "unauthorized_origin_test": {"origin": "https://evil-attacker-example.test", "result": "AUCUN header access-control-allow-origin renvoyé", "verdict": "OK — CORS restrictif confirmé, aucune origine élargie automatiquement"},
+    "cors_widened_this_phase": false
+  },
+
+  "19_security": {
+    "frontend_secrets_found": false,
+    "hardcoded_credentials_found": false,
+    "admin_data_hardcoded_found": false,
+    "token_storage": "localStorage (clé xfoot_token) — architecture pré-existante, non modifiée par Phase 14, cohérente avec l'absence de mécanisme de session/cookie ailleurs dans ce projet",
+    "https_enforced": true,
+    "endpoints_protected": "Reconfirmé — 401 sur toutes les routes promoteur/admin sans token (§10/§12)",
+    "admin_access_backend_controlled": true,
+    "perfect_security_not_claimed": true,
+    "note": "Aucune déclaration de sécurité 'parfaite' émise sur la seule base d'un test frontend statique — évaluation limitée à ce qui a été réellement vérifié."
+  },
+
+  "20_ai_isolation": {
+    "training_promotion_prediction_modification": false,
+    "shadow_modified": false,
+    "signal_generated": false,
+    "odds_api_modified": false,
+    "no_ai_code_touched_this_phase": true
+  },
+
+  "21_db_purity": {
+    "local_dev_db_before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "local_dev_db_after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "local_identical": true,
+    "production_ai_tables": "Non vérifiables directement (aucun accès DB) — garantie architecturale reconfirmée (code identique au commit audité, 0 référence aux tables IA dans app/referral/*), honnêtement documentée comme non mesurée empiriquement en production.",
+    "CRITICAL_FAILURE": false
+  },
+
+  "23_browser_validation": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "note": "Aucun outil Playwright/navigateur interactif disponible dans cet environnement — inchangé depuis toutes les phases précédentes. Aucun screenshot ni résultat visuel inventé."
+  },
+
+  "24_payment_gate": {
+    "REAL_PAYMENT_TEST": "PENDING_HUMAN_AUTHORIZATION",
+    "documentation_prepared_for_next_phase": {
+      "plan": "Effectuer UN paiement réel de test, montant minimal (plan mensuel), avec un compte promoteur ET un compte acheteur entièrement nouveaux et clairement tagués (ex. phase14_9_test_promoter_.../phase14_9_test_buyer_...).",
+      "montant": "Prix du plan mensuel réellement configuré chez Chariow (exact non déterminable sans accès dashboard) — à confirmer avant exécution.",
+      "compte_promoteur": "À créer explicitement pour ce test, jamais un compte existant réel.",
+      "compte_acheteur": "À créer explicitement pour ce test, jamais un compte existant réel.",
+      "resultat_attendu": "1 ProviderSubscription active, 1 Pulse successful.sale reçu, 1 ReferralCommission créée (status=ACCRUED, gross_paid_amount=montant réel, commission_amount=floor(montant×0.40)).",
+      "commission_attendue": "40% du montant réellement débité — jamais le prix catalogue si une remise existe.",
+      "webhook_attendu": "successful.sale, x-pulse-delivery-id unique, signature valide (vrai CHARIOW_PULSE_SECRET, jamais affiché).",
+      "verification_dashboard": "GET /promoter/me/sales (compte promoteur test) ET GET /admin/subscribers + /admin/earnings/totals (compte admin réel, si disponible) doivent refléter exactement la même vente.",
+      "procedure_idempotence": "Si le Pulse Chariow est redélivré (retry réseau), vérifier qu'une seule ReferralCommission existe (contrainte UNIQUE déjà en place, comportement déjà prouvé en isolé)."
+    },
+    "executed_this_phase": false
+  },
+
+  "25_limitations": [
+    "PRODUCTION_VERSION reste sans preuve cryptographique directe (aucun endpoint de version exposé) — inférence de très haute confiance uniquement.",
+    "FRONTEND_DEPLOYMENT_BLOCKED — aucun accès Hostinger disponible, frontend Phase 14 toujours absent de production.",
+    "AUTHENTICATED_TEST_BLOCKED — aucun compte de test promoteur/admin disponible ; dashboards, isolation authentifiée, et attribution complète non testables en production cette phase.",
+    "ADMIN_EMAILS reste UNKNOWN en production.",
+    "PAYMENT_STATE_MATRIX entièrement NOT_OBSERVED en production (déjà prouvée en isolé, non redupliquée artificiellement).",
+    "Pureté DB IA en production non mesurable directement (garantie architecturale uniquement).",
+    "BROWSER_VALIDATION_UNAVAILABLE — inchangé.",
+    "Aucun test de paiement réel — REAL_PAYMENT_TEST = PENDING_HUMAN_AUTHORIZATION."
+  ],
+
+  "26_final_verdict": {
+    "value": "FRONTEND_DEPLOYMENT_BLOCKED",
+    "rationale": "Le frontend Phase 14 n'a pas pu être déployé faute d'accès réel à Hostinger — fait d'accès, pas un défaut du Release Candidate (build 100% validé : 12/12 pages JS-valides, API_BASE_URL HTTPS correct, aucun secret). Le backend reste confirmé déployé et stable (reconfirmé cette phase : 11/11 routes, sécurité webhook, CORS restrictif, isolation non-authentifiée). Les tests authentifiés (dashboards, isolation inter-comptes, attribution complète) restent explicitement AUTHENTICATED_TEST_BLOCKED, conformément à la décision de lecture seule prise par l'utilisateur en Phase 14.7, jamais contournée ni simulée. Aucun paiement réel, aucune modification IA, aucune action irréversible. Ni PAYMENT_VERIFIED ni FULL_PRODUCTION_VALIDATED ne seraient honnêtes ici — le frontend et les parcours authentifiés restent à valider."
+  },
+
+  "human_decision_context": {
+    "reused_from": "Phase 14.7",
+    "decision": "Lecture seule uniquement — aucune création de compte de test réel en production",
+    "re_solicited_this_phase": false,
+    "reason_not_resolicited": "La décision reste pleinement applicable et n'a pas été révoquée ; ne pas re-poser une question déjà tranchée par l'utilisateur."
+  },
+
+  "absolute_safety_invariants_compliance": {
+    "real_payment_executed": false,
+    "ai_engine_modified": false,
+    "betting_signal_activated": false,
+    "ai_tables_modified": false,
+    "admin_bypass": false,
+    "frontend_secrets": false,
+    "commission_before_payment_confirmed": false,
+    "promoter_a_data_visible_to_b": "non testable (aucun compte), mais garanti par le code et déjà prouvé en isolé",
+    "admin_data_visible_to_promoter": false,
+    "unknown_transformed_to_pass": false
+  },
+
+  "closing_statement": "PHASE 14.8 — XFOOT FRONTEND PRODUCTION & AUTHENTICATED REFERRAL SMOKE TEST V1 TERMINÉE. FRONTEND, ROUTING, AUTHENTIFICATION, DASHBOARD PROMOTEUR, DASHBOARD ADMIN, ISOLATION, ATTRIBUTION REFERRAL ET COHÉRENCE FRONTEND/BACKEND VÉRIFIÉS OU LIMITATIONS DOCUMENTÉES. AUCUN PAIEMENT RÉEL EFFECTUÉ. AUCUNE COMMISSION RÉELLE VALIDÉE SANS PAIEMENT CONFIRMÉ. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. LE TEST DE PAIEMENT RÉEL RESTE SOUMIS À UNE AUTORISATION HUMAINE SÉPARÉE."
+}

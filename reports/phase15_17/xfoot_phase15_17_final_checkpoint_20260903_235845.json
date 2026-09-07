@@ -1,0 +1,113 @@
+{
+  "phase": "15.17",
+  "title": "Checkpoint Git final + push — Promotion / Retraits",
+  "generated_at_utc": "2026-09-03T23:58:45Z",
+  "partie_a_inventaire": {
+    "git_status_before": {
+      "tracked_modified": ["api/app/ai/readiness/gates.py", "reports/shadow/watch/evidence_snapshots.json"],
+      "untracked_relevant_to_this_series": [],
+      "untracked_unrelated_leftovers": ["api/test_phase13.py", "api/test_phase15_7_referral_attribution_repro.py", "scripts/phase13_evidence_maturation.py", "reports/phase9_5/* .. reports/phase15_16_2/* (nombreux rapports JSON/MD d'anciennes phases, jamais committés par convention de ce dépôt)"]
+    },
+    "git_log_before": ["dcd70e6 feat: add promoter withdrawal search and clarify refunds", "a0dcbc7 feat: add manual promoter withdrawals", "44f6652 fix: reconcile referral commission amount from plan price"],
+    "head_before": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+    "origin_main_before": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+    "already_in_sync_before_any_action": true
+  },
+  "partie_b_perimetre": {
+    "constat": "AUCUNE modification de code non commitée liée au système de retrait manuel, à la recherche admin par promoteur, aux agrégats financiers ou au libellé 'Commissions remboursées (client)' n'a été trouvée dans l'arbre de travail.",
+    "raison": "Ces travaux ont déjà été intégralement committés et poussés lors des phases précédentes : commit a0dcbc7 (Phase 15.14/15.15, système de retrait manuel + déploiement) et commit dcd70e6 (Phase 15.16.1/15.16.2, recherche par promoteur + clarification du libellé + déploiement). Aucun de ces deux commits n'a été recréé ni modifié.",
+    "verification": "git diff --stat -- api frontend-design ne montre qu'UN SEUL fichier modifié, api/app/ai/readiness/gates.py (6 insertions), totalement étranger à cette série de phases."
+  },
+  "partie_c_fichiers_etrangers": {
+    "gates_py": {
+      "file": "api/app/ai/readiness/gates.py",
+      "status": "modifié, non commité",
+      "decision": "EXCLU du staging — modification étrangère pré-existante liée à un audit de sécurité IA (Phase 13), déjà documentée comme hors périmètre dans TOUTES les phases précédentes de cette série (15.9 à 15.16.2), jamais touchée par cet agent, et Partie E de cette phase interdit explicitement tout changement AI dans ce checkpoint."
+    },
+    "evidence_snapshots_json": {
+      "file": "reports/shadow/watch/evidence_snapshots.json",
+      "status": "modifié, non commité",
+      "decision": "EXCLU — artefact de suivi shadow-mode IA, sans rapport avec le programme de promotion/retraits."
+    },
+    "untracked_test_files": {
+      "files": ["api/test_phase13.py", "api/test_phase15_7_referral_attribution_repro.py", "scripts/phase13_evidence_maturation.py"],
+      "decision": "EXCLUS — pré-existants, appartiennent à des phases antérieures sans rapport direct avec ce checkpoint (retrait/recherche promoteur), non ajoutés automatiquement."
+    },
+    "report_files": {
+      "decision": "EXCLUS — rapports JSON/MD de phases (9.5 à 15.16.2), jamais committés dans ce dépôt par convention établie depuis le début de ce projet (constaté à chaque phase précédente), aucune raison de déroger à cette convention pour ce checkpoint."
+    },
+    "no_file_deleted": true
+  },
+  "partie_d_tests": {
+    "test_phase15_14_manual_withdrawal.py": "56/56",
+    "test_phase15_16_1_admin_promoter_search.py": "41/41",
+    "test_referral_promoter_platform.py": "99/99",
+    "test_phase14_1_production_integration.py": "36/36",
+    "test_phase15_1_new_offers.py": "17/17",
+    "test_phase15_7_referral_attribution_repro.py": "24/24",
+    "test_phase15_9_webhook_hardening.py": "31/31",
+    "test_phase15_10_activate_license_commission.py": "33/33",
+    "test_phase15_12_amount_reconciliation.py": "36/36",
+    "test_chariow_billing.py": "30/30",
+    "test_entitlement.py": "8/8",
+    "test_provider_subscription_backfill.py": "4/4",
+    "test_google_play_billing.py": "44/44",
+    "test_auth.py": "8/8",
+    "test_main.py": "9/9",
+    "total_failures": 0,
+    "idempotence_covered": "test_phase15_14 TEST 21/22/24/30 + test_phase15_16_1 TEST 14",
+    "isolation_covered": "test_phase15_14 TEST 9/T + test_phase15_16_1 TEST 8 + matrice sécurité"
+  },
+  "partie_e_integrite_ai": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "comparaison": "Identiques à toutes les vérifications précédentes de cette série de phases (15.9 à 15.16.2)",
+    "changement_ai_introduit_dans_ce_checkpoint": false,
+    "note": "gates.py est modifié dans le working tree mais explicitement EXCLU du staging (Partie C) — aucun changement AI n'entre dans ce checkpoint."
+  },
+  "partie_f_retrait_reel": {
+    "modifie": false,
+    "preuve": "Aucun fichier touchant app/referral/withdrawal_service.py, app/models/promoter.py, app/referral/router.py ou app/referral/admin_router.py n'apparaît dans git status --short — ces fichiers sont déjà committés et identiques à leur état poussé (commits a0dcbc7/dcd70e6). Aucune écriture, aucun appel API, aucune action de production effectuée durant cette phase.",
+    "no_new_payment": true,
+    "no_new_withdrawal_request": true,
+    "no_status_change": true,
+    "no_recredit": true,
+    "no_history_deleted": true
+  },
+  "partie_g_staging": {
+    "files_staged": [],
+    "reason": "Aucun fichier pertinent au périmètre (retrait manuel / recherche promoteur / agrégats / libellé) n'était en attente de commit — le working tree pour ce périmètre était déjà propre avant le début de cette phase.",
+    "git_add_dot_used": false,
+    "git_add_dash_a_used": false
+  },
+  "partie_h_commit": {
+    "commit_created": false,
+    "reason": "Aucune modification pertinente non commitée à committer — créer un commit vide ou committer un fichier hors périmètre (gates.py, evidence_snapshots.json) aurait violé les règles absolues de cette phase (aucun changement AI, aucun fichier étranger)."
+  },
+  "partie_i_push": {
+    "push_performed": false,
+    "reason": "Rien de nouveau à pousser — origin/main était déjà égal à HEAD (dcd70e6) avant le début de cette phase, résultat des pushes déjà effectués en Phase 15.15 et 15.16.2.",
+    "verification": {
+      "head": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "origin_main_local_ref": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "ls_remote_refs_heads_main": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "all_three_match": true
+    }
+  },
+  "partie_j_verification_post": {
+    "working_tree_clean_for_checkpoint_scope": true,
+    "origin_main_equals_head": true,
+    "no_unpushed_local_commit": true,
+    "no_checkpoint_file_forgotten": true,
+    "no_foreign_file_committed": true,
+    "no_file_deleted_without_authorization": true
+  },
+  "financial_state_confirmed_via_local_regression": {
+    "note": "Ces chiffres proviennent des tests locaux (TEST 15 de test_phase15_16_1) reproduisant fidèlement le cas réel, PAS d'une relecture directe de la production (aucun accès admin production disponible pour cet agent, limitation déjà documentée en Phases 15.15/15.16.1/15.16.2).",
+    "commission_generee": 600, "retrait_demande": 600, "total_verse": 600, "en_attente": 0, "disponible": 0, "commissions_remboursees_client": 0
+  },
+  "limitations": [
+    "Aucun accès admin production pour relire directement l'état réel de promoter-2 pendant cette phase — non nécessaire ici puisqu'aucune modification de code n'a eu lieu (rien à revalider en production)"
+  ],
+  "verdict": "FINAL_PROMOTION_WITHDRAWAL_CHECKPOINT_PUSHED"
+}

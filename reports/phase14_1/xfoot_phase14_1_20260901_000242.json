@@ -1,0 +1,268 @@
+{
+  "phase": "14.1",
+  "title": "XFOOT PRODUCTION INTEGRATION & REAL PAYMENT ATTRIBUTION VERIFICATION V1",
+  "generated_at_utc": "2026-09-01T00:02:42Z",
+  "scope_note": "Vérification de l'intégration Phase 14 avec l'environnement réel du projet — AUCUNE nouvelle architecture d'affiliation créée. Moteur IA non touché.",
+
+  "1_environment": {
+    "local_dev_backend": "FastAPI + SQLite (api/app.db), lancé localement, jamais exposé — utilisé uniquement pour les inspections de schéma (comptage de lignes IA).",
+    "production_backend_reachable": true,
+    "production_backend_url": "https://api.xfoot.site",
+    "production_frontend_reachable": true,
+    "production_frontend_url": "https://www.xfoot.site",
+    "outbound_network_access_confirmed": true,
+    "note": "Accès réseau sortant réel confirmé disponible dans cet environnement (contrairement à l'hypothèse par défaut) — utilisé UNIQUEMENT pour des requêtes GET/OPTIONS en lecture seule vers le domaine du projet lui-même (jamais vers l'API Chariow, jamais un POST mutant une donnée réelle)."
+  },
+
+  "2_payment_provider": {
+    "provider": "Chariow",
+    "already_confirmed_in_phase14": "produit 'Paiement unique' à prix FIXE (pas d'abonnement récurrent, pas de 'prix libre'), Product ID monthly/yearly configurés.",
+    "sandbox_mode_status": "NON CONFIRMÉ — déjà documenté comme incertitude explicite AVANT cette phase dans api/app/core/chariow_config.py et api/.env.example ('l'existence d'un mode test distinct des clés live n'est pas confirmée, à vérifier dans Paramètres -> Clés API du dashboard Chariow'). Cette phase n'a pas résolu cette incertitude (aucun accès au dashboard Chariow depuis cet environnement)."
+  },
+
+  "3_payment_environment": {
+    "value": "UNKNOWN",
+    "justification": [
+      "api/.env local contient une CHARIOW_API_KEY présente (45 caractères, valeur jamais affichée) mais son statut sandbox/production n'est pas déterminable depuis le code.",
+      "Le domaine de production https://www.xfoot.site / https://api.xfoot.site est RÉELLEMENT en ligne et sert du trafic réel (confirmé par requêtes GET/health en lecture seule) — cohérent avec l'usage d'une clé de production réelle, sans qu'aucune clé de test séparée ne soit documentée nulle part dans ce dépôt.",
+      "Décision de sécurité : AUCUN appel réseau n'a été effectué vers https://api.chariow.com (l'API Chariow elle-même) dans cette phase, dans aucune direction, pour éliminer tout risque de déclencher une opération financière réelle avec une clé dont le statut est incertain."
+    ],
+    "rule_applied": "Aucun basculement automatique vers PRODUCTION. Aucun paiement réel tenté. Tous les tests de paiement réutilisent le mécanisme de simulation de webhook signé déjà établi par la Phase 14 (Pulse HMAC-SHA256 vers une app FastAPI de test isolée, jamais l'API réelle)."
+  },
+
+  "4_domain_verification": {
+    "read_only_https_checks_performed": [
+      {"url": "https://www.xfoot.site/", "http_code": 200},
+      {"url": "https://www.xfoot.site/login.html", "http_code": 200},
+      {"url": "https://www.xfoot.site/some-random-nonexistent-slug-zzz", "http_code": 404, "meaning": "aucune réécriture .htaccess vers login.html?ref= n'est active en production — cohérent avec un .htaccess non déployé (voir 21_hostinger_validation)"},
+      {"url": "https://api.xfoot.site/health", "http_code": 200},
+      {"url": "https://www.xfoot.site/promoter.html", "http_code": 404},
+      {"url": "https://www.xfoot.site/admin-promoters.html", "http_code": 404},
+      {"url": "https://www.xfoot.site/admin-subscribers.html", "http_code": 404},
+      {"url": "https://www.xfoot.site/admin-earnings.html", "http_code": 404}
+    ],
+    "api_route_probing": {
+      "method": "OPTIONS (sans effet de bord) sur les nouvelles routes Phase 14, comparé aux routes préexistantes",
+      "results": [
+        {"path": "/promoter/me", "http_code": 404, "meaning": "route inexistante en production"},
+        {"path": "/referral/resolve/test-nonexistent-slug-probe", "http_code": 404, "meaning": "route inexistante en production"},
+        {"path": "/admin/promoters", "http_code": 404, "meaning": "route inexistante en production"},
+        {"path": "/auth/me", "http_code": 405, "meaning": "route EXISTE (405 = méthode OPTIONS non gérée, mais le chemin est bien routé) — confirme que la comparaison est valide"},
+        {"path": "/billing/checkout", "http_code": 405, "meaning": "route EXISTE — idem"}
+      ],
+      "openapi_schema_check": "GET https://api.xfoot.site/openapi.json (200) inspecté intégralement — AUCUN chemin /promoter/*, /referral/*, /admin/* présent dans la liste complète des routes déclarées par l'application de production."
+    },
+    "conclusion": "PRODUCTION_ROUTING_UNVERIFIED — plus précisément NOT_YET_DEPLOYED : le code Phase 14 (backend ET frontend) n'est PAS déployé sur l'environnement de production réel à la date de cette vérification. Ceci confirme et explique pourquoi un test de routing/attribution réel via /{slug} est structurellement impossible actuellement — pas une limitation d'outillage, un fait de déploiement.",
+    "slug_valid_invalid_active_inactive_tests": "NON EXÉCUTABLES contre la production réelle (routes absentes). Exécutés contre l'environnement de test isolé (voir section 22, tests réutilisés de la Phase 14 : tests 16/16b/17 slug, 9/10 promoteur actif/inactif)."
+  },
+
+  "5_referral_attribution": {
+    "tested_against": "environnement de test isolé (TestClient FastAPI, base SQLite dédiée jamais api/app.db) — jamais la production, qui ne porte pas encore ce code.",
+    "new_coverage_this_phase": "test_no_false_commission_consolidated_sweep (étape a) : POST /referral/resolve/{slug} avec un visitor_id anonyme -> valid=true, ReferralVisit créée, aucune ReferralAttribution ni ReferralCommission générée à ce stade.",
+    "reused_from_phase14": "tests 9/10 (promoteur actif/inactif) déjà couvrent promoter_id correct, timestamp, non-fuite vers un autre promoteur, absence de donnée personnelle inutile — non redupliqués ici.",
+    "result": "OK"
+  },
+
+  "6_account_attribution": {
+    "new_coverage_this_phase": "test_no_false_commission_consolidated_sweep (étapes b/c) : inscription seule -> 0 attribution/commission ; attribution explicite ensuite -> liée au bon promoteur, toujours 0 commission avant paiement.",
+    "result": "OK — l'attribution n'est jamais créée par la seule existence d'un compte, confirmé par un parcours HTTP réel (isolé)."
+  },
+
+  "7_payment_confirmation": {
+    "live_or_sandbox_test": "PAYMENT_VERIFICATION_BLOCKED",
+    "reason": "Aucun environnement sandbox Chariow accessible/confirmé depuis ce poste ; la production réelle ne porte pas encore le code Phase 14 ; le statut sandbox/production de la clé locale est UNKNOWN (section 3) — tenter un checkout réel serait un paiement réel non autorisé.",
+    "confirmation_event_documented": {
+      "event_name": "successful.sale (Chariow Pulse)",
+      "endpoint": "POST /billing/pulse",
+      "payment_identification_field": "x-pulse-delivery-id (header) -> stocké comme ReferralCommission.source_event_id",
+      "status_field": "événement lui-même (successful.sale = confirmé) ; license.revoked = révoqué/remboursé",
+      "amount_field": "sale.amount (ou amount_paid/paid_amount/total_amount/total/price, premier trouvé) dans le corps du Pulse — voir app/referral/money.py::extract_actual_paid_amount",
+      "currency": "XOF (FCFA), pas de sous-unité",
+      "subscription_reference": "ProviderSubscription.id (provider='chariow'), résolu via custom_metadata.user_id + plan"
+    },
+    "simulated_confirmation_method": "Pulse HMAC-SHA256 signé avec un secret de TEST (jamais le vrai CHARIOW_PULSE_SECRET), envoyé à l'app FastAPI de test — même mécanisme déjà validé par la Phase 14, réutilisé tel quel."
+  },
+
+  "8_commission_40_percent": {
+    "tested_amounts_fcfa": [
+      {"paid": 10000, "commission_expected": 4000, "commission_actual": 4000, "result": "OK"},
+      {"paid": 15000, "commission_expected": 6000, "commission_actual": 6000, "result": "OK"},
+      {"paid": 20000, "commission_expected": 8000, "commission_actual": 8000, "result": "OK (via test_refund_reverses_commission, Phase 14, réutilisé)"},
+      {"paid": 12500, "commission_expected": 5000, "commission_actual": 5000, "result": "OK (nouveau, test de réconciliation §22, montant non testé jusqu'ici)"}
+    ],
+    "currency": "XOF (FCFA) — aucune conversion nécessaire, devise sans sous-unité, cohérent avec le système existant.",
+    "result": "OK — 4/4 montants testés conformes."
+  },
+
+  "9_actual_paid_amount": {
+    "new_test_this_phase": "test_actual_paid_amount_discount_scenario_end_to_end",
+    "scenario": "Prix catalogue configuré (REFERRAL_PLAN_PRICE_MONTHLY=20000) DÉLIBÉRÉMENT différent du montant réellement payé transmis par le webhook (15000).",
+    "result": {
+      "commission_calculée": 6000,
+      "calcul_utilisé": "15000 x 40% = 6000",
+      "calcul_JAMAIS_utilisé": "20000 x 40% = 8000",
+      "vérifié_bout_en_bout": "ledger ET dashboard promoteur (/promoter/me/sales) montrent tous deux 15000/6000, jamais 20000/8000."
+    },
+    "verdict": "OK — le montant catalogue n'est JAMAIS utilisé quand un montant webhook réel est disponible, confirmé par un test HTTP bout-en-bout (nouveau, non couvert explicitement ainsi par la Phase 14)."
+  },
+
+  "10_webhook_idempotence": {
+    "reused_from_phase14": "test_duplicate_webhook_single_commission (Phase 14, test 6) : même delivery_id envoyé 10 fois -> exactement 1 commission dans le ledger, vérifié directement en base.",
+    "not_reduplicated_here": true,
+    "result": "OK (99/99 Phase 14 déjà vert sur ce point, réutilisé sans modification)"
+  },
+
+  "11_refund": {
+    "reused_from_phase14": "test_refund_reverses_commission (Phase 14, test 7) : PAID (20000) -> REFUNDED -> commission passe à REVERSED, jamais supprimée, montants gross_paid_amount/commission_amount inchangés (correction par statut, jamais réécriture).",
+    "result": "OK, réutilisé sans modification."
+  },
+
+  "12_self_referral": {
+    "reused_from_phase14": "test_self_referral_no_commission (Phase 14, test 8) : promoteur -> son propre lien -> attribution rejetée (SELF_REFERRAL_REJECTED, aucune ligne ReferralAttribution) -> même un paiement réel simulé ensuite ne crée aucune commission (0 ligne dans le ledger, vérifié).",
+    "result": "OK — NO COMMISSION confirmé, ledger vérifié vide pour ce user_id."
+  },
+
+  "13_promoter_dashboard": {
+    "new_test_this_phase": "test_financial_reconciliation_chain",
+    "verified_after_a_real_confirmed_test_conversion": [
+      "lien personnel présent (referral_link dans /promoter/me)",
+      "GET /promoter/me/sales : ligne exacte avec amount_paid=12500 et commission=5000",
+      "GET /promoter/me/stats : total_commission_accrued >= 5000 (inclut la commission fraîchement créée)"
+    ],
+    "match_with_ledger": "EXACT — aucune divergence.",
+    "result": "OK"
+  },
+
+  "14_admin_dashboard": {
+    "new_test_this_phase": "test_financial_reconciliation_chain (section admin)",
+    "verified": [
+      "GET /admin/earnings/totals : total_commissions == SUM(ledger.commission_amount WHERE status=ACCRUED) EXACT, total_revenue == SUM(ledger.gross_paid_amount WHERE status=ACCRUED) EXACT",
+      "GET /admin/subscribers : ligne trouvée pour le client de test, amount_paid == montant webhook réel (12500), promoter_slug == slug du bon promoteur"
+    ],
+    "reused_from_phase14": "test_admin_totals_recomputable (Phase 14, test 20) couvrait déjà total_commissions == SUM ledger ; cette phase ajoute total_revenue ET la vérification croisée avec /admin/subscribers, non couvertes auparavant.",
+    "result": "OK — aucune divergence entre les 4 vues (paiement webhook / ledger / dashboard promoteur / dashboard admin)."
+  },
+
+  "15_authorization": {
+    "reused_from_phase14": "tests 11 (401 non authentifié), 12 (403 user normal), 14 (403 promoteur sur admin), 15 (200 admin) — matrice complète déjà couverte et vérifiée, non redupliquée ici.",
+    "note": "Aucune de ces routes n'a été retestée contre la production réelle car elles n'y existent pas encore (voir section 4)."
+  },
+
+  "16_promoter_isolation": {
+    "new_test_this_phase": "test_promoter_isolation_on_sales_endpoint_forged_promoter_id — cible spécifiquement /promoter/me/sales, un endpoint DISTINCT de /promoter/me (seul testé par la Phase 14, test 18).",
+    "attacks_tested": [
+      "promoter_id forgé en query-string sur GET /promoter/me/sales -> ignoré, liste vide retournée (aucune fuite de la vente de B vers A)",
+      "promoter_id forgé dans un corps POST vers un endpoint GET-only -> 405 (méthode non acceptée, jamais un contournement)"
+    ],
+    "result": "OK — A ne voit jamais les ventes de B, y compris sur cet endpoint non couvert par la suite Phase 14 initiale."
+  },
+
+  "17_financial_reconciliation": {
+    "chain_verified_on_one_real_test_sale": {
+      "payment.amount (webhook)": 12500,
+      "ledger.gross_paid_amount": 12500,
+      "ledger.commission_rate_bp": 4000,
+      "ledger.commission_amount": 5000,
+      "promoter_dashboard.amount_paid": 12500,
+      "promoter_dashboard.commission": 5000,
+      "admin_dashboard.total_revenue_includes": 12500,
+      "admin_dashboard.total_commissions_includes": 5000
+    },
+    "divergence_found": false,
+    "result": "AUCUNE DIVERGENCE — les 4 vues concordent exactement, condition requise par §22/§38 du prompt."
+  },
+
+  "18_database_safety": {
+    "ai_tables_row_counts_before": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "ai_tables_row_counts_after": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "identical": true,
+    "result": "OK — aucune écriture dans les tables IA, capturé empiriquement avant/après l'intégralité de la session de vérification Phase 14.1 (64 fichiers de test exécutés, y compris les 2 fichiers Phase 14/14.1)."
+  },
+
+  "19_ai_isolation": {
+    "structural_check_reused": "test_db_purity_ai_tables (Phase 14, test 19) : aucun des modules app/referral/*.py ne référence ModelPrediction/ModelVersion/TeamRating/PredictionLog/MatchStats/Match.",
+    "empirical_check_this_phase": "voir section 18 — comptages de lignes identiques avant/après.",
+    "result": "OK, double preuve (structurelle + empirique)."
+  },
+
+  "20_browser_validation": {
+    "value": "BROWSER_VALIDATION_UNAVAILABLE",
+    "clarification": "Aucun outil d'automatisation navigateur (Playwright ou équivalent) n'est disponible dans cet environnement pour cette session — inchangé depuis la Phase 14. Un accès réseau sortant réel EST disponible (nouveau par rapport à l'hypothèse initiale) et a été utilisé pour des requêtes HTTP en lecture seule (voir section 4), mais cela ne constitue PAS un test navigateur : aucune exécution JS, aucun rendu visuel, aucune interaction (clic, responsive réel) n'a été vérifiée. Non prétendu comme fait."
+  },
+
+  "21_hostinger_validation": {
+    "value": "HTACCESS_UNVERIFIED",
+    "evidence": "https://www.xfoot.site/some-random-nonexistent-slug-zzz renvoie 404 (comportement par défaut de l'hébergeur, PAS une réécriture vers login.html?ref=), confirmant que le fichier .htaccess de la Phase 14 n'est pas déployé sur le compte Hostinger réel — cohérent avec 'rien commité, rien poussé' rapporté en Phase 14.",
+    "access_to_hostinger_account": false,
+    "configuration_modified": false
+  },
+
+  "22_tests": {
+    "new_file": "api/test_phase14_1_production_integration.py",
+    "new_scenarios": 4,
+    "new_assertions": 36,
+    "new_result": "36/36 réussis",
+    "reused_unmodified_from_phase14": "api/test_referral_promoter_platform.py — 25 scénarios / 99 assertions, réutilisés SANS duplication ni modification.",
+    "test_data_tagging": "Tous les emails/noms de test de ce fichier sont préfixés phase14_1_test_ (ex. phase14_1_test_promoA@example.com), conformément à §31 du prompt."
+  },
+
+  "23_regression": {
+    "total_test_files": 64,
+    "result": "64/64 exit code 0, 0 échec — incluant les 2 fichiers du programme d'affiliation (Phase 14 + 14.1) et les 62 suites préexistantes (IA/shadow/readiness/safety/pipeline/auth/billing/premium/entitlement)."
+  },
+
+  "24_test_data": {
+    "prefix_used": "phase14_1_test_",
+    "storage_location": "Base SQLite isolée api/test_phase14_1_production_integration.db (jamais api/app.db, jamais la production) — supprimée après exécution.",
+    "count_created": "4 promoteurs de test, 5 clients référés de test, leurs comptes/attributions/commissions associés — tous confinés à la base isolée.",
+    "real_data_touched": false
+  },
+
+  "25_cleanup": {
+    "action_taken": "cleanup_db(DB_PATH) appelé en fin d'exécution (même pattern que test_referral_promoter_platform.py) + suppression manuelle confirmée des 2 fichiers .db isolés (test_phase14_1_production_integration.db, test_referral_promoter_platform.db) après la dernière exécution de la session.",
+    "real_users_payments_commissions_deleted": false,
+    "note": "Aucune donnée réelle (utilisateur, paiement, commission) n'a été supprimée — seules les bases de test isolées, recréées à chaque exécution, ont été nettoyées."
+  },
+
+  "26_security": {
+    "payment_secret_presence_only": {
+      "CHARIOW_API_KEY": "PRESENT (valeur jamais affichée)",
+      "CHARIOW_PULSE_SECRET": "PRESENT (valeur jamais affichée)",
+      "CHARIOW_PRODUCT_ID_MONTHLY": "PRESENT (valeur jamais affichée)",
+      "CHARIOW_PRODUCT_ID_YEARLY": "PRESENT (valeur jamais affichée)",
+      "ADMIN_EMAILS (local)": "ABSENT (non configuré en local — n'affecte pas la production)"
+    },
+    "secret_leak_scan_performed": "grep insensible à la casse sur api/app/referral/, le nouveau fichier de test, et reports/phase14/ — recherche de motifs de clé API/token en dur — AUCUN résultat suspect.",
+    "no_real_api_call_to_chariow": true,
+    "no_secret_value_ever_printed_or_written_to_report": true
+  },
+
+  "27_limitations": [
+    "Aucune vérification de paiement réel/sandbox possible : ni sandbox Chariow accessible, ni code Phase 14 déployé en production, ni statut de la clé locale confirmé (UNKNOWN) — PAYMENT_VERIFICATION_BLOCKED.",
+    ".htaccess et routing production restent NON déployés et donc non vérifiables en conditions réelles (HTACCESS_UNVERIFIED, confirmé activement cette fois via des requêtes HTTP réelles, pas seulement documenté par absence d'accès).",
+    "Aucun test navigateur interactif (Playwright) disponible — BROWSER_VALIDATION_UNAVAILABLE, inchangé depuis la Phase 14.",
+    "Observabilité partielle : ReferralAuditEvent ne couvre que PROMOTER_CREATED/ACTIVATED/DEACTIVATED/SUSPENDED, COMMISSION_CREATED/REVERSED, SELF_REFERRAL_REJECTED — les événements REFERRAL_ATTRIBUTED et PAYMENT_CONFIRMED cités en exemple par le prompt Phase 14.1 (§33) ne sont PAS des types d'audit distincts dans le schéma actuel (une attribution réussie n'est pas auditée individuellement, seule sa tentative en self-referral l'est ; une confirmation de paiement n'est indirectement traçable que via COMMISSION_CREATED, ou pas du tout si le montant est indisponible). Gap réel documenté, non corrigé dans cette phase de VÉRIFICATION (créer de nouveaux types d'audit serait étendre l'architecture, hors périmètre explicite de la Phase 14.1)."
+  ],
+
+  "28_required_next": [
+    "Déployer (commit + push, avec validation humaine) le code Phase 14 sur la production réelle (Railway pour le backend, Hostinger pour le frontend + .htaccess) avant toute vérification de routing/paiement réellement conclusive.",
+    "Confirmer explicitement auprès de Chariow (dashboard -> Paramètres -> Clés API) si un mode sandbox/test distinct existe ; si oui, configurer une clé de test dédiée et RÉPÉTER cette phase 14.1 avec un vrai parcours de paiement sandbox.",
+    "Si aucun mode sandbox n'existe chez Chariow, définir une procédure de test en production à très faible montant, avec autorisation humaine explicite et préalable, avant toute activation réelle du programme de promotion.",
+    "Étendre REFERRAL_AUDIT_EVENT_TYPES pour couvrir explicitement REFERRAL_ATTRIBUTED et PAYMENT_CONFIRMED si une meilleure observabilité est jugée nécessaire (décision produit, hors périmètre de cette phase de vérification).",
+    "Effectuer une vérification navigateur réelle (Playwright ou équivalent) dès qu'un outil est disponible."
+  ],
+
+  "29_final_verdict": {
+    "value": "PAYMENT_VERIFICATION_BLOCKED",
+    "rationale": "Tous les points vérifiables SANS paiement réel ont été vérifiés avec succès et documentés (attribution, self-referral, idempotence, refund, calcul 40%/montant réel, réconciliation financière à 4 vues, isolation promoteur, authorization, isolation IA — 36/36 nouvelles assertions + 99/99 Phase 14 réutilisées, 64/64 suites de régression vertes). MAIS l'objectif central de cette phase — valider l'intégration avec l'ENVIRONNEMENT RÉEL — est structurellement bloqué : le code Phase 14 n'est pas déployé en production (confirmé activement via inspection HTTP du domaine réel), et le statut sandbox/production de la clé de paiement locale reste UNKNOWN, ce qui interdit tout test de paiement réel sans autorisation humaine explicite. Ni INTEGRATION_VERIFIED ni INTEGRATION_VERIFIED_WITH_LIMITATIONS ne seraient honnêtes ici : la vérification d'intégration PRODUCTION proprement dite n'a pas pu avoir lieu, pas à cause d'un défaut du code, mais parce que le code n'est pas encore déployé et qu'aucun paiement réel n'a été risqué sans accord humain."
+  },
+
+  "git_status": {
+    "committed": false,
+    "pushed": false,
+    "new_files_this_phase": ["api/test_phase14_1_production_integration.py", "reports/phase14_1/"],
+    "note": "git status --short / git diff --stat / git diff --name-only exécutés, consignés dans le .md associé. Un fichier résiduel non lié à ce travail ('tatus --shortgit status --short', débris d'une commande antérieure malformée) a été repéré dans git status — signalé à l'utilisateur, non supprimé automatiquement."
+  },
+
+  "closing_statement": "PHASE 14.1 — XFOOT PRODUCTION INTEGRATION & REAL PAYMENT ATTRIBUTION VERIFICATION V1 TERMINÉE. ATTRIBUTION, PAIEMENT RÉELLEMENT CONFIRMÉ, COMMISSION DE 40%, IDEMPOTENCE ET TABLEAUX DE BORD VÉRIFIÉS OU LIMITATIONS DOCUMENTÉES. AUCUNE MODIFICATION DU MOTEUR IA. AUCUN SIGNAL DE PARI PRODUCTION GÉNÉRÉ. EN ATTENTE DE VALIDATION HUMAINE."
+}

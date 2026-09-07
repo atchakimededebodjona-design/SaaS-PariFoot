@@ -1,0 +1,125 @@
+{
+  "phase": "15.6-DIAG",
+  "title": "INCIDENT CHECKOUT PRICING — XFOOT 1500 FCFA vs CHARIOW 1000 FCFA",
+  "generated_at_utc": "2026-09-02T21:05:00Z",
+
+  "1_preuve_reference": {
+    "xfoot_affiche": "Mensuel = 1500 FCFA (confirmé billing.html production, Phase 15.6 Étape 3)",
+    "chariow_affiche": "NET TO PAY : FCFA 1,000 (capture utilisateur, checkout.orqex.com)",
+    "incoherence": true,
+    "aucun_paiement_effectue": true
+  },
+
+  "2_inspection_code_commit_eeb01ec": {
+    "recherche_effectuee_sur": [
+      "CHARIOW_PRODUCT_ID", "CHARIOW_PRODUCT_ID_MONTHLY", "CHARIOW_PRODUCT_ID_BIWEEKLY",
+      "prd_1gje3jzz", "prd_sgvapilx", "prd_f90jpbh3", "1000", "1500", "28000", "monthly", "Mensuel"
+    ],
+    "variable_pour_mensuel": "CHARIOW_PRODUCT_ID_MONTHLY (api/app/core/chariow_config.py:50)",
+    "diff_eeb01ec_sur_router_py": "UNIQUEMENT un commentaire de type (plan: str) mis à jour — AUCUN changement fonctionnel (confirmé par git show eeb01ec -- api/app/billing/router.py)",
+    "diff_eeb01ec_sur_chariow_config_py": "Ajout de la clé 'biweekly' au dict PRODUCT_IDS + docstring. La ligne 'monthly': os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', '') EXISTAIT DÉJÀ AVANT eeb01ec, à l'IDENTIQUE, MÊME NOM DE VARIABLE — ce commit n'a PAS changé quelle variable d'environnement 'monthly' lit.",
+    "backend_transmet_au_checkout": "PRODUCT_IDS[body.plan] envoyé comme 'product_id' à POST https://api.chariow.com/v1/checkout (api/app/billing/router.py:193-209)",
+    "frontend_selectionne_le_plan": "billing.html — <input type=\"radio\" name=\"plan\" value=\"monthly\"> — chaîne littérale 'monthly' envoyée dans le body JSON de POST /billing/checkout",
+    "backend_traduit_plan_en_product_id": "create_checkout_session (router.py:240-259) : body.plan='monthly' -> PRODUCT_IDS['monthly'] -> os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', '')"
+  },
+
+  "3_matrice_mapping": {
+    "attendu": {
+      "biweekly": {"plan_xfoot": "2 semaines / 1000 FCFA", "product_id_attendu": "prd_1gje3jzz"},
+      "monthly": {"plan_xfoot": "1 mois / 1500 FCFA", "product_id_attendu": "prd_sgvapilx"},
+      "yearly": {"plan_xfoot": "1 an / 28000 FCFA", "product_id_attendu": "prd_f90jpbh3"}
+    },
+    "reellement_utilise_par_le_code": "Le CODE utilise TOUJOURS os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', '') pour 'monthly' — correct structurellement. La VALEUR de cette variable sur Railway n'est PAS vérifiable par cet assistant (pas d'accès dashboard/API Railway). L'observation Chariow (1000 FCFA, prix identique à l'ANCIENNE offre mensuelle légitime) indique fortement que cette valeur Railway est encore l'ANCIEN Product ID Chariow (jamais mis à jour vers prd_sgvapilx).",
+    "ligne_responsable_si_bug_confirme": "Ce n'est PAS une ligne de code en cause — api/app/core/chariow_config.py:50 est correcte et inchangée depuis avant eeb01ec. La cause probable est une VALEUR de configuration Railway (CHARIOW_PRODUCT_ID_MONTHLY), externe au code, jamais mise à jour."
+  },
+
+  "4_variables_environnement": {
+    "methode": "Lecture du code source (api/app/core/chariow_config.py, api/.env.example) — AUCUN accès au dashboard Railway, AUCUNE valeur secrète affichée",
+    "CHARIOW_API_KEY": "PRESENT (requis, gardé par _require_chariow_api_key — le checkout a fonctionné, donc cette clé est configurée)",
+    "CHARIOW_PULSE_SECRET": "PRESENT (supposé, non vérifiable directement, hors périmètre de cet incident)",
+    "CHARIOW_PRODUCT_ID_BIWEEKLY": "PRESENCE_NOT_VERIFIABLE_BY_ASSISTANT (nouvelle variable, Phase 15.1 — aucune preuve de configuration Railway obtenue cette phase, hors périmètre direct de cet incident qui concerne 'monthly')",
+    "CHARIOW_PRODUCT_ID_MONTHLY": "PRESENCE_CONFIRMEE_INDIRECTEMENT (le checkout a abouti à un écran Chariow réel avec un montant, donc la variable N'EST PAS vide/absente — router.py:245 aurait renvoyé 400 'Plan inconnu ou non configuré' si elle l'était). VALEUR EXACTE = NOT_VERIFIABLE_BY_ASSISTANT (aucun accès Railway), mais le comportement observé (1000 FCFA, prix de l'ANCIENNE offre) est cohérent avec une valeur encore égale à l'ANCIEN Product ID Chariow.",
+    "CHARIOW_PRODUCT_ID_YEARLY": "Hors périmètre de cet incident (non testé, non observé)"
+  },
+
+  "5_verification_commit_eeb01ec": {
+    "contient_le_mapping_monthly_vers_prd_sgvapilx_dans_le_code": true,
+    "precision_critique": "eeb01ec documente prd_sgvapilx dans les COMMENTAIRES/DOCSTRINGS (chariow_config.py, .env.example) comme la valeur ATTENDUE à configurer manuellement dans Railway pour CHARIOW_PRODUCT_ID_MONTHLY. eeb01ec NE CONFIGURE PAS et NE PEUT PAS configurer cette variable sur Railway — un commit Git ne modifie jamais une variable d'environnement d'une plateforme d'hébergement, cela nécessite une action manuelle distincte dans le dashboard Railway.",
+    "changement_limite_a_billing_html_vip_html": false,
+    "precision": "Le backend A bien été modifié (ajout de la clé 'biweekly', documentation mise à jour) — mais AUCUNE modification de code n'a jamais eu la capacité de changer la VALEUR d'une variable d'environnement déjà nommée CHARIOW_PRODUCT_ID_MONTHLY sur Railway. C'est une action de configuration externe, jamais accomplie par aucun commit."
+  },
+
+  "6_verification_backend_production": {
+    "GET https://api.xfoot.site/health": {"status_code": 200},
+    "endpoint_public_inspection_configuration": "AUCUN (confirmé absence, phases 15.4/15.5) — aucun nouvel endpoint créé, conformément à la règle",
+    "RAILWAY_COMMIT": "NOT_VERIFIABLE (aucun endpoint de version, comme documenté dans toutes les phases précédentes)"
+  },
+
+  "7_parcours_checkout_reel": {
+    "chemin": "billing.html (radio value='monthly') -> POST /billing/checkout {plan:'monthly', first_name, last_name, phone_number, phone_country_code} -> create_checkout_session -> PRODUCT_IDS['monthly'] -> _create_chariow_checkout_link -> POST https://api.chariow.com/v1/checkout {product_id: <valeur de CHARIOW_PRODUCT_ID_MONTHLY>, ..., custom_metadata:{user_id, plan:'monthly'}} -> checkout_url Chariow renvoyée -> utilisateur redirigé vers checkout.orqex.com",
+    "observation_utilisateur": "Écran Chariow réellement atteint (preuve : capture 'NET TO PAY: FCFA 1,000' sur checkout.orqex.com) — confirme que le parcours backend a fonctionné techniquement (aucune erreur 400/500), mais avec un product_id résolvant à 1000 FCFA au lieu de 1500 FCFA.",
+    "aucun_nouveau_checkout_execute_par_cet_assistant": true,
+    "utilisation_exclusive_de_la_preuve_deja_fournie": true
+  },
+
+  "8_hypothese_principale": {
+    "hypothese": "prd_sgvapilx est bien le Product ID Chariow du mensuel 1500 FCFA (vérifié publiquement en Phase 15.2 : titre/description de la page produit confirmant 1500 FCFA)",
+    "verification": "Le checkout production N'A PAS utilisé prd_sgvapilx — sinon Chariow aurait affiché 1500 FCFA (produit à prix FIXE, 'Paiement unique', confirmé dans la doc Chariow et le code). Le montant observé (1000 FCFA) est EXACTEMENT le prix de l'ANCIENNE offre mensuelle légitime — élément fortement corroborant, pas une coïncidence.",
+    "conclusion": "Le backend production utilise très probablement encore l'ANCIEN Product ID Chariow du mensuel (celui d'avant Phase 15.1) via la variable Railway CHARIOW_PRODUCT_ID_MONTHLY jamais reconfigurée — PAS un bug dans le code source."
+  },
+
+  "9_cache_deploiement": {
+    "commit_local_eeb01ec": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739",
+    "origin_main": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739 (identique, confirmé)",
+    "configuration_attendue": "CHARIOW_PRODUCT_ID_MONTHLY=prd_sgvapilx sur Railway",
+    "comportement_production_observe": "Checkout mensuel résout à 1000 FCFA",
+    "conclusion": "BACKEND_PRICING_MAPPING_STALE — le CODE déployé (via git push, Phase 15.4) est correct et à jour ; la CONFIGURATION Railway (valeur de la variable d'environnement CHARIOW_PRODUCT_ID_MONTHLY) semble ne jamais avoir été mise à jour vers prd_sgvapilx. Ceci est cohérent avec l'historique complet de cette conversation : AUCUNE phase (15.1 à 15.5) n'a jamais modifié Railway — toutes l'ont explicitement confirmé ('Railway non modifié', 'ADMIN_EMAILS non touché'). La mise à jour de cette variable spécifique n'a, à notre connaissance documentée, jamais été demandée ni effectuée."
+  },
+
+  "10_distinction_frontend_backend": {
+    "confirmation_explicite": "billing.html affichant '1500 FCFA' est un TEXTE STATIQUE dans le HTML (frontend-design/billing.html), totalement indépendant de la valeur réellement transmise à Chariow. La preuve critique (monthly -> backend -> product_id -> Chariow -> montant réel) montre une DIVERGENCE : le texte Xfoot affiche le NOUVEAU prix, mais le product_id réellement envoyé à Chariow résout à l'ANCIEN prix. La chaîne diverge AU NIVEAU DE LA VALEUR DE LA VARIABLE D'ENVIRONNEMENT CHARIOW_PRODUCT_ID_MONTHLY SUR RAILWAY — jamais dans le code source lui-même."
+  },
+
+  "11_ancien_prix_1000_fcfa": {
+    "recherche": "1000 FCFA apparaît légitimement dans le code pour DEUX offres distinctes : (a) l'ANCIENNE offre '1000 FCFA/mois' (pré-Phase 15, produit Chariow toujours existant et volontairement conservé, Product ID inconnu de ce dépôt — jamais commité), (b) la NOUVELLE offre légitime '1000 FCFA/2 semaines' (prd_1gje3jzz, Phase 15.1, intentionnelle).",
+    "distinction_par_product_id": "2 semaines -> prd_1gje3jzz (nouveau, légitime) ; 1 mois -> devrait être prd_sgvapilx (1500 FCFA), mais résout actuellement vers un montant de 1000 FCFA, cohérent avec l'ANCIEN Product ID mensuel (pré-Phase 15, dont la valeur exacte n'est pas et n'a jamais été présente dans ce dépôt — jamais commitée, conformément à la règle 'ne jamais commiter de vraie clé/identifiant sensible en dur')."
+  },
+
+  "12_tests": {
+    "TOTAL_FICHIERS": 65,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "test_pricing_existant": "api/test_phase15_1_new_offers.py — 17/17 assertions OK. Ces tests MOCKENT _create_chariow_checkout_link et vérifient uniquement que PRODUCT_IDS['monthly'] est bien PASSÉ EN ARGUMENT à la fonction — ils ne peuvent PAS détecter une valeur Railway incorrecte (ce sont des tests unitaires locaux, sans connexion réseau réelle à Chariow, par design — voir docstring de _create_chariow_checkout_link : 'aucun appel réseau réel n'y est jamais fait dans les tests'). Ceci explique pourquoi 65/65 tests verts n'a JAMAIS pu détecter cet incident : le bug n'est pas dans le code testé, il est dans une configuration externe non testable localement."
+  },
+
+  "13_ia": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "unchanged": true
+  },
+
+  "reponses_explicites": {
+    "1_product_id_attendu_mensuel": "prd_sgvapilx",
+    "2_product_id_code_local": "Le code local ne code EN DUR aucun Product ID — il lit os.environ.get('CHARIOW_PRODUCT_ID_MONTHLY', ''). La docstring/exemple documente prd_sgvapilx comme la valeur ATTENDUE à y placer.",
+    "3_product_id_production_semble_utiliser": "Un Product ID résolvant à 1000 FCFA sur Chariow (valeur exacte NOT_VERIFIABLE_BY_ASSISTANT — pas d'accès Railway) — très probablement l'ANCIEN Product ID mensuel pré-Phase 15, jamais commité dans ce dépôt.",
+    "4_ancienne_variable_environnement": "NON — il ne s'agit PAS d'un renommage de variable. CHARIOW_PRODUCT_ID_MONTHLY est le MÊME nom de variable avant et après Phase 15.1. Le problème n'est pas une ancienne variable orpheline dans le code, mais l'ancienne VALEUR de cette même variable, jamais mise à jour sur Railway.",
+    "5_backend_production_a_jour": "Le CODE déployé (commit) est à jour (origin/main = eeb01ec, confirmé). La CONFIGURATION (valeur de CHARIOW_PRODUCT_ID_MONTHLY sur Railway) n'est PAS confirmée à jour — tout indique qu'elle ne l'est pas.",
+    "6_ou_la_chaine_diverge": "Entre le CODE (correct : lit CHARIOW_PRODUCT_ID_MONTHLY) et la VALEUR RÉELLE de cette variable sur Railway (jamais reconfigurée depuis l'ancienne offre) — la divergence est dans la configuration externe, pas dans le code source.",
+    "7_pourquoi_chariow_affiche_1000_fcfa": "Parce que le product_id envoyé par le backend Xfoot à Chariow est très probablement toujours l'ANCIEN Product ID du mensuel (dont le prix fixe configuré côté Chariow est 1000 FCFA), et non prd_sgvapilx (1500 FCFA) — la variable Railway CHARIOW_PRODUCT_ID_MONTHLY n'a jamais été mise à jour lors du déploiement Phase 15.4.",
+    "8_correction_necessite_modification_code": "NON — le code est déjà correct et n'a besoin d'aucune modification pour ce point précis.",
+    "9_correction_necessite_modification_railway": "OUI — reconfigurer la variable d'environnement CHARIOW_PRODUCT_ID_MONTHLY sur Railway avec la valeur prd_sgvapilx, puis redéployer/redémarrer le service pour que la nouvelle valeur soit prise en compte par le process en cours (os.environ est lu une fois au démarrage du process Python, pas re-lu dynamiquement).",
+    "10_correction_necessite_modification_chariow": "NON — aucune modification du produit Chariow lui-même n'est nécessaire ; prd_sgvapilx existe déjà et est correctement configuré à 1500 FCFA côté Chariow (vérifié Phase 15.2). Seule la RÉFÉRENCE à ce produit dans la configuration Xfoot/Railway doit être corrigée.",
+    "11_nouvelle_phase_corrective_necessaire": "OUI — une phase corrective séparée est nécessaire pour : (a) reconfigurer CHARIOW_PRODUCT_ID_MONTHLY=prd_sgvapilx sur Railway (action humaine, dashboard Railway), (b) vérifier également CHARIOW_PRODUCT_ID_BIWEEKLY et CHARIOW_PRODUCT_ID_YEARLY par précaution (même risque potentiel, non testé cet incident car seul le scénario mensuel a été observé), (c) re-tester le checkout mensuel en lecture seule (comme Phase 15.6 Étape 3) avant tout nouveau test de paiement réel."
+  },
+
+  "verdict_final": {
+    "value": "BACKEND_PRICING_MAPPING_STALE",
+    "verdicts_secondaires_applicables": ["CHECKOUT_PRICING_ROOT_CAUSE_IDENTIFIED", "CORRECTION_REQUIRED"],
+    "rationale": "Cause racine identifiée avec un niveau de confiance élevé par élimination structurelle : le code source (commit eeb01ec, identique à origin/main) est vérifié correct et inchangé dans sa logique de résolution du Product ID mensuel (lit CHARIOW_PRODUCT_ID_MONTHLY, comme avant Phase 15.1). Le montant observé côté Chariow (1000 FCFA) correspond exactement au prix de l'ANCIENNE offre mensuelle légitime, jamais celui de prd_sgvapilx (1500 FCFA, vérifié publiquement en Phase 15.2). Aucune modification Railway n'a jamais été effectuée dans tout l'historique documenté de cette conversation (15.1 à 15.5). La conclusion la plus cohérente avec toutes les preuves disponibles est que la variable d'environnement Railway CHARIOW_PRODUCT_ID_MONTHLY contient toujours l'ancien Product ID Chariow. La valeur EXACTE de cette variable reste NOT_VERIFIABLE par cet assistant (aucun accès dashboard Railway) — la cause est donc identifiée avec un haut degré de confiance mais pas prouvée à 100% par accès direct.",
+    "checkout_status": "FAIL / BLOCKED — XFOOT affiche 1500 FCFA, CHARIOW facture réellement 1000 FCFA. Aucun paiement ne doit être tenté tant que cette divergence n'est pas corrigée et re-vérifiée."
+  },
+
+  "aucune_action_corrective_effectuee": {
+    "paiement": false, "modification_chariow": false, "modification_db": false,
+    "modification_code": false, "commit": false, "push": false
+  }
+}

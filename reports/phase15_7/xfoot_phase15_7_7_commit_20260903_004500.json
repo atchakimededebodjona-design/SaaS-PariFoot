@@ -1,0 +1,82 @@
+{
+  "phase": "15.7.7 — COMMIT CONTRÔLÉ DU CORRECTIF REFERRAL PATHNAME",
+  "timestamp": "2026-09-03T00:45:00Z",
+
+  "1_verifications_git_avant_commit": {
+    "git_status_short": "M frontend-design/api.js (+ M api/app/ai/readiness/gates.py et M reports/shadow/watch/evidence_snapshots.json, étrangers pré-existants, jamais touchés) ; ?? frontend-design/test_referral_capture.js ; ?? api/test_phase15_7_referral_attribution_repro.py, api/test_phase13.py, nombreux rapports historiques",
+    "git_diff_stat": "frontend-design/api.js | 39 +- (dans le diff global de 3 fichiers incluant les 2 fichiers étrangers)",
+    "git_diff_api_js": "Confirmé strictement limité à _slugCandidateFromPathname() (nouvelle fonction) + extension de captureReferralFromUrl() (priorité query puis repli pathname) — correctif Phase 15.7.6 exact, aucune ligne supplémentaire"
+  },
+
+  "2_perimetre_verifie": {
+    "fichiers_dans_le_perimetre_attendu": ["frontend-design/api.js", "frontend-design/test_referral_capture.js"],
+    "test_referral_capture_js_fait_partie_du_perimetre_versionne": true,
+    "aucun_autre_fichier_inclus": true
+  },
+
+  "3_tests_rejoues_avant_staging": {
+    "test_referral_capture_js": {"TOTAL": 17, "PASSED": 17, "FAILED": 0},
+    "regression_backend_complete": {"TOTAL": 66, "PASSED": 66, "FAILED": 0},
+    "suites_referral_existantes_reconfirmees": {
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase15_7_referral_attribution_repro.py": "24/24"
+    },
+    "tous_verts_avant_staging": true
+  },
+
+  "4_isolation_ai": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "5_staging_explicite": {
+    "commande_utilisee": "git add -- frontend-design/api.js frontend-design/test_referral_capture.js",
+    "git_add_point_ou_dash_A_utilise": false,
+    "git_diff_cached_name_only": ["frontend-design/api.js", "frontend-design/test_referral_capture.js"],
+    "perimetre_exact_confirme": true
+  },
+
+  "6_commit": {
+    "sha": "70970ee",
+    "message_titre": "feat: fix referral capture from rewritten pathname"
+  },
+
+  "7_verification_post_commit": {
+    "git_status_short_apres": "M api/app/ai/readiness/gates.py (étranger, pré-existant, jamais touché) ; ?? api/test_phase13.py, api/test_phase15_7_referral_attribution_repro.py (hors périmètre de cette phase, laissés intacts) — AUCUN des 2 fichiers committés n'apparaît plus",
+    "git_show_stat_oneline_HEAD": "70970ee feat: fix referral capture from rewritten pathname / frontend-design/api.js | 39 +++++++-- / frontend-design/test_referral_capture.js | 144 +++++++++++++++++++++++++++++++ / 2 files changed, 176 insertions(+), 7 deletions(-)",
+    "git_show_name_only_HEAD": ["frontend-design/api.js", "frontend-design/test_referral_capture.js"],
+    "fichiers_committes_correspondent_exactement_a_l_attendu": true
+  },
+
+  "8_note_deploiement_futur_hostinger": {
+    "seul_artefact_runtime_a_deployer": "frontend-design/api.js",
+    "test_referral_capture_js_reste_dans_le_repository": true,
+    "aucun_upload_de_test_prevu_sauf_necessite_technique_demontree": true,
+    "precision": "Ce point est documenté pour référence future — aucune action de déploiement n'a été entreprise ni planifiée dans cette phase."
+  },
+
+  "contraintes_absolues_respectees": {
+    "code_modifie_avant_commit": false,
+    "htaccess_modifie": false,
+    "backend_modifie": false,
+    "railway_modifie": false,
+    "db_modifiee": false,
+    "chariow_modifie": false,
+    "prix_modifies": false,
+    "tables_ai_touchees": false,
+    "git_add_point_utilise": false,
+    "git_add_dash_A_utilise": false,
+    "fichiers_rapport_inclus_dans_commit": false,
+    "fichiers_temporaires_inclus": false,
+    "anciens_fichiers_non_lies_inclus": false,
+    "push_effectue": false
+  },
+
+  "verdict": {
+    "value": "REFERRAL_FIX_COMMITTED_LOCALLY",
+    "rationale": "Commit 70970ee créé avec exactement les 2 fichiers attendus (frontend-design/api.js, frontend-design/test_referral_capture.js), vérifié par git show --name-only. Staging effectué par chemin explicite (jamais git add . / -A). Tous les tests rejoués et verts AVANT staging (17/17 + 66/66 + 99/99 + 24/24). 6 tables IA strictement inchangées. Aucun fichier de rapport, fichier temporaire, ou fichier étranger non lié inclus. Aucun push effectué."
+  },
+
+  "closing_statement": "PHASE 15.7.7 — COMMIT LOCAL DU CORRECTIF REFERRAL PATHNAME RÉUSSI. SHA 70970ee, EXACTEMENT 2 FICHIERS (frontend-design/api.js, frontend-design/test_referral_capture.js), VÉRIFIÉ PAR git show --name-only. STAGING PAR CHEMIN EXPLICITE UNIQUEMENT (JAMAIS git add . / -A). 17/17 + 66/66 + 99/99 + 24/24 TESTS VERTS AVANT STAGING. 6 TABLES IA STRICTEMENT INCHANGÉES. AUCUN FICHIER HORS PÉRIMÈTRE INCLUS (RAPPORTS, TEMPORAIRES, ÉTRANGERS). AUCUNE MODIFICATION .htaccess/BACKEND/RAILWAY/DB/CHARIOW/PRIX. AUCUN PUSH EFFECTUÉ CETTE PHASE. VERDICT : REFERRAL_FIX_COMMITTED_LOCALLY — EN ATTENTE D'AUTORISATION HUMAINE SÉPARÉE POUR LE PUSH ET LE DÉPLOIEMENT HOSTINGER."
+}

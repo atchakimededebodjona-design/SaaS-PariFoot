@@ -1,0 +1,92 @@
+{
+  "phase": "15.7.9 — VÉRIFICATION PRODUCTION api.js APRÈS UPLOAD HOSTINGER",
+  "timestamp": "2026-09-03T01:05:00Z",
+
+  "1_reference_locale": {
+    "source": "git show 70970ee:frontend-design/api.js",
+    "sha256": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5",
+    "taille_octets": 9702
+  },
+
+  "2_verification_production_requetes_multiples": {
+    "requete_1_cachebust": {"url": "https://www.xfoot.site/api.js?cachebust=...1", "status": 200, "cache_control": "public, max-age=604800", "last_modified": "Thu, 03 Sep 2026 00:35:50 GMT", "etag": "W/\"25e6-6a98c0e6-8c46b75c41774157;gz\"", "x_hcdn_cache_status": "MISS", "taille_recue": 9702, "sha256": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5"},
+    "requete_2_cachebust": {"status": 200, "x_hcdn_cache_status": "MISS", "taille_recue": 9702, "sha256": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5"},
+    "requete_3_cachebust": {"status": 200, "x_hcdn_cache_status": "MISS", "taille_recue": 9702, "sha256": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5"},
+    "requete_4_url_reelle_sans_cachebust": {
+      "url": "https://www.xfoot.site/api.js",
+      "status": 200,
+      "cache_control": "public, max-age=604800",
+      "last_modified": "Tue, 01 Sep 2026 22:06:31 GMT",
+      "etag": "W/\"1fba-6a974c67-8c46b75c41774157;gz\"",
+      "age_secondes": 92466,
+      "x_hcdn_cache_status": "HIT",
+      "taille_recue": 8122,
+      "sha256": "48395c21533fa83a9447a7d309216733d99a1cf6331f3889da0403bd9debe0e3",
+      "interpretation": "URL RÉELLEMENT utilisée en production (sans paramètre artificiel) — sert une copie EN CACHE, vieille de ~25,7 heures (Age=92466s), datée d'AVANT l'upload (Last-Modified 1er septembre). Ceci est la copie que voit un visiteur normal actuellement."
+    }
+  },
+
+  "3_comparaison": {
+    "sha256_local": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5",
+    "sha256_production_origine_cache_bustee": "6960e66df3c9d240565148f5ec7591a84547c6f47cd7b17aff1261c09cbb79a5",
+    "match_origine": true,
+    "diff_byte_a_byte_origine": "IDENTIQUE (diff vide)",
+    "sha256_production_url_reelle_cachee": "48395c21533fa83a9447a7d309216733d99a1cf6331f3889da0403bd9debe0e3",
+    "match_url_reelle": false,
+    "conclusion": "L'UPLOAD A RÉUSSI CÔTÉ ORIGINE HOSTINGER (fichier réellement remplacé, confirmé identique octet pour octet au commit 70970ee via une requête qui contourne le cache CDN). MAIS le CDN (hcdn) continue de servir aux visiteurs réels une copie mise en cache de l'ANCIEN fichier, vieille de ~26 heures, encore valide selon son Cache-Control (max-age=604800 = 7 jours) — comportement identique à l'incident déjà rencontré et documenté en Phase 14.9/14.9R pour ce même fichier."
+  },
+
+  "4_verification_correctif": {
+    "presence_dans_version_origine_cache_bustee": {
+      "_SLUG_CANDIDATE_RE": true,
+      "_slugCandidateFromPathname": true,
+      "priorite_query_preservee": "const fromQuery = (params.get(\"ref\") || \"\").trim().toLowerCase(); confirmé présent",
+      "fallback_correctement_cable": "const slug = fromQuery || _slugCandidateFromPathname(); confirmé présent"
+    },
+    "preuve_executee_scenario_reel": {
+      "methode": "Script Node.js chargeant le contenu RÉEL récupéré via la requête cache-bustée (byte-identique au commit), face à pathname='/promoter-2', search=''",
+      "resultat": {"appels_fetch": 1, "url_appelee": "https://api.xfoot.site/referral/resolve/promoter-2", "localStorage_xfoot_referral_slug": "promoter-2"},
+      "conclusion": "La version RÉELLEMENT uploadée sur l'origine Hostinger corrige bien le bug de la Phase 15.7.5 — confirmé par exécution, pas seulement par lecture de code."
+    },
+    "comportement_historique_ref_query_preserve": true
+  },
+
+  "5_diagnostic_cache": {
+    "hash_encore_ancien_sur_url_reelle": true,
+    "action_prise": "AUCUNE modification, AUCUN second upload tenté — diagnostic uniquement, conformément aux instructions.",
+    "preuve_cache_persistant": {
+      "x_hcdn_cache_status": "HIT",
+      "age_secondes": 92466,
+      "cache_control": "public, max-age=604800",
+      "last_modified_copie_cachee": "Tue, 01 Sep 2026 22:06:31 GMT (antérieur à l'upload réalisé aujourd'hui à 00:35:50 GMT)"
+    },
+    "conclusion": "Preuve claire et suffisante d'un cache CDN persistant servant une réponse antérieure à l'upload — pas une hypothèse, un fait observé directement dans les headers HTTP."
+  },
+
+  "6_purge_cdn": {
+    "capacite_de_purge_disponible_pour_cet_assistant": false,
+    "raison": "Aucun accès au dashboard Hostinger (hPanel) — la purge CDN pour un fichier spécifique (ou globale) est une action qui se fait exclusivement depuis l'interface Hostinger, à laquelle cet assistant n'a jamais eu accès dans toute cette conversation.",
+    "aucune_manipulation_destructive_ou_globale_tentee": true
+  },
+
+  "7_aucun_test_fonctionnel_utilisateur": {
+    "compte_cree": false,
+    "paiement_effectue": false,
+    "confirmation": "Cette phase valide exclusivement api.js local == api.js production (côté origine) — aucune tentative de parcours utilisateur réel."
+  },
+
+  "aucune_modification_effectuee": {
+    "code": false, "commit": false, "push": false, "htaccess": false,
+    "railway": false, "db": false, "chariow": false, "prix": false,
+    "tables_ai": false, "nouvel_upload": false, "purge_tentee": false
+  },
+
+  "verdict": {
+    "value": "HOSTINGER_CDN_PURGE_REQUIRED",
+    "rationale": "L'upload est prouvé réussi côté origine Hostinger : une requête contournant le cache CDN (paramètre unique) renvoie un contenu strictement identique (SHA256 + diff byte-à-byte) au fichier du commit 70970ee, ET la logique du correctif Phase 15.7.6 y est confirmée présente et fonctionnelle par exécution réelle. Cependant, l'URL RÉELLEMENT utilisée par les visiteurs (https://www.xfoot.site/api.js, sans paramètre) sert toujours une copie mise en cache par le CDN Hostinger, antérieure à l'upload de ~26 heures (Age=92466s, x-hcdn-cache-status=HIT, Last-Modified antérieur à l'upload) — comportement identique à l'incident déjà documenté en Phase 14.9. Cette copie restera servie jusqu'à expiration naturelle du cache (max-age=604800, soit jusqu'à ~7 jours après sa mise en cache initiale) SAUF purge manuelle. Cet assistant n'a aucune capacité de purge CDN (aucun accès Hostinger hPanel) — action strictement humaine requise."
+  },
+
+  "action_requise_humaine": "Purger le cache CDN Hostinger (hcdn) pour le fichier https://www.xfoot.site/api.js depuis le dashboard Hostinger (hPanel) — généralement dans la section liée au CDN/cache du site. Une fois fait, prévenir cet assistant pour re-vérifier que l'URL réelle (sans paramètre) sert désormais SHA256=6960e66d... comme la requête cache-bustée le fait déjà.",
+
+  "closing_statement": "PHASE 15.7.9 — VÉRIFICATION PRODUCTION api.js : UPLOAD CONFIRMÉ RÉUSSI CÔTÉ ORIGINE HOSTINGER (SHA256 ET CONTENU IDENTIQUES BYTE-À-BYTE AU COMMIT 70970ee VIA REQUÊTE CONTOURNANT LE CACHE, CORRECTIF PATHNAME CONFIRMÉ PRÉSENT ET FONCTIONNEL PAR EXÉCUTION RÉELLE). MAIS L'URL RÉELLE DE PRODUCTION (SANS PARAMÈTRE) SERT ENCORE UNE COPIE CDN EN CACHE, ANTÉRIEURE À L'UPLOAD DE ~26 HEURES (Age=92466s, x-hcdn-cache-status=HIT) — MÊME INCIDENT QUE LA PHASE 14.9. AUCUNE CAPACITÉ DE PURGE CDN DISPONIBLE POUR CET ASSISTANT (AUCUN ACCÈS HOSTINGER hPanel). AUCUNE MODIFICATION DE CODE, COMMIT, PUSH, .htaccess, RAILWAY, DB, CHARIOW, PRIX, OU TABLE IA. AUCUN COMPTE CRÉÉ, AUCUN PAIEMENT. VERDICT : HOSTINGER_CDN_PURGE_REQUIRED — ACTION HUMAINE REQUISE : PURGER LE CACHE CDN DEPUIS LE DASHBOARD HOSTINGER POUR https://www.xfoot.site/api.js."
+}

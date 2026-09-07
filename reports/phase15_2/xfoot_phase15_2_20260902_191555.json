@@ -1,0 +1,124 @@
+{
+  "phase": "15.2",
+  "title": "XFOOT — VALIDATION CHARIOW PRODUCT IDs & RELEASE PREPARATION V1",
+  "generated_at_utc": "2026-09-02T19:15:55Z",
+  "base_commit": "901c4682026e4ed3eec899b60760f214931e2001",
+  "committed": false,
+  "pushed": false,
+
+  "1_audit_du_code": {
+    "CHARIOW_PRODUCT_ID_BIWEEKLY": {"fichier": "api/app/core/chariow_config.py", "ligne": 49, "code": "\"biweekly\": os.environ.get(\"CHARIOW_PRODUCT_ID_BIWEEKLY\", \"\"),"},
+    "CHARIOW_PRODUCT_ID_MONTHLY_YEARLY": {"fichier": "api/app/core/chariow_config.py", "lignes": "50-51 (inchangées depuis avant Phase 15.1, seule la variable BIWEEKLY est nouvelle)"},
+    "construction_checkout": "api/app/billing/router.py::create_checkout_session (ligne ~245) : if body.plan not in PRODUCT_IDS or not PRODUCT_IDS[body.plan] -> 400 ; sinon product_id=PRODUCT_IDS[body.plan] transmis à _create_chariow_checkout_link — 0 ligne fonctionnelle modifiée par Phase 15.1.",
+    "association_user_id": "app/billing/router.py ligne 257 : metadata={\"user_id\": str(current_user.id), \"plan\": body.plan} — current_user dérivé du JWT (get_current_user), jamais du client — envoyé à Chariow en tant que custom_metadata au moment du checkout, avant tout paiement.",
+    "conservation_promoter_referral": "Mécanisme ENTIÈREMENT indépendant du checkout : l'attribution (ReferralAttribution) est créée à l'inscription/connexion via POST /referral/attribute (app/referral/router.py), AVANT le checkout — non touchée par Phase 15.1. Au moment du paiement confirmé, create_commission_for_confirmed_payment() retrouve cette attribution existante via referred_user_id, indépendamment du plan/prix choisi.",
+    "retrouvaille_abonnement_par_webhook": "app/billing/router.py::_handle_successful_sale lit sale.custom_metadata.user_id (le même envoyé au checkout) pour retrouver/créer la ProviderSubscription correspondante — inchangé.",
+    "enregistrement_montant_reellement_paye": "app/referral/money.py::extract_actual_paid_amount priorise le montant présent dans le corps du webhook Chariow (sale.amount ou variantes) — jamais un prix catalogue Xfoot tant qu'un montant réel est fourni par Chariow. Fonction non modifiée par Phase 15.1.",
+    "calcul_commission_40_pourcent": "app/referral/money.py::compute_commission_amount(gross_paid_amount, commission_rate_bp) = floor(gross_paid_amount * commission_rate_bp / 10000) — fonction non modifiée, testée pour les 3 nouveaux montants (voir §3).",
+    "flux_confirme_intact": "Xfoot -> backend Xfoot (checkout + metadata) -> Chariow -> paiement -> webhook -> attribution utilisateur/promoteur (déjà existante) -> commission — AUCUN contournement introduit, AUCUN lien direct vers une URL Chariow brute utilisé côté frontend fonctionnel (les 3 URLs officielles ont servi uniquement à extraire les Product ID configurés côté backend, voir Phase 15.1 §4)."
+  },
+
+  "2_validation_product_ids": {
+    "methode_read_only_utilisee": "GET HTTP simple (curl) vers les 3 pages produit publiques Chariow — lecture des balises <title> et <meta property=\"og:description\"> générées côté serveur (jamais de rendu JavaScript nécessaire pour ces balises, contrairement au prix affiché dynamiquement observé en Phase 15.1) — AUCUNE interaction financière, AUCUN formulaire soumis, AUCUN appel à l'API Chariow authentifiée.",
+    "prd_1gje3jzz": {
+      "title_page": "XFoot 2 smaines - Analyse statistique football | xfoot",
+      "og_description_extrait": "Découvrez XFoot 2 semaines, plateforme d'analyse statistique football... À 1000 f cfa. Commandez maintenant.",
+      "correspond_a_2_semaines_1000_fcfa": true,
+      "duree_confirmee_dans_titre": true,
+      "prix_confirme_dans_description": true
+    },
+    "prd_sgvapilx": {
+      "title_page": "XFoot - Analyse Statistique du Football | xfoot",
+      "og_description_extrait": "Découvrez XFoot, plateforme d'analyse football... 1500f cfa – décisions éclairées. Essayez !",
+      "correspond_a_1500_fcfa": true,
+      "duree_confirmee_dans_titre": false,
+      "note": "Contrairement aux 2 autres produits, le titre de cette page ne mentionne PAS explicitement '1 mois' — observation honnête, sans conséquence sur la correspondance de prix (1500 FCFA, spécifique et non générique, correspond exactement à l'offre mensuelle attendue).",
+      "prix_confirme_dans_description": true
+    },
+    "prd_f90jpbh3": {
+      "title_page": "XFoot 1 an - Analyse Statistique Football | xfoot",
+      "og_description_extrait": "Obtenez XFoot 1 an pour analyser les matchs... 28 000f cfa analyse précise pour décisions éclairées.",
+      "correspond_a_1_an_28000_fcfa": true,
+      "duree_confirmee_dans_titre": true,
+      "prix_confirme_dans_description": true
+    },
+    "ce_qui_est_reellement_prouve": "Les 3 URLs/Product ID correspondent, via les métadonnées publiques réellement servies par Chariow (pas inventées, pas supposées), à des pages produit nommées/décrites Xfoot aux prix EXACTS 1000/1500/28000 FCFA — correspondance directe et spécifique, improbable par coïncidence.",
+    "ce_qui_reste_une_inference_non_verifiee_par_api": "Que la chaîne 'prd_XXXX' (segment final de l'URL de la page produit) soit EXACTEMENT la valeur attendue par le champ product_id de l'API POST /checkout de Chariow — ceci suit la convention standard de la plateforme (déjà documentée en Phase 15.1) mais n'a pas été confirmée par un appel réel à cette API (interdit cette phase, PAYMENT_ENVIRONMENT toujours UNKNOWN) ni par une consultation du dashboard Chariow (aucun accès).",
+    "verdict_section": "CHARIOW_PRODUCT_IDS_VERIFIED (avec la nuance ci-dessus explicitement documentée, jamais présentée comme une certitude absolue)"
+  },
+
+  "3_verification_prix_et_commissions": {
+    "prix_attendus": {"biweekly": 1000, "monthly": 1500, "yearly": 28000},
+    "commissions_theoriques": {
+      "biweekly": {"montant": 1000, "commission_40pct": 400, "verifie_par_test": "test_phase15_1_new_offers.py::test_commission_biweekly_1000_x_40_percent_400"},
+      "monthly": {"montant": 1500, "commission_40pct": 600, "verifie_par_test": "test_phase15_1_new_offers.py::test_commission_monthly_1500_x_40_percent_600"},
+      "yearly": {"montant": 28000, "commission_40pct": 11200, "verifie_par_test": "test_phase15_1_new_offers.py::test_commission_yearly_28000_x_40_percent_11200"}
+    },
+    "rappel_regle_critique_reconfirmee": "compute_commission_amount() n'est JAMAIS appelée avec un prix catalogue Xfoot — uniquement avec gross_paid_amount dérivé de extract_actual_paid_amount(), qui priorise le montant réel du webhook Chariow. Les valeurs ci-dessus restent des calculs THÉORIQUES tant qu'aucun paiement réel n'a eu lieu — aucune commission réelle n'a été générée par cette phase."
+  },
+
+  "4_frontend": {
+    "billing_html_local": {
+      "offres_affichees": ["1000 FCFA / 2 semaines (biweekly)", "1500 FCFA / mois (monthly)", "28000 FCFA / an (yearly)"],
+      "anciennes_offres_encore_presentes": false,
+      "badge_economisez_2_mois": "absent (supprimé en Phase 15.1 — justification mathématique reconfirmée : 12 x 1500 = 18000 FCFA < 28000 FCFA, donc l'annuel n'est PAS une économie par rapport au mensuel)"
+    },
+    "vip_html_local": {
+      "offres_affichees": ["1000 FCFA / 2 semaines", "1500 FCFA / mois", "28000 FCFA / an"],
+      "anciennes_offres_encore_presentes": false,
+      "section_android_touchee": false
+    }
+  },
+
+  "5_tests_regression": {
+    "TOTAL": 65, "PASSED": 65, "FAILED": 0, "SKIPPED": 0,
+    "detail": "64 fichiers préexistants + api/test_phase15_1_new_offers.py (9 scénarios/17 assertions) — tous verts, réexécutés intégralement cette phase.",
+    "tables_ia_6": {
+      "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+      "identiques": true
+    }
+  },
+
+  "6_verification_production_read_only": {
+    "billing_html_production": {"url": "https://www.xfoot.site/billing.html", "prix_actuellement_affiches": ["1000 FCFA", "10000 FCFA"], "correspond_aux_ANCIENNES_offres": true, "conclusion": "Production PAS À JOUR — comportement attendu, aucun déploiement n'a eu lieu (ni push, ni upload Hostinger)."},
+    "vip_html_production": {"url": "https://www.xfoot.site/vip.html", "prix_actuellement_affiches": ["1000 FCFA", "10000 FCFA", "10000 FCFA (section Android, dynamique, sans rapport)"], "correspond_aux_ANCIENNES_offres": true},
+    "backend_production": "Non re-testé en détail cette phase (aucun changement fonctionnel backend au-delà du mapping Product ID, déjà confirmé stable Phase 14.7-14.11) — présomption raisonnable qu'il sert toujours les anciens CHARIOW_PRODUCT_ID_MONTHLY/_YEARLY (aucun accès Railway pour le confirmer directement).",
+    "aucun_deploiement_effectue_cette_phase": true,
+    "aucune_donnee_historique_modifiee": true
+  },
+
+  "7_diff_final": {
+    "git_status_short": [
+      " M api/.env.example", " M api/app/ai/readiness/gates.py (Phase 13, étranger)", " M api/app/billing/router.py",
+      " M api/app/core/chariow_config.py", " M frontend-design/billing.html", " M frontend-design/vip.html",
+      " M reports/shadow/watch/evidence_snapshots.json (log généré, étranger)",
+      "?? api/test_phase15_1_new_offers.py", "?? reports/phase15_1/", "?? reports/phase15_2/ (ce rapport)"
+    ],
+    "git_diff_stat_fichiers_phase15": "5 files changed, 41 insertions(+), 13 deletions(-)",
+    "git_diff_check": "aucune erreur",
+    "aucun_fichier_ia_modifie_par_phase15": true,
+    "aucun_secret_ajoute": true,
+    "git_add_point_ou_dash_A_utilise": false
+  },
+
+  "8_preuves_absolues": {
+    "aucun_paiement_reel": true,
+    "aucun_appel_chariow_ecriture": true,
+    "aucun_compte_cree": true,
+    "aucune_donnee_production_modifiee": true,
+    "aucun_abonnement_historique_modifie": true,
+    "aucune_commission_historique_modifiee": true,
+    "aucune_modification_moteur_ia": true,
+    "aucune_modification_6_tables_ia": true,
+    "backend_referral_jamais_contourne": true,
+    "mecanisme_dynamique_jamais_remplace_par_lien_direct": true
+  },
+
+  "verdict_final": {
+    "value": "CHARIOW_PRODUCT_IDS_VERIFIED",
+    "rationale": "Une preuve read-only réelle et spécifique a été obtenue (métadonnées publiques des 3 pages produit Chariow, jamais inventées) confirmant que les 3 Product ID correspondent à des offres Xfoot nommées et décrites aux prix EXACTS 1000/1500/28000 FCFA — correspondance directe, non générique. La nuance explicitement documentée (§2) est que le format exact attendu par l'API POST /checkout n'a pas été confirmé par un appel réel à cette API, faute d'accès autorisé cette phase — la convention d'URL Chariow (déjà établie et documentée en Phase 15.1) reste la base de cette inférence, jamais présentée comme une certitude absolue. Architecture de checkout, attribution referral et calcul de commission tous reconfirmés intacts. 65/65 tests verts, 6 tables IA identiques, production toujours sur les anciennes offres (aucun déploiement). Aucun paiement, aucun compte, aucune donnée historique touchée."
+  },
+
+  "closing_statement": "PHASE 15.2 — VALIDATION CHARIOW PRODUCT IDs & RELEASE PREPARATION V1 : PREUVE READ-ONLY RÉELLE OBTENUE CONFIRMANT LA CORRESPONDANCE NOM/PRIX DES 3 PRODUCT IDS (1000/1500/28000 FCFA), AVEC LA NUANCE HONNÊTE QUE LE FORMAT EXACT ATTENDU PAR L'API CHARIOW RESTE UNE INFÉRENCE DOCUMENTÉE, JAMAIS VÉRIFIÉE PAR UN APPEL RÉEL. ARCHITECTURE DE CHECKOUT, ATTRIBUTION REFERRAL ET COMMISSION RECONFIRMÉES INTACTES. 65/65 TESTS VERTS, 6 TABLES IA INCHANGÉES. PRODUCTION TOUJOURS SUR LES ANCIENNES OFFRES — AUCUN DÉPLOIEMENT. AUCUN PAIEMENT, AUCUN COMPTE CRÉÉ, AUCUNE DONNÉE HISTORIQUE MODIFIÉE. AUCUN COMMIT, AUCUN PUSH."
+}

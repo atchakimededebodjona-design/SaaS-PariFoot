@@ -1,0 +1,122 @@
+{
+  "phase": "15.13",
+  "title": "Configuration Railway + déploiement + réconciliation du paiement réel",
+  "generated_at_utc": "2026-09-03T21:02:53Z",
+  "context": {
+    "payer": {"user_id": 245, "email": "oktest@test.com"},
+    "promoter": {"slug": "promoter-2", "promoter_id": 206, "status": "ACTIVE"},
+    "payment": {
+      "product": "Xfoot 1 mois",
+      "amount_fcfa": 1500,
+      "status": "Terminé",
+      "reference": "pi_ih0s0eixhgm1",
+      "date": "2026-09-03"
+    }
+  },
+  "partie_a_precheck": {
+    "git_status_before": "M api/app/ai/readiness/gates.py (pré-existant, hors périmètre) ; M api/app/billing/router.py (Phase 15.12) ; ?? api/test_phase15_12_amount_reconciliation.py (Phase 15.12) ; plusieurs fichiers/reports non suivis hors périmètre (non ajoutés)",
+    "head_before": "5baca92db3cfa6306dddadca987cd81832caa165",
+    "origin_main_before": "5baca92db3cfa6306dddadca987cd81832caa165",
+    "files_belonging_to_15_9_15_10_15_12": [
+      "api/app/billing/router.py (Phase 15.12 : documentation uniquement, déjà committé pour 15.9/15.10 dans 5baca92)",
+      "api/test_phase15_12_amount_reconciliation.py (nouveau fichier de test Phase 15.12)"
+    ],
+    "excluded_out_of_scope_files": [
+      "api/app/ai/readiness/gates.py (modification étrangère pré-existante, jamais indexée)",
+      "api/test_phase13.py, api/test_phase15_7_referral_attribution_repro.py, reports/* non suivis (hors périmètre 15.9/15.10/15.12, non ajoutés)"
+    ],
+    "git_add_used": "git add api/app/billing/router.py api/test_phase15_12_amount_reconciliation.py (chemins explicites, jamais git add . ni -A)"
+  },
+  "partie_b_tests_before_commit": {
+    "test_phase15_12_amount_reconciliation.py": "36/36",
+    "test_phase15_9_webhook_hardening.py": "31/31",
+    "test_phase15_10_activate_license_commission.py": "33/33",
+    "regression_suite": {
+      "test_chariow_billing.py": "30/30",
+      "test_referral_promoter_platform.py": "99/99 (25 scénarios)",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_1_new_offers.py": "17/17",
+      "test_phase15_7_referral_attribution_repro.py": "24/24",
+      "test_entitlement.py": "8/8",
+      "test_provider_subscription_backfill.py": "4/4",
+      "test_google_play_billing.py": "44/44",
+      "test_auth.py": "8/8",
+      "test_main.py": "9/9"
+    },
+    "total_failures": 0
+  },
+  "partie_c_diff_scope_control": {
+    "cached_diff_stat": "api/app/billing/router.py | 16 ++ ; api/test_phase15_12_amount_reconciliation.py | 356 +++ ; 2 files changed, 372 insertions(+)",
+    "unwanted_changes_detected": false,
+    "webhook_modified": false,
+    "prices_hardcoded_in_code": false,
+    "chariow_modified": false,
+    "frontend_modified": false,
+    "ai_modified_in_commit": false,
+    "db_modified_manually": false
+  },
+  "partie_d_ai_isolation_before_commit": {
+    "match": 12459,
+    "match_stats": 12459,
+    "model_predictions": 3610,
+    "model_versions": 15,
+    "team_ratings": 568,
+    "prediction_log": 9,
+    "ai_files_in_diff": ["api/app/ai/readiness/gates.py (modification étrangère pré-existante, non indexée, non committée par cette phase)"]
+  },
+  "partie_e_commit": {
+    "sha": "44f6652c07dc646d08068acba0b2c0e47f4fdb5f",
+    "message": "fix: reconcile referral commission amount from plan price",
+    "files": [
+      "api/app/billing/router.py",
+      "api/test_phase15_12_amount_reconciliation.py"
+    ],
+    "stats": "2 files changed, 372 insertions(+)"
+  },
+  "partie_f_push": {
+    "authorized": true,
+    "authorization_source": "Spécification de la Phase 15.13 elle-même (titre explicite 'CONFIGURATION RAILWAY + DÉPLOIEMENT', Partie F fournissant les étapes de vérification post-push attendues)",
+    "pushed": true,
+    "verification": {
+      "local_head": "44f6652c07dc646d08068acba0b2c0e47f4fdb5f",
+      "origin_main_local_ref": "44f6652c07dc646d08068acba0b2c0e47f4fdb5f",
+      "ls_remote_refs_heads_main": "44f6652c07dc646d08068acba0b2c0e47f4fdb5f",
+      "all_three_match": true
+    }
+  },
+  "partie_g_railway_configuration": {
+    "action_required": "REFERRAL_PLAN_PRICE_MONTHLY=1500",
+    "performed_by_agent": false,
+    "reason": "Aucun accès Railway CLI/dashboard disponible dans cet environnement (vérifié : commande 'railway' absente). Cette action est strictement une action humaine.",
+    "status": "NOT_PERFORMED_BLOCKED_ON_HUMAN_ACTION"
+  },
+  "partie_h_runtime_verification": {
+    "health_endpoint": "https://api.xfoot.site/health",
+    "health_http_status": 200,
+    "health_body_excerpt": "{\"status\":\"ok\",...}",
+    "sha_or_version_endpoint_found": false,
+    "note": "Aucun mécanisme existant d'exposition de version/SHA runtime dans le backend ; aucun nouvel endpoint créé pour cette phase (interdit par Partie I). /health répond 200 mais ne prouve ni la présence du nouveau code ni la configuration Railway.",
+    "verdict_component": "RUNTIME_VERSION_NOT_VERIFIABLE"
+  },
+  "partie_i_config_presence_check": {
+    "performed": false,
+    "reason": "Aucun endpoint de diagnostic existant n'expose la présence de REFERRAL_PLAN_PRICE_MONTHLY ; aucun nouvel endpoint créé pour cette seule vérification (règle explicite de la phase)."
+  },
+  "partie_j_to_w": {
+    "status": "NON ATTEINTES",
+    "reason": "Bloquées par l'absence de configuration Railway (Partie G), elle-même une action strictement humaine hors de portée de cet agent."
+  },
+  "conclusion": {
+    "code_ready": true,
+    "code_deployed_via_push": true,
+    "railway_config_done": false,
+    "human_license_resubmission_done": false,
+    "user_245_state_expected_unchanged": "ACTIVE / monthly / promoter-2 / montant payé = — / ventes=0 / commission=0 (aucune action susceptible de le modifier n'a eu lieu)",
+    "no_second_payment": true,
+    "no_webhook_replay": true,
+    "no_manual_db_modification": true,
+    "no_secret_exposed": true,
+    "chariow_reference_untouched": "pi_ih0s0eixhgm1 (1 seule transaction réussie, non modifiée)"
+  },
+  "verdict": "RAILWAY_CONFIGURATION_MISSING"
+}

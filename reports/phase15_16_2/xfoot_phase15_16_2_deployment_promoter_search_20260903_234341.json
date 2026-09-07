@@ -1,0 +1,107 @@
+{
+  "phase": "15.16.2",
+  "title": "Déploiement contrôlé de la recherche par promoteur (Phase 15.16.1)",
+  "generated_at_utc": "2026-09-03T23:43:41Z",
+  "no_new_financial_action": true,
+  "commit": {
+    "sha": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+    "message": "feat: add promoter withdrawal search and clarify refunds",
+    "files": [
+      "api/app/referral/admin_router.py",
+      "api/app/referral/stats.py",
+      "api/app/referral/withdrawal_service.py",
+      "api/test_phase15_16_1_admin_promoter_search.py",
+      "frontend-design/admin-earnings.html",
+      "frontend-design/admin-withdrawals.html"
+    ],
+    "stat": "6 files changed, 374 insertions(+), 3 deletions(-)",
+    "excluded_out_of_scope": "api/app/ai/readiness/gates.py (modification étrangère pré-existante, jamais indexée) ; api/test_phase13.py, api/test_phase15_7_referral_attribution_repro.py (pré-existants, hors périmètre) ; git add explicite fichier par fichier — jamais git add . ni -A"
+  },
+  "tests_before_commit": {
+    "test_phase15_16_1_admin_promoter_search.py": "41/41",
+    "regression_full": {
+      "test_phase15_14_manual_withdrawal.py": "56/56",
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_1_new_offers.py": "17/17",
+      "test_phase15_7_referral_attribution_repro.py": "24/24",
+      "test_phase15_9_webhook_hardening.py": "31/31",
+      "test_phase15_10_activate_license_commission.py": "33/33",
+      "test_phase15_12_amount_reconciliation.py": "36/36",
+      "test_chariow_billing.py": "30/30",
+      "test_entitlement.py": "8/8",
+      "test_provider_subscription_backfill.py": "4/4",
+      "test_google_play_billing.py": "44/44",
+      "test_auth.py": "8/8",
+      "test_main.py": "9/9"
+    },
+    "total_failures": 0
+  },
+  "partie_c_retrait_reel_verifie_intouche": {
+    "diff_analysis": "3 fichiers backend modifiés, 14 insertions / 2 suppressions au total (avant test+frontend) — exclusivement des LECTURES supplémentaires (nouveau champ dérivé commission_total_requested, filtre optionnel promoter_id sur une requête SELECT déjà existante). Aucune ligne touchant à create_withdrawal_request, confirm_withdrawal_paid, ou reject_withdrawal (les 3 seules fonctions qui écrivent sur PromoterWithdrawal/ReferralCommission) n'a été modifiée.",
+    "conclusion": "Le retrait réel de promoter-2 (600 FCFA, PAID) est structurellement impossible à avoir été modifié par ce commit — aucune écriture n'existe dans le diff."
+  },
+  "ai_isolation_before_commit": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "ai_files_in_commit": false
+  },
+  "push": {
+    "authorized": true,
+    "authorization_source": "Explicitement autorisé par la Partie E du prompt Phase 15.16.2",
+    "verification": {
+      "local_head": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "origin_main_local_ref": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "ls_remote_refs_heads_main": "dcd70e63da29172df6326ef908c93e38d8a18dad",
+      "all_three_match": true
+    }
+  },
+  "backend_production": {
+    "health_polled_during_deploy_window": "5 sondages sur ~90s, HTTP 200 en continu (aucune coupure observée)",
+    "post_deploy_checks": {
+      "GET /health": 200,
+      "GET /admin/withdrawals (sans auth)": 401,
+      "GET /admin/withdrawals?promoter_id=1 (sans auth)": 401,
+      "GET /admin/promoters?q=test (sans auth)": 401,
+      "GET /leagues": 200,
+      "POST /billing/checkout (sans auth)": 401,
+      "POST /auth/login (mauvais identifiants)": 401
+    },
+    "regression_detected": false,
+    "distinct_functional_proof_for_this_diff": {
+      "available": false,
+      "reason": "Ce commit ajoute uniquement un paramètre optionnel (promoter_id) à une route déjà existante et un champ supplémentaire dans une réponse déjà authentifiée — contrairement à la Phase 15.15 (nouvelles routes, détectables par un changement 404->401), il n'existe aucun comportement observable SANS authentification qui distingue l'ancien code du nouveau. Aucun identifiant admin disponible pour vérifier directement (même limitation que Phases 15.15/15.16.1).",
+      "indirect_evidence": "Push vérifié atteignant origin/main (3/3), santé continue pendant la fenêtre de déploiement typique (~90s, cohérent avec les déploiements précédents de ce projet), aucune régression sur les endpoints existants."
+    }
+  },
+  "frontend_hostinger": {
+    "files_changed_this_phase": ["frontend-design/admin-earnings.html", "frontend-design/admin-withdrawals.html"],
+    "status": "NON DÉPLOYÉ — vérifié en direct, action strictement humaine (aucun accès Hostinger pour cet agent)",
+    "verified_live_state": {
+      "https://xfoot.site/admin-earnings.html": "sert encore l'ancien libellé 'Commissions reversées' (pas 'Commissions remboursées (client)')",
+      "https://xfoot.site/admin-withdrawals.html": "ne contient pas encore la section de recherche par promoteur"
+    },
+    "files_to_upload_exactly": ["frontend-design/admin-earnings.html", "frontend-design/admin-withdrawals.html"],
+    "files_to_never_upload": "tests, rapports, fichiers backend — non applicable, seuls les 2 fichiers ci-dessus sont concernés par cette phase"
+  },
+  "partie_h_production_validation_with_real_accounts": {
+    "performed": false,
+    "reason": "Nécessite (a) le frontend déployé sur Hostinger (pas encore fait) et (b) des identifiants admin réels que cet agent ne possède pas — même limitation déjà documentée en Phases 15.15/15.16.1. Aucune tentative de création de compte ou de contournement.",
+    "expected_state_once_verifiable": {
+      "commission_generee": 600, "retrait_demande": 600, "total_verse": 600, "en_attente": 0, "disponible": 0
+    }
+  },
+  "real_withdrawal_state": {
+    "touched_this_phase": false,
+    "no_confirmation_clicked": true,
+    "no_new_withdrawal_created": true,
+    "no_payment_made": true,
+    "no_db_correction": true
+  },
+  "limitations": [
+    "Frontend Hostinger non déployé — upload manuel requis (2 fichiers exactement)",
+    "Aucune preuve fonctionnelle distincte disponible pour ce diff précis en production (paramètre optionnel + champ supplémentaire, invisible sans authentification) — santé continue et absence de régression observées à la place",
+    "Validation production avec comptes réels (Partie H) non réalisable : ni frontend déployé, ni identifiants admin disponibles"
+  ],
+  "verdict": "DEPLOYED_WITH_FRONTEND_VALIDATION_PENDING"
+}

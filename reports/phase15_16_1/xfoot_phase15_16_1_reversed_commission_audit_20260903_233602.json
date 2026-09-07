@@ -1,0 +1,91 @@
+{
+  "phase": "15.16.1",
+  "title": "Audit des commissions reversées + recherche admin par promoteur",
+  "generated_at_utc": "2026-09-03T23:36:02Z",
+  "no_commit_push_deploy": true,
+  "no_real_payment_or_withdrawal_performed": true,
+  "partie_a_audit_commissions_reversees": {
+    "code_location": "api/app/referral/stats.py::compute_admin_totals, ligne 'reversed_commissions = sum(r.commission_amount for r in reversed_rows)' où reversed_rows = [r for r in rows if r.status == 'REVERSED']",
+    "definition_exacte": "Somme des ReferralCommission dont le statut est passé de ACCRUED à REVERSED — UNIQUEMENT via app/referral/commission_service.py::reverse_commissions_for_subscription, elle-même appelée UNIQUEMENT depuis app/billing/router.py:812 dans le handler du Pulse Chariow 'license.revoked' (remboursement/révocation d'abonnement côté client).",
+    "source_de_verite": "ReferralCommission.status — table unique, aucune duplication.",
+    "representation": "Remboursements clients (Chariow), PAS des commissions versées aux promoteurs. Aucun lien de code avec PromoterWithdrawal (vérifié : aucune référence à PromoterWithdrawal ni au mot 'withdrawal' dans compute_admin_totals).",
+    "verification_par_test": "PARTIE A du fichier de test : un promoteur avec une commission ACCRUED de 600 FCFA, intégralement versée via un retrait PAID (jamais remboursée), produit reversed_commissions == 0 ET total_commissions (ACCRUED) == 600 — comportement prouvé identique au cas réel promoter-2.",
+    "valeur_correcte_pour_le_cas_reel": "0 FCFA est la valeur MATHÉMATIQUEMENT ET DÉFINITIONNELLEMENT CORRECTE pour promoter-2 : aucun remboursement Chariow n'a eu lieu sur cet abonnement. Le retrait de 600 FCFA est un concept totalement distinct (PromoterWithdrawal.status='PAID'), jamais compté par ce compteur, et ce n'est pas censé l'être.",
+    "conclusion": "AUCUN BUG DE CALCUL. La confusion observée par l'utilisateur est purement lexicale : 'Commissions reversées' (remboursées/refund) ressemble à 'Commissions versées' (payées aux promoteurs) en français, alors que ce sont deux concepts opposés.",
+    "action_prise": "Aucune modification de logique. Clarification du LIBELLÉ uniquement (Partie E) : 'Commissions reversées' -> 'Commissions remboursées (client)' dans frontend-design/admin-earnings.html — le calcul retourné par l'API reste strictement identique (reversed_commissions), aucun renommage de champ API (aucune rupture de contrat)."
+  },
+  "partie_b_sources_de_verite": {
+    "A_commissions_generees": "ReferralCommission.commission_amount WHERE status='ACCRUED' (inchangé, déjà existant)",
+    "B_commissions_remboursees": "ReferralCommission.commission_amount WHERE status='REVERSED' (inchangé, déjà existant)",
+    "C_retraits_pending": "PromoterWithdrawal.amount WHERE status='PENDING' (Phase 15.14, inchangé)",
+    "D_retraits_paid": "PromoterWithdrawal.amount WHERE status='PAID' (Phase 15.14, inchangé)",
+    "E_disponible_promoteur": "commission_accrued - paid_out - pending, clampé à 0 (Phase 15.14, inchangé)",
+    "nouveau_champ_ajoute": "commission_total_requested = somme de PromoterWithdrawal.amount TOUS statuts confondus (PENDING+PAID+REJECTED) — nouveau, purement dérivé, aucun compteur mutable créé, ajouté à compute_promoter_available_amount() et propagé par compute_promoter_stats()"
+  },
+  "partie_c_recherche_admin": {
+    "reuse": "GET /admin/promoters?q=<slug ou email> RÉUTILISÉ TEL QUEL (endpoint Phase 14 déjà existant, déjà server-side, déjà sécurisé require_admin) — aucune duplication de logique de recherche.",
+    "new_filter": "GET /admin/withdrawals accepte désormais un paramètre optionnel promoter_id (en plus de status_filter déjà existant) — endpoint déjà réservé require_admin, ce filtre est un pur confort de vue (l'admin peut déjà voir TOUTES les demandes sans filtre), n'élargit aucun accès.",
+    "security": "promoter_id n'est JAMAIS accepté comme mécanisme d'autorisation côté client sur les routes PROMOTEUR (aucun changement là) — uniquement un filtre optionnel côté ADMIN, sur une route déjà protégée par require_admin, testé (403 pour utilisateur normal ET pour un promoteur non-admin, 401 sans authentification)."
+  },
+  "partie_d_resume_financier": {
+    "endpoint": "GET /admin/promoters/{promoter_id} (Phase 14, déjà existant) — étend automatiquement son retour car il fait déjà **compute_promoter_stats(session, promoter.id), désormais enrichi de commission_total_requested",
+    "champs_exposes": ["total_commission_accrued (généré)", "commission_total_requested (total historique demandé)", "commission_paid_out (versé)", "commission_pending_withdrawal (en attente)", "commission_available (reste disponible)"],
+    "server_side_only": true,
+    "aucun_nouveau_endpoint_cree": "Le résumé réutilise un endpoint déjà existant plutôt que d'en créer un nouveau (§ principe déjà appliqué en Phase 14/15.14)."
+  },
+  "partie_e_libelles": {
+    "changement": "admin-earnings.html : 'Commissions reversées' -> 'Commissions remboursées (client)'",
+    "justification": "Clarifie sans changer le sens métier ni la valeur affichée (0 reste 0, calcul API inchangé) — évite la confusion lexicale 'reversées' vs 'versées' qui a motivé cette phase.",
+    "non_fait": "'Commissions versées aux promoteurs' n'a PAS été utilisé comme libellé de ce compteur car ce n'est PAS ce qu'il représente (Partie A) — ce libellé serait faux. Le nouveau résumé par promoteur (Partie D) expose déjà ce concept séparément sous 'Total versé'."
+  },
+  "partie_f_isolation": {
+    "admin_peut_rechercher_tous_promoteurs": "vérifié (TEST 6/7)",
+    "promoteur_A_ne_voit_jamais_B": "déjà garanti par get_current_promoter (Phase 14, inchangé) — routes promoteur non affectées par cette phase",
+    "promoter_id_client_sur_route_admin": "filtre de confort uniquement, sur route déjà require_admin, testé non contournable par un non-admin (TEST sécurité)",
+    "agregats_calcules_serveur": "vérifié — TEST 9/10/11/12/13"
+  },
+  "tests": {
+    "new_file": "api/test_phase15_16_1_admin_promoter_search.py",
+    "result": "41/41 assertions réussies (Partie A + 15 scénarios numérotés + matrice de sécurité)",
+    "test_15_note": "Reproduit les montants exacts du cas réel promoter-2 (600 généré / 600 versé / 0 en attente / 0 disponible) avec un promoteur de test entièrement isolé — la vraie production n'est jamais touchée.",
+    "regression": {
+      "test_phase15_14_manual_withdrawal.py": "56/56",
+      "test_referral_promoter_platform.py": "99/99",
+      "test_phase14_1_production_integration.py": "36/36",
+      "test_phase15_1_new_offers.py": "17/17",
+      "test_phase15_7_referral_attribution_repro.py": "24/24",
+      "test_phase15_9_webhook_hardening.py": "31/31",
+      "test_phase15_10_activate_license_commission.py": "33/33",
+      "test_phase15_12_amount_reconciliation.py": "36/36",
+      "test_chariow_billing.py": "30/30",
+      "test_entitlement.py": "8/8",
+      "test_provider_subscription_backfill.py": "4/4",
+      "test_google_play_billing.py": "44/44",
+      "test_auth.py": "8/8",
+      "test_main.py": "9/9",
+      "total_failures": 0
+    }
+  },
+  "ai_isolation": {
+    "match": 12459, "match_stats": 12459, "model_predictions": 3610,
+    "model_versions": 15, "team_ratings": 568, "prediction_log": 9,
+    "ai_files_in_diff": false,
+    "note": "api/app/ai/readiness/gates.py reste la modification étrangère pré-existante, non touchée par cette phase"
+  },
+  "files_changed": {
+    "backend_modified": ["api/app/referral/withdrawal_service.py", "api/app/referral/stats.py", "api/app/referral/admin_router.py"],
+    "backend_new": ["api/test_phase15_16_1_admin_promoter_search.py"],
+    "frontend_modified": ["frontend-design/admin-withdrawals.html", "frontend-design/admin-earnings.html"]
+  },
+  "real_case_promoter_2": {
+    "touched_this_phase": false,
+    "reason": "Aucun appel de production effectué — audit et développement entièrement locaux, sur bases de test isolées (jamais api/app.db, jamais la production)",
+    "no_additional_payment": true
+  },
+  "deployment": {
+    "commit": false, "push": false, "deploy": false, "railway_modified": false, "chariow_modified": false,
+    "reason": "Non autorisé pour cette phase (Partie J du prompt) — implémentation + validation locale uniquement"
+  },
+  "verdict": "PROMOTER_WITHDRAWAL_SEARCH_IMPLEMENTED_TESTS_PASS",
+  "verdict_sub_audit": "AUDIT_PASS_NO_FIX_REQUIRED"
+}

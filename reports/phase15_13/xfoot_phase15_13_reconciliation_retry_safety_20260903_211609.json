@@ -1,0 +1,64 @@
+{
+  "phase": "15.13-R1",
+  "title": "Post-configuration : vérification de la réconciliation sans nouveau paiement",
+  "generated_at_utc": "2026-09-03T21:16:09Z",
+  "read_only": true,
+  "actions_on_production": "AUCUNE",
+  "section_1_idempotency_audit": {
+    "endpoint": "POST /billing/activate-license",
+    "code_location": "api/app/billing/router.py, fonction activate_license() (déployée : commit 44f6652)",
+    "idempotency_key": "delivery_id = f\"activate-license:{body.license_key}\" (dérivé de la clé de licence elle-même, stable par achat)",
+    "where_checked": "api/app/referral/commission_service.py::create_commission_for_confirmed_payment, ligne 78-83 : SELECT ReferralCommission WHERE source_event_id == delivery_id",
+    "critical_finding": "L'idempotence protège UNIQUEMENT la création d'une ReferralCommission — PAS l'activation elle-même. activate_license() n'a AUCUN garde-fou empêchant de retraiter la MÊME licence : à chaque appel, elle re-fetch Chariow, re-vérifie l'appartenance, réécrit ProviderSubscription (valeurs identiques, sans risque) et rappelle create_commission_for_confirmed_payment avec le MÊME delivery_id. Ce n'est QUE si une ReferralCommission avec ce source_event_id existe déjà que l'appel est un no-op (retourne la ligne existante).",
+    "consequence_for_user_245": "Le premier appel de USER 245 n'a JAMAIS créé de ReferralCommission (montant indisponible à l'époque) — donc AUCUNE ligne source_event_id='activate-license:<licence réelle>' n'existe en base. Un second appel avec la MÊME licence n'est PAS bloqué par l'idempotence : il retente la création, et réussira désormais si le montant est disponible.",
+    "answer_to_A_B_C_D": "B) réexécute create_commission_for_confirmed_payment — avec la précision que cette réexécution est un NO-OP protégé SEULEMENT si une commission existe déjà pour ce source_event_id précis, ce qui n'est pas le cas ici.",
+    "proof_basis": "Lecture directe du code déployé (router.py + commission_service.py) + tests existants (test_phase15_10 TEST 7/8/14, test_phase15_12 TEST 12) + nouvelle simulation empirique dédiée (section 4 ci-dessous), jamais une supposition."
+  },
+  "section_2_production_state_check": {
+    "performed": false,
+    "reason": "Aucun accès navigateur/admin/DB de production disponible dans cet environnement (déjà constaté Phases 15.8.1/15.11). Aucune tentative de contournement.",
+    "verdict_component": "NOT_VERIFIABLE"
+  },
+  "section_3_runtime_config_check": {
+    "performed": false,
+    "reason": "Aucun endpoint de diagnostic existant n'expose la présence de REFERRAL_PLAN_PRICE_MONTHLY sans révéler sa valeur ; aucun nouvel endpoint créé (interdit, Phase 15.13 Partie I). /health répond 200 mais ne prouve rien sur cette variable précise.",
+    "verdict_component": "NOT_VERIFIABLE"
+  },
+  "section_4_local_simulation": {
+    "method": "Script Python autonome, hors dépôt (scratchpad de session, jamais ajouté à git, aucun commit, aucun push), réutilisant exactement le harness/moteur applicatif réel (main.app, TestClient, SQLite isolée dédiée).",
+    "scenario": "Un SEUL license_key ('lic_user245_real_simulation') soumis 3 fois de suite au même endpoint réel, jamais un mock de la fonction de commission.",
+    "etape_1": {
+      "description": "activate-license AVANT configuration (PLAN_LIST_PRICES={}) — reproduit l'état réel actuel de USER 245",
+      "http_status": 200,
+      "subscription_status": "active",
+      "commission_created": false
+    },
+    "etape_2": {
+      "description": "MÊME license_key resoumise, PLAN_LIST_PRICES={'monthly':1500} désormais disponible",
+      "http_status": 200,
+      "commission_created": true,
+      "commission_amount": 600,
+      "gross_paid_amount": 1500,
+      "source_event_id": "activate-license:lic_user245_real_simulation"
+    },
+    "etape_3": {
+      "description": "MÊME license_key une 3e fois, config toujours disponible",
+      "http_status": 200,
+      "total_commissions_for_user_after_3_calls": 1,
+      "duplicate": false
+    },
+    "conclusion": "Confirme empiriquement l'audit de code : un deuxième appel réel avec la licence déjà utilisée par USER 245, effectué APRÈS configuration de REFERRAL_PLAN_PRICE_MONTHLY, créerait la commission de 600 FCFA exactement une fois, sans risque de duplication lors d'appels ultérieurs."
+  },
+  "section_5_decision": "SAFE_TO_RETRY_SAME_LICENSE",
+  "decision_justification": "Prouvé par le code (idempotence scopée à l'existence effective d'une ReferralCommission, jamais à la simple activation) ET reproduit empiriquement (simulation 3 étapes ci-dessus, comportement exactement conforme à l'analyse de code, 0 duplication). Le seul point non vérifiable directement par cet agent est l'état réel de production (section 2) et la confirmation runtime de la variable Railway (section 3) — ceci ne remet pas en cause la sûreté du mécanisme lui-même, seulement la nécessité de confirmer côté humain que la configuration a bien pris effet avant de resoumettre la licence réelle.",
+  "prohibitions_respected": {
+    "no_new_payment": true,
+    "no_new_chariow_transaction": true,
+    "no_webhook_replay": true,
+    "no_db_modification": true,
+    "no_code_modification_in_repo": true,
+    "no_commit": true,
+    "no_push": true,
+    "license_never_requested_displayed_or_logged": true
+  }
+}

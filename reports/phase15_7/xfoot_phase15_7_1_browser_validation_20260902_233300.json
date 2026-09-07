@@ -1,0 +1,84 @@
+{
+  "phase": "15.7.1 — VALIDATION NAVIGATEUR DU CORRECTIF REFERRAL",
+  "timestamp": "2026-09-02T23:33:00Z",
+
+  "2_fichier_teste": "frontend-design/login.html",
+  "3_hash": {
+    "local_corrige_sha256": "7cb4ba83cefe98b1f337746d3a00a22cfa722ce423e0c586c2db1afa7e19484b",
+    "production_actuelle_sha256": "385338b997bb0321556c822250f6cefee9492ab00b9b238ac498147abd42a3a4",
+    "identiques": false,
+    "preuve": "diff byte-à-byte confirme que la production sert TOUJOURS l'ordre PRÉ-CORRECTIF (if (getToken()) {...} else { captureReferralFromUrl(); }), le correctif local (captureReferralFromUrl() déplacé avant le test) n'est PAS présent en production.",
+    "production_last_modified": "Tue, 01 Sep 2026 21:34:21 GMT (antérieur au correctif de Phase 15.7, créé après cette date)"
+  },
+
+  "blocage_structurel": {
+    "raison_1_deploiement": "Le correctif de Phase 15.7 (frontend-design/login.html) n'a jamais été committé, poussé, ni uploadé sur Hostinger — confirmé par 'git status' (fichier encore marqué modifié localement, pas de nouveau commit) ET par la comparaison de hash SHA256 ci-dessus entre le fichier local et le fichier réellement servi par https://www.xfoot.site/login.html. Tester le parcours réel en production reviendrait donc à tester l'ANCIEN code, jamais le correctif — cela ne prouverait RIEN sur l'efficacité du correctif, et le déploierait de fait sans autorisation humaine explicite pour le faire (règle absolue de cette phase : 'Aucune mise en production automatique n'est autorisée').",
+    "raison_2_outil_navigateur": "Cet assistant ne dispose d'AUCUN outil de navigateur (pas de Playwright/Selenium/computer-use) dans cet environnement — même si le correctif ÉTAIT déployé, aucune des actions requises par cette phase (fenêtre privée, DevTools Network, inscription interactive, clics) ne pourrait être exécutée directement par cet assistant. Ce blocage est indépendant et s'ajoute au premier."
+  },
+
+  "4_url_initiale": "NON VISITÉE — étape non exécutée (blocage structurel ci-dessus)",
+  "5_promoteur": "promoter-2",
+  "6_promoteur_user_id": "206 (annoncé, re-vérifié uniquement de façon indirecte — voir ci-dessous)",
+  "6b_verification_promoteur_active_readonly": {
+    "methode": "POST https://api.xfoot.site/referral/resolve/promoter-2 sans visitor_id (zéro écriture)",
+    "resultat": {"status_code": 200, "body": {"valid": true}},
+    "interpretation": "Confirme slug existant + ACTIVE. user_id=206 non exposé par cet endpoint public (par design), non re-confirmé directement cette phase."
+  },
+
+  "7_nouvel_email": "NON CRÉÉ — étape non exécutée",
+  "8_nouvel_user_id": "NON APPLICABLE",
+  "9_capturereferralfromurl_observee": "NON OBSERVABLE — nécessiterait DevTools sur un vrai navigateur, jamais exécuté",
+  "10_referral_attribute_observe": "NON OBSERVABLE",
+  "11_http_status": "NON APPLICABLE",
+  "12_admin_visibility": "NON VÉRIFIÉ — aucune nouvelle inscription effectuée",
+  "13_admin_promoteur": "NON APPLICABLE",
+  "14_checkout_price": "NON ATTEINT",
+  "15_chariow_price": "NON OBSERVÉ",
+  "16_payment_performed": false,
+
+  "17_tests": {
+    "TOTAL_FICHIERS": 66,
+    "REAL_FAILURES_EXIT_CODE_NON_ZERO": 0,
+    "note": "Identique au résultat de la Phase 15.7 (66/66) — re-exécuté pour confirmer l'absence de régression depuis, aucun changement de code entre les deux phases."
+  },
+
+  "18_ai_integrity": {
+    "avant": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "apres": {"match": 12459, "match_stats": 12459, "model_predictions": 3610, "model_versions": 15, "team_ratings": 568, "prediction_log": 9},
+    "strictement_identiques": true
+  },
+
+  "19_git_status": {
+    "HEAD": "eeb01ec4aefec6cb952f0570a92b1a7404bc7739 (inchangé)",
+    "git_status_short": "M frontend-design/login.html (correctif local Phase 15.7, non committé) ; ?? api/test_phase15_7_referral_attribution_repro.py ; + fichiers étrangers pré-existants inchangés (gates.py, evidence_snapshots.json, rapports historiques)",
+    "aucun_nouveau_commit": true,
+    "aucun_push": true,
+    "aucun_git_add": true
+  },
+
+  "20_captures_preuves_disponibles": [
+    "Hash SHA256 comparatif local vs production (preuve cryptographique que le correctif n'est pas déployé)",
+    "Diff byte-à-byte des deux versions de login.html (preuve visuelle de l'écart exact)",
+    "Confirmation read-only que promoter-2 existe et reste ACTIVE (endpoint public, zéro écriture)",
+    "66/66 tests toujours verts, 6 tables IA inchangées (aucune régression depuis la Phase 15.7)"
+  ],
+
+  "21_limitations": [
+    "BLOCAGE PRINCIPAL : le correctif n'est pas déployé (ni committé, ni poussé, ni uploadé sur Hostinger) — le tester en production testerait l'ancien code, pas le correctif. Le déployer maintenant serait une mise en production automatique, explicitement interdite par cette phase.",
+    "BLOCAGE SECONDAIRE ET INDÉPENDANT : aucun outil de navigateur disponible pour cet assistant — même avec le correctif déployé, aucune des actions interactives requises (fenêtre privée, DevTools, inscription, clics) ne pourrait être exécutée sans intervention humaine.",
+    "Aucune des 12 conditions de succès de l'Étape 16 n'a donc pu être évaluée : ni confirmée, ni infirmée."
+  ],
+
+  "verdict": {
+    "value": "DEPLOYMENT_REQUIRED_FOR_BROWSER_VALIDATION",
+    "rationale": "Conformément à l'instruction explicite de cette phase ('Si le fichier corrigé n'est pas encore en production et que le test nécessite son déploiement, STOP et signaler : DEPLOYMENT_REQUIRED_FOR_BROWSER_VALIDATION'), cette situation est exactement celle rencontrée : le correctif de Phase 15.7 existe uniquement en local (confirmé par hash SHA256 différent du fichier réellement servi en production, et par git status ne montrant aucun nouveau commit). Aucune mise en production n'a été effectuée par cet assistant, conformément à la règle absolue de cette phase. Un second blocage, indépendant, s'ajoute : l'absence de tout outil de navigateur pour cet assistant, qui empêcherait de toute façon l'exécution des étapes interactives même après un déploiement autorisé."
+  },
+
+  "prochaines_etapes_necessaires": [
+    "Décision humaine explicite d'autoriser le déploiement du correctif (commit + push + upload manuel de login.html sur Hostinger — RIEN D'AUTRE, même périmètre que Phase 15.4).",
+    "Une fois déployé : soit un humain exécute lui-même le parcours de l'Étape 2 à 12 et relaie les résultats précis (comme dans les Phases 15.6/15.6-R/15.6-R2), soit cet assistant reçoit un accès navigateur qu'il n'a pas actuellement.",
+    "Rappel : le point ouvert Railway (CHARIOW_PRODUCT_ID_MONTHLY) reste également non résolu, indépendamment de ce blocage."
+  ],
+
+  "closing_statement": "PHASE 15.7.1 — VALIDATION NAVIGATEUR DU CORRECTIF REFERRAL : BLOQUÉE AVANT TOUTE ACTION INTERACTIVE. PREUVE CRYPTOGRAPHIQUE (SHA256 + DIFF BYTE-À-BYTE) QUE LE CORRECTIF DE PHASE 15.7 N'EST PAS DÉPLOYÉ EN PRODUCTION — LE FICHIER SERVI PAR https://www.xfoot.site/login.html EST TOUJOURS LA VERSION PRÉ-CORRECTIF. AUCUNE MISE EN PRODUCTION AUTOMATIQUE EFFECTUÉE, CONFORMÉMENT À LA RÈGLE ABSOLUE DE CETTE PHASE. BLOCAGE SECONDAIRE INDÉPENDANT : AUCUN OUTIL DE NAVIGATEUR DISPONIBLE POUR CET ASSISTANT. 66/66 TESTS TOUJOURS VERTS, 6 TABLES IA INCHANGÉES, AUCUN NOUVEAU COMMIT, AUCUN PUSH, AUCUN UPLOAD, AUCUNE MODIFICATION RAILWAY/CHARIOW, AUCUN PAIEMENT. VERDICT : DEPLOYMENT_REQUIRED_FOR_BROWSER_VALIDATION — EN ATTENTE D'UNE DÉCISION HUMAINE EXPLICITE SUR LE DÉPLOIEMENT AVANT TOUTE POURSUITE DE CETTE VALIDATION."
+}

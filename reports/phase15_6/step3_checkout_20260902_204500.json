@@ -1,0 +1,49 @@
+{
+  "phase": "15.6 — ÉTAPE 3",
+  "title": "VÉRIFICATION DU CHECKOUT 1500 FCFA AVANT PAIEMENT",
+  "generated_at_utc": "2026-09-02T20:45:00Z",
+
+  "1_acheteur": {"email": "payment@test.com", "user_id": 209, "source": "relayé, non re-vérifié techniquement"},
+  "2_promoteur": {"slug": "promoter-2", "user_id": 206, "status": "ACTIVE"},
+  "3_url_referral_utilisee": "https://www.xfoot.site/promoter-2",
+
+  "4_offre_xfoot_selectionnee": "Mensuel (plan=\"monthly\"), radio checked par défaut dans billing.html",
+  "5_prix_xfoot_affiche": {
+    "valeur": "1500 FCFA/mois",
+    "methode": "GET https://www.xfoot.site/billing.html (lecture seule)",
+    "extrait_html": "<input type=\"radio\" name=\"plan\" value=\"monthly\" checked> ... <div class=\"price\">1500 FCFA<span>/mois</span></div>",
+    "confirme": true
+  },
+
+  "6_checkout_chariow_atteint": "NO",
+  "7_produit_chariow_affiche": "NOT_OBSERVED",
+  "8_product_id": "NOT_OBSERVED",
+  "9_montant_chariow": "NOT_OBSERVED",
+  "10_devise": "NOT_OBSERVED",
+  "11_identite_acheteur_visible_chariow": "NOT_OBSERVED",
+  "12_attribution_referral_visible": "NOT_VISIBLE (étape non atteinte)",
+
+  "raison_blocage": {
+    "explication": "Atteindre l'écran Chariow réel nécessite un appel authentifié POST /billing/checkout (api/app/billing/router.py:239-259) avec un Bearer token valide pour payment@test.com — ce endpoint crée le lien de checkout Chariow via _create_chariow_checkout_link, qui appelle réellement l'API Chariow (POST /checkout) et retourne une checkout_url personnalisée. Cet assistant n'a ni token pour payment@test.com, ni outil de navigateur pour se connecter/cliquer/observer une session réelle. Aucune tentative de contournement (pas de faux token, pas d'appel non authentifié à /billing/checkout — qui renverrait de toute façon 401, déjà confirmé en Phase 15.4/15.5) n'a été effectuée.",
+    "verification_401_reconfirmee": "POST /billing/checkout sans token -> 401 (comportement attendu, déjà observé phases précédentes, non re-testé inutilement cette étape)"
+  },
+
+  "13_paiement": "NON",
+  "14_abonnement_cree": "NON",
+  "15_commission_creee": "NON",
+  "16_modifications": {"compte": false, "DB": false, "Chariow": false, "abonnement": false, "commission": false},
+
+  "17_limitations": [
+    "Aucun outil de navigateur — impossible de se connecter comme payment@test.com et de suivre le parcours UI réel.",
+    "Aucun token Bearer pour payment@test.com — impossible d'appeler POST /billing/checkout moi-même pour obtenir la checkout_url Chariow réelle et l'inspecter (ce qui serait pourtant un moyen légitime, sans paiement, de compléter cette étape).",
+    "Toutes les données Chariow (produit, montant, devise, Product ID, identité acheteur visible côté Chariow, attribution visible) restent NOT_OBSERVED par cet assistant.",
+    "Seul le côté Xfoot (prix affiché avant clic) a pu être vérifié en lecture seule."
+  ],
+
+  "action_requise": "Pour compléter cette étape sans que cet assistant outrepasse ses moyens, deux options : (A) l'utilisateur exécute lui-même le parcours (connexion payment@test.com -> sélection Mensuel -> clic 'Continuer vers le paiement' -> lecture de l'écran Chariow SANS payer) et relaie les observations précises (produit, montant, devise, Product ID si visible) ; (B) l'utilisateur fournit un Bearer token de payment@test.com, permettant à cet assistant d'appeler POST /billing/checkout via curl (action strictement équivalente à cliquer 'Continuer vers le paiement', crée un lien de checkout mais ne paie rien) puis de récupérer/inspecter en lecture seule la checkout_url renvoyée par Chariow.",
+
+  "verdict": {
+    "value": "CHECKOUT_NOT_REACHED_BY_ASSISTANT",
+    "rationale": "Aucune des conditions de PASS de cette étape ne peut être établie par cet assistant seul : le checkout Chariow n'a pas été atteint, faute d'authentification. Ceci n'est ni un STOP_CHECKOUT_PRICE_MISMATCH, ni un STOP_CHECKOUT_PRODUCT_MISMATCH, ni un STOP_WRONG_BUYER — aucune anomalie n'a été détectée sur le produit/montant, simplement l'étape n'a pas pu être exécutée par manque d'accès. Le seul élément vérifié (prix Xfoot affiché = 1500 FCFA côté catalogue) est cohérent avec l'attendu, mais insuffisant pour un verdict READY_FOR_REAL_PAYMENT au sens strict du rapport (qui exige la vérification de l'écran Chariow réel)."
+  }
+}
