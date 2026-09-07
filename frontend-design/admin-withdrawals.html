@@ -207,7 +207,7 @@
                     <td>${fmtDate(w.requested_at)}</td>
                     <td><span class="x-badge ${STATUS_BADGE_CLASS[w.status] || ""}">${STATUS_LABEL[w.status] || w.status}</span></td>
                     <td>${fmtDate(w.processed_at)}${w.processed_by_admin_email ? `<br><span class="x-caption">par ${w.processed_by_admin_email}</span>` : ""}</td>
-                    <td>${w.external_reference || "—"}</td>
+                    <td>${escapeHtml(w.external_reference || "—")}</td>
                     <td>
                         ${w.status === "PENDING" ? `
                             <button class="x-btn x-btn-secondary x-btn-sm" data-toggle-panel="${w.id}">Effectuer le paiement manuellement</button>

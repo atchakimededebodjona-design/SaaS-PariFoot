@@ -30,6 +30,19 @@ const API_BASE_URL = (!_isNativeApp && _LOCAL_HOSTNAME_RE.test(window.location.h
     ? `${window.location.protocol}//${window.location.hostname}:8000`
     : PRODUCTION_API_URL;
 
+// Phase 16.2 : échappement HTML pour toute donnée dynamique non fiable
+// (saisie admin en texte libre — ex. référence externe d'un retrait — ou
+// saisie utilisateur reprise plus loin — ex. nom affiché à un admin/
+// promoteur) avant insertion via innerHTML — sans ça, une valeur du type
+// `<img src=x onerror=...>` serait interprétée comme du HTML au lieu d'être
+// affichée comme texte. Utilisée telle quelle (pas de bibliothèque ajoutée),
+// partagée par toutes les pages qui incluent déjà api.js.
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[ch]));
+}
+
 const TOKEN_KEY = "xfoot_token";
 
 function getToken() {

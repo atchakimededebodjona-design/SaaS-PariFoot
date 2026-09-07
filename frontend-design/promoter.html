@@ -243,7 +243,7 @@
                     <td>${fmtDate(w.requested_at)}</td>
                     <td><span class="x-badge ${WITHDRAWAL_STATUS_BADGE_CLASS[w.status] || ""}">${WITHDRAWAL_STATUS_LABEL[w.status] || w.status}</span></td>
                     <td>${w.processed_at ? fmtDate(w.processed_at) : "—"}</td>
-                    <td>${w.external_reference || "—"}</td>
+                    <td>${escapeHtml(w.external_reference || "—")}</td>
                 </tr>
             `).join("");
         }
@@ -284,7 +284,7 @@
             document.getElementById("sales-tbody").innerHTML = rows.map(r => `
                 <tr>
                     <td>${fmtDate(r.date)}</td>
-                    <td>${r.client}</td>
+                    <td>${escapeHtml(r.client)}</td>
                     <td>${r.plan || "—"}</td>
                     <td>${fmtMoney(r.amount_paid, r.currency)}</td>
                     <td>${fmtMoney(r.commission, r.currency)}</td>

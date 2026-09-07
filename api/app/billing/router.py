@@ -44,6 +44,7 @@ from urllib.parse import quote
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import Session, select
+from sqlalchemy import func
 from pydantic import BaseModel
 
 from app.core.database import get_session
@@ -106,6 +107,22 @@ class SubscriptionStatus(BaseModel):
 
 class ActivateLicenseRequest(BaseModel):
     license_key: str
+
+
+def _normalize_email(email: str) -> str:
+    """
+    Phase 16.2 : forme normalisée d'un email pour COMPARER/RECHERCHER une
+    identité (jamais pour modifier une valeur stockée — User.email garde sa
+    casse d'origine, aucune migration ici). Chariow peut renvoyer
+    customer.email dans une casse différente de celle utilisée par
+    l'utilisateur à l'inscription (ex. entièrement minuscule alors que le
+    compte a été créé avec une majuscule) — sans cette normalisation,
+    _find_provider_subscription_by_email (Pulses successful.sale/
+    license.activated/expired/revoked/nearing_expiry) ne retrouve jamais le
+    compte, et un paiement réel ou une révocation/remboursement Chariow ne
+    sont alors jamais appliqués côté Xfoot.
+    """
+    return email.strip().lower()
 
 
 def _get_or_create_provider_subscription(session: Session, user: User) -> ProviderSubscription:
@@ -377,7 +394,7 @@ def activate_license(
         owns_license = str(license_user_id) == str(current_user.id)
     else:
         customer_email = (license_data.get("customer") or {}).get("email")
-        owns_license = customer_email is not None and customer_email.lower() == current_user.email.lower()
+        owns_license = customer_email is not None and _normalize_email(customer_email) == _normalize_email(current_user.email)
 
     if not owns_license:
         raise HTTPException(
@@ -577,10 +594,20 @@ def _find_provider_subscription_by_email(session: Session, email: str | None) ->
     league.activated (la licence n'est pas encore connue de notre côté à ce
     stade). On relie via l'email du client, identique à celui utilisé pour
     /billing/checkout (current_user.email).
+
+    Phase 16.2 : comparaison insensible à la casse ET aux espaces
+    (func.lower(func.trim(...)) côté colonne, _normalize_email côté valeur
+    reçue de Chariow) — jamais une comparaison brute, qui manquerait le
+    compte dès que Chariow renvoie l'email dans une casse différente de
+    l'inscription. Ne modifie JAMAIS User.email en base (aucune migration) :
+    uniquement la façon de le RETROUVER.
     """
     if not email:
         return None
-    user = session.exec(select(User).where(User.email == email)).first()
+    normalized = _normalize_email(email)
+    user = session.exec(
+        select(User).where(func.lower(func.trim(User.email)) == normalized)
+    ).first()
     if user is None:
         return None
     return session.exec(

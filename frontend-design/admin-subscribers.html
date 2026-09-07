@@ -110,7 +110,7 @@
             wrapEl.style.display = "block";
             document.getElementById("subs-tbody").innerHTML = rows.map(s => `
                 <tr>
-                    <td>${s.name || "—"}</td>
+                    <td>${escapeHtml(s.name || "—")}</td>
                     <td>${fmtUserId(s.user_id)}</td>
                     <td>${s.email}</td>
                     <td>${s.plan || "—"}</td>
