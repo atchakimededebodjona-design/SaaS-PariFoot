@@ -29,9 +29,6 @@ def require_active_subscription(
     l'ancienne table Subscription, sans changement de comportement pour
     Chariow (voir tests test_premium.py, test_main.py, test_prediction_history.py).
     """
-    if current_user.email == "atchakimededebodjona@gmail.com":
-        return current_user
-
     if not is_premium(session, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
