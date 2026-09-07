@@ -52,6 +52,7 @@ Usage autonome (test manuel, sans ré-entraînement) :
 
 import logging
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -128,6 +129,46 @@ COLUMN_MAP = {
 }
 OUTPUT_COLUMNS = list(COLUMN_MAP.values()) + ["league"]
 
+# --- Retry du téléchargement (Phase 16.1-B) -----------------------------------
+# Nombre total de tentatives (initiale incluse) — 1 initiale + 2 retries max.
+MAX_DOWNLOAD_ATTEMPTS = 3
+# Délai en secondes avant la tentative 2, puis avant la tentative 3.
+# 10s/30s : assez courts pour ne pas bloquer inutilement un cron hebdomadaire
+# (même 3×30s = 90s est négligeable sur 7 jours), assez longs pour absorber
+# une surcharge temporaire de football-data.co.uk ou du CDN GitHub.
+RETRY_DELAYS_S: list[int] = [10, 30]
+
+
+def _is_temporary_error(msg: str) -> bool:
+    """
+    Retourne True si le message d'erreur réseau correspond à une condition
+    considérée comme temporaire (retry pertinent). Ne retourne PAS True
+    pour les erreurs structurelles (mauvaise URL, schéma cassé, etc.).
+
+    Stratégie identique à la détection 404 existante : on cherche des
+    sous-chaînes dans str(e). Pandas/urllib remontent les codes HTTP via
+    des messages du type "HTTP Error 503: Service Temporarily Unavailable"
+    (urllib.error.HTTPError) ou "503 Server Error: Service Unavailable"
+    (requests/httpx), couverts par les deux formes ci-dessous.
+    """
+    markers = [
+        # 502 Bad Gateway
+        "502", "Bad Gateway",
+        # 503 Service Unavailable
+        "503", "Service Unavailable", "Service Temporarily Unavailable",
+        # 504 Gateway Timeout
+        "504", "Gateway Timeout",
+        # 429 Too Many Requests
+        "429", "Too Many Requests", "Rate Limit",
+        # Timeouts réseau
+        "timed out", "timeout", "TimeoutError",
+        # Déconnexions réseau basses couches
+        "Connection reset", "RemoteDisconnected", "IncompleteRead",
+        "ConnectionError", "BrokenPipeError",
+    ]
+    msg_lower = msg.lower()
+    return any(m.lower() in msg_lower for m in markers)
+
 
 def _season_code(season_start_year: int) -> str:
     """2019 -> '1920' (saison 2019-2020), au format utilisé par le dépôt."""
@@ -147,31 +188,62 @@ def current_and_previous_season_codes(reference_date: datetime | None = None) ->
     return [_season_code(current_start_year - 1), _season_code(current_start_year)]
 
 
-def download_league_season(league_repo_dir: str, season_code: str, timeout: int = 20) -> pd.DataFrame | None:
+def download_league_season(league_repo_dir: str, season_code: str, timeout: int = 20,
+                            _sleep_fn=None) -> pd.DataFrame | None:
     """
     Télécharge un fichier season-XXYY.csv pour une ligue. Retourne None si
     le fichier n'existe pas encore sur le dépôt (404 — cas normal en tout
-    début de saison, PAS une erreur). Toute autre erreur réseau/HTTP est
-    laissée remonter (l'appelant décide comment réagir).
+    début de saison, PAS une erreur).
+
+    Les erreurs temporaires (502/503/504/429, timeout réseau) font l'objet
+    d'un retry automatique : MAX_DOWNLOAD_ATTEMPTS tentatives au total,
+    avec délais RETRY_DELAYS_S entre chaque tentative. Toute autre erreur
+    non temporaire est laissée remonter immédiatement (l'appelant décide).
+
+    _sleep_fn : hook injectable pour les tests (évite d'attendre les vrais
+                délais). Par défaut time.sleep — ne pas utiliser en dehors
+                des tests unitaires.
     """
+    if _sleep_fn is None:
+        _sleep_fn = time.sleep
     url = f"{BASE_URL}/{league_repo_dir}/season-{season_code}.csv"
-    try:
-        df = pd.read_csv(url, storage_options={"timeout": timeout})
-    except Exception as e:
-        msg = str(e)
-        if "404" in msg or "Not Found" in msg or "HTTP Error 404" in msg:
-            logger.info(f"  {url} -> pas encore disponible (404), ignoré")
-            return None
-        raise RuntimeError(f"Échec de téléchargement de {url} : {e}") from e
+    for attempt in range(1, MAX_DOWNLOAD_ATTEMPTS + 1):
+        try:
+            df = pd.read_csv(url, storage_options={"timeout": timeout})
+        except Exception as e:
+            msg = str(e)
+            # 404 : fichier absent de la source — jamais un retry, ignoré.
+            if "404" in msg or "Not Found" in msg or "HTTP Error 404" in msg:
+                logger.info(f"  {url} -> pas encore disponible (404), ignoré")
+                return None
+            # Erreur temporaire avec tentatives restantes → retry avec backoff.
+            if _is_temporary_error(msg) and attempt < MAX_DOWNLOAD_ATTEMPTS:
+                delay = RETRY_DELAYS_S[attempt - 1]
+                logger.warning(
+                    f"  [Tentative {attempt}/{MAX_DOWNLOAD_ATTEMPTS}] {url} "
+                    f"— erreur temporaire ({msg[:120]!r}) ; retry dans {delay}s"
+                )
+                _sleep_fn(delay)
+                continue
+            # Tentatives épuisées ou erreur non temporaire → échec définitif.
+            label = (f" après {attempt} tentative(s)" if _is_temporary_error(msg) else "")
+            raise RuntimeError(f"Échec de téléchargement de {url}{label} : {e}") from e
+        # Téléchargement réussi.
+        if attempt > 1:
+            logger.info(
+                f"  {url} -> succès à la tentative {attempt}/{MAX_DOWNLOAD_ATTEMPTS}"
+            )
+        missing = [c for c in COLUMN_MAP if c not in df.columns]
+        if missing:
+            raise ValueError(
+                f"{url} : colonnes attendues manquantes {missing} "
+                f"— schéma source a peut-être changé"
+            )
+        return df
 
-    missing = [c for c in COLUMN_MAP if c not in df.columns]
-    if missing:
-        raise ValueError(f"{url} : colonnes attendues manquantes {missing} — schéma source a peut-être changé")
 
-    return df
-
-
-def download_direct_season(division_code: str, season_code: str, timeout: int = 20) -> pd.DataFrame | None:
+def download_direct_season(division_code: str, season_code: str, timeout: int = 20,
+                            _sleep_fn=None) -> pd.DataFrame | None:
     """
     Équivalent de download_league_season() mais pour une ligue absente du
     miroir GitHub (voir LEAGUE_DIRECT_CODES) — télécharge directement
@@ -180,24 +252,51 @@ def download_direct_season(division_code: str, season_code: str, timeout: int = 
     en datetime ICI, avant tout concat avec les autres frames, pour ne
     jamais dépendre de la détection automatique de format de pandas sur un
     mélange de styles de dates.
+
+    Même logique de retry que download_league_season() : erreurs temporaires
+    (502/503/504/429, timeout) → retry avec backoff RETRY_DELAYS_S ; 404 →
+    skip immédiat sans retry ; erreur non temporaire → échec immédiat.
+
+    _sleep_fn : hook injectable pour les tests — voir download_league_season.
     """
+    if _sleep_fn is None:
+        _sleep_fn = time.sleep
     url = f"{DIRECT_BASE_URL}/{season_code}/{division_code}.csv"
-    try:
-        df = pd.read_csv(url, storage_options={"timeout": timeout})
-    except Exception as e:
-        msg = str(e)
-        if "404" in msg or "Not Found" in msg or "HTTP Error 404" in msg:
-            logger.info(f"  {url} -> pas encore disponible (404), ignoré")
-            return None
-        raise RuntimeError(f"Échec de téléchargement de {url} : {e}") from e
-
-    missing = [c for c in COLUMN_MAP if c not in df.columns]
-    if missing:
-        raise ValueError(f"{url} : colonnes attendues manquantes {missing} — schéma source a peut-être changé")
-
-    df = df.rename(columns=COLUMN_MAP)[list(COLUMN_MAP.values())].copy()
-    df["date"] = pd.to_datetime(df["date"], dayfirst=True)
-    return df
+    for attempt in range(1, MAX_DOWNLOAD_ATTEMPTS + 1):
+        try:
+            df = pd.read_csv(url, storage_options={"timeout": timeout})
+        except Exception as e:
+            msg = str(e)
+            # 404 : fichier absent — jamais un retry, ignoré.
+            if "404" in msg or "Not Found" in msg or "HTTP Error 404" in msg:
+                logger.info(f"  {url} -> pas encore disponible (404), ignoré")
+                return None
+            # Erreur temporaire avec tentatives restantes → retry avec backoff.
+            if _is_temporary_error(msg) and attempt < MAX_DOWNLOAD_ATTEMPTS:
+                delay = RETRY_DELAYS_S[attempt - 1]
+                logger.warning(
+                    f"  [Tentative {attempt}/{MAX_DOWNLOAD_ATTEMPTS}] {url} "
+                    f"— erreur temporaire ({msg[:120]!r}) ; retry dans {delay}s"
+                )
+                _sleep_fn(delay)
+                continue
+            # Tentatives épuisées ou erreur non temporaire → échec définitif.
+            label = (f" après {attempt} tentative(s)" if _is_temporary_error(msg) else "")
+            raise RuntimeError(f"Échec de téléchargement de {url}{label} : {e}") from e
+        # Téléchargement réussi.
+        if attempt > 1:
+            logger.info(
+                f"  {url} -> succès à la tentative {attempt}/{MAX_DOWNLOAD_ATTEMPTS}"
+            )
+        missing = [c for c in COLUMN_MAP if c not in df.columns]
+        if missing:
+            raise ValueError(
+                f"{url} : colonnes attendues manquantes {missing} "
+                f"— schéma source a peut-être changé"
+            )
+        df = df.rename(columns=COLUMN_MAP)[list(COLUMN_MAP.values())].copy()
+        df["date"] = pd.to_datetime(df["date"], dayfirst=True)
+        return df
 
 
 def download_api_football_season(league_id: int, season_year: int, api_key: str, timeout: int = 30) -> pd.DataFrame:
