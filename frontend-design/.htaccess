@@ -26,3 +26,19 @@ RewriteCond %{REQUEST_FILENAME} !-d
 # app/referral/slug.py::_SLUG_RE côté backend — la validation d'AUTORITÉ
 # reste toujours côté serveur, ceci n'est qu'un filtre de forme).
 RewriteRule ^([a-z0-9][a-z0-9-]{0,38}[a-z0-9]|[a-z0-9])$ /login.html?ref=$1 [L,QSA]
+
+# Phase 16.6.2 — 3 headers de sécurité HTTP sans risque fonctionnel identifié
+# (Phase 16.6.1 : aucun <iframe> dans ce dossier, l'attribution de parrainage
+# ne dépend jamais de document.referrer/l'en-tête Referer, aucun sniffing
+# MIME nécessaire). HSTS et un CSP applicatif renforcé sont volontairement
+# différés (Phase 16.6.1 : chaque page dépend d'un <script> inline et de
+# nombreux style="" inline — un CSP script-src/style-src strict casserait le
+# site ; HSTS nécessite de confirmer d'abord l'absence de tout accès HTTP).
+# <IfModule> : si mod_headers n'est pas activé sur cet hébergement Hostinger
+# (non vérifié — voir commentaire mod_rewrite ci-dessus, même incertitude),
+# ce bloc est ignoré par Apache plutôt que de provoquer une erreur 500.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

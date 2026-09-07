@@ -820,6 +820,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    """
+    Phase 16.6.2 : 3 headers de sécurité HTTP identifiés sans risque
+    fonctionnel (Phase 16.6.1 — aucun <iframe> ne charge cette API, aucun
+    endpoint ne dépend de document.referrer/l'en-tête Referer, aucun
+    sniffing MIME nécessaire). HSTS et un CSP applicatif sont volontairement
+    différés (Phase 16.6.1 : /docs charge swagger-ui-dist depuis
+    cdn.jsdelivr.net — un CSP global les exclurait ou les autoriserait
+    explicitement, à traiter séparément ; HSTS nécessite de confirmer
+    d'abord l'absence de tout accès HTTP légitime).
+    """
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
 app.include_router(auth_router)
 app.include_router(billing_router)
 app.include_router(referral_router)
